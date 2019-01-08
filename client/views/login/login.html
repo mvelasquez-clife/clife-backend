@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Acceso al sistema</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="assets/vendor/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="assets/css/util.css">
+	<link rel="stylesheet" type="text/css" href="assets/css/login.css">
+	<style>
+		#overlay{
+			background-color: #4caf50;
+			height: 100%;
+			left: 0;
+			position: absolute;
+			top: 0;
+			width: 100%;
+		}
+		#overlay>.img-logo{
+			height: 240px;
+			left: 50%;
+			max-width: 50%;
+			position: relative;
+			top: 50%;
+			transform: perspective(1px) translateY(-50%) translateX(-50%);
+		}
+		#overlay>.img-loader{
+			bottom: 16px;
+			height: 64px;
+			position: absolute;
+			right: 40px;
+		}
+	</style>
+</head>
+<body>
+	<script type="text/javascript">
+		//
+	</script>
+	<div class="limiter">
+		<div class="container-login100">
+			<div class="wrap-login100 p-l-85 p-r-85 p-t-55 p-b-55">
+				<form id="form-login" class="login100-form validate-form flex-sb flex-w" action="#" method="post">
+					<span class="login100-form-title p-b-32">Zona Intranet</span>
+
+					<label for="usuario" class="txt1 p-b-11">Usuario</label>
+					<div class="wrap-input100 validate-input m-b-36" data-validate = "El usuario es requerido">
+						<input class="input100" type="text" id="usuario" name="usuario" placeholder="Ingresa tu usuario">
+						<span class="focus-input100"></span>
+					</div>
+					
+					<label for="clave" class="txt1 p-b-11">Contraseña</label>
+					<div class="wrap-input100 validate-input m-b-12" data-validate = "La clave es requerida">
+						<span class="btn-show-pass">
+							<i class="fa fa-eye"></i>
+						</span>
+						<input class="input100" type="password" id="clave" name="clave" placeholder="Ingresa tu clave">
+						<span class="focus-input100"></span>
+					</div>
+					
+					<div class="flex-sb-m w-full p-b-48">
+						<div class="contact100-form-checkbox"></div>
+						<div>
+							<a href="#" class="txt3">Olvidé mi clave</a>
+						</div>
+					</div>
+
+					<div class="container-login100-form-btn">
+						<button class="login100-form-btn">Ingresar al sistema</button>
+					</div>
+
+				</form>
+			</div>
+		</div>
+	</div>
+	
+	<div id="dropDownSelect1"></div>
+
+	<div id="overlay">
+		<img class="img-logo" src="assets/images/icons/cloud-life-logo-light.svg" />
+		<img class="img-loader" src="assets/images/icons/loader.svg" />
+	</div>
+	
+	<script src="assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<!--script src="assets/vendor/bootstrap/js/popper.js"></script-->
+	<script src="assets/vendor/bootstrap/js/bootstrap.min.js"></script>
+	<script src="assets/js/login.js"></script>
+	<script src="assets/js/conf.js"></script>
+	<script type="text/javascript">
+		function FormLoginOnSubmit(event) {
+			event.preventDefault();
+			var p = {
+				usuario: document.getElementById("usuario").value,
+				clave: document.getElementById("clave").value
+			};
+			$.post(BASE_URL + "auth/login", p, function(response) {
+				if(response.state == "success") {
+					localStorage.setItem('jwt', response.data.token);
+					localStorage.setItem('usrjson', JSON.stringify(response.data.usuario));
+					location.reload();
+				}
+				else alert(response.err);
+			}, "json");
+		}
+		if(localStorage.getItem('jwt')) {
+			location.href = "inicio";
+		}
+		else {
+			setTimeout(() => {
+				$("#overlay").fadeOut(500, 'swing');
+			}, 1000);
+		}
+		//inicializa la pagina
+		document.getElementById("usuario").value = '';
+		document.getElementById("clave").value = '';
+		$("#form-login").on("submit", FormLoginOnSubmit);
+	</script>
+
+</body>
+</html>

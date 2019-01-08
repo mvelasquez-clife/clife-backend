@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Grid de prueba</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+	<style type="text/css">
+		html,body{height:100%;margin:0;padding:0;width:100%}
+		#dhxDesktop{height:100%;width:100%;}
+	</style>
+</head>
+<body>
+	<div id="dhxDesktop"></div>
+	<!-- -->
+	<script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<script type="text/javascript" src="/assets/js/conf.js"></script>
+	<script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+	<script type="text/javascript" src="/modulos/AD010102/script.js"></script>
+	<script type="text/javascript">
+		var mainLayout, mainGrid;
+		//inicio de la pagina
+		mainLayout = new dhtmlXLayoutObject("dhxDesktop", "1C");
+			mainLayout.cells("a").hideHeader();
+		mainGrid = mainLayout.cells("a").attachGrid();
+			mainGrid.setHeader("ST, Periodo, Marca, Nro. Almacén, Nueve, Codigo, Tipo Existencia, Cincuenta y tres, Fecha Movimiento, Tipo Transacción, co_tipo_docu_1, co_documento1, co_tipo_docu_2, co_documento2, co_documento3, co_voucher_fk, nu_ingreso, nu_egreso, im_compra, im_precio_promedio, nu_tipo_cambio, im_venta, co_clas_bien_serv, de_nombre, co_tipo_bien_serv, de_nombre, co_tipo_doc_administr, de_nombre, co_unidad_medida, de_nombre, co_unidad_sunat, co_unidad_medida_inventario, co_numero_mov, nu_numero_mov, co_proveedor, de_razon_social, st_visible, de_nombre, de_nombre, de_nombre, de_nombre, st_vta_promo, co_lote, fe_vencimiento, co_empresa, co_almacen, fe_ingr_inve, importe_ingreso, importe_salida");
+			//mainGrid.attachHeader("#text_filter,#text_filter,#rspan");
+			mainGrid.setInitWidths("40,80,100,80,40,100,50,80,80,50,50,100,50,80,80,80,80,80,100,80,80,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100");
+			mainGrid.setIconsPath('/assets/images/icons/');
+			//mainGrid.setColAlign("right,left,center");
+			mainGrid.setColTypes("rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt");
+			//mainGrid.setColSorting("int,str,str");
+			mainGrid.setImagesPath('/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/');
+			mainLayout.cells("a").progressOn();
+			mainLayout.cells("a").attachStatusBar({height: {dhx_skyblue: 30, dhx_web: 30, dhx_terrace: 30}['dhx_skyblue'],
+                text: "<div id='paginglo010301' style=\" line-height: 14px;\"></div>"
+            });
+            mainGrid.enablePaging(true, 250, 10, "paginglo010301", true);
+            mainGrid.setPagingSkin("toolbar", "dhx_skyblue");
+			mainGrid.init();
+			mainGrid.load(BASE_URL + 'AD010102/grid', () => {
+				mainLayout.cells("a").progressOff();
+			});
+	</script>
+</body>
+</html>

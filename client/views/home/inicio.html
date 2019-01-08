@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CLife Coud</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+	<style type="text/css">
+		html,body{height:100%;margin:0;padding:0;width:100%}
+		#dhxViewport,#dv-treeview{height:100%;width:100%;}
+		#dv-header{background-color:#ebebeb;height:100%;padding-top:12px;width:100%;}
+		#dv-header>img{display:block;margin:0 auto;width:50%;}
+		#dv-header>.p-title{display:block;font-family:'Open Sans',Verdana;font-size:14px;margin:16px auto 2px;text-align:right;width:85%;}
+		#dv-header>.p-link{display:block;font-family:'Open Sans',Verdana;font-size:12px;margin:0px auto;text-align:right;width:85%;}
+		#dv-fondo{background-image:url('assets/images/home/bg.jpg');background-size:cover;height:100%;width:100%}
+	</style>
+</head>
+<body>
+	<div id="dhxViewport"></div>
+	<!-- -->
+	<script type="text/javascript" src="assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<script type="text/javascript" src="assets/js/conf.js"></script>
+	<script type="text/javascript" src="assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+	<script type="text/javascript">
+		var dhxWins, mainLayout, secLayout, mainTree, mainWindow;
+		var winLayout, winGrid;
+		function logout() {
+			dhtmlx.confirm({
+				ok: "Si, cerrar mi sesión",
+				cancel: "No",
+				text: "¿Desea cerrar la sesión? Deberá ingresar sus credenciales la próxima vez que desee acceder al sistema.",
+				callback: (result) => {
+					if(result) {
+						localStorage.clear();
+						location.href = "/";
+					}
+				}
+			});
+		}
+		function mainTreeOnDblClick(id) {
+			if(!mainTree.hasChildren(id)) {
+				mainLayout.cells("a").collapse();
+				var winId = "win-" + id;
+				if(!dhxWins.isWindow(winId)) {
+					dhxWins.createWindow(winId, 0, 0, 1080, 720);
+					dhxWins.window(winId).setText(mainTree.getItemText(id));
+					dhxWins.window(winId).center();
+					dhxWins.window(winId).attachURL("modulo/" + id);
+				}
+			}
+			return true;
+		}
+		//valida la sesion
+		if(usrtoken == '') {
+			location.href = '/';
+		}
+		else {
+			//
+			mainLayout = new dhtmlXLayoutObject("dhxViewport", "2U");
+				mainLayout.cells("a").setWidth(240);
+				mainLayout.cells("a").setText("Seleccione una opción");
+				mainLayout.cells("a").fixSize(true, true);
+				mainLayout.cells("a").attachHTMLString("<div id=\"dv-treeview\"></div>");
+				mainLayout.cells("b").hideHeader();
+				mainLayout.cells("b").attachHTMLString("<div id=\"dv-fondo\"></div>");
+			secLayout = new dhtmlXLayoutObject("dv-treeview", "2E");
+				secLayout.cells("a").hideHeader();
+				secLayout.cells("a").setHeight(160);
+				secLayout.cells("a").attachHTMLString('<div id="dv-header"><img src="assets/images/icons/cloud-life-logo.svg"><p class="p-title">Bienvenido, <b>' + usrJson.alias + '</b></p><p class="p-link"><a href="javascript:logout()">Salir del sistema</a></p></div>');
+				secLayout.cells("a").fixSize(true, true);
+				secLayout.cells("b").hideHeader();
+			mainTree = secLayout.cells("b").attachTree();
+				mainTree.setXMLAutoLoading(BASE_URL + "home/menu/MAIN/Administrator/11");
+				mainTree.setImagePath("assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
+				mainTree.setXMLAutoLoading(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa);
+				mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
+				mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
+			dhxWins = new dhtmlXWindows();
+				dhxWins.attachViewportTo("dv-fondo");
+			$("#dv-header").parent().css("border-color","#ebebeb");
+		}
+	</script>
+</body>
+</html>

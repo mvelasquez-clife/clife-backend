@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Cartera de clientes</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+	<style type="text/css">
+		html,body{height:100%;margin:0;padding:0;width:100%}
+		#dhxDesktop{height:100%;width:100%;}
+	</style>
+</head>
+<body>
+	<div id="dhxDesktop"></div>
+	<!-- -->
+	<script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<script type="text/javascript" src="/assets/js/conf.js"></script>
+	<script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+	<script type="text/javascript" src="/modulos/AD010101/script.js"></script>
+    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9DJig4LM6QfNzzAeB91p71Ki0H6rhpeA"></script>
+	<script type="text/javascript">
+		var mainLayout;
+        var map = null, ls_puntos = [], markers = null, directionsDisplay = null;
+		//inicio de la pagina
+		mainLayout = new dhtmlXLayoutObject("dhxDesktop", "3J");
+			mainLayout.cells("a").setWidth(400);
+			mainLayout.cells("a").setText("Lista de vendedores");
+			mainLayout.cells("a").fixSize(true, true);
+			mainLayout.cells("b").hideHeader();
+			mainLayout.cells("b").attachHTMLString("<div id=\"map-canvas\" style=\"height:100%;width:100%;\"></div>");
+			mainLayout.cells("c").setText("Detalle de visitas");
+			mainLayout.cells("c").collapse();
+		vendedoresGrid = mainLayout.cells("a").attachGrid();
+			vendedoresGrid.setHeader("DNI,Vendedor,");
+			vendedoresGrid.attachHeader("#text_filter,#text_filter,#rspan");
+			vendedoresGrid.setInitWidths("80,*,60");
+			vendedoresGrid.setIconsPath('../assets/images/icons/');
+			vendedoresGrid.setColAlign("right,left,center");
+			vendedoresGrid.setColTypes("ron,rotxt,img");
+			vendedoresGrid.setColSorting("int,str,str");
+			vendedoresGrid.init();
+			mainLayout.cells("a").progressOn();
+			vendedoresGrid.load(BASE_URL + 'cartera/vendedores/' + usrJson.empresa, () => {
+				mainLayout.cells("a").progressOff();
+			});
+			vendedoresGrid.attachEvent("onRowSelect", vendedoresGridOnRowSelect);
+		visitasGrid = mainLayout.cells("c").attachGrid();
+			visitasGrid.setHeader("#,Cliente,Motivo,Entrada,Salida,,");
+			visitasGrid.setInitWidths("20,*,80,60,60,0,0");
+			visitasGrid.setIconsPath('../assets/images/icons/');
+			visitasGrid.setColAlign("right,left,left,right,right,left,left");
+			visitasGrid.setColTypes("ron,rotxt,rotxt,rotxt,rotxt,ron,ron");
+			visitasGrid.setColSorting("int,str,str,str,str,int,int");
+			visitasGrid.init();
+			visitasGrid.attachEvent('onRowSelect', visitasGridOnRowSelect);
+		$(iniciarMapa);
+	</script>
+</body>
+</html>
