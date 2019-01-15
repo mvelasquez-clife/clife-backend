@@ -5,6 +5,7 @@ const intranetController = require('../controllers/intranet.controller');
 
 router.get('/', intranetController.home);
 router.get('/inicio', intranetController.inicio);
+//vistas de cada modulo
 router.get('/modulo/:id', intranetController.CargarModulo);
 
 module.exports = router;

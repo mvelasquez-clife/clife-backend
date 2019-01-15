@@ -78,6 +78,9 @@ console.log(paramsCabecera);
                 });
             });
         });
+    },
+    funcionPrueba = () => {
+        console.log("hola");
     }
 };
 
