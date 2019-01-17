@@ -80,3 +80,4 @@ server/local.js
 
 #bibliotecas de terceros
 public/assets/vendor
+/nbproject/private/
