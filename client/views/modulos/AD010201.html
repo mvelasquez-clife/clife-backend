@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Cartera de clientes</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <link rel="stylesheet" type="text/css" href="/modulos/AD010201/style.css">
+        <style type="text/css">
+            html,body{height:100%;margin:0;padding:0;width:100%}
+            #dhxDesktop{height:100%;width:100%;}
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <!-- scripts principales -->
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <!-- script propio de la ventana -->
+        <script type="text/javascript" src="/modulos/AD010201/script.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script>
+            var mainLayout; //variable para el contenedor principal
+            var grillaPrincipal;
+            var toolbarPrincipal;
+            var calendario;
+            //inicio de la construccion de la interfaz
+            mainLayout = new dhtmlXLayoutObject("dhxDesktop", "2U");
+                mainLayout.cells("a").hideHeader();
+            //crea una barra de herramientas
+            toolbarPrincipal = mainLayout.cells('a').attachToolbar();
+                toolbarPrincipal.setIconsPath('/assets/images/icons/');
+                toolbarPrincipal.addButton("abrir", 2, "Abrir", "btn_ruta.png", "");
+                toolbarPrincipal.addText("tx",null,"Label simple");
+                toolbarPrincipal.addText("dvcal",null,'<div style="height:24px;width:100px;background-color:crimson;margin-top:2px;"><input type="text" id="dv-calendar"/></div>');
+                calendario = new dhtmlXCalendarObject('dv-calendar');
+                    calendario.setDateFormat("%Y-%m-%d %H:%i:%s");
+					//myToolbar.setValue("cal_1", myCalendar.getFormatedDate());
+            //crear la grilla
+            grillaPrincipal = mainLayout.cells("a").attachGrid();
+                grillaPrincipal.setHeader("CO_FABRICANTE, CO_DOCUMENTO, DE_NOMBRE, ES_VIGENCIA, CO_CATALOGO_ENTIDAD, DE_NOMBRE, DE_RAZON_SOCIAL, CO_PAIS");
+                grillaPrincipal.setInitWidths("100,80,240,100,80,240,240,60");
+                grillaPrincipal.setColAlign("right,right,left,center,right,left,left,left");
+                grillaPrincipal.setColTypes("ron,edn,rotxt,rotxt,ron,rotxt,rotxt,ron");
+                    /*
+                    ron: numero solo lectura
+                    edn: numero editable,
+                    rotxt: string solo lectura,
+                    edtxt: string editable,
+                    image: imagen
+                    otros: https://dhtmlx.com/docs/products/dhtmlxGrid/samples/01_cell_types/
+                    */
+                grillaPrincipal.setColSorting('int,int,str,str,int,str,str,int');
+                grillaPrincipal.init();
+                mainLayout.cells("a").progressOn();
+                grillaPrincipal.load(BASE_URL + 'AD010201/carga-datos', grillaPrincipalOnLoad);
+                grillaPrincipal.attachEvent('onRowDblClicked', grillaPrincipalDobleClic);
+            //celda 2
+            mainLayout.cells('b').attachHTMLString('<div><h1>auxilio me desmayo</h1><p>hola xD</p></div>');
+        </script>
+    </body>
+</html>

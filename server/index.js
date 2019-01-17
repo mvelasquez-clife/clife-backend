@@ -26,6 +26,7 @@ app.use('/api/home', require('./routes/home.routes'));
 app.use('/api/cartera', require('./routes/cartera.routes'));
 //rutas para modulos
 app.use('/api/AD010102', require('./routes/AD010102.routes'));
+app.use('/api/AD010201', require('./routes/AD010201.routes'));
 
 //arrancar el servidor
 app.listen(app.get('port'), () => {
