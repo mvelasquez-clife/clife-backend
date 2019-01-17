@@ -11,7 +11,13 @@ const intranetController = {
 
     CargarModulo: (req, res) => {
         const modulo = req.params.id;
-        res.sendFile(path.resolve('client/views/modulos/' + modulo + '.html'));
+        var subcarpeta = '';
+        const prefijo = modulo.substring(0,2);
+        switch(prefijo) {
+            case 'MA': subcarpeta = 'maestros';break;
+            default: '';
+        }
+        res.sendFile(path.resolve('client/views/modulos/' + subcarpeta + '/' + modulo + '.html'));
     }
 };
 
