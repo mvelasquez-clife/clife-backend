@@ -124,7 +124,7 @@ GuardarPeriodoSuccess = (result) => {
             text: result.message
         });
     }
-};
+}
 CargarDatosSuccess = (result) => {
     if(result.state == 'success') {
         const periodo = result.data.periodo;

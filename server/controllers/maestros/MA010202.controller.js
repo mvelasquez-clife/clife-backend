@@ -46,13 +46,14 @@ const ma010202Controller = {
         });
     },
     guardarPeriodo: (req, res) => {
-        const { modo, mes, anio, estado, nmes, empresa, coperiodo } = req.body; //cuando las variables se envian por post
+        const { modo, mes, anio, estado, nmes, empresa, coperiodo, pdia, udia } = req.body; //cuando las variables se envian por post
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 console.error(err);
                 return;
             }
-            const query = "call pack_new_periodos.sp_grabar_periodo(:p_accion,:p_coperiodo,:p_anio,:p_mes,:p_vigencia,:p_empresa,:o_codigo,:o_resultado)";
+            const query = "call pack_new_periodos.sp_grabar_periodo(:p_accion,:p_coperiodo,:p_anio,:p_mes,:p_vigencia,:p_empresa,:p_pdia,:p_udia,:o_codigo,:o_resultado)";
+console.log(query);
             const params = {
                 p_accion: { val: modo },
                 p_coperiodo: { val: coperiodo },
@@ -60,13 +61,20 @@ const ma010202Controller = {
                 p_mes: { val: mes },
                 p_vigencia: { val: estado },
                 p_empresa: { val: empresa },
+                p_pdia: { val: pdia },
+                p_udia: { val: udia },
                 //parametros de salida
                 o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
                 o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
             };
+console.log(params);
             conn.execute(query, params, responseParams, (error, result) => {
                 if(error) {
                     conn.close();
+                    res.json({
+                        state: 'error',
+                        message: error.Error
+                    });
                     return;
                 }
                 const { o_codigo, o_resultado } = result.outBinds;
@@ -85,10 +93,14 @@ const ma010202Controller = {
         const { empresa, periodo } = req.body;
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
-                console.error(err);
+                res.json({
+                    state: 'error',
+                    message: error.Error
+                });
                 return;
             }
-            const query = "select CO_PERIODO,NU_MES,NU_ANHO,ES_VIGENCIA from table(pack_new_periodos.f_list_periodos_by_id(:p_empresa, :p_coperiodo))";
+            //
+            const query = "select CO_PERIODO,NU_MES,NU_ANHO,ES_VIGENCIA,to_char(FE_PRIMER_DIA,'dd/mm/yyyy') FE_PRIMER_DIA,to_char(FE_ULTIMO_DIA,'dd/mm/yyyy') FE_ULTIMO_DIA from table(pack_new_periodos.f_list_periodos_by_id(:p_empresa, :p_coperiodo))";
             const params = {
                 p_empresa: { val: empresa },
                 p_coperiodo: { val: periodo }

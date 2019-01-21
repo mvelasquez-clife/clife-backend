@@ -28,6 +28,7 @@ app.use('/api/cartera', require('./routes/cartera.routes'));
 app.use('/api/AD010102', require('./routes/AD010102.routes'));
 app.use('/api/AD010201', require('./routes/AD010201.routes'));
 app.use('/api/MA010202', require('./routes/maestros/MA010202.routes'));
+app.use('/api/MA010201', require('./routes/maestros/MA010201.routes'));
 
 //arrancar el servidor
 app.listen(app.get('port'), () => {

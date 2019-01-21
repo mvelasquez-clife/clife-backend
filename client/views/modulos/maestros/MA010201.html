@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Cartera de clientes</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <link rel="stylesheet" type="text/css" href="/modulos/maestros/MA010201/style.css">
+        <style type="text/css">
+            html,body{height:100%;margin:0;padding:0;width:100%}
+            #dhxDesktop{height:100%;width:100%;}
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <!-- scripts principales -->
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <!-- script propio de la ventana -->
+        <script type="text/javascript" src="/modulos/maestros/MA010201/script.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script>
+            var mainLayout, grillaPeriodos, toolbarGrilla, formularioPeriodo, dhxWins, modalFormulario;
+            mainLayout = new dhtmlXLayoutObject("dhxDesktop", "1C");
+                mainLayout.cells("a").hideHeader();
+            //grid de los periodos
+            grillaPeriodos = mainLayout.cells("a").attachGrid();
+                grillaPeriodos.setHeader('Codigo,Mes,Año,Estado');
+                grillaPeriodos.attachHeader('#numeric_filter,#text_filter,#select_filter,#select_filter');
+                grillaPeriodos.setInitWidthsP('10,50,20,20');
+                grillaPeriodos.setColTypes('ron,rotxt,ron,rotxt');
+                grillaPeriodos.init();
+                //cargar los datos de la grilla
+                cargarDatosGrilla();
+            //toolbar con opciones
+            toolbarGrilla = mainLayout.cells("a").attachToolbar();
+                toolbarGrilla.setIconsPath('/assets/images/icons/');
+                toolbarGrilla.addButton("nuevo", null, "Nuevo", "ic-add.png", "");
+                toolbarGrilla.addButton("editar", null, "Editar", "ic-edit.png", "");
+                toolbarGrilla.addButton("eliminar", null, "Eliminar", "ic-delete.png", "");
+                toolbarGrilla.attachEvent("onClick", toolbarGrillaOnClick);
+        </script>
+    </body>
+</html>
