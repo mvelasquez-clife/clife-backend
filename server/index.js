@@ -14,6 +14,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(cors({origin:host.address}));
 app.use(bodyParser.urlencoded({extended:false}));
+app.set('view engine', 'ejs');
 //app.use(jwt());
 //servicio de archivos estáticos
 app.use(express.static('public'));
@@ -25,10 +26,11 @@ app.use('/api/auth', require('./routes/login.routes'));
 app.use('/api/home', require('./routes/home.routes'));
 app.use('/api/cartera', require('./routes/cartera.routes'));
 //rutas para modulos
-app.use('/api/AD010102', require('./routes/AD010102.routes'));
-app.use('/api/AD010201', require('./routes/AD010201.routes'));
+app.use('/api/AD010102', require('./routes/administracion/AD010102.routes'));
+app.use('/api/AD010201', require('./routes/administracion/AD010201.routes'));
 app.use('/api/MA010202', require('./routes/maestros/MA010202.routes'));
 app.use('/api/MA010201', require('./routes/maestros/MA010201.routes'));
+app.use('/api/MA010301', require('./routes/maestros/MA010301.routes'));
 
 //arrancar el servidor
 app.listen(app.get('port'), () => {

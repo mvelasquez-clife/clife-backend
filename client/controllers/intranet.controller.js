@@ -1,4 +1,5 @@
 var path = require('path');
+//const ejs = require('ejs');
 
 const intranetController = {
     home: (req, res) => {
@@ -15,9 +16,16 @@ const intranetController = {
         const prefijo = modulo.substring(0,2);
         switch(prefijo) {
             case 'MA': subcarpeta = 'maestros';break;
+            case 'AD': subcarpeta = 'administracion';break;
             default: '';
         }
         res.sendFile(path.resolve('client/views/modulos/' + subcarpeta + '/' + modulo + '.html'));
+        /*
+        ejs.render(path.resolve('client/views/modulos/' + subcarpeta + '/' + modulo + '.html'), data);*/
+        const data = {
+            path: '/modulos/' + subcarpeta + '/' + modulo + '/'
+        };
+        res.render(path.resolve('client/views/modulos/' + subcarpeta + '/' + modulo + '.ejs'), data);
     }
 };
 
