@@ -18,6 +18,9 @@ const intranetController = {
             case 'MA': subcarpeta = 'maestros'; break;
             case 'AD': subcarpeta = 'administracion'; break;
             case 'LO': subcarpeta = 'logistica'; break;
+            case 'MA': subcarpeta = 'maestros';break;
+            case 'AD': subcarpeta = 'administracion';break;
+            case 'BA': subcarpeta = 'finanzas';break;
             default: '';
         }
         const filePath = path.resolve('client/views/modulos/' + subcarpeta + '/' + modulo + '.ejs');

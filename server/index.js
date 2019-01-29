@@ -34,6 +34,7 @@ app.use('/api/MA010202', require('./routes/maestros/MA010202.routes'));
 app.use('/api/MA010201', require('./routes/maestros/MA010201.routes'));
 app.use('/api/MA010301', require('./routes/maestros/MA010301.routes'));
 app.use('/api/LO01020201', require('./routes/logistica/LO01020201.routes'));
+app.use('/api/BA010304', require('./routes/finanzas/BA010304.routes'));
 
 //arrancar el servidor
 app.listen(app.get('port'), () => {
