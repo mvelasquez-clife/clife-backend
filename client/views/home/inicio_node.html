@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>CLife Coud</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="keywords" content="html5, template, website, responsive, bootstrap">
+        <meta name="author" content="neuethemes">
+
+        <!--<meta name="viewport" content="width=device-width, initial-scale=1"> -->
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+        <link rel="stylesheet" type="text/css" href="assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <!--<link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css"> -->
+
+
+        <!-- Main CSS with Bootstrap -->
+        <link rel="stylesheet" href="assets/custom/1.0.0/css/style.min.css">
+        <!-- Style just for doc. Remove it for your project. -->
+        <!-- <link rel="stylesheet" href="assets/vendor/bootstrap/assets/css/docs.min.css"> -->
+
+        <!-- CSS Vendor -->
+        <!--<link rel="stylesheet" href="assets/vendor/font-awesome/4.7.0/css/font-awesome.min.css">-->
+        <link rel="stylesheet" href="assets/vendor/toastr/2.1.3/toastr.min.css">
+        <link rel="stylesheet" href="assets/vendor/highlight/9.12.0/styles/default.css">
+
+        <script src="assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <!--<style type="text/css">
+            html,body{height:100%;margin:0;padding:0;width:100%}
+            #dhxViewport,#dv-treeview{height:100%;width:100%;}
+            #dv-header{background-color:#ebebeb;height:100%;padding-top:12px;width:100%;}
+            #dv-header>img{display:block;margin:0 auto;width:50%;}
+            #dv-header>.p-title{display:block;font-family:'Open Sans',Verdana;font-size:14px;margin:16px auto 2px;text-align:right;width:85%;}
+            #dv-header>.p-link{display:block;font-family:'Open Sans',Verdana;font-size:12px;margin:0px auto;text-align:right;width:85%;}
+            #dv-fondo{background-image:url('assets/images/home/bg.jpg');background-size:cover;height:100%;width:100%}
+        </style> -->
+    </head>
+    <!-- <body>
+         <div id="dhxViewport"></div>-->
+    <body class="bg-gray-100">
+
+        <div class="container-fluid no-gutters">
+
+            <div class="row">
+
+                <!-- Left Sidebar -->
+                <div id="sidebar-left" class="sidebar-left bg-dark text-light pl-0 pr-0">
+                    <div class="collapse-wrapper">
+                        <!-- Logo -->
+                        <div class="logo px-4 pt-5 pb-2">
+                            <a href="index.html">
+                                <div class="text-center text-nowrap">
+                                    <i class="fa fa-spin fa-play-circle rounded-circle" aria-hidden="true"></i>
+                                    <h6 class="logo-title text-uppercase mt-3">OpenAdmin11</h6>
+                                    <p class="text-muted">
+                                        <small>ver. 1.0.011</small>
+                                    </p>
+                                </div>
+                            </a>
+                        </div>
+                        <!-- /Logo -->
+
+                        <!-- Logo mobile -->
+                        <div class="logo-mobile pt-4 pb-4 w-100">
+                            <a href="index.html">
+                                <div class="text-center text-nowrap">
+                                    <i class="fa fa-spin fa-play-circle rounded-circle" aria-hidden="true"></i>
+                                </div>
+                            </a>
+                        </div>
+                        <!-- /Logo mobile -->
+
+                        <nav class="sidebar-nav">
+                            <!-- Sidebar Menu -->
+                            <!--<div class="mb-1 text-uppercase d-none d-lg-block text-muted">
+                                <small>General</small>
+                            </div> -->
+                            <ul id="sidebarNav" class="nav nav-dark flex-column">
+                                <li class="nav-item">
+                                    <a href="#cNavItem1" class="nav-link collapsed" data-toggle="collapse" aria-expanded="false" aria-controls="cNavItem1">
+                                        <i class="fa fa-tachometer" aria-hidden="true"></i>
+                                        <span class="d-none d-lg-inline">Dashboards</span>
+                                    </a>
+                                    <ul id="cNavItem1" class="nav flex-column collapse bg-dark" data-parent="#sidebarNav">
+                                        <li class="nav-item">
+                                            <a class="nav-link nav-level-1" href="index.html">Dashboard 1</a>
+                                        </li>
+
+                                    </ul>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link" href="charts.html">
+                                        <i class="fa fa-pie-chart" aria-hidden="true"></i>
+                                        <span class="d-none d-lg-inline">Charts</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="widgets.html">
+                                        <i class="fa fa-list" aria-hidden="true"></i>
+                                        <span class="d-none d-lg-inline">Widgets</span>
+                                        <span class="badge badge-success text-uppercase float-right d-none d-lg-block">New</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="tables.html">
+                                        <i class="fa fa-table" aria-hidden="true"></i>
+                                        <span class="d-none d-lg-inline">Tables</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="#cNavItem2" class="nav-link collapsed" data-toggle="collapse" aria-expanded="false" aria-controls="cNavItem2">
+                                        <i class="fa fa-sitemap" aria-hidden="true"></i>
+                                        <span class="d-none d-lg-inline">Menu Levels</span>
+                                    </a>
+                                    <ul id="cNavItem2" class="nav flex-column collapse bg-dark" data-parent="#sidebarNav">
+                                        <li class="nav-item">
+                                            <a class="nav-link nav-level-1" href="#">Level 1-1</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="#cNavItem3" class="nav-link nav-level-1 collapsed" data-toggle="collapse" aria-expanded="false" aria-controls="cNavItem3">
+                                                Level 1-2
+                                            </a>
+                                            <ul id="cNavItem3" class="nav flex-column collapse" data-parent="#cNavItem2">
+                                                <li class="nav-item">
+                                                    <a class="nav-link nav-level-2" href="#">Level 2-1</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a href="#cNavItem4" class="nav-link nav-level-2 collapsed" data-toggle="collapse" aria-expanded="false" aria-controls="cNavItem4">
+                                                        Level 2-2
+                                                    </a>
+                                                    <ul id="cNavItem4" class="nav flex-column collapse" data-parent="#cNavItem3">
+                                                        <li class="nav-item">
+                                                            <a class="nav-link nav-level-3" href="#">Level 3-1</a>
+                                                        </li>
+                                                        <li class="nav-item">
+                                                            <a class="nav-link nav-level-3" href="#">Level 3-2</a>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="grid.html">
+                                        <i class="fa fa-th" aria-hidden="true"></i>
+                                        <span class="d-none d-lg-inline">Grid</span>
+                                        <span class="badge badge-danger text-uppercase float-right d-none d-lg-block">Hot</span>
+                                    </a>
+                                </li>
+                            </ul>
+
+
+                            <!-- /Sidebar Menu -->
+                        </nav>
+
+
+
+
+                    </div>
+                    <!-- /Sidebar Widget -->
+                </div>
+                <!-- /Left Sidebar -->
+
+                <!-- Main Part -->
+                <div class="main-wrapper">
+
+                    <!-- Top Toolbar -->
+                    <div class="navbar navbar-light bg-white px-3 px-sm-5 py-3">
+                        <div class="d-inline-block mr-3">
+                            <a href="#" data-target="#sidebar-left" data-toggle="collapse-width" class="btn btn-dark btn-icon rounded-circle shadow-00">
+                                <i class="fa fa-navicon"></i>
+                            </a>
+                        </div>
+
+                        <form class="search-form form-inline my-2 my-lg-0">
+                            <div class="input-group input-group-built-in">
+                                <input type="text" class="form-control rounded-1" placeholder="Search for something..." aria-label="Search for something...">
+                                <span class="input-group-btn">
+                                    <a href="#" class="btn btn-icon">
+                                        <i class="fa fa-search"></i>
+                                    </a>
+                                </span>
+                            </div>
+                        </form>
+
+                        <ul class="nav ml-auto">
+
+                            <li class="m-sm-1 m-md-2 position-relative">
+                                <a data-toggle="dropdown" class="btn btn-light btn-icon rounded-circle shadow-00" href="#" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fa fa-bell" aria-hidden="true"></i>
+                                    <span class="badge badge-hint badge-primary">8</span>
+                                </a>
+
+                                <div class="dropdown-menu dropdown-menu-right">
+
+                                    <ul class="list-unstyled">
+                                        <li class="dropdown-item media border-bottom-1 border-light p-4">
+                                            <span class="btn btn-success btn-icon rounded-circle mr-3">
+                                                <i class="fa fa-download" aria-hidden="true"></i>
+                                            </span>
+                                            <div class="media-body">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h6 class="mb-1 mr-4">Update Successfully</h6>
+                                                    <small class="text-muted">3 days ago</small>
+                                                </div>
+                                                Lorem ipsum dolor sit amet ...
+                                                <small class="text-muted d-block">11.06.2014 - 2:30am - 2:46am</small>
+                                            </div>
+                                        </li>
+                                        <li class="dropdown-item media border-bottom-1 border-light p-4">
+                                            <span class="btn btn-danger btn-icon rounded-circle mr-3">
+                                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                            </span>
+                                            <div class="media-body">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h6 class="mb-1 mr-4">Connection was interrupted!</h6>
+                                                    <small class="text-muted">3 days ago</small>
+                                                </div>
+                                                Lorem ipsum dolor sit amet ...
+                                                <small class="text-muted d-block">11.06.2014 - 2:30am - 2:46am</small>
+                                            </div>
+                                        </li>
+                                    </ul>
+
+                                    <div class="media d-flex pl-4 pr-4 pt-3 pb-3">
+                                        <a href="#!">See all Alerts</a>
+                                    </div>
+
+                                </div>
+                            </li>
+
+                            <li class="m-sm-1 m-md-2 position-relative">
+                                <a data-toggle="dropdown" class="btn btn-light btn-icon rounded-circle shadow-00" href="#" aria-expanded="false">
+                                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                                    <span class="badge badge-hint badge-success">16</span>
+                                </a>
+
+                                <div class="dropdown-menu dropdown-menu-right">
+
+                                    <ul class="list-unstyled">
+                                        <li class="dropdown-item media border-bottom-1 border-light p-4">
+                                            <img src="assets/custom/1.0.0/images/02.jpg" height="44px" class="rounded-circle d-flex mr-3" alt="Martin Schultze">
+                                            <div class="media-body">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h6 class="mb-1 mr-4">Please make it</h6>
+                                                    <small class="text-secondary">3 days ago</small>
+                                                </div>
+                                                Lorem ipsum dolor sit amet ...
+                                                <small class="text-muted d-block">John Mitchell at 2:30 am 11.06.2014</small>
+                                            </div>
+                                        </li>
+                                        <li class="dropdown-item media border-bottom-1 border-light p-4">
+                                            <img src="assets/custom/1.0.0/images/03.jpg" height="44px" class="rounded-circle d-flex mr-3" alt="Martin Schultze">
+                                            <div class="media-body">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h6 class="mb-1 mr-4">Good job!</h6>
+                                                    <small class="text-success">1 days ago</small>
+                                                </div>
+                                                Lorem ipsum dolor sit amet ...
+                                                <small class="text-muted d-block">Michael Holmes at 2:30 am 11.06.2014</small>
+                                            </div>
+                                        </li>
+                                        <li class="dropdown-item media border-bottom-1 border-light p-4">
+                                            <img src="assets/custom/1.0.0/images/04.jpg" height="44px" class="rounded-circle d-flex mr-3" alt="Martin Schultze">
+                                            <div class="media-body">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h6 class="mb-1 mr-4">Design issue</h6>
+                                                    <small class="text-warning">23 hrs ago</small>
+                                                </div>
+                                                Lorem ipsum dolor sit amet ...
+                                                <small class="text-muted d-block">Henry Jane at 2:30 am 11.06.2014</small>
+                                            </div>
+                                        </li>
+                                    </ul>
+
+                                    <div class="media d-flex pl-4 pr-4 pt-3 pb-3">
+                                        <a href="#!">Read all Messages</a>
+                                    </div>
+
+                                </div>
+
+                            </li>
+
+                            <li class="m-sm-1 m-md-2">
+                                <a data-toggle="slide-right" data-target="#sidebar-right" class="btn btn-light btn-icon rounded-circle shadow-00" href="#">
+                                    <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+                                </a>
+                            </li>
+
+                            <li class="m-sm-1 m-md-2 position-relative">
+                                <a data-toggle="dropdown" href="#" aria-expanded="false">
+                                    <div class="d-inline-block mr-2">
+                                        <img src="assets/custom/1.0.0/images/03.jpg" class="rounded-circle" height="32px">
+                                    </div>
+                                    <div class="d-none d-lg-inline-block">
+                                        <span class="d-block">John Brown</span>
+                                    </div>
+                                </a>
+
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fa fa-user-circle-o" aria-hidden="true"></i> Profile
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fa fa-address-card-o" aria-hidden="true"></i> Contacts
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fa fa-envelope-o" aria-hidden="true"></i> Mailbox
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="login.html">
+                                        <i class="fa fa-sign-out" aria-hidden="true"></i> Logout
+                                    </a>
+                                </div>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+                    <!-- /Top Toolbar -->
+
+                    <!-- Main Content -->
+                    <main>
+
+                        <!-- Breadcrumbs -->
+                        <!--<div class="row px-5 pt-5 pb-0 no-gutters">-->
+                        <!--<div class="col-lg-12">-->
+                        <!--<h2>Dashboard</h2>-->
+                        <!--<a href="#!">Home</a> / <strong>Dashboard-1</strong>-->
+                        <!--</div>-->
+                        <!--</div>-->
+                        <!-- /Breadcrumbs -->
+
+                        <div class="content-wrapper container-fluid px-5 mt-5 mb-4 trans-03-in-out">
+
+
+
+                        </div>
+
+
+                    </main>
+                    <!-- /Main Content -->
+
+                    <!-- Footer -->
+                    <footer class="bg-white w-100 pl-5 pr-5 pt-4 pb-4 mt-auto">
+                        <div>Corporacion Life © 2019 - Perú</div>
+                    </footer>
+                    <!-- /Footer -->
+
+                </div>
+                <!-- /Main Part -->
+
+
+
+            </div>
+        </div>
+
+        <!-- JS Common -->
+        <script src="assets/vendor/popper/1.12.9/popper.min.js"></script>
+        <script src="assets/vendor/toastr/2.1.3/toastr.min.js"></script>
+        <script src="assets/vendor/highlight/9.12.0/highlight.pack.js"></script>
+
+        <!-- JS Page -->
+        <!-- <script src="assets/vendor/chartjs/2.7.0/chart.min.js"></script> -->
+
+        <!-- JS Custom -->
+        <script src="assets/custom/1.0.0/js/bootstrap.min.js"></script>
+        <script src="assets/custom/1.0.0/js/script.js"></script>
+        <script src="assets/custom/1.0.0/js/source-code.js"></script>
+    </body>
+
+    <script type="text/javascript" >
+        const Node = (type, ...children) => ({
+                toElem: () => {
+                    const elem = document.createElement(type)
+                    children.forEach(child => elem.appendChild(child.toElem()))
+                    return elem
+                }
+            })
+
+        const Link = (href, text) => ({
+                toElem: () => {
+                    const elem = document.createElement('a')
+                    elem.setAttribute('href', href)
+                    elem.textContent = text
+                    return elem
+                }
+            })
+
+        const makeTree = ({val, l, r}) => {
+            if (val === undefined)
+                return []
+            else
+                return [Node('ul', Node('li', Link('#', val)), ...makeTree(l), ...makeTree(r))]
+        }
+
+        const makeMenu = data =>
+            makeTree(data)[0].toElem()
+
+        const data = {"val": 2, "text" : "nuevo text", "l": {"val": 1, "l": {}, "r": {}}, "r": {"val": 4, "l": {}, "r": {"val": 5, "l": {}, "r": {}}}}
+var x = document.querySelector(".main-wrapper");
+        x.appendChild(makeMenu(data))
+    </script>
+    <!-- <script type="text/javascript" src="assets/js/conf.js"></script> -->
+    <!-- <script type="text/javascript" src="assets/vendor/dhtmlx/codebase/dhtmlx.js"></script> -->
+    <!--<script type="text/javascript">
+            var dhxWins, mainLayout, secLayout, mainTree, mainWindow;
+            var winLayout, winGrid;
+            function logout() {
+                    dhtmlx.confirm({
+                            ok: "Si, cerrar mi sesión",
+                            cancel: "No",
+                            text: "¿Desea cerrar la sesión? Deberá ingresar sus credenciales la próxima vez que desee acceder al sistema.",
+                            callback: (result) => {
+                                    if(result) {
+                                            localStorage.clear();
+                                            location.href = "/";
+                                    }
+                            }
+                    });
+            }
+            function mainTreeOnDblClick(id) {
+                    if(!mainTree.hasChildren(id)) {
+                            mainLayout.cells("a").collapse();
+                            var winId = "win-" + id;
+                            if(!dhxWins.isWindow(winId)) {
+                                    dhxWins.createWindow(winId, 0, 0, 1080, 640);
+                                    dhxWins.window(winId).setText(mainTree.getItemText(id));
+                                    dhxWins.window(winId).center();
+                                    dhxWins.window(winId).attachURL("modulo/" + id);
+                            }
+                    }
+                    return true;
+            }
+            //valida la sesion
+            if(usrtoken == '') {
+                    location.href = '/';
+            }
+            else {
+                    //
+                    mainLayout = new dhtmlXLayoutObject("dhxViewport", "2U");
+                            mainLayout.cells("a").setWidth(240);
+                            mainLayout.cells("a").setText("Seleccione una opción");
+                            mainLayout.cells("a").fixSize(true, true);
+                            mainLayout.cells("a").attachHTMLString("<div id=\"dv-treeview\"></div>");
+                            mainLayout.cells("b").hideHeader();
+                            mainLayout.cells("b").attachHTMLString("<div id=\"dv-fondo\"></div>");
+                    secLayout = new dhtmlXLayoutObject("dv-treeview", "2E");
+                            secLayout.cells("a").hideHeader();
+                            secLayout.cells("a").setHeight(160);
+                            secLayout.cells("a").attachHTMLString('<div id="dv-header"><img src="assets/images/icons/cloud-life-logo.svg"><p class="p-title">Bienvenido, <b>' + usrJson.alias + '</b></p><p class="p-link"><a href="javascript:logout()">Salir del sistema</a></p></div>');
+                            secLayout.cells("a").fixSize(true, true);
+                            secLayout.cells("b").hideHeader();
+                    mainTree = secLayout.cells("b").attachTree();
+                            mainTree.setXMLAutoLoading(BASE_URL + "home/menu/MAIN/Administrator/11");
+                            mainTree.setImagePath("assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
+                            mainTree.setXMLAutoLoading(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa);
+                            mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
+                            mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
+                    dhxWins = new dhtmlXWindows();
+                            dhxWins.attachViewportTo("dv-fondo");
+                    $("#dv-header").parent().css("border-color","#ebebeb");
+            }
+    </script> -->
+    <!-- </body> -->
+</html>

@@ -1,85 +1,233 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>CLife Coud</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
-	<link rel="stylesheet" type="text/css" href="assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
-	<link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
-	<style type="text/css">
-		html,body{height:100%;margin:0;padding:0;width:100%}
-		#dhxViewport,#dv-treeview{height:100%;width:100%;}
-		#dv-header{background-color:#ebebeb;height:100%;padding-top:12px;width:100%;}
-		#dv-header>img{display:block;margin:0 auto;width:50%;}
-		#dv-header>.p-title{display:block;font-family:'Open Sans',Verdana;font-size:14px;margin:16px auto 2px;text-align:right;width:85%;}
-		#dv-header>.p-link{display:block;font-family:'Open Sans',Verdana;font-size:12px;margin:0px auto;text-align:right;width:85%;}
-		#dv-fondo{background-image:url('assets/images/home/bg.jpg');background-size:cover;height:100%;width:100%}
-	</style>
-</head>
-<body>
-	<div id="dhxViewport"></div>
-	<!-- -->
-	<script type="text/javascript" src="assets/vendor/jquery/jquery-3.2.1.min.js"></script>
-	<script type="text/javascript" src="assets/js/conf.js"></script>
-	<script type="text/javascript" src="assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
-	<script type="text/javascript">
-		var dhxWins, mainLayout, secLayout, mainTree, mainWindow;
-		var winLayout, winGrid;
-		function logout() {
-			dhtmlx.confirm({
-				ok: "Si, cerrar mi sesión",
-				cancel: "No",
-				text: "¿Desea cerrar la sesión? Deberá ingresar sus credenciales la próxima vez que desee acceder al sistema.",
-				callback: (result) => {
-					if(result) {
-						localStorage.clear();
-						location.href = "/";
-					}
-				}
-			});
-		}
-		function mainTreeOnDblClick(id) {
-			if(!mainTree.hasChildren(id)) {
-				mainLayout.cells("a").collapse();
-				var winId = "win-" + id;
-				if(!dhxWins.isWindow(winId)) {
-					dhxWins.createWindow(winId, 0, 0, 1080, 640);
-					dhxWins.window(winId).setText(mainTree.getItemText(id));
-					dhxWins.window(winId).center();
-					dhxWins.window(winId).attachURL("modulo/" + id);
-				}
-			}
-			return true;
-		}
-		//valida la sesion
-		if(usrtoken == '') {
-			location.href = '/';
-		}
-		else {
-			//
-			mainLayout = new dhtmlXLayoutObject("dhxViewport", "2U");
-				mainLayout.cells("a").setWidth(240);
-				mainLayout.cells("a").setText("Seleccione una opción");
-				mainLayout.cells("a").fixSize(true, true);
-				mainLayout.cells("a").attachHTMLString("<div id=\"dv-treeview\"></div>");
-				mainLayout.cells("b").hideHeader();
-				mainLayout.cells("b").attachHTMLString("<div id=\"dv-fondo\"></div>");
-			secLayout = new dhtmlXLayoutObject("dv-treeview", "2E");
-				secLayout.cells("a").hideHeader();
-				secLayout.cells("a").setHeight(160);
-				secLayout.cells("a").attachHTMLString('<div id="dv-header"><img src="assets/images/icons/cloud-life-logo.svg"><p class="p-title">Bienvenido, <b>' + usrJson.alias + '</b></p><p class="p-link"><a href="javascript:logout()">Salir del sistema</a></p></div>');
-				secLayout.cells("a").fixSize(true, true);
-				secLayout.cells("b").hideHeader();
-			mainTree = secLayout.cells("b").attachTree();
-				mainTree.setXMLAutoLoading(BASE_URL + "home/menu/MAIN/Administrator/11");
-				mainTree.setImagePath("assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
-				mainTree.setXMLAutoLoading(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa);
-				mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
-				mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
-			dhxWins = new dhtmlXWindows();
-				dhxWins.attachViewportTo("dv-fondo");
-			$("#dv-header").parent().css("border-color","#ebebeb");
-		}
-	</script>
-</body>
+    <head>
+        <title>CLife Coud</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+        <link rel="stylesheet" type="text/css" href="assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/skins/custom/dhtmlx.css"> 
+        <link rel="stylesheet" type="text/css" href="assets/css/main.css">
+        <style type="text/css">
+            html,body{ display: flex;height:100%;margin:0;padding:0;width:100%}
+            #dv-fondo{background-image:url('assets/images/home/bg.jpg');background-size:cover;height:100%;width:100%}
+
+        </style>
+    </head>
+    <body>
+        <div id="dhxViewport"></div>
+
+        <script type="text/javascript" src="assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="assets/js/conf.js"></script>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        <script type="text/javascript" src="assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <script type="text/javascript" src="assets/vendor/dhtmlx/sources/dhtmlxToolbar/codebase/dhtmlxtoolbar.js"></script>  
+        <!--script type="text/javascript" src="assets/vendor/dhtmlx/sources/dhtmlxPopup/codebase/dhtmlxpopup.js"></script> -->
+        <script type="text/javascript">
+            var dhxWins, mainLayout, secLayout, mainTree, mainWindow, myToolbar, myPop, myPop2, myList,rpta_search;
+            var winLayout, winGrid;
+
+
+            var form_logo = [
+                {type: "settings"},
+                //{type: "label", name: "user_photo",label : '<img id="imagephoto" >', imageWidth: 120, imageHeight: 120, inputWidth: 120, inputHeight: 120},
+                {type: "template", offsetLeft: "30", name: "user_photo", format: photo_usu},
+                {type: "template", name: "user_name", width: 205, value: "-", format: name_usu}
+            ];
+            function logout() {
+                dhtmlx.confirm({
+                    ok: "Si, cerrar mi sesión",
+                    cancel: "No",
+                    text: "¿Desea cerrar la sesión? Deberá ingresar sus credenciales la próxima vez que desee acceder al sistema.",
+                    callback: (result) => {
+                        if (result) {
+                            localStorage.clear();
+                            location.href = "/";
+                        }
+                    }
+                });
+            }
+            function photo_usu(name, value) {
+                if (name == "user_photo")
+                    return "<div class = 'photo_usu'><img src='/assets/images/icons/iconsjhon/avatar_defecto.png' ></div>";
+            }
+            function name_usu(name, value) {
+                if (name == "user_name")
+                    return "<div class='user_name'>" + value + "</div>";
+            }
+
+            inpu_onKeyup = (name, value) => {
+                var obj = document.getElementById(name);
+                if (value.length > 4) {
+                    if (myPop2) {
+                        busca_modulos(value);
+                    }
+                    var x = window.dhx4.absLeft(obj); // returns left position related to window
+                    var y = window.dhx4.absTop(obj); // returns top position related to window
+                    var w = obj.offsetWidth;
+                    var h = obj.offsetHeight;
+                    myPop2.show(x, y, w, h);
+                } else {
+                    if (myPop2) {
+                        myPop2.clear();
+                        myPop2.attachList("name", [{id: 1, name: "Ingrese minimo 5 caracteres..."}]);
+                    }
+                }
+
+
+            };
+            toolbaronfocus = (obj) => {
+                if (myPop2) {
+                    myPop2.clear();
+                    myPop2.attachList("name", [{id: 1, name: "Ingrese minimo 5 caracteres..."}]);
+                    var x = window.dhx4.absLeft(obj); // returns left position related to window
+                    var y = window.dhx4.absTop(obj); // returns top position related to window
+                    var w = obj.offsetWidth;
+                    var h = obj.offsetHeight;
+                    myPop2.show(x, y, w, h);
+                }
+            };
+            toolbar_onclic = (name) => {
+                switch (name) {
+                    case 'b_hidemenu':
+                        var state = mainLayout.cells("b").isCollapsed();
+                        state === true ? mainLayout.cells("b").expand() : mainLayout.cells("b").collapse();
+                        break;
+                    case 'b_mail' :
+                        window.open('https://mail.corporacionlife.com.pe', '_blank');
+                        break;
+                    case 'search-bar1' :
+
+
+                        break;
+                    default:
+                        null;
+                        break;
+                }
+
+            }
+            function mainTreeOnDblClick(id) {
+                if (!mainTree.hasChildren(id)) {
+                    mainLayout.cells("b").collapse();
+                    var winId = "win-" + id;
+                    if (!dhxWins.isWindow(winId)) {
+                        dhxWins.createWindow(winId, 0, 0, 1080, 550);
+                        dhxWins.window(winId).setText(mainTree.getItemText(id));
+                        dhxWins.window(winId).center();
+                        dhxWins.window(winId).attachURL("modulo/" + id);
+                    }
+                }
+                return true;
+            }
+            function addSpacer() {
+                myToolbar.addSpacer(sel.options[sel.selectedIndex].value);
+            }
+            pop_inclic2 = (id) => {
+                mainLayout.cells("b").collapse();
+                var winId = "win-" + id;
+                if (!dhxWins.isWindow(winId)) {
+                    dhxWins.createWindow(winId, 0, 0, 1080, 550);
+                    dhxWins.window(winId).setText(mainTree.getItemText(id));
+                    dhxWins.window(winId).center();
+                    dhxWins.window(winId).attachURL("modulo/" + id);
+                }
+
+            };
+
+            pop_inclic = (id) => {
+
+            };
+
+            carga_moduloonclick = (id) => {
+
+            }
+            function busca_modulos(value) {
+                var p = {alias: usrJson.alias, empresa: usrJson.empresa, txtsearch: value};
+                $.post(BASE_URL + "home/menusearch", p, function (response) {
+                     rpta_search = response.state;
+                              myPop2.clear();
+                        myPop2.attachList("padre,flecha,name", response.data.l_items);
+              
+                }, "json");
+            }
+
+            //valida la sesion
+            if (usrtoken == '') {
+                location.href = '/';
+            } else {
+                //
+                mainLayout = new dhtmlXLayoutObject("dhxViewport", "3T");
+                mainLayout.cells("a").hideHeader();
+                mainLayout.cells("b").setCollapsedText("<span style='color:black; font-size : 1.5em;'>Menu Principal</span>");
+                mainLayout.cells("b").hideArrow();
+                mainLayout.setSeparatorSize(0, 0);
+                mainLayout.setSeparatorSize(1, 0);
+
+                myToolbar = mainLayout.cells("a").attachToolbar({iconset: "awesome", });
+
+                myToolbar.setIconSize(32);
+                myToolbar.addText('add_pasos', null, '<div class="milky">CORPORACION LIFE</div>');
+                myToolbar.addButton('b_hidemenu', null, '', null, null);
+                myToolbar.addInputsearch('search-bar1', null, null, null);
+                myToolbar.addSeparator(null, null);
+                myToolbar.addButton('b_user_admi', null, '', 'user64.png', null);
+                myToolbar.addButton('b_mail', null, '', 'user64.png', null);
+                myToolbar.setItemImage('b_hidemenu', "fas fa-bars");
+                myToolbar.setItemImage('b_user_admi', "fas fa-user-cog");
+                myToolbar.setItemImage('b_mail', "fas fa-envelope");
+                myToolbar.setWidth('b_user_admi', '200');
+
+                myToolbar.addSpacer("b_hidemenu");
+                myToolbar.setItemToolTip('b_hidemenu', 'Oculta o Muestra el Menú Principal');
+                myToolbar.attachEvent("onClick", toolbar_onclic);
+                myToolbar.attachEvent("onkeyup", inpu_onKeyup);
+                myToolbar.setSkin('dhx_custom');
+
+                myPop = new dhtmlXPopup({toolbar: myToolbar, id: "b_user_admi"});
+
+                myPop.attachList("name", [
+                    {id: 1, name: "<div id='list_usu' >Cuenta</div>"},
+                    myPop.separator,
+                    {id: 3, name: "<div id='list_usu' >Mensajes</div>"},
+                    {id: 4, name: "<div id='list_usu' >Notificaciones</div>"},
+                    myPop.separator, // use this struct for separator
+                    {id: 2, name: "<div id='list_usu_close' >Cerrar Sesión</div>"}
+                ]);
+                myPop.attachEvent("onClick", pop_inclic);
+
+                myPop2 = new dhtmlXPopup({toolbar: myToolbar, id: "search-bar1"});
+                myPop2.attachEvent("onClick", pop_inclic2);
+                mainLayout.cells("b").hideHeader();
+                mainLayout.cells("a").setHeight(45);
+                mainLayout.cells("b").setWidth(240);
+                mainLayout.cells("b").setText("Seleccione una opción");
+                mainLayout.cells("b").fixSize(true, true);
+                mainLayout.cells("b").attachHTMLString("<div id=\"dv-treeview\"></div>");
+                mainLayout.cells("c").hideHeader();
+                mainLayout.cells("c").attachHTMLString("<div id=\"dv-fondo\"></div>");
+                secLayout = new dhtmlXLayoutObject("dv-treeview", "2E");
+                secLayout.setSeparatorSize(0, 0);
+                secLayout.setSeparatorSize(1, 0);
+                secLayout.cells("a").hideHeader();
+                secLayout.cells("a").setHeight(160);
+                var Formlogo = secLayout.cells("a").attachForm(form_logo);
+                //   secLayout.cells("a").attachHTMLString('<div id="dv-header"><img src="assets/images/icons/cloud-life-logo.svg"><p class="p-title">Bienvenido, <b>' + usrJson.alias + '</b></p><p class="p-link"><a href="javascript:logout()">Salir del sistema</a></p></div>');
+                Formlogo.setItemValue('user_photo', "<div class='photo_usu'><img src='/assets/images/icons/iconsjhon/man_close_64.png' ></div>");
+                Formlogo.setItemValue('user_name', usrJson.alias);
+                secLayout.cells("a").fixSize(true, true);
+                secLayout.cells("b").hideHeader();
+                mainTree = secLayout.cells("b").attachTree();
+                mainTree.setXMLAutoLoading(BASE_URL + "home/menu/MAIN/Administrator/11");
+                mainTree.setImagePath("assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
+                mainTree.setXMLAutoLoading(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa);
+                mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
+                mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
+                dhxWins = new dhtmlXWindows();
+                dhxWins.attachViewportTo("dv-fondo");
+                $("#dv-header").parent().css("border-color", "#ebebeb");
+            }
+        </script>
+
+
+    </body>
 </html>
