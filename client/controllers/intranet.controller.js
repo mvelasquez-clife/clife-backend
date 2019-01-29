@@ -17,6 +17,7 @@ const intranetController = {
         switch(prefijo) {
             case 'MA': subcarpeta = 'maestros';break;
             case 'AD': subcarpeta = 'administracion';break;
+            case 'BA': subcarpeta = 'finanzas';break;
             default: '';
         }
         res.sendFile(path.resolve('client/views/modulos/' + subcarpeta + '/' + modulo + '.html'));
