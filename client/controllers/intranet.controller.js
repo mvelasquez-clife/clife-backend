@@ -1,5 +1,5 @@
 var path = require('path');
-//const ejs = require('ejs');
+var fs = require('fs');
 
 const intranetController = {
     home: (req, res) => {
@@ -15,17 +15,23 @@ const intranetController = {
         var subcarpeta = '';
         const prefijo = modulo.substring(0,2);
         switch(prefijo) {
-            case 'MA': subcarpeta = 'maestros';break;
-            case 'AD': subcarpeta = 'administracion';break;
+            case 'MA': subcarpeta = 'maestros'; break;
+            case 'AD': subcarpeta = 'administracion'; break;
+            case 'LO': subcarpeta = 'logistica'; break;
             default: '';
         }
-        res.sendFile(path.resolve('client/views/modulos/' + subcarpeta + '/' + modulo + '.html'));
-        /*
-        ejs.render(path.resolve('client/views/modulos/' + subcarpeta + '/' + modulo + '.html'), data);*/
-        const data = {
-            path: '/modulos/' + subcarpeta + '/' + modulo + '/'
-        };
-        res.render(path.resolve('client/views/modulos/' + subcarpeta + '/' + modulo + '.ejs'), data);
+        const filePath = path.resolve('client/views/modulos/' + subcarpeta + '/' + modulo + '.ejs');
+        fs.exists(filePath, (exists) => {
+            if(exists) {
+                const data = {
+                    path: '/modulos/' + subcarpeta + '/' + modulo + '/'
+                };
+                res.render(filePath, data);
+            }
+            else {
+                res.render(path.resolve('client/views/home/no-hallado.ejs'),{modulo:modulo});
+            }
+        });
     }
 };
 

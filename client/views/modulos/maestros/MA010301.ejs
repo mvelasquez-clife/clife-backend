@@ -20,6 +20,8 @@
         <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
         <!-- script propio de la ventana -->
         <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- ancestro de la ventana de seguridad -->
+        <script type="text/javascript"  src="/assets/ancestros/seguridad.js"></script>
         <!-- scripts de la carga de la vista -->
         <script>
             var mainLayout, tabsPrincipal, toolbar;
@@ -30,6 +32,8 @@
             toolbar = mainLayout.cells('a').attachToolbar();
                 toolbar.setIconsPath('/assets/images/icons/');
                 toolbar.addButton("permisos", null, "Permisos", "ic-add.png", "");
+                toolbar.addButton("nah", null, "Alerta", "ic-edit.png", "");
+                toolbar.disableItem('nah');
                 toolbar.attachEvent('onClick', toolbarGrillaOnClick);
             //creamos los tabs
             tabsPrincipal = mainLayout.cells("a").attachTabbar();

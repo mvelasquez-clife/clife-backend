@@ -1,0 +1,45 @@
+<html>
+    <head>
+        <title>Módulo no encontrado</title>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400" rel="stylesheet">
+        <style>
+            *{
+                color: #ffffff;
+                box-sizing: border-box;
+                font-family:'Open Sans';
+            }
+            html,body {
+                background-color: #e53935;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+            #alert {
+                left: 50%;
+                position: relative;
+                top: 60%;
+                transform: perspective(1px) translateY(-50%) translateX(-50%);
+                width: 48%;
+            }
+            h1 {
+                font-size: 72px;
+                font-weight: 300;
+            }
+            p {
+                font-weight: 300;
+                font-size: 16px;
+            }
+            hr {
+                border-color: rgba(255,255,255,.5);
+            }
+        </style>
+    </head>
+    <body>
+        <div id="alert">
+            <h1>Oops :(</h1>
+            <hr>
+            <p>El módulo seleccionado <b style="font-weight:bold;"><%=modulo%></b> no existe. Si cree que esto es un error, comuníquese con el área de sistemas.</p>
+        </div>
+    </body>
+</html>

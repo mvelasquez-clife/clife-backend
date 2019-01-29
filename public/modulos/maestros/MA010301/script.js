@@ -64,27 +64,21 @@ CargarProvinciasSuccess = () => {
 }
 
 //toolbar
-toolbarGrillaOnClick = (id) => {
+toolbarGrillaOnClick = async (id) => {
     switch(id) {
         case 'permisos':
-            /*var clave = window.prompt('Ingrese la contraseña');
-            if(clave == '12345678') {
-                alert('La clave es correcta. Desbloqueando todas las opciones.');
-                tabsPrincipal.tabs('departamentos').enable();
-                tabsPrincipal.tabs('provincias').enable();
-                tabsPrincipal.tabs('distritos').enable();
+            const windowId = 151;
+            var output = await IniciarFormularioSeguridad(windowId, mainLayout);
+            const jOutput = JSON.parse(output);
+            if(jOutput && jOutput.result == 'S') {
+                toolbar.enableItem('nah');
             }
             else {
-                alert('Clave incorrecta');
-            }*/
-            dhtmlx.alert({
-				title: "Custom title",
-				ok: "Custom text",
-				text: 'Ingresa la clave: <input id="clave" type="password" />',
-				callback:function(){
-                    //
-				}
-			});
+                toolbar.disableItem('nah');
+            }
+            break;
+        case 'nah':
+            alert('Alerta de prueba');
             break;
         default: break;
     }
