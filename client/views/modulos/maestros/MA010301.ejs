@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Cartera de clientes</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+        <style type="text/css">
+            html,body{height:100%;margin:0;padding:0;width:100%}
+            #dhxDesktop{height:100%;width:100%;}
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <!-- scripts principales -->
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <!-- script propio de la ventana -->
+        <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script>
+            var mainLayout, tabsPrincipal, toolbar;
+            var gridPaises, gridDepartamentos, gridProvincias, gridDistritos;
+            mainLayout = new dhtmlXLayoutObject('dhxDesktop', '1C');
+                mainLayout.cells('a').hideHeader();
+            //toolbar
+            toolbar = mainLayout.cells('a').attachToolbar();
+                toolbar.setIconsPath('/assets/images/icons/');
+                toolbar.addButton("permisos", null, "Permisos", "ic-add.png", "");
+                toolbar.attachEvent('onClick', toolbarGrillaOnClick);
+            //creamos los tabs
+            tabsPrincipal = mainLayout.cells("a").attachTabbar();
+                tabsPrincipal.addTab('pais','Países',null,null,true);
+                tabsPrincipal.addTab('departamentos','Departamentos');
+                tabsPrincipal.addTab('provincias','Provincias');
+                tabsPrincipal.addTab('distritos','Distritos');
+            //bloquear los ultimos tabs
+            //tabsPrincipal.attachEvent('onSelect',tabsPrincipalSelected);
+            tabsPrincipal.tabs('departamentos').disable();
+            tabsPrincipal.tabs('provincias').disable();
+            tabsPrincipal.tabs('distritos').disable();
+            //crear las grids
+            gridPaises = tabsPrincipal.tabs('pais').attachGrid();
+                gridPaises.setHeader('Codigo,Nombre,Co.SUNAT,Convenios');
+                gridPaises.attachHeader('#numeric_filter,#text_filter,#text_filter,#text_filter');
+                gridPaises.setInitWidthsP('20,50,15,15');
+                gridPaises.setColTypes('ron,rotxt,rotxt,rotxt');
+                gridPaises.init();
+                CargarListaPaises();
+            gridDepartamentos = tabsPrincipal.tabs('departamentos').attachGrid();
+                gridDepartamentos.setHeader('Codigo,Nombre,País,copais');
+                gridDepartamentos.attachHeader('#numeric_filter,#text_filter,#select_filter,#rspan');
+                gridDepartamentos.setInitWidthsP('20,50,30,0');
+                gridDepartamentos.setColTypes('ron,rotxt,rotxt,ron');
+                gridDepartamentos.setColumnHidden(3,true);
+                gridDepartamentos.init();
+            gridProvincias = tabsPrincipal.tabs('provincias').attachGrid();
+                gridProvincias.setHeader('Codigo,Nombre,Departamento,País,codepartamento,copais');
+                gridProvincias.attachHeader('#numeric_filter,#text_filter,#select_filter,#select_filter,#rspan,#rspan');
+                gridProvincias.setInitWidthsP('10,30,30,30,0,0');
+                gridProvincias.setColTypes('ron,rotxt,rotxt,rotxt,ron,ron');
+                gridProvincias.setColumnHidden(4,true);
+                gridProvincias.setColumnHidden(5,true);
+                gridProvincias.init();
+            gridDistritos = tabsPrincipal.tabs('distritos').attachGrid();
+        </script>
+    </body>
+</html>

@@ -1,5 +1,5 @@
 const oracledb = require('oracledb');
-const dbParams = require('../database');
+const dbParams = require('../../database');
 const o2x = require('object-to-xml');
 
 const responseParams = {
