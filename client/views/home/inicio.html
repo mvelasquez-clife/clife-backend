@@ -21,17 +21,19 @@
 
         <script type="text/javascript" src="assets/vendor/jquery/jquery-3.2.1.min.js"></script>
         <script type="text/javascript" src="assets/js/conf.js"></script>
+                
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
         <script type="text/javascript" src="assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
         <script type="text/javascript" src="assets/vendor/dhtmlx/sources/dhtmlxToolbar/codebase/dhtmlxtoolbar.js"></script>  
         <!--script type="text/javascript" src="assets/vendor/dhtmlx/sources/dhtmlxPopup/codebase/dhtmlxpopup.js"></script> -->
+        <script type="text/javascript" src="assets/js/home.js"></script>
         <script type="text/javascript">
             var dhxWins, mainLayout, secLayout, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, path_folder;
             var winLayout, winGrid;
             var sidebarjson = [
                 {id: "side_infperso", text: "Datos Personales", icon: "profile64.png", selected: true},
-                {id: "side_segu", text: "Seguridad", icon: "unlock_64.png", selected: false},
-                {id: "side_person", text: "Personalización", icon: "32/desktop.png", selected: false}
+                {id: "side_segu", text: "Seguridad", icon: "unlock_64.png"},
+                {id: "side_person", text: "Personalización", icon: "32/desktop.png"}
             ];
             var form_logo = [
                 {type: "settings"},
@@ -53,7 +55,7 @@
                                 {type: "input", name: 'u_apemat', offsetTop: 15, inputWidth: '200', label: '<font class="input_font">Ape. Materno</font>', required: 'true'}]},
                         {type: "newcolumn"},
                         {type: "block", blockOffset: 0, offsetTop: 45, offsetLeft: 25, width: 250, list: [
-                                {type: "calendar", enableTime: false, enableTodayButton: false, dateFormat: "%d-%m-%Y", name: 'u_fecnac', label: '<font class="input_font">Fecha Nacimiento</font>'},
+                                {type: "calendar", enableTime: false, enableTodayButton: false, dateFormat: "%d/%m/%Y", name: 'u_fecnac', label: '<font class="input_font">Fecha Nacimiento</font>'},
                                 {type: "input", offsetTop: 15, name: 'u_mail', label: '<font class="input_font">Email</font>', inputWidth: '220'}, {type: "newcolumn"},
                                 {type: "radio", offsetTop: 20, name: 'u_sexo', labelWidth: 63, value: 'M', label: '<font class="input_font">Sexo (M)</font>'}, {type: "newcolumn"},
                                 {type: "radio", offsetTop: 20, name: 'u_sexo', offsetLeft: 25, labelWidth: 20, value: 'F', label: '<font class="input_font">(F)</font>'}
@@ -76,213 +78,6 @@
             /*                   {type: "input", name: 'u_alias', offsetTop: 15, label: 'Password'},
              {type: "input", name: 'u_password', offsetTop: 15, label: 'Password'}*/
 
-            dhtmlXCalendarObject.prototype.langData["pe"] = {
-                dateformat: '%d-%m-%Y',
-                monthesFNames: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
-                monthesSNames: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
-                daysFNames: ["Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sábado"],
-                daysSNames: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
-                weekstart: 1,
-                weekname: "w",
-                today: "Hoy",
-                clear: "Borrar"
-            };
-
-            function carga_estructura_pop() {
-                myPop.attachList("name", [
-                    {id: 'profile', name: "<div id='list_usu' >Cuenta</div>"},
-                    myPop.separator,
-                    {id: 'messages', name: "<div id='list_usu' >Mensajes</div>"},
-                    {id: 'notifications', name: "<div id='list_usu' >Notificaciones</div>"},
-                    myPop.separator, // use this struct for separator
-                    {id: 'close_session', name: "<div id='list_usu_close' >Cerrar Sesión</div>"}
-                ]);
-            }
-
-            pop_inclic = (id) => {
-                switch (id) {
-                    case 'close_session':
-                        logout();
-                        break;
-                    case 'profile':
-                        crear_ventana();
-                        break;
-                    default:
-                        null;
-                        break;
-                }
-            };
-            crear_ventana = () => {
-                var myWins = new dhtmlXWindows();
-                var confwin = myWins.createWindow({id: "w_cuenta", left: 0, top: 0, width: 700, height: 450, center: true});
-                myWins.window('w_cuenta').hideHeader();
-
-                mySidebar = myWins.window('w_cuenta').attachSidebar({width: 120, single_cell: true, template: "icons_text", icons_path: "assets/images/icons/iconsjhon/", items: sidebarjson});
-                mySidebar.attachEvent("onSelect", function (id, lastId) {
-                    switch (id) {
-                        case 'side_infperso':
-                            f_side_infperso();
-                            break;
-                        case 'side_segu':
-                            //f_side_segu();
-                            break;
-                        case 'side_person':
-                            //f_side_person();
-                            break;
-                        default:
-
-                            break;
-                    }
-                });
-                f_side_infperso();
-            };
-            f_side_infperso = () => {
-                var form_infperso = mySidebar.cells("side_infperso").attachForm();
-                form_infperso.loadStruct(form_cuenta);
-                form_infperso.setSkin("material");
-                          /*jquery animacion form*/
-                $('#eventForm').submit(function (e) {
-                    e.preventDefault();
-                    var fd = new FormData(this);
-                    $.ajax({
-                        url: BASE_URL + 'home/upload', data: fd, processData: false, contentType: false, type: 'POST',
-                        success: function (data) {
-                            console.log(data);
-                        }
-                    });
-                });
-                /*fin jquery animacion form*/
-            };
-            function readURL(input) { /*funcion carga imagen al seleccionar*/
-                if (input.files && input.files[0]) {
-                    var reader = new FileReader();
-                    reader.onload = function (e) {
-                        $('#photocharge').attr('src', e.target.result);
-                    };
-                    reader.readAsDataURL(input.files[0]);
-                }
-            }
-            f_side_segu = () => {
-                var form_infperso = mySidebar.cells("side_infperso").attachForm();
-                form_infperso.loadStruct(form_cuenta);
-            };
-            logout = () => {
-                dhtmlx.confirm({
-                    ok: "Si, cerrar mi sesión",
-                    cancel: "No",
-                    text: "¿Desea cerrar la sesión? Deberá ingresar sus credenciales la próxima vez que desee acceder al sistema.",
-                    callback: (result) => {
-                        if (result) {
-                            localStorage.clear();
-                            location.href = "/";
-                        }
-                    }
-                });
-            };
-            function  photo_usu(name, value) {
-                if (name === "user_photo")
-                    return '<div id ="photo_usu"><img id="photo_img_"  ></div>';
-            }
-
-            doOnload = () => {
-                Formlogo.setItemValue('user_name', usrJson.nombre);
-                Formlogo.setItemValue('name_ccostos', usrJson.ncosto);
-                var p = {co_usu: usrJson.codigo, tipo: 'profile', name: usrJson.codigo + '_profile.png'};
-                $.post(BASE_URL + "home/file_exist", p, function (response) {
-                    $("#photo_img_").attr("src", response.folder);
-                }, "json");
-            };
-            function   name_usu(name, value) {
-                if (name === "user_name")
-                    return "<div class='user_name'>" + value + "</div>";
-                if (name === "name_label")
-                    return "<div class='name_label'>" + value + "</div>";
-                if (name === "name_ccostos")
-                    return "<div class='name_ccostos'>" + value + "</div>";
-            }
-
-            inpu_onKeyup = (name, value) => {
-                var obj = document.getElementById(name);
-                if (value.length > 4) {
-                    if (myPop2) {
-                        busca_modulos(value);
-                    }
-                    var x = window.dhx4.absLeft(obj); // returns left position related to window
-                    var y = window.dhx4.absTop(obj); // returns top position related to window
-                    var w = obj.offsetWidth;
-                    var h = obj.offsetHeight;
-                    myPop2.show(x, y, w, h);
-                } else {
-                    if (myPop2) {
-                        myPop2.clear();
-                        myPop2.attachList("name", [{id: 1, name: "Ingrese minimo 5 caracteres..."}]);
-                    }
-                }
-
-
-            };
-            toolbaronfocus = (obj) => {
-                if (myPop2) {
-                    myPop2.clear();
-                    myPop2.attachList("name", [{id: 1, name: "Ingrese minimo 5 caracteres..."}]);
-                    var x = window.dhx4.absLeft(obj); // returns left position related to window
-                    var y = window.dhx4.absTop(obj); // returns top position related to window
-                    var w = obj.offsetWidth;
-                    var h = obj.offsetHeight;
-                    myPop2.show(x, y, w, h);
-                }
-            };
-            toolbar_onclic = (name) => {
-                switch (name) {
-                    case 'b_hidemenu':
-                        var state = mainLayout.cells("b").isCollapsed();
-                        state === true ? mainLayout.cells("b").expand() : mainLayout.cells("b").collapse();
-                        break;
-                    case 'b_mail' :
-                        window.open('https://mail.corporacionlife.com.pe', '_blank');
-                        break;
-                    default:
-                        null;
-                        break;
-                }
-
-            }
-            mainTreeOnDblClick = (id) => {
-                if (!mainTree.hasChildren(id)) {
-                    mainLayout.cells("b").collapse();
-                    var winId = "win-" + id;
-                    if (!dhxWins.isWindow(winId)) {
-                        dhxWins.createWindow(winId, 0, 0, 1080, 550);
-                        dhxWins.window(winId).setText(mainTree.getItemText(id));
-                        dhxWins.window(winId).center();
-                        dhxWins.window(winId).attachURL("modulo/" + id);
-                    }
-                }
-                return true;
-            }
-
-            pop_inclic2 = (id) => {
-                mainLayout.cells("b").collapse();
-                var winId = "win-" + id;
-                if (!dhxWins.isWindow(winId)) {
-                    dhxWins.createWindow(winId, 0, 0, 1080, 550);
-                    dhxWins.window(winId).setText(mainTree.getItemText(id));
-                    dhxWins.window(winId).center();
-                    dhxWins.window(winId).attachURL("modulo/" + id);
-                }
-
-            };
-            carga_moduloonclick = (id) => {
-
-            }
-            busca_modulos = (value) => {
-                var p = {alias: usrJson.alias, empresa: usrJson.empresa, txtsearch: value};
-                $.post(BASE_URL + "home/menusearch", p, function (response) {
-                    rpta_search = response.state;
-                    myPop2.clear();
-                    myPop2.attachList("padre,flecha,name", response.data.l_items);
-                }, "json");
-            };
             //valida la sesion
             if (usrtoken == '') {
                 location.href = '/';
@@ -295,6 +90,7 @@
                 mainLayout.cells("b").hideArrow();
                 mainLayout.setSeparatorSize(0, 0);
                 mainLayout.setSeparatorSize(1, 0);
+                
                 myToolbar = mainLayout.cells("a").attachToolbar({iconset: "awesome"});
                 myToolbar.setIconSize(32);
                 myToolbar.addText('add_pasos', null, '<div class="milky">CORPORACION LIFE</div>');
@@ -312,11 +108,14 @@
                 myToolbar.attachEvent("onClick", toolbar_onclic);
                 myToolbar.attachEvent("onkeyup", inpu_onKeyup);
                 myToolbar.setSkin('dhx_custom');
+                
                 myPop = new dhtmlXPopup({toolbar: myToolbar, id: "b_user_admi"});
                 carga_estructura_pop();
                 myPop.attachEvent("onClick", pop_inclic);
+                
                 myPop2 = new dhtmlXPopup({toolbar: myToolbar, id: "search-bar1"});
                 myPop2.attachEvent("onClick", pop_inclic2);
+                
                 mainLayout.cells("b").hideHeader();
                 mainLayout.cells("a").setHeight(45);
                 mainLayout.cells("b").setWidth(240);
@@ -325,15 +124,19 @@
                 mainLayout.cells("b").attachHTMLString("<div id=\"dv-treeview\"></div>");
                 mainLayout.cells("c").hideHeader();
                 mainLayout.cells("c").attachHTMLString("<div id=\"dv-fondo\"></div>");
+                
                 secLayout = new dhtmlXLayoutObject("dv-treeview", "2E");
                 secLayout.setSeparatorSize(0, 0);
                 secLayout.setSeparatorSize(1, 0);
                 secLayout.cells("a").hideHeader();
                 secLayout.cells("a").setHeight(150);
+                
                 var Formlogo = secLayout.cells("a").attachForm();
                 Formlogo.load(form_logo, doOnload);
+                
                 secLayout.cells("a").fixSize(true, true);
                 secLayout.cells("b").hideHeader();
+                
                 mainTree = secLayout.cells("b").attachTree();
                 //mainTree.setXMLAutoLoading(BASE_URL + "home/menu/MAIN/Administrator/11");
                 mainTree.setImagePath("assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
