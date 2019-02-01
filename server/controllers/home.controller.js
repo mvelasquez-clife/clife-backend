@@ -1,8 +1,102 @@
 const oracledb = require('oracledb');
 const dbParams = require('../database');
 const o2x = require('object-to-xml');
-
+const formidable = require('formidable');
+//const http = require('http');
+//const  util = require('util');
+var path = require('path');
+const fs = require('fs');
 const homeController = {
+
+    file_exist: (req, res) => {
+        const {co_usu, tipo, name} = req.body;
+        const path_ = './public';
+        const testFolder = '/assets/perfil/' + co_usu + '/' + name;
+        //  var p = {co_usu: usrJson.codigo, tipo: 'profile', name : usrJson.codigo+'_profile.png'};
+
+
+
+        return new Promise(function (resolve, reject) {
+            fs.exists(path_ + testFolder, function (exists) {
+                if (exists) {
+                    reject(res.json({
+                        state: 'success',
+                        'folder': testFolder
+                    }));
+                } else {
+                    resolve(res.json({
+                        state: 'default',
+                        'folder': '/assets/images/icons/iconsjhon/avatar_defecto.png'
+                    }));
+                }
+            });
+        })
+
+        /*
+         fs.readdir(testFolder, (err, files) => {
+         if (!err){
+         var l_items = [];
+         
+         for (var i in files) {
+         l_items.push(files[i]);
+         }
+         //comprobar si obtuve resultado
+         if (l_items.length > 0) {
+         res.json({
+         state: 'success',
+         data: {l_items
+         }
+         });
+         }
+         
+         files.forEach(file => {
+         console.log(file);
+         });
+         }else {
+         res.json({
+         state: 'error',
+         error: err
+         });
+         }
+         
+         });
+         */
+    },
+    upload: (req, res) => {
+        if (req.method.toLowerCase() == 'post') {
+            // parse a file upload
+            var form = new formidable.IncomingForm();
+            form.maxFileSize = 2 * 1024 * 1024;
+
+            form.on('fileBegin', function (name, file) {
+                file.path = __dirname + '/upload/' + file.name;
+                //console.log(file.path);
+            });
+
+            var sizeLimitBytes = 2000;
+            form.on('progress', function (bytesReceived, bytesExpected) {
+
+            });
+            form.on('error', function (error) { // I thought this would handle the upload error
+                if (error)
+                    res.json({
+                        state: 'alert', error: error.message
+                    });
+                return false;
+            })
+
+            form.parse(req, function (err, fields, files) {
+
+                if (!err)
+                    res.json({
+                        state: 'success'
+                    });
+            });
+            return;
+        }
+
+    },
+
     getMenu: (req, res) => {
         const {id} = req.query;
         const {alias, empresa} = req.params;
@@ -18,7 +112,7 @@ const homeController = {
             const params1 = {alias: {val: alias}};
             conn.execute(query1, params1, responseParams, (error, result) => {
                 if (error) {
-                    console.error(error);
+                    //console.error(error);
                     conn.close();
                     return;
                 }
@@ -98,7 +192,7 @@ const homeController = {
                     res.json({
                         state: 'false',
                         data: {
-                            l_items :                            [{'id': 0, 'name': 'No se encontraron concidencias...'}]
+                            l_items: [{'id': 0, 'name': 'No se encontraron concidencias...'}]
                         }
                     });
                 }

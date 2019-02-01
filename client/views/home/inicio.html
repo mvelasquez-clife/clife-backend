@@ -7,6 +7,8 @@
         <link rel="stylesheet" type="text/css" href="assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
         <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/skins/custom/dhtmlx.css"> 
+        <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/sources/dhtmlxCalendar/codebase/skins/dhtmlxcalendar_material.css">  
+        <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">    
         <link rel="stylesheet" type="text/css" href="assets/css/main.css">
         <style type="text/css">
             html,body{ display: flex;height:100%;margin:0;padding:0;width:100%}
@@ -24,17 +26,147 @@
         <script type="text/javascript" src="assets/vendor/dhtmlx/sources/dhtmlxToolbar/codebase/dhtmlxtoolbar.js"></script>  
         <!--script type="text/javascript" src="assets/vendor/dhtmlx/sources/dhtmlxPopup/codebase/dhtmlxpopup.js"></script> -->
         <script type="text/javascript">
-            var dhxWins, mainLayout, secLayout, mainTree, mainWindow, myToolbar, myPop, myPop2, myList,rpta_search;
+            var dhxWins, mainLayout, secLayout, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, path_folder;
             var winLayout, winGrid;
-
-
+            var sidebarjson = [
+                {id: "side_infperso", text: "Datos Personales", icon: "profile64.png", selected: true},
+                {id: "side_segu", text: "Seguridad", icon: "unlock_64.png", selected: false},
+                {id: "side_person", text: "Personalización", icon: "32/desktop.png", selected: false}
+            ];
             var form_logo = [
                 {type: "settings"},
-                //{type: "label", name: "user_photo",label : '<img id="imagephoto" >', imageWidth: 120, imageHeight: 120, inputWidth: 120, inputHeight: 120},
-                {type: "template", offsetLeft: "30", name: "user_photo", format: photo_usu},
-                {type: "template", name: "user_name", width: 205, value: "-", format: name_usu}
+                {type: "block", blockOffset: 0, width: 100, list: [
+                        {type: "template", name: "user_photo", format: photo_usu}]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 0, offsetTop: 20, width: 100, list: [
+                        {type: "template", value: 'Bienvenido : ', name: "name_label", offsetLeft: 15, format: name_usu},
+                        {type: "template", offsetLeft: 15, name: "user_name", width: 105, value: "-", format: name_usu}]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 0, width: 200, list: [
+                        {type: "template", value: '-', offsetLeft: 15, name: "name_ccostos", format: name_usu}]}
             ];
-            function logout() {
+            var form_cuenta = [{type: "settings", labelWidth: 140},
+                {type: "block", blockOffset: 0, list: [
+                        {type: "block", blockOffset: 25, offsetTop: 45, width: 250, list: [
+                                {type: "input", style: "font-family:century gothic, verdana, arial, sans-serif!important;", name: 'u_nombres', inputWidth: '200', label: '<font class="input_font">Nombres</font>', required: 'true'},
+                                {type: "input", name: 'u_apepat', offsetTop: 15, inputWidth: '200', label: '<font class="input_font">Ape. Paterno</font>', required: 'true'},
+                                {type: "input", name: 'u_apemat', offsetTop: 15, inputWidth: '200', label: '<font class="input_font">Ape. Materno</font>', required: 'true'}]},
+                        {type: "newcolumn"},
+                        {type: "block", blockOffset: 0, offsetTop: 45, offsetLeft: 25, width: 250, list: [
+                                {type: "calendar", enableTime: false, enableTodayButton: false, dateFormat: "%d-%m-%Y", name: 'u_fecnac', label: '<font class="input_font">Fecha Nacimiento</font>'},
+                                {type: "input", offsetTop: 15, name: 'u_mail', label: '<font class="input_font">Email</font>', inputWidth: '220'}, {type: "newcolumn"},
+                                {type: "radio", offsetTop: 20, name: 'u_sexo', labelWidth: 63, value: 'M', label: '<font class="input_font">Sexo (M)</font>'}, {type: "newcolumn"},
+                                {type: "radio", offsetTop: 20, name: 'u_sexo', offsetLeft: 25, labelWidth: 20, value: 'F', label: '<font class="input_font">(F)</font>'}
+                            ]}
+                    ]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 5, width: 470, list: [
+                        {type: "button", offsetTop: 45, offsetLeft: 55, name: "fedit", value: "Editar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 45, offsetLeft: 45, name: "fsave", value: "Guardar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 45, offsetLeft: 45, name: "fcancel", value: "Salir"}
+                    ]}
+                /* {type: "newcolumn"},
+                 {type: "block", blockOffset: 25, width: 450, list: [
+                 {type: "fieldset", name: "field_logo", offsetTop: 25, offsetLeft: 5, label: '<font class="input_font">Foto de Perfil</font>', list: [
+                 {type: "settings", position: "label-top"},
+                 {type: "container", name: "up_photo", className: "up_photo", style: "up_photo1", inputWidth: 115, inputHeight: 145}
+                 ]}
+                 ]}*/
+            ];
+            /*                   {type: "input", name: 'u_alias', offsetTop: 15, label: 'Password'},
+             {type: "input", name: 'u_password', offsetTop: 15, label: 'Password'}*/
+
+            dhtmlXCalendarObject.prototype.langData["pe"] = {
+                dateformat: '%d-%m-%Y',
+                monthesFNames: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+                monthesSNames: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+                daysFNames: ["Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sábado"],
+                daysSNames: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+                weekstart: 1,
+                weekname: "w",
+                today: "Hoy",
+                clear: "Borrar"
+            };
+
+            function carga_estructura_pop() {
+                myPop.attachList("name", [
+                    {id: 'profile', name: "<div id='list_usu' >Cuenta</div>"},
+                    myPop.separator,
+                    {id: 'messages', name: "<div id='list_usu' >Mensajes</div>"},
+                    {id: 'notifications', name: "<div id='list_usu' >Notificaciones</div>"},
+                    myPop.separator, // use this struct for separator
+                    {id: 'close_session', name: "<div id='list_usu_close' >Cerrar Sesión</div>"}
+                ]);
+            }
+
+            pop_inclic = (id) => {
+                switch (id) {
+                    case 'close_session':
+                        logout();
+                        break;
+                    case 'profile':
+                        crear_ventana();
+                        break;
+                    default:
+                        null;
+                        break;
+                }
+            };
+            crear_ventana = () => {
+                var myWins = new dhtmlXWindows();
+                var confwin = myWins.createWindow({id: "w_cuenta", left: 0, top: 0, width: 700, height: 450, center: true});
+                myWins.window('w_cuenta').hideHeader();
+
+                mySidebar = myWins.window('w_cuenta').attachSidebar({width: 120, single_cell: true, template: "icons_text", icons_path: "assets/images/icons/iconsjhon/", items: sidebarjson});
+                mySidebar.attachEvent("onSelect", function (id, lastId) {
+                    switch (id) {
+                        case 'side_infperso':
+                            f_side_infperso();
+                            break;
+                        case 'side_segu':
+                            //f_side_segu();
+                            break;
+                        case 'side_person':
+                            //f_side_person();
+                            break;
+                        default:
+
+                            break;
+                    }
+                });
+                f_side_infperso();
+            };
+            f_side_infperso = () => {
+                var form_infperso = mySidebar.cells("side_infperso").attachForm();
+                form_infperso.loadStruct(form_cuenta);
+                form_infperso.setSkin("material");
+                          /*jquery animacion form*/
+                $('#eventForm').submit(function (e) {
+                    e.preventDefault();
+                    var fd = new FormData(this);
+                    $.ajax({
+                        url: BASE_URL + 'home/upload', data: fd, processData: false, contentType: false, type: 'POST',
+                        success: function (data) {
+                            console.log(data);
+                        }
+                    });
+                });
+                /*fin jquery animacion form*/
+            };
+            function readURL(input) { /*funcion carga imagen al seleccionar*/
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('#photocharge').attr('src', e.target.result);
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+            f_side_segu = () => {
+                var form_infperso = mySidebar.cells("side_infperso").attachForm();
+                form_infperso.loadStruct(form_cuenta);
+            };
+            logout = () => {
                 dhtmlx.confirm({
                     ok: "Si, cerrar mi sesión",
                     cancel: "No",
@@ -46,14 +178,27 @@
                         }
                     }
                 });
+            };
+            function  photo_usu(name, value) {
+                if (name === "user_photo")
+                    return '<div id ="photo_usu"><img id="photo_img_"  ></div>';
             }
-            function photo_usu(name, value) {
-                if (name == "user_photo")
-                    return "<div class = 'photo_usu'><img src='/assets/images/icons/iconsjhon/avatar_defecto.png' ></div>";
-            }
-            function name_usu(name, value) {
-                if (name == "user_name")
+
+            doOnload = () => {
+                Formlogo.setItemValue('user_name', usrJson.nombre);
+                Formlogo.setItemValue('name_ccostos', usrJson.ncosto);
+                var p = {co_usu: usrJson.codigo, tipo: 'profile', name: usrJson.codigo + '_profile.png'};
+                $.post(BASE_URL + "home/file_exist", p, function (response) {
+                    $("#photo_img_").attr("src", response.folder);
+                }, "json");
+            };
+            function   name_usu(name, value) {
+                if (name === "user_name")
                     return "<div class='user_name'>" + value + "</div>";
+                if (name === "name_label")
+                    return "<div class='name_label'>" + value + "</div>";
+                if (name === "name_ccostos")
+                    return "<div class='name_ccostos'>" + value + "</div>";
             }
 
             inpu_onKeyup = (name, value) => {
@@ -96,17 +241,13 @@
                     case 'b_mail' :
                         window.open('https://mail.corporacionlife.com.pe', '_blank');
                         break;
-                    case 'search-bar1' :
-
-
-                        break;
                     default:
                         null;
                         break;
                 }
 
             }
-            function mainTreeOnDblClick(id) {
+            mainTreeOnDblClick = (id) => {
                 if (!mainTree.hasChildren(id)) {
                     mainLayout.cells("b").collapse();
                     var winId = "win-" + id;
@@ -119,9 +260,7 @@
                 }
                 return true;
             }
-            function addSpacer() {
-                myToolbar.addSpacer(sel.options[sel.selectedIndex].value);
-            }
+
             pop_inclic2 = (id) => {
                 mainLayout.cells("b").collapse();
                 var winId = "win-" + id;
@@ -133,38 +272,30 @@
                 }
 
             };
-
-            pop_inclic = (id) => {
-
-            };
-
             carga_moduloonclick = (id) => {
 
             }
-            function busca_modulos(value) {
+            busca_modulos = (value) => {
                 var p = {alias: usrJson.alias, empresa: usrJson.empresa, txtsearch: value};
                 $.post(BASE_URL + "home/menusearch", p, function (response) {
-                     rpta_search = response.state;
-                              myPop2.clear();
-                        myPop2.attachList("padre,flecha,name", response.data.l_items);
-              
+                    rpta_search = response.state;
+                    myPop2.clear();
+                    myPop2.attachList("padre,flecha,name", response.data.l_items);
                 }, "json");
-            }
-
+            };
             //valida la sesion
             if (usrtoken == '') {
                 location.href = '/';
             } else {
-                //
+
+                dhtmlXCalendarObject.prototype.lang = "pe";
                 mainLayout = new dhtmlXLayoutObject("dhxViewport", "3T");
                 mainLayout.cells("a").hideHeader();
                 mainLayout.cells("b").setCollapsedText("<span style='color:black; font-size : 1.5em;'>Menu Principal</span>");
                 mainLayout.cells("b").hideArrow();
                 mainLayout.setSeparatorSize(0, 0);
                 mainLayout.setSeparatorSize(1, 0);
-
-                myToolbar = mainLayout.cells("a").attachToolbar({iconset: "awesome", });
-
+                myToolbar = mainLayout.cells("a").attachToolbar({iconset: "awesome"});
                 myToolbar.setIconSize(32);
                 myToolbar.addText('add_pasos', null, '<div class="milky">CORPORACION LIFE</div>');
                 myToolbar.addButton('b_hidemenu', null, '', null, null);
@@ -176,25 +307,14 @@
                 myToolbar.setItemImage('b_user_admi', "fas fa-user-cog");
                 myToolbar.setItemImage('b_mail', "fas fa-envelope");
                 myToolbar.setWidth('b_user_admi', '200');
-
                 myToolbar.addSpacer("b_hidemenu");
                 myToolbar.setItemToolTip('b_hidemenu', 'Oculta o Muestra el Menú Principal');
                 myToolbar.attachEvent("onClick", toolbar_onclic);
                 myToolbar.attachEvent("onkeyup", inpu_onKeyup);
                 myToolbar.setSkin('dhx_custom');
-
                 myPop = new dhtmlXPopup({toolbar: myToolbar, id: "b_user_admi"});
-
-                myPop.attachList("name", [
-                    {id: 1, name: "<div id='list_usu' >Cuenta</div>"},
-                    myPop.separator,
-                    {id: 3, name: "<div id='list_usu' >Mensajes</div>"},
-                    {id: 4, name: "<div id='list_usu' >Notificaciones</div>"},
-                    myPop.separator, // use this struct for separator
-                    {id: 2, name: "<div id='list_usu_close' >Cerrar Sesión</div>"}
-                ]);
+                carga_estructura_pop();
                 myPop.attachEvent("onClick", pop_inclic);
-
                 myPop2 = new dhtmlXPopup({toolbar: myToolbar, id: "search-bar1"});
                 myPop2.attachEvent("onClick", pop_inclic2);
                 mainLayout.cells("b").hideHeader();
@@ -209,17 +329,19 @@
                 secLayout.setSeparatorSize(0, 0);
                 secLayout.setSeparatorSize(1, 0);
                 secLayout.cells("a").hideHeader();
-                secLayout.cells("a").setHeight(160);
-                var Formlogo = secLayout.cells("a").attachForm(form_logo);
-                //   secLayout.cells("a").attachHTMLString('<div id="dv-header"><img src="assets/images/icons/cloud-life-logo.svg"><p class="p-title">Bienvenido, <b>' + usrJson.alias + '</b></p><p class="p-link"><a href="javascript:logout()">Salir del sistema</a></p></div>');
-                Formlogo.setItemValue('user_photo', "<div class='photo_usu'><img src='/assets/images/icons/iconsjhon/man_close_64.png' ></div>");
-                Formlogo.setItemValue('user_name', usrJson.alias);
+                secLayout.cells("a").setHeight(150);
+                var Formlogo = secLayout.cells("a").attachForm();
+                Formlogo.load(form_logo, doOnload);
                 secLayout.cells("a").fixSize(true, true);
                 secLayout.cells("b").hideHeader();
                 mainTree = secLayout.cells("b").attachTree();
-                mainTree.setXMLAutoLoading(BASE_URL + "home/menu/MAIN/Administrator/11");
+                //mainTree.setXMLAutoLoading(BASE_URL + "home/menu/MAIN/Administrator/11");
                 mainTree.setImagePath("assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
                 mainTree.setXMLAutoLoading(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa);
+                mainTree.enableTreeImages(false);
+                mainTree.enableTextSigns(true);
+                mainTree.enableMultiLineItems("150px");
+                mainTree.enableTreeLines(true);
                 mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
                 mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
                 dhxWins = new dhtmlXWindows();

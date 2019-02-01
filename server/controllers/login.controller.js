@@ -15,7 +15,7 @@ const loginCtrl = {
                     return;
                 }
                 connection.execute(
-                    "select de_alias, co_empresa_usuario, co_usuario, de_nombre, st_admin, co_centro_costo, st_acceso_wap from sg_usua_m where de_alias = :usuario and de_clave_sistema = :clave and es_vigencia = 'Vigente' and st_acceso_wap = 'S'",
+                    "select sg_usua_m.de_alias, sg_usua_m.co_empresa_usuario, co_usuario, sg_usua_m.de_nombre, st_admin, sg_usua_m.co_centro_costo, sg_usua_m.st_acceso_wap,cc.de_nombre as nom_ccostos  from sg_usua_m  left join ma_cent_cost_m cc on cc.co_empresa= co_empresa_usuario and cc.co_centro_costo =sg_usua_m.co_centro_costo where sg_usua_m.de_alias = :usuario and sg_usua_m.de_clave_sistema = :clave and sg_usua_m.es_vigencia = 'Vigente' and sg_usua_m.st_acceso_wap = 'S'",
                     {
                         usuario: { val: usuario },
                         clave: { val: clave }
@@ -27,10 +27,10 @@ const loginCtrl = {
                     (error, result) => {
                         connection.close();
                         if(error) {
-                            console.error(error.message);
+                            //console.error(error.message);
                             return res.json({
                                 state: "error",
-                                err: error
+                                err: error.message
                             });
                         }
                         if(result.rows.length == 0) {
@@ -45,8 +45,10 @@ const loginCtrl = {
                             codigo: result.rows[0].CO_USUARIO,
                             nombre: result.rows[0].DE_NOMBRE,
                             admin: result.rows[0].ST_ADMIN,
-                            ccosto: result.rows[0].CO_CENTRO_COSTO
+                            ccosto: result.rows[0].CO_CENTRO_COSTO,
+                             ncosto: result.rows[0].NOM_CCOSTOS
                         };
+                        
                         const token = jwt.sign(user, jwtKey, {
                             expiresIn: 86400
                         });
