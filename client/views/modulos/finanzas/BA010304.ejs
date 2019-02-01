@@ -17,34 +17,61 @@
 	<script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
 	<script type="text/javascript" src="/assets/js/conf.js"></script>
 	<script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
-	<script type="text/javascript" src="<%=path%>script.js"></script>
+    <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+    <script type="text/javascript" src="<%=path%>script.js"></script>
+    <script src="https://code.highcharts.com/highcharts.src.js"></script>
 	<script type="text/javascript">
-		var mainLayout, mainTabbar, mainToolbar;
+		var mainLayout, mainTabbar, toolbarListaPlanillas, winListaPlanillasDetalle;
 		//inicio de la pagina
 		mainLayout = new dhtmlXLayoutObject(document.body, '1C');
             mainLayout.cells('a').hideHeader();
-        mainToolbar = mainLayout.cells('a').attachToolbar();
-            mainToolbar.setIconsPath('/assets/images/icons/');
-            mainToolbar.addText('lbPlanilla',null,'Planilla');
-            mainToolbar.addInput('ipPlanilla',null,null,60);
-            mainToolbar.addText('lbRecaudador',null,'Recaudador');
-            mainToolbar.addInput('ipRucdni',null,null,70);
-            mainToolbar.addButton('btBusca',null,'','ic-search.svg','');
-            mainToolbar.addInput('ipNombre',null,null,240);
-            mainToolbar.addButton('btLimpiar',null,'Limpiar','ic-clean.svg','');
-            mainToolbar.addButton('btBuscar',null,'Buscar','ic-goggle.svg','');
-            mainToolbar.addButton('btSeguridad',null,'Seguridad','ic-shield.svg','');
-            mainToolbar.addButton('btAbrir',null,'Abrir planilla','ic-add.svg','');
-            mainToolbar.addButton('btCerrar',null,'Cerrar planilla','ic-close.svg','');
-            mainToolbar.addButton('btXls',null,'Exportar','ic-export.svg','');
-            mainToolbar.attachEvent('onClick', mainToolbarOnClick);
         mainTabbar = mainLayout.cells('a').attachTabbar();
             mainTabbar.addTab('planillas','Listado de planillas de cobranza',null,null,true);
-            mainTabbar.addTab('pendientes','Planillas pendientes');
-            mainTabbar.addTab('liquidadas','Planillas liquidadas');
             mainTabbar.addTab('reporte','Reporte planillas liquidadas');
             mainTabbar.addTab('recibos','Recibos emitidos por caja');
             mainTabbar.addTab('financieras','Planillas financieras');
+        toolbarListaPlanillas = mainTabbar.tabs('planillas').attachToolbar();
+            toolbarListaPlanillas.setIconsPath('/assets/images/icons/');
+            toolbarListaPlanillas.addText('lbPlanilla',null,'Planilla');
+            toolbarListaPlanillas.addInput('ipPlanilla',null,null,60);
+            toolbarListaPlanillas.addText('lbRecaudador',null,'Recaudador');
+            toolbarListaPlanillas.addInput('ipRucdni',null,null,70);
+            toolbarListaPlanillas.addButton('btBusca',null,'','ic-search.svg','');
+            toolbarListaPlanillas.addInput('ipNombre',null,null,200);
+            toolbarListaPlanillas.addText('lbFechas',null,'Fechas');
+            toolbarListaPlanillas.addInput('calDesde',null,'',70);
+            toolbarListaPlanillas.addInput('calHasta',null,'',70);
+            //toolbarListaPlanillas.addButton('btLimpiar',null,'Limpiar','ic-clean.svg','');
+            toolbarListaPlanillas.addButton('btBuscar',null,'Buscar','ic-goggle.svg','');
+            toolbarListaPlanillas.addSeparator();
+            toolbarListaPlanillas.addButton('btSeguridad',null,'Seguridad','ic-shield.svg','');
+            toolbarListaPlanillas.addButton('btAbrir',null,'Abrir planilla','ic-add.svg','');
+            toolbarListaPlanillas.addButton('btCerrar',null,'Cerrar planilla','ic-close.svg','');
+            toolbarListaPlanillas.addButton('btXls',null,'Exportar','ic-export.svg','');
+            toolbarListaPlanillas.attachEvent('onClick', toolbarListaPlanillasOnClick);
+            //
+            toolbarListaPlanillas.getInput('ipRucdni').readOnly = true;
+            toolbarListaPlanillas.getInput('ipNombre').readOnly = true;
+            toolbarListaPlanillas.getInput('calDesde').placeholder = 'Desde';
+            toolbarListaPlanillas.getInput('calHasta').placeholder = 'Hasta';
+            //toolbarListaPlanillas.getInput('ipNombre').readOnly = true;
+            var ipCalDesde, ipCalHasta, toolbarCalendar;
+            const hoy = new Date();
+            const antes = new Date();
+            antes.setMonth(hoy.getMonth() - 3);
+            ipCalDesde = toolbarListaPlanillas.getInput('calDesde');
+                ipCalDesde.setAttribute('readOnly','true');
+                ipCalDesde.onclick = () => {setSens(ipCalHasta,'max');};
+                ipCalDesde.value = antes.toISOString();
+            ipCalHasta = toolbarListaPlanillas.getInput('calHasta');
+                ipCalHasta.setAttribute('readOnly','true');
+                ipCalHasta.onclick = () => {setSens(ipCalDesde,'min');};
+                ipCalHasta.value = hoy.toISOString();
+            toolbarCalendar = new dhtmlXCalendarObject([ipCalDesde, ipCalHasta]);
+                toolbarCalendar.setDateFormat('%Y-%m-%d');
+                toolbarCalendar.hideTime();
+        //
+        var gridListadoPlanillas;
 	</script>
 </body>
 </html>

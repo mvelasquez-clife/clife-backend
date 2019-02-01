@@ -49,7 +49,10 @@ const ancestroController = {
         oracledb.getConnection(dbParams, (err, conn) => {
             const { id, empresa } = req.params;
             if(err) {
-                console.error(err);
+                res.json({
+                    state: 'error',
+                    message: err
+                });
                 return;
             }
             const query = "select * from table (pack_new_sources.f_list_lupa_general(:p_id, :p_empresa, :p_extra))";
@@ -58,6 +61,8 @@ const ancestroController = {
                 p_empresa: { val: empresa },
                 p_extra: { val: '' }
             };
+console.log(query);
+console.log(params);
             conn.execute(query, params, responseParams, (error, result) => {
                 if(error) {
                     conn.close();
