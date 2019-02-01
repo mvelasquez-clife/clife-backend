@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Cartera de clientes</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+        <style type="text/css">
+            html,body{height:100%;margin:0;padding:0;width:100%}
+            #dhxDesktop{height:100%;width:100%;}
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <!-- scripts principales -->
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <!-- script propio de la ventana -->
+        <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- ancestro de busquedas -->
+        <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script>
+            var mainLayout, toolbarPrincipal, tabbarPrincipal, gridOrdenes;
+            mainLayout = new dhtmlXLayoutObject(document.body, '1C');
+                mainLayout.cells('a').hideHeader();
+            tabbarPrincipal = mainLayout.cells('a').attachTabbar();
+                tabbarPrincipal.addTab('ocs', 'Detalle de órdenes', null, null, true);
+            toolbarPrincipal = tabbarPrincipal.tabs('ocs').attachToolbar();
+                toolbarPrincipal.setIconsPath('/assets/images/icons/');
+                toolbarPrincipal.addText('lbDesde',null,'Desde');
+                toolbarPrincipal.addInput('calDesde',null,'',80);
+                toolbarPrincipal.addText('lbHasta',null,'Hasta');
+                toolbarPrincipal.addInput('calHasta',null,'',80);
+                toolbarPrincipal.addButton('calFiltra',null,'Cargar órdenes','ic-calendar.svg');
+                toolbarPrincipal.attachEvent('onClick',toolbarPrincipalOnClick);
+                var ipCalDesde, calDesde, toolbarCalendar;
+                ipCalDesde = toolbarPrincipal.getInput('calDesde');
+                    ipCalDesde.setAttribute('readOnly','true');
+                    ipCalDesde.onclick = () => {setSens(ipCalHasta,'max');};
+                ipCalHasta = toolbarPrincipal.getInput('calHasta');
+                    ipCalHasta.setAttribute('readOnly','true');
+                    ipCalHasta.onclick = () => {setSens(ipCalDesde,'min');};
+                toolbarCalendar = new dhtmlXCalendarObject([ipCalDesde, ipCalHasta]);
+                    toolbarCalendar.setDateFormat('%Y-%m-%d');
+                    toolbarCalendar.hideTime();
+            gridOrdenes = tabbarPrincipal.tabs('ocs').attachGrid();
+                gridOrdenes.setHeader('co_orden_compra,fe_emision,co_proveedor,de_razon_social,co_forma_pago,de_nombre,co_condicion_pago,de_nombre,co_moneda_final,im_conversion,es_vigencia,es_orden,co_catalogo_producto,de_producto,de_nombre_prod_prov,co_codigo_antiguo,co_codigo_arte,st_quim_fiscal,de_nombre,de_clase,de_familia,de_subfamilia,de_marca,de_submarca,nu_cantidad,de_nombre,im_precio_unitario,im_precio_final,de_nombre,fe_sys,fe_entrega,de_observaciones,co_guia_prov,co_file_fisico_compra_final,st_letras_registradas,st_perc_reg,co_voucher_fk,letra,notacredito,notadebito,co_guia_devolucion,co_rep_analisis,co_esp_analisis,st_situacion,st_conclusion,fe_vencimiento,de_observaciones,de_razon_social,de_obs,fe_anula');
+                gridOrdenes.attachHeader('#text_filter,#text_filter,#select_filter,#text_filter,#select_filter,#select_filter,#select_filter,#select_filter,#select_filter,#numeric_filter,#select_filter,#select_filter,#select_filter,#text_filter,#text_filter,#select_filter,#select_filter,#select_filter,#text_filter,#select_filter,#select_filter,#select_filter,#select_filter,#select_filter,#select_filter,#text_filter,#numeric_filter,#numeric_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter,#select_filter,#select_filter,#select_filter,#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter');
+                gridOrdenes.setInitWidths('60,80,100,240,60,120,60,120,60,100,80,80,90,120,160,90,80,60,240,120,120,120,120,120,100,240,100,100,240,80,80,240,80,80,60,60,90,80,80,80,90,100,100,60,60,80,240,240,200,80');
+                //gridOrdenes.setColTypes('ron,rotxt,rotxt,rotxt');
+                gridOrdenes.init();
+            //
+            //MuestraFormularioBusqueda();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Liquidación de Planillas de Cobranza</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+	<link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+	<style type="text/css">
+		html,body{height:100%;margin:0;padding:0;width:100%}
+		#dhxDesktop{height:100%;width:100%;}
+	</style>
+</head>
+<body>
+	<div id="dhxDesktop"></div>
+	<!-- -->
+	<script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<script type="text/javascript" src="/assets/js/conf.js"></script>
+	<script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+	<script type="text/javascript" src="<%=path%>script.js"></script>
+	<script type="text/javascript">
+		var mainLayout, mainTabbar, mainToolbar;
+		//inicio de la pagina
+		mainLayout = new dhtmlXLayoutObject(document.body, '1C');
+            mainLayout.cells('a').hideHeader();
+        mainToolbar = mainLayout.cells('a').attachToolbar();
+            mainToolbar.setIconsPath('/assets/images/icons/');
+            mainToolbar.addText('lbPlanilla',null,'Planilla');
+            mainToolbar.addInput('ipPlanilla',null,null,60);
+            mainToolbar.addText('lbRecaudador',null,'Recaudador');
+            mainToolbar.addInput('ipRucdni',null,null,70);
+            mainToolbar.addButton('btBusca',null,'','ic-search.svg','');
+            mainToolbar.addInput('ipNombre',null,null,240);
+            mainToolbar.addButton('btLimpiar',null,'Limpiar','ic-clean.svg','');
+            mainToolbar.addButton('btBuscar',null,'Buscar','ic-goggle.svg','');
+            mainToolbar.addButton('btSeguridad',null,'Seguridad','ic-shield.svg','');
+            mainToolbar.addButton('btAbrir',null,'Abrir planilla','ic-add.svg','');
+            mainToolbar.addButton('btCerrar',null,'Cerrar planilla','ic-close.svg','');
+            mainToolbar.addButton('btXls',null,'Exportar','ic-export.svg','');
+            mainToolbar.attachEvent('onClick', mainToolbarOnClick);
+        mainTabbar = mainLayout.cells('a').attachTabbar();
+            mainTabbar.addTab('planillas','Listado de planillas de cobranza',null,null,true);
+            mainTabbar.addTab('pendientes','Planillas pendientes');
+            mainTabbar.addTab('liquidadas','Planillas liquidadas');
+            mainTabbar.addTab('reporte','Reporte planillas liquidadas');
+            mainTabbar.addTab('recibos','Recibos emitidos por caja');
+            mainTabbar.addTab('financieras','Planillas financieras');
+	</script>
+</body>
+</html>
