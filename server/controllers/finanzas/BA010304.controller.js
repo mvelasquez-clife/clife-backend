@@ -32,6 +32,102 @@ const ba010304Controller = {
                 res.send(xmlParser.renderXml(result.rows));
             });
         });
+    },
+
+    mostrarPagosEfectivo: (req, res) => {
+        const { empresa, planilla } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                console.error(err);
+                return;
+            }
+            const query = "select * from table(pack_new_finanzas_no_tocar.f_list_planilla_efectivo(:p_empresa,:p_planilla))";
+            const params = {
+                p_empresa: { val: empresa },
+                p_planilla: { val: planilla }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    console.error(error);
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderXml(result.rows));
+            });
+        });
+    },
+
+    mostrarPagosCheques: (req, res) => {
+        const { empresa, planilla } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                console.error(err);
+                return;
+            }
+            const query = "select * from table(pack_new_finanzas_no_tocar.f_list_planilla_cheques(:p_empresa,:p_planilla))";
+            const params = {
+                p_empresa: { val: empresa },
+                p_planilla: { val: planilla }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    console.error(error);
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderXml(result.rows));
+            });
+        });
+    },
+
+    mostrarPagosNotas: (req, res) => {
+        const { empresa, planilla } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                console.error(err);
+                return;
+            }
+            const query = "select * from table(pack_new_finanzas_no_tocar.f_list_planilla_notas(:p_empresa,:p_planilla))";
+            const params = {
+                p_empresa: { val: empresa },
+                p_planilla: { val: planilla }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    console.error(error);
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderXml(result.rows));
+            });
+        });
+    },
+
+    mostrarDepositosPlanilla: (req, res) => {
+        const { empresa, planilla } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                console.error(err);
+                return;
+            }
+            const query = "select * from table(pack_new_finanzas_no_tocar.list_planilla_depositos(:p_empresa,:p_planilla))";
+            const params = {
+                p_empresa: { val: empresa },
+                p_planilla: { val: planilla }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    console.error(error);
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderXml(result.rows));
+            });
+        });
     }
 };
 
