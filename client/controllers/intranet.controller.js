@@ -1,4 +1,5 @@
 var path = require('path');
+var fs = require('fs');
 //const ejs = require('ejs');
 const intranetController = {
     home: (req, res) => {

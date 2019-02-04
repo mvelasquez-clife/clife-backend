@@ -122,7 +122,7 @@
             } else {
 
                 dhtmlXCalendarObject.prototype.lang = "pe";
-                mainLayout = new dhtmlXLayoutObject("dhxViewport", "3T");
+                mainLayout = new dhtmlXLayoutObject(document.body, "3T");
                 mainLayout.cells("a").hideHeader();
                 mainLayout.cells("b").setCollapsedText("<span style='color:black; font-size : 1.5em;'>Menu Principal</span>");
                 mainLayout.cells("b").hideArrow();
@@ -180,9 +180,9 @@
                 //mainTree.setXMLAutoLoading(BASE_URL + "home/menu/MAIN/Administrator/11");
                 mainTree.setImagePath("assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
                 mainTree.setXMLAutoLoading(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa);
-                mainTree.enableTreeImages(false);
-                mainTree.enableTextSigns(true);
-                mainTree.enableMultiLineItems("150px");
+                //mainTree.enableTreeImages(false);
+                //mainTree.enableTextSigns(true);
+                //mainTree.enableMultiLineItems("150px");
                 mainTree.enableTreeLines(true);
                 mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
                 mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
