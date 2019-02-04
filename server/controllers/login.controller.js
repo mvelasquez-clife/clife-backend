@@ -15,7 +15,7 @@ const loginCtrl = {
                     return;
                 }
                 connection.execute(
-                    "select sg_usua_m.de_alias, sg_usua_m.co_empresa_usuario, sg_usua_m.co_usuario, ma_pers_m.de_nombres,ma_pers_m.de_sexo,to_char(ma_pers_m.fe_nacimiento,'dd/mm/yyyy') as \"fe_nacimiento\", st_admin,ma_pers_m.de_apellido_paterno,ma_pers_m.de_apellido_materno, sg_usua_m.co_centro_costo, sg_usua_m.st_acceso_wap,cc.de_nombre as nom_ccostos  from sg_usua_m  left join ma_cent_cost_m cc on cc.co_empresa= co_empresa_usuario and cc.co_centro_costo =sg_usua_m.co_centro_costo left join ma_pers_m on ma_pers_m.co_persona = sg_usua_m.co_persona where sg_usua_m.de_alias = :usuario and sg_usua_m.de_clave_sistema = :clave and sg_usua_m.es_vigencia = 'Vigente' and sg_usua_m.st_acceso_wap = 'S'",
+                    "select sg_usua_m.de_alias, sg_usua_m.co_empresa_usuario, sg_usua_m.de_correo,sg_usua_m.co_usuario, ma_pers_m.de_nombres,ma_pers_m.de_sexo,to_char(ma_pers_m.fe_nacimiento,'dd/mm/yyyy') as fe_nacimiento, sg_usua_m.st_admin,ma_pers_m.de_apellido_paterno,ma_pers_m.de_apellido_materno, sg_usua_m.co_centro_costo, sg_usua_m.st_acceso_wap,cc.de_nombre as nom_ccostos  from sg_usua_m  left join ma_cent_cost_m cc on cc.co_empresa= co_empresa_usuario and cc.co_centro_costo =sg_usua_m.co_centro_costo left join ma_pers_m on ma_pers_m.co_persona = sg_usua_m.co_persona where sg_usua_m.de_alias = :usuario and sg_usua_m.de_clave_sistema = :clave and sg_usua_m.es_vigencia = 'Vigente' and sg_usua_m.st_acceso_wap = 'S'",
                     {
                         usuario: { val: usuario },
                         clave: { val: clave }
@@ -50,9 +50,10 @@ const loginCtrl = {
                             fecnaci : result.rows[0].FE_NACIMIENTO,
                             admin: result.rows[0].ST_ADMIN,
                             ccosto: result.rows[0].CO_CENTRO_COSTO,
-                            ncosto: result.rows[0].NOM_CCOSTOS
+                            ncosto: result.rows[0].NOM_CCOSTOS,
+                            mail : result.rows[0].DE_CORREO
                         };
-                        console.log(user);
+                       
                         const token = jwt.sign(user, jwtKey, {
                             expiresIn: 86400
                         });

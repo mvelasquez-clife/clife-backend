@@ -11,24 +11,21 @@
         <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">    
         <link rel="stylesheet" type="text/css" href="assets/css/main.css">
         <style type="text/css">
-            html,body{ display: flex;height:100%;margin:0;padding:0;width:100%}
-            #dv-fondo{background-image:url('assets/images/home/background3.jpg');background-size:cover;height:100%;width:100%}
-
+            html,body{ display: flex;height:100%;margin:0;padding:0;width:100%;  overflow: hidden}
+            #img_fondo_{background-size:cover;height:100%;width:100%;position: absolute; }
         </style>
     </head>
     <body>
         <div id="dhxViewport"></div>
-
         <script type="text/javascript" src="assets/vendor/jquery/jquery-3.2.1.min.js"></script>
         <script type="text/javascript" src="assets/js/conf.js"></script>
-                
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
         <script type="text/javascript" src="assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
         <script type="text/javascript" src="assets/vendor/dhtmlx/sources/dhtmlxToolbar/codebase/dhtmlxtoolbar.js"></script>  
-        <!--script type="text/javascript" src="assets/vendor/dhtmlx/sources/dhtmlxPopup/codebase/dhtmlxpopup.js"></script> -->
         <script type="text/javascript" src="assets/js/home.js"></script>
+        <script type="text/javascript" src="assets/js/sweetalert.js"></script>
         <script type="text/javascript">
-            var dhxWins, mainLayout, secLayout, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, path_folder;
+            var dhxWins, mainLayout, secLayout, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, folder_perfil, folder_fondo;
             var winLayout, winGrid;
             var sidebarjson = [
                 {id: "side_infperso", text: "Datos Personales", icon: "profile64.png", selected: true},
@@ -47,25 +44,66 @@
                 {type: "block", blockOffset: 0, width: 200, list: [
                         {type: "template", value: '-', offsetLeft: 15, name: "name_ccostos", format: name_usu}]}
             ];
-            var form_cuenta = [{type: "settings", labelWidth: 140},
+            var form_pesonaliza = [
+                {type: "block", blockOffset: 30, width: 220, list: [
+                        {type: "fieldset", name: "field_logo", height: 180, width: 190, offsetTop: 55, offsetLeft: 5, label: '<font class="input_font">Foto de Perfil</font>', list: [
+                                {type: "settings", position: "label-top"},
+                                {type: "template", name: "up_imgperfil", inputWidth: 115, inputHeight: 145, format: photo_usu},
+                                {type: "template", name: "", className: "", style: "", inputHeight: 65}
+                            ]}
+                    ]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 30, width: 255, list: [
+                        {type: "fieldset", name: "field_fondo", offsetTop: 55, height: 180, width: 254, label: '<font class="input_font">Imagen de Fondo</font>', list: [
+                                {type: "settings", position: "label-top"},
+                                {type: "template", name: "up_imgfondo", inputWidth: 254, inputHeight: 145, format: photo_usu},
+                                {type: "template", name: "", className: "", style: "", inputHeight: 65}
+                            ]}
+                    ]}
+            ];
+
+            var form_segu = [{type: "settings", labelWidth: 160},
                 {type: "block", blockOffset: 0, list: [
                         {type: "block", blockOffset: 25, offsetTop: 45, width: 250, list: [
-                                {type: "input", style: "font-family:century gothic, verdana, arial, sans-serif!important;", name: 'u_nombres', inputWidth: '200', label: '<font class="input_font">Nombres</font>', required: 'true'},
-                                {type: "input", name: 'u_apepat', offsetTop: 15, inputWidth: '200', label: '<font class="input_font">Ape. Paterno</font>', required: 'true'},
-                                {type: "input", name: 'u_apemat', offsetTop: 15, inputWidth: '200', label: '<font class="input_font">Ape. Materno</font>', required: 'true'}]},
+                                {type: "input", disabled: true, name: 'u_alias', inputWidth: 150, label: '<font class="input_font">Alias</font>', required: false},
+                                {type: "input", name: 'u_passwd', disabled: true, offsetTop: 15, inputWidth: 150, label: '<font class="input_font">Contraseña</font>', required: false}
+                            ]},
                         {type: "newcolumn"},
                         {type: "block", blockOffset: 0, offsetTop: 45, offsetLeft: 25, width: 250, list: [
-                                {type: "calendar", enableTime: false, enableTodayButton: false, dateFormat: "%d/%m/%Y", name: 'u_fecnac', label: '<font class="input_font">Fecha Nacimiento</font>'},
-                                {type: "input", offsetTop: 15, name: 'u_mail', label: '<font class="input_font">Email</font>', inputWidth: '220'}, {type: "newcolumn"},
-                                {type: "radio", offsetTop: 20, name: 'u_sexo', labelWidth: 63, value: 'M', label: '<font class="input_font">Sexo (M)</font>'}, {type: "newcolumn"},
-                                {type: "radio", offsetTop: 20, name: 'u_sexo', offsetLeft: 25, labelWidth: 20, value: 'F', label: '<font class="input_font">(F)</font>'}
+                                {type: "input", name: 'u_mail_recu', disabled: true, label: '<font class="input_font">Email de Recuperación</font>', inputWidth: '250'},
+                                {type: "input", name: 'u_repit_pwd', disabled: true, inputWidth: 200, label: '<font class="input_font">Repita Contraseña</font>', required: false}
                             ]}
                     ]},
                 {type: "newcolumn"},
                 {type: "block", blockOffset: 5, width: 470, list: [
-                        {type: "button", offsetTop: 45, offsetLeft: 55, name: "fedit", value: "Editar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 45, offsetLeft: 55, className: 'b_edit', name: "fedit", value: "Editar"}, {type: "newcolumn"},
                         {type: "button", offsetTop: 45, offsetLeft: 45, name: "fsave", value: "Guardar"}, {type: "newcolumn"},
                         {type: "button", offsetTop: 45, offsetLeft: 45, name: "fcancel", value: "Salir"}
+                    ]}
+            ];
+            var form_cuenta = [{type: "settings", labelWidth: 140},
+                {type: "block", blockOffset: 0, list: [
+                        {type: "block", blockOffset: 25, offsetTop: 45, width: 250, list: [
+                                {type: "input", disabled: true, style: "font-family:century gothic, verdana, arial, sans-serif!important;", name: 'u_nombres', inputWidth: 200, label: '<font class="input_font">Nombres</font>', required: true},
+                                {type: "input", name: 'u_apepat', disabled: true, offsetTop: 15, inputWidth: 200, label: '<font class="input_font">Ape. Paterno</font>', required: true},
+                                {type: "input", name: 'u_apemat', disabled: true, offsetTop: 15, inputWidth: 200, label: '<font class="input_font">Ape. Materno</font>', required: true},
+                                {type: "input", offsetTop: 15, name: 'u_mail', disabled: true, label: '<font class="input_font">Em@il Corporativo</font>', inputWidth: '250'}, {type: "newcolumn"},
+                                {type: "input", offsetTop: 15, name: 'u_mail_p', disabled: true, label: '<font class="input_font">Em@il Personal</font>', inputWidth: '250'}
+                            ]},
+                        {type: "newcolumn"},
+                        {type: "block", blockOffset: 0, offsetTop: 45, offsetLeft: 25, width: 250, list: [
+                                {type: "calendar", enableTime: false, disabled: true, enableTodayButton: false, dateFormat: "%d/%m/%Y", name: 'u_fecnac', label: '<font class="input_font">Fecha Nacimiento</font>'},
+                                {type: "input", offsetTop: 15, name: 'u_tef_c', disabled: true, label: '<font class="input_font">Celular Corporativo</font>', inputWidth: '250'}, {type: "newcolumn"},
+                                {type: "input", offsetTop: 15, name: 'u_tef_p', disabled: true, label: '<font class="input_font">Celular Personal</font>', inputWidth: '250'}, {type: "newcolumn"},
+                                {type: "radio", offsetTop: 20, name: 'u_sexo', disabled: true, labelWidth: 63, value: 'M', label: '<font class="input_font">Sexo (M)</font>'}, {type: "newcolumn"},
+                                {type: "radio", offsetTop: 20, name: 'u_sexo', disabled: true, offsetLeft: 25, labelWidth: 20, value: 'F', label: '<font class="input_font">(F)</font>'}
+                            ]}
+                    ]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 5, width: 470, list: [
+                        {type: "button", offsetTop: 25, offsetLeft: 55, className: 'b_edit', name: "fedit", value: "Editar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 25, offsetLeft: 45, name: "fsave", value: "Guardar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 25, offsetLeft: 45, name: "fcancel", value: "Salir"}
                     ]}
                 /* {type: "newcolumn"},
                  {type: "block", blockOffset: 25, width: 450, list: [
@@ -90,7 +128,7 @@
                 mainLayout.cells("b").hideArrow();
                 mainLayout.setSeparatorSize(0, 0);
                 mainLayout.setSeparatorSize(1, 0);
-                
+
                 myToolbar = mainLayout.cells("a").attachToolbar({iconset: "awesome"});
                 myToolbar.setIconSize(32);
                 myToolbar.addText('add_pasos', null, '<div class="milky">CORPORACION LIFE</div>');
@@ -102,41 +140,42 @@
                 myToolbar.setItemImage('b_hidemenu', "fas fa-bars");
                 myToolbar.setItemImage('b_user_admi', "fas fa-user-cog");
                 myToolbar.setItemImage('b_mail', "fas fa-envelope");
-                myToolbar.setWidth('b_user_admi', '200');
+                myToolbar.setWidth('b_user_admi', 200);
                 myToolbar.addSpacer("b_hidemenu");
                 myToolbar.setItemToolTip('b_hidemenu', 'Oculta o Muestra el Menú Principal');
                 myToolbar.attachEvent("onClick", toolbar_onclic);
                 myToolbar.attachEvent("onkeyup", inpu_onKeyup);
                 myToolbar.setSkin('dhx_custom');
-                
+
                 myPop = new dhtmlXPopup({toolbar: myToolbar, id: "b_user_admi"});
-                carga_estructura_pop();
+                carga_estructura_pop(myPop);
                 myPop.attachEvent("onClick", pop_inclic);
-                
+
                 myPop2 = new dhtmlXPopup({toolbar: myToolbar, id: "search-bar1"});
                 myPop2.attachEvent("onClick", pop_inclic2);
-                
+
                 mainLayout.cells("b").hideHeader();
                 mainLayout.cells("a").setHeight(45);
                 mainLayout.cells("b").setWidth(240);
-                mainLayout.cells("b").setText("Seleccione una opción");
+                //mainLayout.cells("b").setText("Seleccione una opción");
                 mainLayout.cells("b").fixSize(true, true);
                 mainLayout.cells("b").attachHTMLString("<div id=\"dv-treeview\"></div>");
                 mainLayout.cells("c").hideHeader();
-                mainLayout.cells("c").attachHTMLString("<div id=\"dv-fondo\"></div>");
-                
+                //mainLayout.cells("c").attachHTMLString('<div id="img_fondo_"></div>'); //
+                mainLayout.cells("c").attachHTMLString('<div id="img_fondo_"><div class="loader-container">  <div class="progress float shadow">    <div class="progress__item"></div>  </div></div></div>');//mainLayout.cells("c").attachHTMLString("<div id=\"dv-fondo\"></div>');
+
                 secLayout = new dhtmlXLayoutObject("dv-treeview", "2E");
                 secLayout.setSeparatorSize(0, 0);
                 secLayout.setSeparatorSize(1, 0);
                 secLayout.cells("a").hideHeader();
                 secLayout.cells("a").setHeight(150);
-                
+
                 var Formlogo = secLayout.cells("a").attachForm();
                 Formlogo.load(form_logo, doOnload);
-                
+
                 secLayout.cells("a").fixSize(true, true);
                 secLayout.cells("b").hideHeader();
-                
+
                 mainTree = secLayout.cells("b").attachTree();
                 //mainTree.setXMLAutoLoading(BASE_URL + "home/menu/MAIN/Administrator/11");
                 mainTree.setImagePath("assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
@@ -148,8 +187,8 @@
                 mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
                 mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
                 dhxWins = new dhtmlXWindows();
-                dhxWins.attachViewportTo("dv-fondo");
-                $("#dv-header").parent().css("border-color", "#ebebeb");
+                //dhxWins.attachViewportTo("dv-fondo");
+                //$("#dv-header").parent().css("border-color", "#ebebeb");
             }
         </script>
 

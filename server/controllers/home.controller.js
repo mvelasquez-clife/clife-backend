@@ -1,102 +1,53 @@
+//const express = require('express');
 const oracledb = require('oracledb');
+//const app = express();
 const dbParams = require('../database');
 const o2x = require('object-to-xml');
 const formidable = require('formidable');
-//const http = require('http');
-//const  util = require('util');
+//const fs = require('fs');
+var fs = require('fs');
 var path = require('path');
-const fs = require('fs');
+
+
+const util = require('util');
 const homeController = {
 
     file_exist: (req, res) => {
-        const {co_usu, tipo, name} = req.body;
-        const path_ = './public';
-        const testFolder = '/assets/perfil/' + co_usu + '/' + name;
-        //  var p = {co_usu: usrJson.codigo, tipo: 'profile', name : usrJson.codigo+'_profile.png'};
-
-
-
-        return new Promise(function (resolve, reject) {
-            fs.exists(path_ + testFolder, function (exists) {
-                if (exists) {
-                    reject(res.json({
-                        state: 'success',
-                        'folder': testFolder
-                    }));
-                } else {
-                    resolve(res.json({
-                        state: 'default',
-                        'folder': '/assets/images/icons/iconsjhon/avatar_defecto.png'
-                    }));
-                }
-            });
-        })
-
-        /*
-         fs.readdir(testFolder, (err, files) => {
-         if (!err){
-         var l_items = [];
-         
-         for (var i in files) {
-         l_items.push(files[i]);
-         }
-         //comprobar si obtuve resultado
-         if (l_items.length > 0) {
-         res.json({
-         state: 'success',
-         data: {l_items
-         }
-         });
-         }
-         
-         files.forEach(file => {
-         console.log(file);
-         });
-         }else {
-         res.json({
-         state: 'error',
-         error: err
-         });
-         }
-         
-         });
-         */
+        const {co_usu} = req.body,
+        path_ = './public', Folderperfil = '/assets/photos/' + co_usu + '/img_perfil', Folderfondo = '/assets/photos/' + co_usu + '/img_fondo';
+        var __srcperfil, __srcfondo;
+        var folder = path_ + Folderperfil, folderf = path_ + Folderfondo;
+        var files = [fs.readdirSync(folder), fs.readdirSync(folderf)];
+        __srcperfil = (files[0].length > 0) ? Folderperfil + '/' + files[0] : '/assets/images/icons/iconsjhon/avatar_defecto.png';
+        __srcfondo = (files[0].length > 0) ? Folderfondo + '/' + files[1] : '/assets/images/icons/home/background3.png';
+        res.json({state: 'readfile', srcperfil: __srcperfil, srcfondo: __srcfondo});
     },
     upload: (req, res) => {
+        var __req = req;
+        var __src, __file;
         if (req.method.toLowerCase() == 'post') {
-            // parse a file upload
-            var form = new formidable.IncomingForm();
-            form.maxFileSize = 2 * 1024 * 1024;
-
-            form.on('fileBegin', function (name, file) {
-                file.path = __dirname + '/upload/' + file.name;
-                //console.log(file.path);
+            var formu = new formidable.IncomingForm();
+            formu.maxFileSize = 2 * 1024 * 1024;
+            formu.on('fileBegin', function (name, file) {
+                file.path = './public/assets/photos/' + file.name;
+                __src = '/assets/photos/' + file.name;
             });
-
-            var sizeLimitBytes = 2000;
-            form.on('progress', function (bytesReceived, bytesExpected) {
-
+            formu.on('file', function (name, file) {
+                __file = file;
             });
-            form.on('error', function (error) { // I thought this would handle the upload error
+            formu.on('error', function (error) { // I thought this would handle the upload error
                 if (error)
-                    res.json({
-                        state: 'alert', error: error.message
-                    });
+                    res.json({state: 'alert', error: error.message});
+                res.resume();
                 return false;
-            })
-
-            form.parse(req, function (err, fields, files) {
-
+            });
+            formu.parse(req, function (err, fields, files) {
                 if (!err)
-                    res.json({
-                        state: 'success'
-                    });
+                    res.json({state: 'success', src: '/assets/photos/' + files.file_name.name});
             });
             return;
         }
-
     },
-
     getMenu: (req, res) => {
         const {id} = req.query;
         const {alias, empresa} = req.params;
@@ -146,7 +97,6 @@ const homeController = {
             });
         });
     },
-
     getmenu_search: (req, res) => {
         const {id} = req.query;
         const {alias, empresa, txtsearch} = req.body;
@@ -167,7 +117,6 @@ const homeController = {
                     return;
                 }
             });
-
             const query2 = "select gen.co_menu_sistema as \"id\",'>>' as \"flecha\" , '<div class=\"classfont\" >'||gen.de_nombre||'</div>' as \"name\", '<div class=\"classfont\" >'||sist.de_nombre||'</div>' as \"padre\" from v_generar_menu gen left join  sg_menu_sist_m sist on gen.co_antecesor = sist.co_menu_sistema   where gen.de_alias=:alias and gen.co_empresa =:empresa and gen.st_tipo='i' and gen.es_vigencia='Activo' and upper(gen.de_nombre) like upper(:text) order by gen.st_tipo desc ";
             const params2 = {alias: {val: alias}, empresa: {val: empresa}, text: {val: '%' + txtsearch + '%'}};
             conn.execute(query2, params2, responseParams, (error, result) => {
@@ -177,7 +126,6 @@ const homeController = {
                     return;
                 }
                 var l_items = [];
-
                 for (var i in result.rows) {
                     l_items.push(result.rows[i]);
                 }
@@ -209,5 +157,4 @@ const homeController = {
 
 
 };
-
 module.exports = homeController;
