@@ -28,6 +28,23 @@ div.name_ccostos{
 .input_font{
     font-weight : 700; font-family:century gothic, verdana, arial, sans-serif!important;
 }
+
+
+/***************Formato para botones solo icons*/
+.dhxform_item_label_left.fsalirw div.dhxform_btn {cursor: pointer; border : 0px solid white; background-color: white;}
+
+/************ Formato para los label del DhtmlxForm**/
+
+.fas {    font-size: 2.2em;
+    color: red;}
+div.title_usu {
+     float : right;
+      text-transform: capitalize;
+    text-align: center;
+    font-weight:100;
+    font-size: 20px !important;
+    font-weight : 800;  font-family:century gothic, verdana, arial, sans-serif!important;
+}
 div.user_name {
     cursor: pointer;
     text-align: center;
@@ -35,6 +52,8 @@ div.user_name {
     font-size: 12px;
     font-weight : 800;  font-family:century gothic, verdana, arial, sans-serif!important;
 }
+
+/*************** Clase generica de Tipo de Fuente*/
 .classfont{
     font-family:century gothic, verdana, arial, sans-serif!important;
 }
@@ -100,11 +119,16 @@ div.user_name {
     outline: none;
     font-family:century gothic, verdana, arial, sans-serif!important;
 }
-/**=====================================*/
 
-/************************  CSS background animate ****/
+/*************** CSS DHTMLX FORM INPUT ***********/
 
-
+.dhxform_obj_material .dhxform_textarea{
+    border-style: groove;
+}
+.dhxform_item_label_left.b_savec.disabled div.dhxform_btn{
+   opacity: 0.4;
+}
+/************************  CSS background FONDO animate ****/
 .loader-container {
     position: absolute;
     top: 0;
@@ -121,7 +145,7 @@ div.user_name {
     height: 50%;
     background: #2ec079;
     /*z-index: -1;*/
-    transition: top 1.2s linear 3.1s;
+    transition: top 0.5s linear 1.1s;
 }
 #img_fondo_ .loader-container:after {
     content: '';
@@ -132,7 +156,7 @@ div.user_name {
     height: 50%;
     background: #2ec079;
     /*z-index: -1;*/
-    transition: bottom 1.2s linear 3.1s;
+    transition: bottom 0.5s linear 1.1s;
 }
 #img_fondo_ .loader-container.done:before {
     top: -50%;
@@ -169,7 +193,7 @@ div.user_name {
     border-right: solid 10px #fff;
     border-top-right-radius: 100%;
     transform-origin: left bottom;
-    -webkit-animation: spin 3s linear infinite;
+    -webkit-animation: spin 1s linear infinite;
 }
 .progress.float .progress__item:before {
     border-top-width: 2px;
@@ -194,7 +218,7 @@ div.user_name {
     border-top-right-radius: 100%;
     z-index: -1;
     transform-origin: left bottom;
-    -webkit-animation: spin 3s linear infinite;
+    -webkit-animation: spin 1s linear infinite;
 }
 .progress.shadow:after {
     content: '';
@@ -214,8 +238,8 @@ div.user_name {
 }
 .progress.done .progress__item {
     opacity: 0;
-    -webkit-animation: done 3.1s;
-    transition: opacity 0.3s linear 3.1s;
+    -webkit-animation: done 1.1s;
+    transition: opacity 0.3s linear 1.1s;
 }
 .progress.done .progress__item:before {
     display: none;
@@ -225,8 +249,8 @@ div.user_name {
 }
 .progress.done:after {
     opacity: 0;
-    -webkit-animation: done 3.1s;
-    transition: opacity 0.15s linear 3.1s;
+    -webkit-animation: done 1.1s;
+    transition: opacity 0.15s linear 1.1s;
 }
 @-webkit-keyframes done {
     10% {

@@ -153,8 +153,52 @@ const homeController = {
 
             });
         });
+    },
+    update_datos: (req, res) => {
+        const {empresa, co_usuario,co_persona,co_tipo_doc,co_documento,apepat,apemat,nombres,sexo,fecnac,mailcor,mailper,celcor,celper} = req.body; //cuando las variables se envian por post
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            const query = "call pack_new_pers.sp_grabar_data_persona(0,'6','41501699','Rojas','Salcedo','Hiroshy','M','19/08/1982',x_result,x_d_result)";
+            console.log(query);
+            const params = {
+                p_accion: {val: modo},
+                p_coperiodo: {val: coperiodo},
+                p_anio: {val: anio},
+                p_mes: {val: mes},
+                p_vigencia: {val: estado},
+                p_empresa: {val: empresa},
+                p_pdia: {val: pdia},
+                p_udia: {val: udia},
+                //parametros de salida
+                o_codigo: {dir: oracledb.BIND_OUT, type: oracledb.NUMBER},
+                o_resultado: {dir: oracledb.BIND_OUT, type: oracledb.STRING},
+            };
+            console.log(params);
+            conn.execute(query, params, responseParams, (error, result) => {
+                if (error) {
+                    conn.close();
+                    res.json({
+                        state: 'error',
+                        message: error.Error
+                    });
+                    return;
+                }
+                const {o_codigo, o_resultado} = result.outBinds;
+                if (o_codigo == 1)
+                    res.json({
+                        state: 'success',
+                        message: o_resultado
+                    });
+                else
+                    res.json({
+                        state: 'error',
+                        message: o_resultado
+                    });
+            });
+        });
     }
-
-
 };
 module.exports = homeController;

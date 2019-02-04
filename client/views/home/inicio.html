@@ -25,7 +25,7 @@
         <script type="text/javascript" src="assets/js/home.js"></script>
         <script type="text/javascript" src="assets/js/sweetalert.js"></script>
         <script type="text/javascript">
-            var dhxWins, mainLayout, secLayout, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, folder_perfil, folder_fondo;
+            var dhxWins, mainLayout, secLayout, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, folder_perfil, folder_fondo, form_infperso,form_seguridad, myWinsPerfil;
             var winLayout, winGrid;
             var sidebarjson = [
                 {id: "side_infperso", text: "Datos Personales", icon: "profile64.png", selected: true},
@@ -44,7 +44,11 @@
                 {type: "block", blockOffset: 0, width: 200, list: [
                         {type: "template", value: '-', offsetLeft: 15, name: "name_ccostos", format: name_usu}]}
             ];
-            var form_pesonaliza = [
+            var form_pesonaliza = [{type: "settings", labelWidth: 160},
+                {type: "block", blockOffset: 0, width: 453, list: [{type: "template", offsetLeft: 15, name: "title_usu", format: name_usu}]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 25, width: 100, list: [{type: "button", offsetTop: 2, offsetLeft: 1, name: "fsalirw", className: "fsalirw", value: '<i class="fas fa-window-close"></i>'}]},
+                {type: "newcolumn"},
                 {type: "block", blockOffset: 30, width: 220, list: [
                         {type: "fieldset", name: "field_logo", height: 180, width: 190, offsetTop: 55, offsetLeft: 5, label: '<font class="input_font">Foto de Perfil</font>', list: [
                                 {type: "settings", position: "label-top"},
@@ -63,6 +67,10 @@
             ];
 
             var form_segu = [{type: "settings", labelWidth: 160},
+                {type: "block", blockOffset: 0, width: 453, list: [{type: "template", offsetLeft: 15, name: "title_usu", format: name_usu}]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 25, width: 100, list: [{type: "button", offsetTop: 2, offsetLeft: 1, name: "fsalirw", className: "fsalirw", value: '<i class="fas fa-window-close"></i>'}]},
+                {type: "newcolumn"},
                 {type: "block", blockOffset: 0, list: [
                         {type: "block", blockOffset: 25, offsetTop: 45, width: 250, list: [
                                 {type: "input", disabled: true, name: 'u_alias', inputWidth: 150, label: '<font class="input_font">Alias</font>', required: false},
@@ -76,14 +84,18 @@
                     ]},
                 {type: "newcolumn"},
                 {type: "block", blockOffset: 5, width: 470, list: [
-                        {type: "button", offsetTop: 45, offsetLeft: 55, className: 'b_edit', name: "fedit", value: "Editar"}, {type: "newcolumn"},
-                        {type: "button", offsetTop: 45, offsetLeft: 45, name: "fsave", value: "Guardar"}, {type: "newcolumn"},
-                        {type: "button", offsetTop: 45, offsetLeft: 45, name: "fcancel", value: "Salir"}
+                        {type: "button", offsetTop: 45, offsetLeft: 55, className: 'b_edit', name: "b_edits", value: "Editar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 45, offsetLeft: 45, name: "b_saves", value: "Guardar"}
+
                     ]}
             ];
             var form_cuenta = [{type: "settings", labelWidth: 140},
+                {type: "block", blockOffset: 0, width: 453, list: [{type: "template", offsetLeft: 15, name: "title_usu", format: name_usu}]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 25, width: 100, list: [{type: "button", offsetTop: 2, offsetLeft: 1, name: "fsalirw", className: "fsalirw", value: '<i class="fas fa-window-close"></i>'}]},
+                {type: "newcolumn"},
                 {type: "block", blockOffset: 0, list: [
-                        {type: "block", blockOffset: 25, offsetTop: 45, width: 250, list: [
+                        {type: "block", blockOffset: 25, offsetTop: 2, width: 250, list: [
                                 {type: "input", disabled: true, style: "font-family:century gothic, verdana, arial, sans-serif!important;", name: 'u_nombres', inputWidth: 200, label: '<font class="input_font">Nombres</font>', required: true},
                                 {type: "input", name: 'u_apepat', disabled: true, offsetTop: 15, inputWidth: 200, label: '<font class="input_font">Ape. Paterno</font>', required: true},
                                 {type: "input", name: 'u_apemat', disabled: true, offsetTop: 15, inputWidth: 200, label: '<font class="input_font">Ape. Materno</font>', required: true},
@@ -91,7 +103,7 @@
                                 {type: "input", offsetTop: 15, name: 'u_mail_p', disabled: true, label: '<font class="input_font">Em@il Personal</font>', inputWidth: '250'}
                             ]},
                         {type: "newcolumn"},
-                        {type: "block", blockOffset: 0, offsetTop: 45, offsetLeft: 25, width: 250, list: [
+                        {type: "block", blockOffset: 0, offsetTop: 2, offsetLeft: 25, width: 250, list: [
                                 {type: "calendar", enableTime: false, disabled: true, enableTodayButton: false, dateFormat: "%d/%m/%Y", name: 'u_fecnac', label: '<font class="input_font">Fecha Nacimiento</font>'},
                                 {type: "input", offsetTop: 15, name: 'u_tef_c', disabled: true, label: '<font class="input_font">Celular Corporativo</font>', inputWidth: '250'}, {type: "newcolumn"},
                                 {type: "input", offsetTop: 15, name: 'u_tef_p', disabled: true, label: '<font class="input_font">Celular Personal</font>', inputWidth: '250'}, {type: "newcolumn"},
@@ -101,23 +113,12 @@
                     ]},
                 {type: "newcolumn"},
                 {type: "block", blockOffset: 5, width: 470, list: [
-                        {type: "button", offsetTop: 25, offsetLeft: 55, className: 'b_edit', name: "fedit", value: "Editar"}, {type: "newcolumn"},
-                        {type: "button", offsetTop: 25, offsetLeft: 45, name: "fsave", value: "Guardar"}, {type: "newcolumn"},
-                        {type: "button", offsetTop: 25, offsetLeft: 45, name: "fcancel", value: "Salir"}
+                        {type: "button", offsetTop: 25, offsetLeft: 55, className: 'b_editc', name: "b_editc", value: "Editar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 25, offsetLeft: 45, name: "b_savec",className : "b_savec", value: "Guardar",disabled: true}
                     ]}
-                /* {type: "newcolumn"},
-                 {type: "block", blockOffset: 25, width: 450, list: [
-                 {type: "fieldset", name: "field_logo", offsetTop: 25, offsetLeft: 5, label: '<font class="input_font">Foto de Perfil</font>', list: [
-                 {type: "settings", position: "label-top"},
-                 {type: "container", name: "up_photo", className: "up_photo", style: "up_photo1", inputWidth: 115, inputHeight: 145}
-                 ]}
-                 ]}*/
             ];
-            /*                   {type: "input", name: 'u_alias', offsetTop: 15, label: 'Password'},
-             {type: "input", name: 'u_password', offsetTop: 15, label: 'Password'}*/
 
-            //valida la sesion
-            if (usrtoken == '') {
+            if (usrtoken === '') {
                 location.href = '/';
             } else {
 

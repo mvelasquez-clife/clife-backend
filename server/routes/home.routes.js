@@ -11,4 +11,6 @@ router.post('/upload',homeController.upload);
 
 router.post('/file_exist',homeController.file_exist);
 
+router.post('/update_datos',homeController.update_datos);
+
 module.exports = router;

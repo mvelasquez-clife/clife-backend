@@ -40,10 +40,10 @@ pop_inclic = (id) => {
 };
 /********************crea una Windows al hacer click en  Popup.items.profile */
 crear_ventana = () => {
-    var myWins = new dhtmlXWindows();
-    var confwin = myWins.createWindow({id: "w_cuenta", left: 0, top: 0, width: 700, height: 450, center: true});
-    myWins.window('w_cuenta').hideHeader();
-    mySidebar = myWins.window('w_cuenta').attachSidebar({width: 120, single_cell: false, template: "icons_text", icons_path: "assets/images/icons/iconsjhon/", items: sidebarjson});
+    myWinsPerfil = new dhtmlXWindows();
+    myWinsPerfil.createWindow({id: "w_cuenta", left: 0, top: 0, width: 700, height: 450, center: true});
+    myWinsPerfil.window('w_cuenta').hideHeader();
+    mySidebar = myWinsPerfil.window('w_cuenta').attachSidebar({width: 120, single_cell: false, template: "icons_text", icons_path: "assets/images/icons/iconsjhon/", items: sidebarjson});
     mySidebar.attachEvent("onBeforeSelect", function (id, lastId) {
         switch (id) {
             case 'side_infperso':
@@ -61,11 +61,12 @@ crear_ventana = () => {
         }
         return true;
     });
+    f_side_infperso();
 };
 
 /********************Agrega el fomulario dentro del item Sidebar  'side_infperso' => Datos Personales*/
 f_side_infperso = () => {
-    var form_infperso = mySidebar.cells("side_infperso").attachForm();
+    form_infperso = mySidebar.cells("side_infperso").attachForm();
     form_infperso.loadStruct(form_cuenta);
     form_infperso.setSkin("material");
     form_infperso.setItemValue('u_nombres', usrJson.nombre);
@@ -83,36 +84,42 @@ f_side_infperso = () => {
         if (value.indexOf("@") !== -1)  //devuelve -1 cuando no encuentra el valor buscado en un string
             form_infperso.setItemValue(name, form_infperso.getItemValue(name) + 'corporacionlife.com.pe');
     });
+    form_infperso.attachEvent("onButtonClick", onclicFormInfo);
+
 };
 
 /********************Agrega el fomulario dentro del item Sidebar  'side_segu' => Seguridad */
 f_side_segu = () => {
-    var form_seguridad = mySidebar.cells("side_segu").attachForm();
+    form_seguridad = mySidebar.cells("side_segu").attachForm();
     form_seguridad.loadStruct(form_segu);
     form_seguridad.setSkin("material");
+    form_seguridad.attachEvent("onButtonClick", onclicFormInfo);
 };
 
 /********************Agrega el fomulario dentro del item Sidebar  'side_person' => Personalizacion */
 f_side_personaliza = () => {
+
     var form_personal = mySidebar.cells("side_person").attachForm();
     form_personal.loadStruct(form_pesonaliza);
     form_personal.setSkin("material");
     $('#photocharge').attr('src', folder_perfil);
     $('#fondocharge').attr('src', folder_fondo);
+    form_personal.attachEvent("onButtonClick", onclicFormInfo);
+
     var json = [{'id_form': '#eventFormperfil', datos: {'input_file': '#fphoto', 'div_content': 'file_name', 'ruta': usrJson.codigo + '/img_perfil/' + usrJson.codigo + '_profile.png', 'img_id': '#photo_img_'}},
         {'id_form': '#eventFormfondo', datos: {'input_file': '#ffondo', 'div_content': 'file_name', 'ruta': usrJson.codigo + '/img_fondo/' + usrJson.codigo + '_fondo.png', 'img_id': '#img_fondo_'}}];
     (json).forEach((elem) => {
         $(elem.id_form).submit(function (e) {
             e.preventDefault();
             var fd = new FormData(); //objecto FormData para estrucutra los campos enviados en el formulario
-            var file = $(elem.datos.input_file).get(0).files[0]; console.log(file);
+            var file = $(elem.datos.input_file).get(0).files[0];
             fd.append(elem.datos.div_content, file, elem.datos.ruta);
             $.ajax({
                 url: BASE_URL + 'home/upload', data: fd, processData: false, cache: false, contentType: false, type: 'POST',
                 success: function (data) {
                     if (data.state === 'success') {
                         if (elem.datos.img_id === '#img_fondo_')
-                           $("#img_fondo_").css("background", 'url("' + data.src +'?' + new Date().getTime()+ '")  no-repeat center'); //   $(elem.datos.img_id).css("background-image", 'url("' + data.src + '")');
+                            $("#img_fondo_").css("background", 'url("' + data.src + '?' + new Date().getTime() + '")  no-repeat center center fixed'); //   $(elem.datos.img_id).css("background-image", 'url("' + data.src + '")');
                         else
                             $(elem.datos.img_id).attr('src', data.src + '?' + new Date().getTime());//por defecto Ajax actualiza <img> meduante GET y las guarda en cache. para poder ser actualizada una imagen se envia parametro adicional  => + '?' + new Date().getTime()
                     } else
@@ -123,7 +130,46 @@ f_side_personaliza = () => {
     });
 };
 
-
+/************Funcion onclic Formulario Info personal ************************************/
+onclicFormInfo = (name) => {
+    switch (name) {
+        case 'fsalirw':
+            myWinsPerfil.window('w_cuenta').close();
+            break;
+        case 'b_editc':
+            (['u_nombres', 'u_apepat', 'u_apemat', 'u_fecnac', 'u_sexo', 'u_mail', 'u_mail_p', 'u_tef_c', 'u_tef_p', 'b_savec']).forEach((elem) => {
+                if (elem === 'u_sexo')
+                    (['F', 'M']).forEach((val) => {
+                        form_infperso.enableItem(elem, val);
+                    });
+                form_infperso.enableItem(elem);
+            });
+            break;
+        case 'b_savec':
+            save_infoperso();
+            break;
+        default:
+            null;
+            break;
+    }
+};
+/******************** ****************/
+save_infoperso = () => {
+    var p = {co_usu: usrJson.codigo};
+    $.post(BASE_URL + "home/update_datos", p, function (res) {
+        if (res.state !== 'error') {
+            folder_perfil = res.srcperfil;
+            folder_fondo = res.srcfondo;
+            $("#photo_img_").attr("src", res.srcperfil);
+            $("#img_fondo_").css("background", 'url("' + res.srcfondo + '") no-repeat center center fixed'); // $("#img_fondo_").attr("src", res.srcfondo);
+            setTimeout(function () {
+                $('.loader-container').addClass('done');
+                $('.progress').addClass('done');
+            }, 1000);
+        } else
+            Swal.fire({type: 'error', title: 'Algo salió mal...', text: 'No se pudo cargar su imagen de Perfil Error :' + res.error, footer: '<a href="#">suba una nueva imagen, si el problema continua, comuníquese con el area de Sistemas</a>'});
+    }, "json");
+};
 /******************** Funcion para cerrar_Sesion se activa cuando hacen click en Popup.item.close_session  */
 logout = () => {
     dhtmlx.confirm({
@@ -187,13 +233,11 @@ doOnload = () => {
             folder_perfil = res.srcperfil;
             folder_fondo = res.srcfondo;
             $("#photo_img_").attr("src", res.srcperfil);
-            $("#img_fondo_").css("background", 'url("' + res.srcfondo + '")  no-repeat center'); // $("#img_fondo_").attr("src", res.srcfondo);
-            var timer = setTimeout(function () {
+            $("#img_fondo_").css("background", 'url("' + res.srcfondo + '") no-repeat center center fixed'); // $("#img_fondo_").attr("src", res.srcfondo);
+            setTimeout(function () {
                 $('.loader-container').addClass('done');
                 $('.progress').addClass('done');
-
-            });
-
+            }, 1000);
         } else
             Swal.fire({type: 'error', title: 'Algo salió mal...', text: 'No se pudo cargar su imagen de Perfil Error :' + res.error, footer: '<a href="#">suba una nueva imagen, si el problema continua, comuníquese con el area de Sistemas</a>'});
     }, "json");
@@ -207,6 +251,8 @@ function   name_usu(name, value) {
         return "<div class='name_label'>" + value + "</div>";
     if (name === "name_ccostos")
         return "<div class='name_ccostos'>" + value + "</div>";
+    if (name === 'title_usu')
+        return '<p style="float:left;font-size: 20px !important;">Hola, </p><div class="title_usu">&nbsp;' + usrJson.nombre + ' ' + usrJson.apepat + ' ' + usrJson.apemat + '</div>';
 }
 
 /******************** Funcion   attachEvent("onkeyup" ) en el input del Tollbar para buscar modulos.*/
