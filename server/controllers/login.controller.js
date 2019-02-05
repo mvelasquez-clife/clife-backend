@@ -50,9 +50,10 @@ const loginCtrl = {
                             fecnaci : result.rows[0].FE_NACIMIENTO,
                             admin: result.rows[0].ST_ADMIN,
                             ccosto: result.rows[0].CO_CENTRO_COSTO,
-                            ncosto: result.rows[0].NOM_CCOSTOS
+                            ncosto: result.rows[0].NOM_CCOSTOS,
+                            mail : result.rows[0].DE_CORREO
                         };
-                        console.log(user);
+                       
                         const token = jwt.sign(user, jwtKey, {
                             expiresIn: 86400
                         });
