@@ -10,6 +10,9 @@ var path = require('path');
 
 
 const util = require('util');
+const responseParams = {
+    outFormat: oracledb.OBJECT
+};
 const homeController = {
 
     file_exist: (req, res) => {
@@ -154,27 +157,65 @@ const homeController = {
             });
         });
     },
-    update_datos: (req, res) => {
-        const {empresa, co_usuario,co_persona,co_tipo_doc,co_documento,apepat,apemat,nombres,sexo,fecnac,mailcor,mailper,celcor,celper} = req.body; //cuando las variables se envian por post
+    list_tipodoc: (req, res) => {
+        //const {empresa, planilla} = req.params;
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 console.error(err);
                 return;
             }
-            const query = "call pack_new_pers.sp_grabar_data_persona(0,'6','41501699','Rojas','Salcedo','Hiroshy','M','19/08/1982',x_result,x_d_result)";
-            console.log(query);
+            const query = "select co_tipo_doc_ide as \"value\" ,de_abrevia as \"label\" from table(pack_new_pers.f_list_tipodoc)";
+            const params = {};
+            conn.execute(query, params, responseParams, (error, result) => {
+                if (error) {
+                    console.error(error);
+                    conn.close();
+                    return;
+                }
+//                res.set('Content-Type', 'application/json');                 /*{text: "DNI", value: 1}*/
+//                res.send(result.rows);
+                var item = [];
+                for (var i in result.rows) {
+                    item .push({item : { '@' : {value: result.rows[i].value, label: result.rows[i].label} } });
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(o2x({
+                    '?xml version=git"1.0" encoding="utf-8"?': null,
+                  data : { item }
+                }));
+
+                
+            });
+        });
+    },
+    update_datos: (req, res) => {
+        const {empresa, co_usuario, co_persona, co_tipo_doc, co_documento, apepat, apemat, nombres, sexo, fecnac, mailcor, mailper, celcor, celper} = req.body; //cuando las variables se envian por post
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            const query = "call pack_new_pers.sp_grabar_data_persona(:empresa,:co_usuario,:co_persona,:co_tipo_doc,:co_documento,:apepat,:apemat,:nombres,:sexo,:fecnac,:mailcor,:mailper,:celcor,:celper,:o_co_pers,:o_result)";
+//            console.log(query);
             const params = {
-                p_accion: {val: modo},
-                p_coperiodo: {val: coperiodo},
-                p_anio: {val: anio},
-                p_mes: {val: mes},
-                p_vigencia: {val: estado},
-                p_empresa: {val: empresa},
-                p_pdia: {val: pdia},
-                p_udia: {val: udia},
+                empresa: {val: empresa},
+                co_usuario: {val: co_usuario},
+                co_persona: {val: co_persona},
+                co_tipo_doc: {val: co_tipo_doc},
+                co_documento: {val: co_documento},
+                apepat: {val: apepat},
+                apemat: {val: apemat},
+                nombres: {val: nombres},
+                sexo: {val: sexo},
+                fecnac: {val: fecnac},
+                mailcor: {val: mailcor},
+                mailper: {val: mailper},
+                celcor: {val: celcor},
+                celper: {val: celper},
+
                 //parametros de salida
-                o_codigo: {dir: oracledb.BIND_OUT, type: oracledb.NUMBER},
-                o_resultado: {dir: oracledb.BIND_OUT, type: oracledb.STRING},
+                o_co_pers: {dir: oracledb.BIND_OUT, type: oracledb.NUMBER},
+                o_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING}
             };
             console.log(params);
             conn.execute(query, params, responseParams, (error, result) => {
@@ -186,16 +227,16 @@ const homeController = {
                     });
                     return;
                 }
-                const {o_codigo, o_resultado} = result.outBinds;
-                if (o_codigo == 1)
+                const {o_co_pers, o_result} = result.outBinds;
+                if (o_co_pers > 0)
                     res.json({
                         state: 'success',
-                        message: o_resultado
+                        message: o_result
                     });
                 else
                     res.json({
                         state: 'error',
-                        message: o_resultado
+                        message: o_result
                     });
             });
         });

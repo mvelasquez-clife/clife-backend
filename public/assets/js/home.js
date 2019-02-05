@@ -119,7 +119,7 @@ f_side_personaliza = () => {
                 success: function (data) {
                     if (data.state === 'success') {
                         if (elem.datos.img_id === '#img_fondo_')
-                            $("#img_fondo_").css("background", 'url("' + data.src + '?' + new Date().getTime() + '")  no-repeat center center fixed'); //   $(elem.datos.img_id).css("background-image", 'url("' + data.src + '")');
+                            $("#img_fondo_").css("background", 'url("' + data.src + '?' + new Date().getTime() + '")  no-repeat center'); //   $(elem.datos.img_id).css("background-image", 'url("' + data.src + '")');
                         else
                             $(elem.datos.img_id).attr('src', data.src + '?' + new Date().getTime());//por defecto Ajax actualiza <img> meduante GET y las guarda en cache. para poder ser actualizada una imagen se envia parametro adicional  => + '?' + new Date().getTime()
                     } else
@@ -153,21 +153,20 @@ onclicFormInfo = (name) => {
             break;
     }
 };
-/******************** ****************/
+/******************** Guarda datos  ****************/
 save_infoperso = () => {
-    var p = {co_usu: usrJson.codigo};
-    $.post(BASE_URL + "home/update_datos", p, function (res) {
+    var obj = {};    //{empresa, co_usuario, co_persona, co_tipo_doc, co_documento, apepat, apemat, nombres, sexo, fecnac, mailcor, mailper, celcor, celper}
+    //obj['empresa']=usrJson.empresa;
+    (['empresa','codigo','copersona']).forEach((elm) => { obj[elm] = usrJson.elm; });
+    (['u_tipo_doc','u_documento','u_nombres', 'u_apepat', 'u_apemat', 'u_fecnac', 'u_sexo', 'u_mail', 'u_mail_p', 'u_tef_c', 'u_tef_p']).forEach((elm) => {
+        obj[elm] = form_infperso.getItemValue(elm);
+    });
+    $.post(BASE_URL + "home/update_datos", obj, function (res) {
+        console.log(res);
         if (res.state !== 'error') {
-            folder_perfil = res.srcperfil;
-            folder_fondo = res.srcfondo;
-            $("#photo_img_").attr("src", res.srcperfil);
-            $("#img_fondo_").css("background", 'url("' + res.srcfondo + '") no-repeat center center fixed'); // $("#img_fondo_").attr("src", res.srcfondo);
-            setTimeout(function () {
-                $('.loader-container').addClass('done');
-                $('.progress').addClass('done');
-            }, 1000);
+            Swal.fire('Bien!', res.message, 'success')
         } else
-            Swal.fire({type: 'error', title: 'Algo salió mal...', text: 'No se pudo cargar su imagen de Perfil Error :' + res.error, footer: '<a href="#">suba una nueva imagen, si el problema continua, comuníquese con el area de Sistemas</a>'});
+            Swal.fire({type: 'error', title: 'Algo salió mal...', text: 'No se pudo guardar sus Datos :' + res.message, footer: '<a href="#">Comuníquese con el area de Sistemas</a>'});
     }, "json");
 };
 /******************** Funcion para cerrar_Sesion se activa cuando hacen click en Popup.item.close_session  */
@@ -233,7 +232,7 @@ doOnload = () => {
             folder_perfil = res.srcperfil;
             folder_fondo = res.srcfondo;
             $("#photo_img_").attr("src", res.srcperfil);
-            $("#img_fondo_").css("background", 'url("' + res.srcfondo + '") no-repeat center center fixed'); // $("#img_fondo_").attr("src", res.srcfondo);
+            $("#img_fondo_").css("background", 'url("' + res.srcfondo + '") no-repeat center'); // $("#img_fondo_").attr("src", res.srcfondo);
             setTimeout(function () {
                 $('.loader-container').addClass('done');
                 $('.progress').addClass('done');
