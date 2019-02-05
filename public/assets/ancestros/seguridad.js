@@ -56,7 +56,8 @@ IniciarFormularioSeguridad = (windowId, container) => {
                     FormularioSeguridad.attachEvent('onButtonClick', (buttonId) => {
                         switch(buttonId) {
                             case 'fsAceptar':
-                                if(data.disusuario == 'S') {
+                                //ajax
+                                /*if(data.disusuario == 'S') {
                                     const pOut = {
                                         id: windowId,
                                         result: 'S'
@@ -64,7 +65,29 @@ IniciarFormularioSeguridad = (windowId, container) => {
                                     winFormularioSeguridad.close();
                                     resolve(JSON.stringify(pOut));
                                 }
-                                else resolve(null);
+                                else resolve(null);*/
+                                winFormularioSeguridad.progressOn();
+                                const params = {
+                                    alias: FormularioSeguridad.getItemValue('fsUsuario'),
+                                    empresa: usrJson.empresa,
+                                    tabla: windowId,
+                                    clave: FormularioSeguridad.getItemValue('fsClave')
+                                };
+                                $.post('/api/ancestros/validar-clave', params, (response) => {
+                                    if(response.state == 'success') {
+                                        const pOut = {
+                                            id: windowId,
+                                            result: 'S'
+                                        };
+                                        winFormularioSeguridad.close();
+                                        resolve(JSON.stringify(pOut));
+                                    }
+                                    else {
+                                        alert(response.message);
+                                    }
+                                }, 'json').always(() => {
+                                    winFormularioSeguridad.progressOff();
+                                });
                                 break;
                             case 'fsCancelar':
                                 FormularioSeguridad.setItemValue('fsUsuario','');

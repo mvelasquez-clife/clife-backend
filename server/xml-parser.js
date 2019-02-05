@@ -18,5 +18,29 @@ module.exports = {
                 row: arr
             }
         });
+    },
+    renderCombo: (jsonRows) => {
+        var arr = [];
+        for(var i in jsonRows) {
+            var iRow = jsonRows[i];
+            if(i == 0) {
+                arr.push({
+                    '@': { value: iRow.VALUE, selected: true },
+                    '#': iRow.TEXT
+                });
+            }
+            else {
+                arr.push({
+                    '@': { value: iRow.VALUE },
+                    '#': iRow.TEXT
+                });
+            }
+        }
+        return o2x({
+            '?xml version="1.0" encoding="utf-8"?' : null,
+            complete: {
+                option: arr
+            }
+        });
     }
 };

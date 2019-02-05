@@ -61,8 +61,6 @@ const ancestroController = {
                 p_empresa: { val: empresa },
                 p_extra: { val: '' }
             };
-console.log(query);
-console.log(params);
             conn.execute(query, params, responseParams, (error, result) => {
                 if(error) {
                     conn.close();
@@ -74,6 +72,47 @@ console.log(params);
                 }
                 res.set('Content-Type', 'text/xml');
                 res.send(xmlParser.renderXml(result.rows));
+            });
+        });
+    },
+
+    validarClave: (req, res) => {
+        const { alias, empresa, tabla, clave } = req.body;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                console.error(err);
+                return;
+            }
+            const query = "call PACK_NEW_SEGURIDAD.Sp_ValidarAutorizacion (:p_alias, :p_empresa, :p_tabla, :p_clave, :o_resultado)";
+            const params = {
+                p_alias: { val: alias },
+                p_empresa: { val: empresa },
+                p_tabla: { val: tabla },
+                p_clave: { val: clave },
+                o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    conn.close();
+console.log(error);
+                    res.json({
+                        state: 'error',
+                        message: error
+                    });
+                    return;
+                }
+                const { o_resultado } = result.outBinds;
+                if(o_resultado == 'S') {
+                    res.json({
+                        state: 'success'
+                    });
+                }
+                else {
+                    res.json({
+                        state: 'error',
+                        message: 'El usuario y/o clave son incorrectos'
+                    });
+                }
             });
         });
     }

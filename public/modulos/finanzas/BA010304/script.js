@@ -5,8 +5,6 @@ toolbarListaPlanillasOnClick = async (id) => {
             toolbarListaPlanillas.setValue('ipRucdni', output.seleccion[0].codigo);
             toolbarListaPlanillas.setValue('ipNombre', output.seleccion[0].nombre);
             break;
-        /*case 'btLimpiar':
-            break;*/
         case 'btBuscar':
             const cobrador = toolbarListaPlanillas.getValue('ipRucdni');
             const planilla = toolbarListaPlanillas.getValue('ipPlanilla') ? toolbarListaPlanillas.getValue('ipPlanilla') : 'L';
@@ -32,6 +30,19 @@ toolbarListaPlanillasOnClick = async (id) => {
             CargarListadoPlanillas(cobrador, planilla, fdesde, fhasta);
             break;
         case 'btSeguridad':
+            const windowId = 57;
+            var output = await IniciarFormularioSeguridad(windowId, mainLayout);
+            const jOutput = JSON.parse(output);
+            if(jOutput && jOutput.result == 'S') {
+                toolbarListaPlanillas.enableItem('btAbrir',true);
+                toolbarListaPlanillas.enableItem('btCerrar',true);
+                toolbarListaPlanillas.enableItem('btXls',true);
+            }
+            else {
+                toolbarListaPlanillas.disableItem('btAbrir',true);
+                toolbarListaPlanillas.disableItem('btCerrar',true);
+                toolbarListaPlanillas.disableItem('btXls',true);
+            }
             break;
         case 'btAbrir':
             break;
@@ -66,7 +77,7 @@ listadoPlanillasSuccess = () => {
     mainTabbar.tabs('planillas').progressOff();
     gridListadoPlanillas.insertColumn(1,'','img',30);
     gridListadoPlanillas.insertColumn(0,'','img',30);
-    //6
+    //
     const numRows = gridListadoPlanillas.getRowsNum();
     for(var i = 0; i < numRows; i++) {
         const rowId = gridListadoPlanillas.getRowId(i);
@@ -84,12 +95,12 @@ gridListadoPlanillasOnRowSelect = (rowId, colId) => {
     const co_planilla = gridListadoPlanillas.cells(rowId,1).getValue();
     switch(colId) {
         case 0:
-            winListaPlanillasDetalle = mainLayout.dhxWins.createWindow('winGridBusqueda',0,0,1200,480);
+            winListaPlanillasDetalle = mainLayout.dhxWins.createWindow('winGridBusqueda',0,0,1200,600);
                 winListaPlanillasDetalle.setText('Visualizando la planilla <span style="color:#009688;">' + co_planilla + '</span>');
                 winListaPlanillasDetalle.setModal(true);
                 winListaPlanillasDetalle.keepInViewport(true);
                 winListaPlanillasDetalle.center();
-            ConfigurarLayoutDetallePlanilla();
+            ConfigurarLayoutDetallePlanilla(co_planilla);
             break;
         case 2:
         break;
@@ -98,8 +109,8 @@ gridListadoPlanillasOnRowSelect = (rowId, colId) => {
 }
 
 //layout - detalle de planilla
-var tabbarWinListaPlanillasDetalle, gridWinListaPlanillasPagosEfectivo, gridWinListaPlanillasValores, gridWinListaPlanillasNotas, gridWinListaPlanillasDepositos;
-ConfigurarLayoutDetallePlanilla = () => {
+var tabbarWinListaPlanillasDetalle, gridWinListaPlanillasPagosEfectivo, gridWinListaPlanillasValores, gridWinListaPlanillasNotas, gridWinListaPlanillasDepositos, tabbarWinListaPlanillasGraficos, winImagenVoucher, winExtractoBancario;
+ConfigurarLayoutDetallePlanilla = (co_planilla) => {
     layoutWinListaPlanillas = winListaPlanillasDetalle.attachLayout('3L');
         layoutWinListaPlanillas.cells('a').setText('Resumen de la planilla');
         layoutWinListaPlanillas.cells('a').setWidth(500);
@@ -108,32 +119,124 @@ ConfigurarLayoutDetallePlanilla = () => {
         layoutWinListaPlanillas.cells('b').fixSize(true,true);
         layoutWinListaPlanillas.cells('c').setText('Detalle de depósitos');
         layoutWinListaPlanillas.cells('c').fixSize(true,true);
+    tabbarWinListaPlanillasGraficos = layoutWinListaPlanillas.cells('a').attachTabbar();
+        tabbarWinListaPlanillasGraficos.addTab('pie', 'Pagos de la planilla',null,null,true);
+        tabbarWinListaPlanillasGraficos.addTab('histograma', 'Depósitos realizados');
+        tabbarWinListaPlanillasGraficos.tabs('pie').attachHTMLString('<div id="dv-chart-pie" style="height:100%;width:100%;"><p>Gráfico circular</p></div>');
+        tabbarWinListaPlanillasGraficos.tabs('histograma').attachHTMLString('<div id="dv-chart-histograma" style="height:100%;width:100%;"><p>Gráfico histograma pagos</p></div>');
     tabbarWinListaPlanillasDetalle = layoutWinListaPlanillas.cells('b').attachTabbar();
         tabbarWinListaPlanillasDetalle.addTab('efectivo','Efectivo',null,null,true);
         tabbarWinListaPlanillasDetalle.addTab('valores','Cheques/Letras');
         tabbarWinListaPlanillasDetalle.addTab('notas','Notas de crédito');
     gridWinListaPlanillasPagosEfectivo = tabbarWinListaPlanillasDetalle.tabs('efectivo').attachGrid();
         gridWinListaPlanillasPagosEfectivo.setHeader('Documento,Moneda,Importe cobranza,Tipo de cobro,Letra/cheque,Recibo entregado,Documento pago,Fecha vencimiento');
-        gridWinListaPlanillasPagosEfectivo.setInitWidthsP('10,8,12,15,10,10,25,10');
+        gridWinListaPlanillasPagosEfectivo.setInitWidthsP('15,8,12,15,10,10,20,10');
         gridWinListaPlanillasPagosEfectivo.setColTypes('rotxt,rotxt,ron,rotxt,ch,ch,rotxt,rotxt');
         gridWinListaPlanillasPagosEfectivo.setColAlign('left,left,right,left,center,center,left,left');
+        gridWinListaPlanillasPagosEfectivo.setNumberFormat('0,000.00',2);
         gridWinListaPlanillasPagosEfectivo.init();
     gridWinListaPlanillasValores = tabbarWinListaPlanillasDetalle.tabs('valores').attachGrid();
         gridWinListaPlanillasValores.setHeader('Cheque,Fecha,Cliente,Importe,Saldo,Banco,Moneda,Documento');
         gridWinListaPlanillasValores.setInitWidths('80,80,240,100,100,120,60,80');
         gridWinListaPlanillasValores.setColTypes('rotxt,rotxt,rotxt,ron,ron,rotxt,rotxt,rotxt');
         gridWinListaPlanillasValores.setColAlign('left,left,left,right,right,left,left,left');
+        gridWinListaPlanillasValores.setNumberFormat('0,000.00',3);
+        gridWinListaPlanillasValores.setNumberFormat('0,000.00',4);
         gridWinListaPlanillasValores.init();
     gridWinListaPlanillasNotas = tabbarWinListaPlanillasDetalle.tabs('notas').attachGrid();
         gridWinListaPlanillasNotas.setHeader('Nota crédito,Documento,Fecha,Cliente,Importe,Referencia');
         gridWinListaPlanillasNotas.setInitWidthsP('10,10,10,50,10,10');
         gridWinListaPlanillasNotas.setColTypes('rotxt,rotxt,rotxt,rotxt,ron,rotxt');
         gridWinListaPlanillasNotas.setColAlign('left,left,left,left,right,left');
+        gridWinListaPlanillasNotas.setNumberFormat('0,000.00',4);
         gridWinListaPlanillasNotas.init();
     gridWinListaPlanillasDepositos = layoutWinListaPlanillas.cells('c').attachGrid();
-        gridWinListaPlanillasDepositos.setHeader('Banco,Conciliado,Nro.Cuenta,Nro.Comprobante,Importe,Fecha Registro,Transacción,Fecha Conciliación');
-        gridWinListaPlanillasDepositos.setInitWidthsP('10,5,15,15,15,10,10,10');
-        gridWinListaPlanillasDepositos.setColTypes('rotxt,ch,rotxt,rotxt,ron,rotxt,rotxt,rotxt');
-        gridWinListaPlanillasDepositos.setColAlign('left,center,left,left,right,left,left,left');
+        gridWinListaPlanillasDepositos.setHeader('Banco,Conciliado,Nro.Cuenta,Nro.Comprobante,Importe,Fecha Registro,Transacción,Fecha Conciliación,Periodo');
+        gridWinListaPlanillasDepositos.setInitWidthsP('11,5,16,12,12,10,10,9,5');
+        gridWinListaPlanillasDepositos.setColTypes('rotxt,ch,rotxt,rotxt,ron,rotxt,rotxt,rotxt,ron');
+        gridWinListaPlanillasDepositos.setColAlign('left,center,left,left,right,left,left,left,left');
+        gridWinListaPlanillasDepositos.setNumberFormat('0,000.00',4);
         gridWinListaPlanillasDepositos.init();
+    //carga los datos alv
+    CargarPagosEfectivo(co_planilla);
+    CargarPagosLetrasCheques(co_planilla);
+    CargarPagosPlanillasNotas(co_planilla);
+    CargarPagosDepositos(co_planilla);
+}
+
+//grid pagos en efectivo
+CargarPagosEfectivo = (co_planilla) => {
+    tabbarWinListaPlanillasDetalle.tabs('efectivo').progressOn();
+    gridWinListaPlanillasPagosEfectivo.load(BASE_URL + 'BA010304/mostrar-pagos-efectivo/' + usrJson.empresa + '/' + co_planilla, PagosEfectivoSuccess);
+}
+PagosEfectivoSuccess = () => {
+    gridWinListaPlanillasPagosEfectivo.attachEvent('onEditCell', PagosEfectivoOnEditCell);
+    tabbarWinListaPlanillasDetalle.tabs('efectivo').progressOff();
+}
+PagosEfectivoOnEditCell = (stage,rId,cInd,nValue,oValue) => {
+    return false;
+}
+
+//grid pagos letras/cheques
+CargarPagosLetrasCheques = (co_planilla) => {
+    tabbarWinListaPlanillasDetalle.tabs('valores').progressOn();
+    gridWinListaPlanillasValores.load(BASE_URL + 'BA010304/mostrar-pagos-cheques/' + usrJson.empresa + '/' + co_planilla, PagosLetrasChequesSuccess);
+}
+PagosLetrasChequesSuccess = () => {
+    tabbarWinListaPlanillasDetalle.tabs('valores').progressOff();
+}
+
+//grid pagos notas de credito
+CargarPagosPlanillasNotas = (co_planilla) => {
+    tabbarWinListaPlanillasDetalle.tabs('notas').progressOn();
+    gridWinListaPlanillasNotas.load(BASE_URL + 'BA010304/mostrar-pagos-notas/' + usrJson.empresa + '/' + co_planilla, PagosPlanillasNotasSuccess);
+}
+PagosPlanillasNotasSuccess = () => {
+    tabbarWinListaPlanillasDetalle.tabs('notas').progressOff();
+}
+
+//grid depositos
+CargarPagosDepositos = (co_planilla) => {
+    layoutWinListaPlanillas.cells('c').progressOn();
+    gridWinListaPlanillasDepositos.load(BASE_URL + 'BA010304/mostrar-depositos-planilla/' + usrJson.empresa + '/' + co_planilla, PagosDepositosSuccess);
+}
+PagosDepositosSuccess = () => {
+    gridWinListaPlanillasDepositos.attachEvent('onEditCell', PagosDepositosOnEditCell);
+    gridWinListaPlanillasDepositos.insertColumn(6,'','img',5);
+    gridWinListaPlanillasDepositos.insertColumn(0,'','img',5);
+    const numRows = gridWinListaPlanillasDepositos.getRowsNum();
+    for(var i = 0; i < numRows; i++) {
+        const rowId = gridWinListaPlanillasDepositos.getRowId(i);
+        gridWinListaPlanillasDepositos.cells(rowId,0).setValue('/assets/images/icons/grid/ic-picture.svg^Ver imagen voucher');
+        gridWinListaPlanillasDepositos.cells(rowId,7).setValue('/assets/images/icons/grid/ic-extracto.svg^Ver extracto bancario');
+        gridWinListaPlanillasDepositos.setCellTextStyle(rowId,0,'cursor:pointer;');
+        gridWinListaPlanillasDepositos.setCellTextStyle(rowId,7,'cursor:pointer;');
+    }
+    gridWinListaPlanillasDepositos.attachEvent('onRowSelect', gridWinListaPlanillasDepositosOnRowSelect);
+    layoutWinListaPlanillas.cells('c').progressOff();
+}
+PagosDepositosOnEditCell = (stage,rId,cInd,nValue,oValue) => {
+    return false;
+}
+gridWinListaPlanillasDepositosOnRowSelect = (rowId,colId) => {
+    switch(colId) {
+        case 0:
+            winImagenVoucher = mainLayout.dhxWins.createWindow('winImagenVoucher',0,0,480,320);
+                winImagenVoucher.setText('Mostrando imagen del voucher');
+                winImagenVoucher.setModal(true);
+                winImagenVoucher.keepInViewport(true);
+                winImagenVoucher.center();
+            const cuenta = gridWinListaPlanillasDepositos.cells(rowId,3).getValue();
+            const operacion = gridWinListaPlanillasDepositos.cells(rowId,4).getValue();
+            const periodo = gridWinListaPlanillasDepositos.cells(rowId,10).getValue();
+            winImagenVoucher.attachURL('/files/img-voucher/' + cuenta + '/' + periodo + '/' + operacion);
+            break;
+        case 7:
+            winExtractoBancario = mainLayout.dhxWins.createWindow('winExtractoBancario',0,0,480,320);
+                winExtractoBancario.setText('Control depósitos');
+                winExtractoBancario.setModal(true);
+                winExtractoBancario.keepInViewport(true);
+                winExtractoBancario.center();
+            break;
+    }
 }

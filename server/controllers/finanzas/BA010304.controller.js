@@ -113,7 +113,7 @@ const ba010304Controller = {
                 console.error(err);
                 return;
             }
-            const query = "select * from table(pack_new_finanzas_no_tocar.list_planilla_depositos(:p_empresa,:p_planilla))";
+            const query = "select * from table(pack_new_finanzas_no_tocar.f_list_planilla_depositos(:p_empresa,:p_planilla))";
             const params = {
                 p_empresa: { val: empresa },
                 p_planilla: { val: planilla }
