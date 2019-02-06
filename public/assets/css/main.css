@@ -35,8 +35,8 @@ div.name_ccostos{
 
 /************ Formato para los label del DhtmlxForm**/
 
-.fas.fa-window-close {    font-size: 2.2em;
-    color: red;}
+.dhxform_item_label_left.fsalirw div.dhxform_btn div.dhxform_btn_txt .fas.fa-window-close {    font-size: 2.2em;     color: red;}
+
 div.title_usu {
      float : right;
       text-transform: capitalize;

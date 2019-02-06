@@ -86,7 +86,6 @@
                 {type: "block", blockOffset: 5, width: 470, list: [
                         {type: "button", offsetTop: 45, offsetLeft: 55, className: 'b_edit', name: "b_edits", value: "Editar"}, {type: "newcolumn"},
                         {type: "button", offsetTop: 45, offsetLeft: 45, name: "b_saves", value: "Guardar"}
-
                     ]}
             ];
             var form_cuenta = [{type: "settings", labelWidth: 140},
@@ -96,38 +95,34 @@
                 {type: "newcolumn"},
                 {type: "block", blockOffset: 0, list: [
                         {type: "block", blockOffset: 25, offsetTop: 2, width: 250, list: [
+                                {type: "select", name: 'u_tipo_doc', disabled: true, offsetLeft: 0, inputWidth: 150, label: '<font class="input_font">Tipo Documento</font>', connector: BASE_URL + 'home/list_tipodoc/'}, {type: "newcolumn"},
+                                {type: "input", offsetTop: 20, name: 'u_documento', disabled: true, offsetLeft: 0, labelWidth: 170, label: '<font class="input_font">Documento Identidad</font>'}, {type: "newcolumn"},
                                 {type: "input", disabled: true, style: "font-family:century gothic, verdana, arial, sans-serif!important;", name: 'u_nombres', inputWidth: 200, label: '<font class="input_font">Nombres</font>', required: true},
                                 {type: "input", name: 'u_apepat', disabled: true, offsetTop: 15, inputWidth: 200, label: '<font class="input_font">Ape. Paterno</font>', required: true},
-                                {type: "input", name: 'u_apemat', disabled: true, offsetTop: 15, inputWidth: 200, label: '<font class="input_font">Ape. Materno</font>', required: true},
-                                {type: "input", offsetTop: 15, name: 'u_mail', disabled: true, label: '<font class="input_font">Em@il Corporativo</font>', inputWidth: 250}, {type: "newcolumn"},
-                                {type: "input", offsetTop: 15, name: 'u_mail_p', disabled: true, label: '<font class="input_font">Em@il Personal</font>', inputWidth: 250}
+                                {type: "input", name: 'u_apemat', disabled: true, offsetTop: 15, inputWidth: 200, label: '<font class="input_font">Ape. Materno</font>', required: true}
+
                             ]},
                         {type: "newcolumn"},
                         {type: "block", blockOffset: 0, offsetTop: 2, offsetLeft: 25, width: 250, list: [
-                                {type: "calendar", enableTime: false, disabled: true, enableTodayButton: false, dateFormat: "%d/%m/%Y", labelWidth: 142, name: 'u_fecnac', label: '<i class="fas fa-birthday-cake"></i><font class="input_font"> Fecha Nacimiento</font>'},
+                                {type: "calendar", enableTime: false, disabled: true, enableTodayButton: false, inputWidth: 210, dateFormat: "%d/%m/%Y", labelWidth: 142, name: 'u_fecnac', label: '<i class="fas fa-birthday-cake"></i><font class="input_font"> Fecha Nacimiento</font>'},
                                 {type: "input", offsetTop: 15, name: 'u_tef_c', disabled: true, labelWidth: 112, label: '<i class="fas fa-mobile-alt"></i><font class="input_font"> Corporativo</font>', inputWidth: 100}, {type: "newcolumn"},
-                                {type: "input", offsetTop: 15, name: 'u_tef_p', disabled: true, labelWidth: 112, label: '<i class="fas fa-mobile-alt"></i><font class="input_font"> Personal</font>', inputWidth: 100.}, {type: "newcolumn"},
+                                {type: "input", offsetTop: 15, name: 'u_tef_p', disabled: true, labelWidth: 112, label: '<i class="fas fa-mobile-alt"></i><font class="input_font"> Personal</font>', inputWidth: 100}, {type: "newcolumn"},
                                 {type: "radio", offsetTop: 20, name: 'u_sexo', disabled: true, labelWidth: 63, value: 'M', label: '<font class="input_font">Sexo (M)</font>'}, {type: "newcolumn"},
                                 {type: "radio", offsetTop: 20, name: 'u_sexo', disabled: true, offsetLeft: 25, labelWidth: 20, value: 'F', label: '<font class="input_font">(F)</font>'}, {type: "newcolumn"},
-                                // {type: "input", offsetTop: 20, name: 'u_tipo_doc', disabled: true, offsetLeft: 25,  value: '1', label: '<font class="input_font">Tipo Documento</font>'}
-                                {type: "select", name: 'u_tipo_doc', disabled: true, offsetLeft: 25, label: '<font class="input_font">Tipo Documento</font>', connector:  BASE_URL + 'home/list_tipodoc/'}, {type: "newcolumn"},
-                                {type: "input", offsetTop: 20, name: 'u_documento', disabled: true, offsetLeft: 25, labelWidth: 170, label: '<font class="input_font">Documento Identidad</font>'}
+                                {type: "input", offsetTop: 15, name: 'u_mail', disabled: true, label: '<font class="input_font">Em@il Corporativo</font>', inputWidth: 210}, {type: "newcolumn"},
+                                {type: "input", offsetTop: 15, name: 'u_mail_p', disabled: true, label: '<font class="input_font">Em@il Personal</font>', inputWidth: 210}
                             ]}
                     ]},
                 {type: "newcolumn"},
                 {type: "block", blockOffset: 5, width: 470, list: [
-                        {type: "button", offsetTop: 25, offsetLeft: 55, className: 'b_editc', name: "b_editc", value: "Editar"}, {type: "newcolumn"},
-                        {type: "button", offsetTop: 25, offsetLeft: 45, name: "b_savec", className: "b_savec", value: "Guardar", disabled: true}
+                        {type: "button", offsetTop: 25, offsetLeft: 95, className: 'b_editc', name: "b_editc", value: "Editar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 25, offsetLeft: 155, name: "b_savec", className: "b_savec", value: "Guardar", disabled: true}
                     ]}
             ];
-
-/*options: [
-                                        {text: "DNI", value: 1}, {text: "Organizer", value: "org"}, {text: "Power User", value: "poweruser"}, {text: "User", value: "user"}
-                                    ]*/
+         
             if (usrtoken === '') {
                 location.href = '/';
-            } else {
-
+            } else {                //console.log(usrJson);
                 dhtmlXCalendarObject.prototype.lang = "pe";
                 mainLayout = new dhtmlXLayoutObject(document.body, "3T");
                 mainLayout.cells("a").hideHeader();

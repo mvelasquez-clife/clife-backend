@@ -66,15 +66,19 @@ crear_ventana = () => {
 
 /********************Agrega el fomulario dentro del item Sidebar  'side_infperso' => Datos Personales*/
 f_side_infperso = () => {
+
     form_infperso = mySidebar.cells("side_infperso").attachForm();
     form_infperso.loadStruct(form_cuenta);
-    form_infperso.setSkin("material");
+    form_infperso.setSkin("material");   // ([]).forEach({});
+    form_infperso.setItemValue('u_tipo_doc', usrJson.tipodoc);
+    form_infperso.setItemValue('u_documento', usrJson.documento);
     form_infperso.setItemValue('u_nombres', usrJson.nombre);
     form_infperso.setItemValue('u_apepat', usrJson.apepat);
     form_infperso.setItemValue('u_apemat', usrJson.apemat);
     form_infperso.setItemValue('u_fecnac', usrJson.fecnaci);
     form_infperso.checkItem('u_sexo', usrJson.sexo);
     form_infperso.setItemValue('u_mail', usrJson.mail);
+
     form_infperso.attachEvent('onChange', function () {
         form_infperso.setItemValue('u_apepat', form_infperso.getItemValue('u_apepat').toString().toUpperCase());
         form_infperso.setItemValue('u_nombres', form_infperso.getItemValue('u_nombres').toString().toUpperCase());
@@ -137,7 +141,7 @@ onclicFormInfo = (name) => {
             myWinsPerfil.window('w_cuenta').close();
             break;
         case 'b_editc':
-            (['u_nombres', 'u_apepat', 'u_apemat', 'u_fecnac', 'u_sexo', 'u_mail', 'u_mail_p', 'u_tef_c', 'u_tef_p', 'b_savec']).forEach((elem) => {
+            (['u_tipo_doc', 'u_documento', 'u_nombres', 'u_apepat', 'u_apemat', 'u_fecnac', 'u_sexo', 'u_mail', 'u_mail_p', 'u_tef_c', 'u_tef_p', 'b_savec']).forEach((elem) => {
                 if (elem === 'u_sexo')
                     (['F', 'M']).forEach((val) => {
                         form_infperso.enableItem(elem, val);
@@ -157,12 +161,17 @@ onclicFormInfo = (name) => {
 save_infoperso = () => {
     var obj = {};    //{empresa, co_usuario, co_persona, co_tipo_doc, co_documento, apepat, apemat, nombres, sexo, fecnac, mailcor, mailper, celcor, celper}
     //obj['empresa']=usrJson.empresa;
-    (['empresa','codigo','copersona']).forEach((elm) => { obj[elm] = usrJson.elm; });
-    (['u_tipo_doc','u_documento','u_nombres', 'u_apepat', 'u_apemat', 'u_fecnac', 'u_sexo', 'u_mail', 'u_mail_p', 'u_tef_c', 'u_tef_p']).forEach((elm) => {
-        obj[elm] = form_infperso.getItemValue(elm);
+//    ({'empresa' : usrJson.empresa, 'codigo' :usrJson.codigo, 'copersona' : usrJson.copersona}).forEach((A,B) => {
+//        obj[elm] = elm;
+//    });
+    obj['empresa'] = usrJson.empresa, obj['codigo'] = usrJson.codigo, obj['copersona'] = usrJson.copersona;
+    (['u_tipo_doc', 'u_documento', 'u_nombres', 'u_apepat', 'u_apemat', 'u_fecnac', 'u_sexo', 'u_mail', 'u_mail_p', 'u_tef_c', 'u_tef_p']).forEach((elm) => {
+        if (elm === 'u_fecnac')
+            obj[elm] = form_infperso.getCalendar(elm).getDate(true);
+        else
+            obj[elm] = form_infperso.getItemValue(elm);
     });
     $.post(BASE_URL + "home/update_datos", obj, function (res) {
-        console.log(res);
         if (res.state !== 'error') {
             Swal.fire('Bien!', res.message, 'success')
         } else
