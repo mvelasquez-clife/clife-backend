@@ -13,4 +13,7 @@ router.post('/file_exist',homeController.file_exist);
 
 router.post('/update_datos',homeController.update_datos);
 
+router.get('/list_tipodoc',homeController.list_tipodoc);
+
+
 module.exports = router;
