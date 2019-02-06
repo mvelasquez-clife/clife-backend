@@ -13,7 +13,9 @@
             .bt-big>div{cursor:pointer;}
             .bt-big>div>div{padding:8px 0 12px;}
             .bt-big>div>div>img{height:32px;margin-left:-16px;}
-            .bt-big>div>div>span{position:relative;vertical-align:top;top:4px;font-size:14px;left:8|px;}
+            .bt-big>div>div>span{position:relative;vertical-align:top;top:4px;font-size:14px;left:8px;}
+            #dv-graficos{width:95%;height:1100px;}
+            #dv-graficos>.ch-div{height:360px;width:618px;}
         </style>
     </head>
     <body>
@@ -25,15 +27,21 @@
         <script type="text/javascript" src="<%=path%>script.js"></script>
         <script src="https://code.highcharts.com/highcharts.src.js"></script>
         <script type="text/javascript">
-            var mainLayout, formFiltro;
+            var mainLayout, formFiltro, mainTabbar, gridPlanillas, ribbonPlanillas, ribbonDepositos;
             mainLayout = new dhtmlXLayoutObject(document.body, '3W');
                 mainLayout.cells('a').setWidth(240);
                 mainLayout.cells('a').setText('Búsqueda de planillas');
                 mainLayout.cells('c').setText('Gráficos');
                 mainLayout.cells('c').setWidth(640);
+                mainLayout.cells('c').collapse();
+                mainLayout.cells('c').attachHTMLString('<div style="height:100%;width:100%;overflow-y:auto;"><div id="dv-graficos"></div></div>');
             formFiltro = mainLayout.cells('a').attachForm();
                 formFiltro.load(structs.formFiltro);
                 formFiltro.attachEvent('onFocus', formFiltroOnFocus);
+                formFiltro.attachEvent('onButtonClick', formFiltroOnButtonClick);
+            mainTabbar = mainLayout.cells('b').attachTabbar();
+                mainTabbar.addTab('planillas','Planillas encontradas',null,null,true);
+                mainTabbar.addTab('depositos','Depósitos registrados');
         </script>
     </body>
 </html>
