@@ -42,5 +42,29 @@ module.exports = {
                 option: arr
             }
         });
+    },
+       renderSelect: (jsonRows,cod_first) => {
+        var arr = [];
+        for(var i in jsonRows) {
+            var iRow = jsonRows[i];
+            if(iRow.VALUE === cod_first) {
+                arr.push({
+                    '@': { value: iRow.VALUE, selected: true,label : iRow.LABEL },
+                    
+                });
+            }
+            else {
+                arr.push({
+                    '@': { value: iRow.VALUE,label : iRow.LABEL },
+                  
+                });
+            }
+        }
+        return o2x({
+            '?xml version="1.0" encoding="utf-8"?' : null,
+            data: {
+                item: arr
+            }
+        });
     }
 };

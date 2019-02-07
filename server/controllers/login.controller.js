@@ -8,66 +8,72 @@ const loginCtrl = {
     doLogin: (req, res) => {
         const {usuario, clave} = req.body;
         oracledb.getConnection(
-            dbParams,
-            (err, connection) => {
-                if(err) {
-                    console.log(err.message);
-                    return;
-                }
-                connection.execute(
-                    "select sg_usua_m.co_persona, sg_usua_m.de_alias, sg_usua_m.co_empresa_usuario, sg_usua_m.co_usuario, ma_pers_m.de_nombres,ma_pers_m.de_sexo,to_char(ma_pers_m.fe_nacimiento,'dd/mm/yyyy') fe_nacimiento, st_admin,ma_pers_m.de_apellido_paterno,ma_pers_m.de_apellido_materno, sg_usua_m.co_centro_costo, sg_usua_m.st_acceso_wap,cc.de_nombre as nom_ccostos  from sg_usua_m  left join ma_cent_cost_m cc on cc.co_empresa= co_empresa_usuario and cc.co_centro_costo =sg_usua_m.co_centro_costo left join ma_pers_m on ma_pers_m.co_persona = sg_usua_m.co_persona where sg_usua_m.de_alias = :usuario and sg_usua_m.de_clave_sistema = :clave and sg_usua_m.es_vigencia = 'Vigente' and sg_usua_m.st_acceso_wap = 'S'",
+                dbParams,
+                (err, connection) => {
+            if (err) {
+                console.log(err.message);
+                return;
+            }
+            connection.execute(
+                    "SELECT CO_PERSONA,DE_ALIAS,CO_EMPRESA_USUARIO,CO_USUARIO,CO_TIPO_DOC_IDE,DE_NOMBRES,DE_SEXO,FE_NACIMIENTO,ST_ADMIN,DE_APELLIDO_PATERNO,DE_APELLIDO_MATERNO,CO_CENTRO_COSTO,ST_ACCESO_WAP,DE_NOMBRE_COSTOS,FE_REGISTRO,DE_DOCUMENTO,DE_MAIL_CORPO,DE_TELEFONO_CORPO FROM TABLE(PW_DATOS_USUARIO_LOGIN.F_DATOS_USUARIO_LOGIN(:usuario,:clave))",
                     {
-                        usuario: { val: usuario },
-                        clave: { val: clave }
+                        usuario: {val: usuario},
+                        clave: {val: clave}
                     },
                     {
                         outFormat: oracledb.OBJECT,
                         maxRows: 1
                     },
                     (error, result) => {
-                        connection.close();
-                        if(error) {
-                            //console.error(error.message);
-                            return res.json({
-                                state: "error",
-                                err: error.message
-                            });
-                        }
-                        if(result.rows.length == 0) {
-                            return res.json({
-                                state: "error",
-                                err: "Datos de autenticación incorrectos"
-                            });
-                        }
-                        const user = {
-                            alias: result.rows[0].DE_ALIAS,
-                            empresa: result.rows[0].CO_EMPRESA_USUARIO,
-                            codigo: result.rows[0].CO_USUARIO,
-                            nombre: result.rows[0].DE_NOMBRES,
-                            apemat :result.rows[0].DE_APELLIDO_MATERNO,
-                            apepat : result.rows[0].DE_APELLIDO_PATERNO,
-                            sexo: result.rows[0].DE_SEXO,
-                            fecnaci : result.rows[0].FE_NACIMIENTO,
-                            admin: result.rows[0].ST_ADMIN,
-                            ccosto: result.rows[0].CO_CENTRO_COSTO,
-                            ncosto: result.rows[0].NOM_CCOSTOS,
-                            mail : result.rows[0].DE_CORREO,
-                            copersona : result.rows[0].CO_PERSONA
-                        };
-                       
-                        const token = jwt.sign(user, jwtKey, {
-                            expiresIn: 86400
-                        });
-                        return res.json({
-                            state: "success",
-                            data: {
-                                token: token,
-                                usuario: user
-                            }
-                        }); 
+                connection.close();
+                if (error) {
+                    //console.error(error.message);
+                    return res.json({
+                        state: "error",
+                        err: error.message
+                    });
+                }
+                if (result.rows.length == 0) {
+                    return res.json({
+                        state: "error",
+                        err: "Datos de autenticación incorrectos"
+                    });
+                }
+                const user = {
+                    copersona: result.rows[0].CO_PERSONA,
+                    alias: result.rows[0].DE_ALIAS,
+                    empresa: result.rows[0].CO_EMPRESA_USUARIO,
+                    codigo: result.rows[0].CO_USUARIO,
+                    tipodoc: result.rows[0].CO_TIPO_DOC_IDE,
+                    nombre: result.rows[0].DE_NOMBRES,
+                    sexo: result.rows[0].DE_SEXO,
+                    fecnaci: result.rows[0].FE_NACIMIENTO,
+                    stadmin: result.rows[0].ST_ADMIN,
+                    apemat: result.rows[0].DE_APELLIDO_MATERNO,
+                    apepat: result.rows[0].DE_APELLIDO_PATERNO,
+                    ccosto: result.rows[0].CO_CENTRO_COSTO,
+                    stwap: result.rows[0].ST_ACCESO_WAP,
+                    ncosto: result.rows[0].NOM_CCOSTOS,
+                    fregistro: result.rows[0].FE_REGISTRO,
+                    documento: result.rows[0].DE_DOCUMENTO,
+                    mailcorpo: result.rows[0].DE_MAIL_CORPO,
+                    cellcorpo: result.rows[0].DE_TELEFONO_CORPO
+
+                };
+                
+                const token = jwt.sign(user, jwtKey, {
+                    expiresIn: 86400
+                });
+                return res.json({
+                    state: "success",
+                    data: {
+                        token: token,
+                        usuario: user
                     }
-                );
+                });
             }
+            );
+        }
         );
     }
 };

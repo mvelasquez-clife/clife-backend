@@ -3,6 +3,7 @@ const oracledb = require('oracledb');
 //const app = express();
 const dbParams = require('../database');
 const o2x = require('object-to-xml');
+const xmlparse = require('../xml-parser');
 const formidable = require('formidable');
 //const fs = require('fs');
 var fs = require('fs');
@@ -158,60 +159,53 @@ const homeController = {
         });
     },
     list_tipodoc: (req, res) => {
-        //const {empresa, planilla} = req.params;
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
-                console.error(err);
+                 res.send({'error_conexion':err.stack});
+               
                 return;
             }
-            const query = "select co_tipo_doc_ide as \"value\" ,de_abrevia as \"label\" from table(pack_new_pers.f_list_tipodoc)";
+            const query = "select co_tipo_doc_ide as value ,de_abrevia as label from table(pack_new_pers.f_list_tipodoc)";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
-                    console.error(error);
+                    res.send({'error_query':error.stack});
                     conn.close();
                     return;
                 }
-//                res.set('Content-Type', 'application/json');                 /*{text: "DNI", value: 1}*/
-//                res.send(result.rows);
-                var item = [];
-                for (var i in result.rows) {
-                    item .push({item : { '@' : {value: result.rows[i].value, label: result.rows[i].label} } });
-                }
+
                 res.set('Content-Type', 'text/xml');
-                res.send(o2x({
-                    '?xml version=git"1.0" encoding="utf-8"?': null,
-                  data : { item }
-                }));
+                res.send(xmlparse.renderSelect(result.rows,'1'));
 
                 
             });
         });
     },
     update_datos: (req, res) => {
-        const {empresa, co_usuario, co_persona, co_tipo_doc, co_documento, apepat, apemat, nombres, sexo, fecnac, mailcor, mailper, celcor, celper} = req.body; //cuando las variables se envian por post
+
+        const {empresa, codigo, copersona, u_tipo_doc, u_documento, u_apepat, u_apemat, u_nombres, u_sexo, u_fecnac, u_mail, u_mail_p, u_tef_c, u_tef_p} = req.body; //cuando las variables se envian por post
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 console.error(err);
                 return;
             }
-            const query = "call pack_new_pers.sp_grabar_data_persona(:empresa,:co_usuario,:co_persona,:co_tipo_doc,:co_documento,:apepat,:apemat,:nombres,:sexo,:fecnac,:mailcor,:mailper,:celcor,:celper,:o_co_pers,:o_result)";
-//            console.log(query);
+            const query = "call PW_DATOS_USUARIO_LOGIN.sp_grabar_data_persona(:empresa,:co_usuario,:co_persona,:co_tipo_doc,:co_documento,:apepat,:apemat,:nombres,:sexo,:fecnac,:mailcor,:mailper,:celcor,:celper,:o_co_pers,:o_result)";
+
             const params = {
                 empresa: {val: empresa},
-                co_usuario: {val: co_usuario},
-                co_persona: {val: co_persona},
-                co_tipo_doc: {val: co_tipo_doc},
-                co_documento: {val: co_documento},
-                apepat: {val: apepat},
-                apemat: {val: apemat},
-                nombres: {val: nombres},
-                sexo: {val: sexo},
-                fecnac: {val: fecnac},
-                mailcor: {val: mailcor},
-                mailper: {val: mailper},
-                celcor: {val: celcor},
-                celper: {val: celper},
+                co_usuario: {val: codigo},
+                co_persona: {val: copersona},
+                co_tipo_doc: {val: u_tipo_doc},
+                co_documento: {val: u_documento},
+                apepat: {val: u_apepat},
+                apemat: {val: u_apemat},
+                nombres: {val: u_nombres},
+                sexo: {val: u_sexo},
+                fecnac: {val: u_fecnac},
+                mailcor: {val: u_mail},
+                mailper: {val: u_mail_p},
+                celcor: {val: u_tef_c},
+                celper: {val: u_tef_p},
 
                 //parametros de salida
                 o_co_pers: {dir: oracledb.BIND_OUT, type: oracledb.NUMBER},
