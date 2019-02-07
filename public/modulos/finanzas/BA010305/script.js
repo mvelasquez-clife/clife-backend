@@ -1,9 +1,11 @@
+var primeraCargaLista = false;
 const structs = {
     formFiltro: [
         { type: 'settings', position: 'label-top' },
         { type: 'combo',offsetLeft: 8,name: 'periodo', width: '200', label: 'Periodo :', connector: BASE_URL + 'BA010305/combo-periodos/' + usrJson.empresa },
         { type: 'input', offsetLeft: 8, name: 'vendedor', width: '200', label: 'Nombre Vendedor:', value: 'Todos' },
         { type: 'hidden', name: 'codigo', value: '0' },
+        { type: 'hidden', name: 'alias', value: usrJson.alias },
         { type: 'button', width: 120, offsetLeft: 6, className: 'bt-big', value: '<img src="/assets/images/icons/anim-search.svg"><span>Buscar</span>' ,name: 'buscar' }
     ],
     ribbonPlanillas: {
@@ -11,23 +13,56 @@ const structs = {
         items: [
             {
                 type:'block', text:'Opciones', mode:'cols', list:[
-                    {type:'button', id:'busqueda', text:'Búsqueda', isbig: true, img: "ic-search.svg"},
-                    {type:'button', id:'graficos', text:'Gráficos', isbig: true, img: "ic-chart.svg"},
-                    {type:'button', id:'exportar', text:'Exportar', isbig: true, img: 'ic-export.svg' }
+                    { type:'button', id:'busqueda', text:'Búsqueda', isbig: true, img: "ic-search.svg" },
+                    { type:'button', id:'graficos', text:'Gráficos', isbig: true, img: "ic-chart.svg" },
+                    { type:'button', id:'exportar', text:'Exportar', isbig: true, img: 'ic-export.svg' }
                 ]
             },
             {
                 type:'block', text:'Seguridad', list:[
-                    {type:'button', id:'seguridad', text:'Seguridad' , img: 'ic-shield.svg', isbig: true },
-                    {type:'button', id:'abrir', text:'Abrir planilla' , img: 'ic-open.svg', imgdis: 'ic-open-dis.svg', isbig: true },
-                    {type:'button', id:'cerrar', text:'Cerrar planilla', img: 'ic-close.svg', imgdis: 'ic-close-dis.svg', isbig: true },
-                    {type:'button', id:'conciliar', text:'Conciliación', img: 'ic-conciliacion.svg', imgdis: 'ic-conciliacion-dis.svg', isbig: true },
-                    {type:'button', id:'recibo', text:'Generar recibo', img: 'ic-recibo.svg', imgdis: 'ic-recibo-dis.svg', isbig: true }
-            ]}
+                    { type:'button', id:'seguridad', text:'Seguridad' , img: 'ic-shield.svg', isbig: true },
+                    { type:'button', id:'abrir', text:'Abrir planilla' , img: 'ic-open.svg', imgdis: 'ic-open-dis.svg', isbig: true },
+                    { type:'button', id:'nueva', text:'Nueva planilla' , img: 'ic-add.svg', imgdis: 'ic-add-dis.svg', isbig: true },
+                    { type:'button', id:'cerrar', text:'Cerrar planilla', img: 'ic-close.svg', imgdis: 'ic-close-dis.svg', isbig: true }
+            ]},
+            {
+                type:'block', text:'Planilla', list:[
+                    { type:'button', id:'conciliar', text:'Conciliación', img: 'ic-conciliacion.svg', imgdis: 'ic-conciliacion-dis.svg', isbig: true },
+                    { type:'button', id:'recibo', text:'Generar recibo', img: 'ic-recibo.svg', imgdis: 'ic-recibo-dis.svg', isbig: true },
+                    { type:'buttonSelect', id:'pago', text:'Registrar pago', img: 'ic-payment.svg', imgdis: 'ic-payment-dis.svg', isbig: true, items: [
+                        { id: 'efectivo', text: 'Efectivo' },
+                        { id: 'valores', text: 'Letra/cheque' }
+                    ]},
+                    { type:'button', id:'deposito', text:'Registrar depósito', img: 'ic-deposit.svg', imgdis: 'ic-deposit-dis.svg', isbig: true }
+                ]
+            }
         ]
-    }
+    },
+    formCreaPlanilla: [
+        { type: 'settings', position: 'label-left', offsetLeft: 4, offsetTop: 4 },
+        { type: 'block', blockOffset: 0, list: [
+            { type: 'block', blockOffset: 0, list: [
+                { type: 'label', label: '<img src="/assets/images/icons/window/ic-planilla-cobranza.svg" style="margin:24px 16px 12px;width:144px;"/>' }
+            ] },
+            { type: 'newcolumn' },
+            { type: 'block', blockOffset: 0, list: [
+                { type: 'settings', labelWidth: 60, inputWidth: 120, offsetBottom: 12 },
+                { type: 'label', label: '<span id="sp-codigo-planilla">Listo para crear</span>', labelWidth: 230 },
+                { type: 'combo', name: 'moneda', label: 'Moneda' },
+                { type: 'input', label: 'Fe.Creación', name: 'fcrea' },
+                { type: 'input', label: 'Importe', name: 'importe' },
+                { type: 'input', label: 'Depósito', name: 'deposito' },
+                { type: 'label', label: '<span id="sp-mensaje"></span>', labelWidth: 230, offsetTop: 8 },
+            ] }
+        ] },
+        { type: 'block', blockOffset: 128, offsetTop: 0, list: [
+            { type: 'button', name: 'aceptar', value: '<b>Aceptar</b>', offsetLeft: 6 },
+            { type: 'newcolumn' },
+            { type: 'button', name: 'cancelar', value: 'Cancelar', offsetLeft: 16 },
+        ] },
+    ]
 };
-var winListaPlanillasDetalle;
+var winListaPlanillasDetalle, winCrearPlanilla, formCrearPlanilla;
 
 //formulario
 formFiltroOnFocus = async (id) => {
@@ -37,6 +72,7 @@ formFiltroOnFocus = async (id) => {
             const recaudador = output.seleccion[0];
             formFiltro.setItemValue('codigo', recaudador.codigo);
             formFiltro.setItemValue('vendedor', recaudador.nombre);
+            formFiltro.setItemValue('alias', recaudador.alias);
         }
     }
 }
@@ -58,24 +94,6 @@ formFiltroOnButtonClick = (name) => {
             mainLayout.cells('a').collapse();
             const periodo = formFiltro.getItemValue('periodo');
             const cobrador = formFiltro.getItemValue('codigo');
-            if(gridPlanillas) {
-                mainTabbar.tabs('planillas').detachObject();
-                gridPlanillas = null;
-            }
-            gridPlanillas = mainTabbar.tabs('planillas').attachGrid();
-                gridPlanillas.setHeader('Planilla,Caja,Fecha creación planilla,Fecha cierre,comoneda,Moneda,cotpdoc,Tipo documento,Importe POS,Importe total,Importe valores,Depósito total,Diferencia,Conciliado,Liquidado,Recibo,Periodo,Fecha aprobación cierre,Vigencia');
-                gridPlanillas.setInitWidths('80,40,80,80,0,60,0,160,90,90,90,90,90,60,60,60,80,80,100');
-                gridPlanillas.attachHeader('#text_filter,#select_filter,#text_filter,#text_filter,#rspan,#select_filter,#rspan,#select_filter,#numeric_filter,#numeric_filter,#numeric_filter,#numeric_filter,#numeric_filter,#select_filter,#select_filter,#select_filter,#select_filter,#text_filter,#select_filter');
-                gridPlanillas.setColTypes('rotxt,rotxt,rotxt,rotxt,ron,rotxt,ron,ron,ron,ron,ron,ron,dyn,ch,ch,ch,ron,rotxt,rotxt');
-                gridPlanillas.setColAlign('left,left,left,left,center,left,center,left,right,right,right,right,right,center,center,center,right,left,left');
-                gridPlanillas.setColumnHidden(4,true);
-                gridPlanillas.setColumnHidden(6,true);
-                gridPlanillas.setNumberFormat('0,000.00',8);
-                gridPlanillas.setNumberFormat('0,000.00',9);
-                gridPlanillas.setNumberFormat('0,000.00',10);
-                gridPlanillas.setNumberFormat('0,000.00',11);
-                gridPlanillas.setNumberFormat('0,000.00',12);
-                gridPlanillas.init();
             CargarPlanillasCobranza(periodo, cobrador);
             GenerarGraficosPlanillas(periodo, cobrador);
             break;
@@ -86,9 +104,28 @@ formFiltroOnButtonClick = (name) => {
 //grid planillas de cobranza
 CargarPlanillasCobranza = (periodo, cobrador) => {
     mainLayout.cells('b').progressOn();
+    if(gridPlanillas) {
+        mainTabbar.tabs('planillas').detachObject();
+        gridPlanillas = null;
+    }
+    gridPlanillas = mainTabbar.tabs('planillas').attachGrid();
+        gridPlanillas.setHeader('Planilla,Caja,Fecha creación planilla,Fecha cierre,comoneda,Moneda,cotpdoc,Tipo documento,Importe POS,Importe total,Importe valores,Depósito total,Diferencia,Conciliado,Liquidado,Recibo,Periodo,Fecha aprobación cierre,Vigencia');
+        gridPlanillas.setInitWidths('80,40,80,80,0,60,0,160,90,90,90,90,90,60,60,60,80,80,100');
+        gridPlanillas.attachHeader('#text_filter,#select_filter,#text_filter,#text_filter,#rspan,#select_filter,#rspan,#select_filter,#numeric_filter,#numeric_filter,#numeric_filter,#numeric_filter,#numeric_filter,#select_filter,#select_filter,#select_filter,#select_filter,#text_filter,#select_filter');
+        gridPlanillas.setColTypes('rotxt,rotxt,rotxt,rotxt,ron,rotxt,ron,ron,ron,ron,ron,ron,dyn,ch,ch,ch,ron,rotxt,rotxt');
+        gridPlanillas.setColAlign('left,left,left,left,center,left,center,left,right,right,right,right,right,center,center,center,right,left,left');
+        gridPlanillas.setColumnHidden(4,true);
+        gridPlanillas.setColumnHidden(6,true);
+        gridPlanillas.setNumberFormat('0,000.00',8);
+        gridPlanillas.setNumberFormat('0,000.00',9);
+        gridPlanillas.setNumberFormat('0,000.00',10);
+        gridPlanillas.setNumberFormat('0,000.00',11);
+        gridPlanillas.setNumberFormat('0,000.00',12);
+        gridPlanillas.init();
     gridPlanillas.load(BASE_URL + 'BA010305/lista-planillas/' + usrJson.empresa + '/' + cobrador + '/' + periodo, gridPlanillasOnSuccess);
 }
 gridPlanillasOnSuccess = () => {
+    primeraCargaLista = true;
     mainLayout.cells('b').progressOff();
     gridPlanillas.insertColumn(1,'','img',30);
     gridPlanillas.insertColumn(0,'','img',30);
@@ -111,6 +148,7 @@ gridPlanillasOnSuccess = () => {
 }
 gridPlanillasOnRowSelect = (rowId, colId) => {
     const co_planilla = gridPlanillas.cells(rowId,1).getValue();
+    const vigencia = gridPlanillas.cells(rowId,20).getValue();
     switch(colId) {
         case 0:
             winListaPlanillasDetalle = mainLayout.dhxWins.createWindow('winGridBusqueda',0,0,1200,600);
@@ -123,6 +161,12 @@ gridPlanillasOnRowSelect = (rowId, colId) => {
         case 2:
         break;
         default: break;
+    }
+    if(vigencia == 'Vigente') {
+        ribbonPlanillas.enable('cerrar');
+    }
+    else {
+        ribbonPlanillas.disable('cerrar');
     }
 }
 
@@ -273,16 +317,151 @@ ribbonPlanillasOnClick = async (id) => {
             const jOutput = JSON.parse(output);
             if(jOutput && jOutput.result == 'S') {
                 ribbonPlanillas.enable('abrir');
-                ribbonPlanillas.enable('cerrar');
                 ribbonPlanillas.enable('conciliar');
                 ribbonPlanillas.enable('recibo');
             }
             else {
                 ribbonPlanillas.disable('abrir');
-                ribbonPlanillas.disable('cerrar');
                 ribbonPlanillas.disable('conciliar');
                 ribbonPlanillas.disable('recibo');
             }
+            break;
+        case 'nueva':
+            CrearPlanillaCobranza();
+            break;
+        case 'cerrar':
+            CerrarPlanillaCobranza();
+            break;
+        case 'abrir':
+            const rowId = gridPlanillas.getSelectedRowId();
+            if(rowId > -1) {
+                const planilla = gridPlanillas.cells(rowId,1).getValue();
+                const recaudador = formFiltro.getItemValue('codigo');
+                dhtmlx.confirm('¿Desea abrir la planilla ' + planilla + '?', (result) => {
+                    if(result) {
+                        const params = {
+                            planilla: planilla,
+                            cobrador: recaudador,
+                            empresa: usrJson.empresa
+                        };
+                        $.post(BASE_URL + 'BA010305/abrir-planilla', params, (response) => {
+                            if(response.state == 'success') {
+                                const iPeriodo = formFiltro.getItemValue('periodo');
+                                CargarPlanillasCobranza(iPeriodo, recaudador);
+                                dhtmlx.alert('Se abrió la planilla ' + planilla + '.');
+                            }
+                            else alert(response.message);
+                        }, 'json');
+                    }
+                });
+            }
+            break;
+        default: break;
+    }
+}
+
+CerrarPlanillaCobranza = () => {
+    const rowId = gridPlanillas.getSelectedRowId();
+    if(rowId > -1) {
+        const planilla = gridPlanillas.cells(rowId,1).getValue();
+        const recaudador = formFiltro.getItemValue('codigo');
+        const alias = formFiltro.getItemValue('alias');
+        dhtmlx.confirm('¿Desea cerrar la planilla ' + planilla + '?', (result) => {
+            if(result) {
+                const params = {
+                    alias: alias
+                };
+                $.post(BASE_URL + 'BA010305/cerrar-planilla', params, (response) => {
+                    if(response.state == 'success') {
+                        const iPeriodo = formFiltro.getItemValue('periodo');
+                        const output = response.data;
+                        if(output.resultado == 1) CargarPlanillasCobranza(iPeriodo, recaudador);
+                        dhtmlx.alert(output.mensaje);
+                    }
+                    else alert(response.message);
+                }, 'json');
+            }
+        });
+    }
+}
+
+CrearPlanillaCobranza = () => {
+    winCrearPlanilla = mainLayout.dhxWins.createWindow('winCrearPlanilla',0,0,480,320);
+        winCrearPlanilla.setText('Crear planilla de cobranza');
+        winCrearPlanilla.setModal(true);
+        winCrearPlanilla.keepInViewport(true);
+        winCrearPlanilla.center();
+        winCrearPlanilla.button('close').hide();
+        winCrearPlanilla.button('park').hide();
+        winCrearPlanilla.button('minmax').hide();
+    formCrearPlanilla = winCrearPlanilla.attachForm();
+        formCrearPlanilla.loadStruct(structs.formCreaPlanilla, () => {
+            const recaudador = formFiltro.getItemValue('codigo');
+            const params = {
+                empresa: usrJson.empresa,
+                vendedor: recaudador
+            };
+            $.post(BASE_URL + 'BA010305/buscar-planilla-vigente', params, (response) => {
+                if(response.state == 'success') {
+                    if(response.data.resultado == 1) {
+                        //existe una planilla!
+                        const iPlanilla = response.data.planilla;
+                        $('#sp-codigo-planilla').text(iPlanilla.codigo + ' abierta').css('color','#e53935');
+                        formCrearPlanilla.getCombo('moneda').setComboText(iPlanilla.nmoneda);
+                        formCrearPlanilla.setItemValue('fcrea', iPlanilla.fcreacion.substr(0,10));
+                        formCrearPlanilla.setItemValue('importe', iPlanilla.importe.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}));
+                        formCrearPlanilla.setItemValue('deposito', iPlanilla.deposito.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}));
+                        $('#sp-mensaje').text('Primero cierre la planilla actual');
+                        formCrearPlanilla.disableItem('aceptar');
+                    }
+                    else {
+                        formCrearPlanilla.getCombo('moneda').load(BASE_URL + 'BA010305/lista-monedas/' + usrJson.empresa + '/' + recaudador);
+                        formCrearPlanilla.setReadonly('moneda',true);
+                        formCrearPlanilla.setReadonly('fcrea',true);
+                        formCrearPlanilla.setReadonly('importe',true);
+                        formCrearPlanilla.setReadonly('deposito',true);
+                        //colocar valores por defecto
+                        formCrearPlanilla.setItemValue('fcrea', new Date().toISOString().substr(0,10));
+                        formCrearPlanilla.setItemValue('importe', "0.00");
+                        formCrearPlanilla.setItemValue('deposito', "0.00");
+                    }
+                }
+                else alert(response.message);
+            }, 'json');
+        });
+        formCrearPlanilla.attachEvent('onButtonClick', formCrearPlanillaOnClick);
+}
+
+formCrearPlanillaOnClick = (id) => {
+    switch(id) {
+        case 'aceptar':
+            formCrearPlanilla.disableItem('aceptar');
+            const params = {
+                empresa: usrJson.empresa,
+                vendedor: formFiltro.getItemValue('codigo'),
+                moneda: formCrearPlanilla.getCombo('moneda').getSelectedValue(),
+                docadmin: 54,
+                ptoventa: 1,
+                cerrada: 0,
+                covariable: 74
+            };
+            $.post(BASE_URL + 'BA010305/crear-nueva-planilla', params, (response) => {
+                if(response.state == 'success') {
+                    const out = response.data;
+                    if(out.resultado == 1) {
+                        const iPeriodo = formFiltro.getItemValue('periodo');
+                        const iVendedor = formFiltro.getItemValue('codigo');
+                        document.getElementById('sp-codigo-planilla').innerHTML = out.mensaje + ' creada';
+                        document.getElementById('sp-mensaje').innerHTML = 'Planilla creada con éxito';
+                        CargarPlanillasCobranza(iPeriodo, iVendedor);
+                    }
+                    else alert(out.mensaje);
+                }
+                else alert(response.message);
+            }, 'json');
+            break;
+        case 'cancelar':
+            winCrearPlanilla.close();
             break;
         default: break;
     }
@@ -327,11 +506,6 @@ Grafico12Success = (response) => {
                 name: iRow.TIPO,
                 y: parseFloat(iImporte)
             });
-            /*var porc_s = iImporte > 0 ? iDeposito / iImporte : 0;
-            porc_s = porc_s > 1 ? 100 : porc_s * 100;
-            const porc_n = 100 - porc_s;
-            arr_g2_s.push(porc_s);
-            arr_g2_n.push(porc_n);*/
             arr_g2_names.push(iRow.TIPO);
             //
             if(iDeposito > iImporte) iDeposito = iImporte;

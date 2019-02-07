@@ -94,7 +94,6 @@ const ancestroController = {
             conn.execute(query, params, responseParams, (error, result) => {
                 if(error) {
                     conn.close();
-console.log(error);
                     res.json({
                         state: 'error',
                         message: error

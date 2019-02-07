@@ -120,6 +120,204 @@ const ba010305Controller = {
                 });
             });
         });
+    },
+    BuscaPlanillaVigente: (req, res) => {
+        const { empresa, vendedor } = req.body;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err
+                });
+                return;
+            }
+            const query = "call pack_new_cobranzas.sp_planilla_vigente(:p_empresa,:p_vendedor,:o_resultado,:o_planilla,:o_serie,:o_moneda,:o_periodo,:o_tipo_docu_administr,:o_total,:o_deposito_total,:o_fecreacion,:o_fecierre,:o_caja,:o_nmoneda)";
+            const params = {
+                p_empresa: { val: empresa },
+                p_vendedor: { val: vendedor },
+                o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_planilla: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_serie: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_moneda: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_periodo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_tipo_docu_administr: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_total: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_deposito_total: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_fecreacion: { dir: oracledb.BIND_OUT, type: oracledb.DATE },
+                o_fecierre: { dir: oracledb.BIND_OUT, type: oracledb.DATE },
+                o_caja: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_nmoneda: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    res.json({
+                        state: 'error',
+                        message: error
+                    });
+                    conn.close();
+                    return;
+                }
+                const { o_resultado, o_planilla, o_serie, o_moneda, o_periodo, o_tipo_docu_administr, o_total, o_deposito_total, o_fecreacion, o_fecierre, o_caja, o_nmoneda } = result.outBinds;
+                //o_resultado
+                res.json({
+                    state: 'success',
+                    data: {
+                        resultado: o_resultado,
+                        planilla: {
+                            codigo: o_planilla,
+                            serie: o_serie,
+                            moneda: o_moneda,
+                            periodo: o_periodo,
+                            tpdoc: o_tipo_docu_administr,
+                            importe: o_total,
+                            deposito: o_deposito_total,
+                            fcreacion: o_fecreacion,
+                            fcierre: o_fecierre,
+                            caja: o_caja,
+                            nmoneda: o_nmoneda
+                        }
+                    }
+                });
+            });
+        });
+    },
+    CargarListaMonedas: (req, res) => {
+        const { empresa, vendedor } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err
+                });
+                return;
+            }
+            const query = "select co_moneda value, de_nombre || ' - ' || de_abreviatura text from table(pack_new_cobranzas.f_monedas_recaudador(:p_empresa,:p_recaudador))";
+            const params = {
+                p_empresa: { val: empresa },
+                p_recaudador: { val: vendedor }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    res.json({
+                        state: 'error',
+                        message: error
+                    });
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderCombo(result.rows));
+            });
+        });
+    },
+    CrearPlanillaCobranza: (req, res) => {
+        const { empresa, vendedor, moneda, docadmin, ptoventa, cerrada, covariable } = req.body;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err
+                });
+                return;
+            }
+            const query = "call pack_new_cobranzas.sp_genera_planilla_wap(:p_empresa,:p_vendedor,:p_moneda,:p_docadmin,:p_ptoventa,:p_cerrada,:p_covariable,:o_resultado,:o_planilla)";
+            const params = {
+                p_empresa: { val: empresa },
+                p_vendedor: { val: vendedor },
+                p_moneda: { val: moneda },
+                p_docadmin: { val: docadmin },
+                p_ptoventa: { val: ptoventa },
+                p_cerrada: { val: cerrada },
+                p_covariable: { val: covariable },
+                o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_planilla: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    res.json({
+                        state: 'error',
+                        message: error
+                    });
+                    conn.close();
+                    return;
+                }
+                const { o_resultado, o_planilla } = result.outBinds;
+                res.json({
+                    state: 'success',
+                    data: {
+                        resultado: o_resultado,
+                        mensaje: o_planilla
+                    }
+                });
+            });
+        });
+    },
+    AbrirPlanillaCobranza: (req, res) => {
+        const { planilla, cobrador, empresa } = req.body;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err
+                });
+                return;
+            }
+            const query = "call pack_new_cobranzas.sp_apertura_planilla(:p_empresa,:p_planilla,:p_vendedor)";
+            const params = {
+                p_empresa: { val: empresa },
+                p_planilla: { val: planilla },
+                p_vendedor: { val: cobrador }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    res.json({
+                        state: 'error',
+                        message: error
+                    });
+                    conn.close();
+                    return;
+                }
+                res.json({
+                    state: 'success'
+                });
+            });
+        });
+    },
+    CerrarPlanillaCobranza: (req, res) => {
+        const { alias } = req.body;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err
+                });
+                return;
+            }
+            const query = "call pack_new_cobranzas.sp_cierra_planilla(:p_alias,:o_resultado,:o_mensaje)";
+            const params = {
+                p_alias: { val: alias },
+                o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    res.json({
+                        state: 'error',
+                        message: error
+                    });
+                    conn.close();
+                    return;
+                }
+                const { o_resultado, o_mensaje } = result.outBinds;
+                res.json({
+                    state: 'success',
+                    data: {
+                        resultado: o_resultado,
+                        mensaje: o_mensaje
+                    }
+                });
+            });
+        });
     }
 };
 

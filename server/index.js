@@ -23,6 +23,8 @@ app.use(express.static('public'));
 app.use('/', require('../client/routes/intranet.routes'));
 //rutas para el manejador de archivos
 app.use('/files', require('./routes/archivos.routes'));
+//archivos amazon
+app.use('/aws', require('./routes/aws.routes'));
 //rutas servidor
 app.use('/api/auth', require('./routes/login.routes'));
 app.use('/api/home', require('./routes/home.routes'));

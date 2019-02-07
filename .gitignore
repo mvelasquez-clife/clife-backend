@@ -76,7 +76,11 @@ typings/
 .fusebox/
 
 #archivos globales de configuracion
+server/database.js
+server/ftp-access.js
+server/jwt.js
 server/local.js
+server/s3.js
 
 #bibliotecas de terceros
 public/assets/vendor

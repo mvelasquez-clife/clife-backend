@@ -5,7 +5,7 @@ const FormularioSeguridadStruct = [
     { type: 'label', label: '<span style="color:#808080;display:inline-block;font-size:12px;text-align:center;width:450px;">A continuación, deberá ingresar su usuario y contraseña para continuar</span>', labelWidth:454 },
     { type: 'block', blockOffset: 0, list: [
         { type: 'block', blockOffset: 0, list: [
-            { type: 'input', label: 'Usuario', name: 'fsUsuario', labelWidth: 60, inputWidth: 120, offsetTop: 18 },
+            { type: 'input', label: 'Usuario', name: 'fsUsuario', labelWidth: 60, inputWidth: 120, offsetTop: 18, value: usrJson.alias },
             { type: 'password', label: 'Clave', name: 'fsClave', labelWidth: 60, inputWidth: 120, offsetTop: 24 },
         ] },
         { type: 'newcolumn' },
