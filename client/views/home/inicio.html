@@ -11,7 +11,8 @@
         <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">    
         <link rel="stylesheet" type="text/css" href="assets/css/main.css">
         <style type="text/css">
-            html,body{ display: flex;height:100%;margin:0;padding:0;width:100%;  overflow: hidden}
+        
+            html,body{  display: flex;height:100%;margin:0;padding:0;width:100%;  overflow: hidden}
             #img_fondo_{background-size:cover;height:100%;width:100%;position: absolute; }
         </style>
     </head>
@@ -119,11 +120,12 @@
                         {type: "button", offsetTop: 25, offsetLeft: 155, name: "b_savec", className: "b_savec", value: "Guardar", disabled: true}
                     ]}
             ];
-         
+
             if (usrtoken === '') {
                 location.href = '/';
             } else {                //console.log(usrJson);
                 dhtmlXCalendarObject.prototype.lang = "pe";
+
                 mainLayout = new dhtmlXLayoutObject(document.body, "3T");
                 mainLayout.cells("a").hideHeader();
                 mainLayout.cells("b").setCollapsedText("<span style='color:black; font-size : 1.5em;'>Menu Principal</span>");
@@ -133,7 +135,7 @@
 
                 myToolbar = mainLayout.cells("a").attachToolbar({iconset: "awesome"});
                 myToolbar.setIconSize(32);
-                myToolbar.addText('add_pasos', null, '<div class="milky">CORPORACION LIFE</div>');
+                myToolbar.addText('add_pasos', null, '<div class="milky"></div>');
                 myToolbar.addButton('b_hidemenu', null, '', null, null);
                 myToolbar.addInputsearch('search-bar1', null, null, null);
                 myToolbar.addSeparator(null, null);

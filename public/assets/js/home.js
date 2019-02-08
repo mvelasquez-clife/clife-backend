@@ -173,7 +173,7 @@ save_infoperso = () => {
     });
     $.post(BASE_URL + "home/update_datos", obj, function (res) {
         if (res.state !== 'error') {
-            Swal.fire('Bien!', res.message, 'success')
+            Swal.fire('Bien!', res.message, 'success');
         } else
             Swal.fire({type: 'error', title: 'Algo salió mal...', text: 'No se pudo guardar sus Datos :' + res.message, footer: '<a href="#">Comuníquese con el area de Sistemas</a>'});
     }, "json");

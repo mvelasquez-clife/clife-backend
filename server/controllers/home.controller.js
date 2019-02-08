@@ -57,7 +57,7 @@ const homeController = {
         const {alias, empresa} = req.params;
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
-                console.error(err);
+                 res.send({'error_conexion':err.stack});
                 return;
             }
             const responseParams = {
@@ -76,7 +76,7 @@ const homeController = {
             const params2 = {alias: {val: alias}, empresa: {val: empresa}, codigo: {val: id}};
             conn.execute(query2, params2, responseParams, (error, result) => {
                 if (error) {
-                    console.error(error);
+                      res.send({'error_query':err.stack});
                     conn.close();
                     return;
                 }
@@ -106,7 +106,7 @@ const homeController = {
         const {alias, empresa, txtsearch} = req.body;
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
-                console.error(err);
+                  res.send({'error_conexion':err.stack});
                 return;
             }
             const responseParams = {
@@ -116,7 +116,7 @@ const homeController = {
             const params1 = {alias: {val: alias}};
             conn.execute(query1, params1, responseParams, (error, result) => {
                 if (error) {
-                    console.error(error);
+                    res.send({'error_query':error.stack});
                     conn.close();
                     return;
                 }

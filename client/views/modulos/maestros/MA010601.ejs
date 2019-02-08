@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Cartera de clientes</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">  
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        <style type="text/css">
+            html,body{height:100%;margin:0;padding:0;width:100%}
+            #dhxDesktop{height:100%;width:100%;}
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <!-- scripts principales -->
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <!-- script propio de la ventana -->
+        <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- ancestro de la ventana de seguridad -->
+        <script type="text/javascript"  src="/assets/ancestros/seguridad.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script>
+            var mainLayout, mySidebar, base_tollbar, estadook = 'VIGENTE';
+            var __id = 0, Nombrenew, Codigo, Nombreold, Estado;
+            //st_form_s_sede, form_s_sede, form_s_departa, st_form_s_departa, form_s_seccio, st_form_s_seccio, form_s_oficina, st_form_s_oficina, id_sede, id_depar, id_seccop, id_ofici;
+            //var sedeCodigo, sedeEstado, myDataViewdepar, myDataViewsede,  myToolbarsede, myToolbarofici, myToolbarseccio, myToolbardeparta, myToolbarsede, __id = 0;
+            //var sedeCodigo, sedeNombreold, sedeEstado, sedeNombrenew,;
+            var st_form_base = [{type: "settings", labelWidth: 140},
+                {type: "block", blockOffset: 0, width: 450, list: [{type: "template", offsetLeft: 0, name: "title_usu"}]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 25, width: 100, list: [{type: "button", offsetTop: 2, offsetLeft: 1, name: "fsalirw", className: "fsalirw", value: '<i class="fas fa-window-close"></i>'}]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 0, list: [
+                        {type: "block", blockOffset: 25, offsetTop: 2, width: 455, list: [
+                                {type: "input", name: '__codigo', disabled: true, offsetTop: 15, inputWidth: 200, label: '<font class="input_font">Codigo</font>', required: true},
+                                {type: "input", disabled: false, name: '__nombres', inputWidth: 200, label: '<font class="input_font">Nombre </font>', required: true},
+                                {type: "combo", name: '__depacod', disabled: false, offsetLeft: 0, inputWidth: 150, label: '<font class="input_font">Departamento</font>', connector: BASE_URL + 'MA010601/c_list_depar/'+usrJson.empresa}, {type: "newcolumn"},
+                                {type: "combo", name: '__sedecod', disabled: false, offsetLeft: 0, inputWidth: 150, label: '<font class="input_font">Sede</font>', connector: BASE_URL + 'MA010601/c_list_sede/'+usrJson.empresa}, {type: "newcolumn"},
+                                {type: "combo", name: '__estado', disabled: false, offsetLeft: 0, inputWidth: 150, label: '<font class="input_font">Estado</font>', connector: BASE_URL + 'MA010601/c_list_estado/'+usrJson.empresa}, {type: "newcolumn"},
+                                {type: "combo", name: '__respon', disabled: false, offsetLeft: 0, inputWidth: 150, label: '<font class="input_font">Responsable</font>', connector: BASE_URL + 'MA010601/list_personal/'}, {type: "newcolumn"}
+                            ]}
+                    ]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 5, width: 470, list: [
+                        {type: "button", offsetTop: 25, offsetLeft: 95, className: 'b_editc', name: "b_editc", value: "Editar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 25, offsetLeft: 155, name: "b_savec", className: "b_savec", value: "Guardar", disabled: true}
+                    ]}
+            ];
+            st_form_s_oficina = [];
+            // st_form_s_departa = [];
+            /* st_form_s_sede = [{type: "settings", labelWidth: 160},
+             //{type: "block", blockOffset: 0, width: 453, list: [{type: "template", offsetLeft: 15, name: "title_usu", format: name_usu}]},
+             {type: "newcolumn"},
+             {type: "block", blockOffset: 25, width: 100, list: [{type: "button", offsetTop: 2, offsetLeft: 1, name: "fsalirw", className: "fsalirw", value: '<i class="fas fa-window-close"></i>'}]}
+             ];*/
+            var base_tollbar = {iconset: "awesome", items: [
+                    {id: "__nuevo", type: "button", disabled: false, text: "Nuevo", img: "fas fa-plus", imgdis: "fas fa-plus disable"},
+                    {type: "separator"},
+                    {id: "__edit", type: "button", text: "Editar", disabled: true, img: "fas fa-edit", imgdis: "fas fa-edit disable"},
+                    {type: "separator"},
+                    {id: "__anula", type: "button", text: "Anular", disabled: true, img: "fas fa-ban", imgdis: "fas fa-ban disable"},
+                    {type: "separator"},
+                    {id: "__activar", type: "button", text: "Activar", disabled: true, img: "fas fa-check-circle", imgdis: "fas fa-check-circle disable"},
+                    {type: "separator"}
+                ]};
+            var struc_dataview = {container: "data_conten", drag: false, edit: true, select: true,
+                type: {template: "<p class='centrarpdiv' >#Nombre#</p>",
+                    template_edit: " <label for='text_sede'> Nombre :</label> <textarea id='text_sede' name='text_sede' class='editor_sede' bind='obj.Nombre'></textarea> <h3>***Maximo 70 carecteres...</h3>", height: 60}, autowidth: true};
+            var sidebarjson = [
+                {id: "s_sede", text: "SEDES", icon: "32/disk_d.png", selected: true},
+                {id: "s_departa", text: "DEPARTAMENTOS", icon: "32/disk_e.png"},
+                {id: "s_seccio", text: "SECCIONES", icon: "32/desktop.png"},
+                {id: "s_oficina", text: "OFICINAS", icon: "32/desktop.png"}
+            ];
+
+            mainLayout = new dhtmlXLayoutObject('dhxDesktop', '1C');
+            mainLayout.cells('a').hideHeader();
+            //sidebar
+            mySidebar = mainLayout.cells('a').attachSidebar({width: 130, single_cell: true, template: "icons_text", icons_path: "/assets/images/icons/iconsjhon/", items: sidebarjson});
+            mySidebar.attachEvent("onBeforeSelect", onselect_sidebar);
+            f_s_sede(); //inicia por defecto el primer tab-sidebar
+
+
+        </script>
+    </body>
+</html>
