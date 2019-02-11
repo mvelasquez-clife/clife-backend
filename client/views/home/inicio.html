@@ -11,13 +11,12 @@
         <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">    
         <link rel="stylesheet" type="text/css" href="assets/css/main.css">
         <style type="text/css">
-        
             html,body{  display: flex;height:100%;margin:0;padding:0;width:100%;  overflow: hidden}
             #img_fondo_{background-size:cover;height:100%;width:100%;position: absolute; }
         </style>
     </head>
     <body>
-        <div id="dhxViewport"></div>
+        <!-- <div id="dhxViewport"></div> -->
         <script type="text/javascript" src="assets/vendor/jquery/jquery-3.2.1.min.js"></script>
         <script type="text/javascript" src="assets/js/conf.js"></script>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
@@ -123,16 +122,15 @@
 
             if (usrtoken === '') {
                 location.href = '/';
-            } else {                //console.log(usrJson);
+            } else {
                 dhtmlXCalendarObject.prototype.lang = "pe";
-
-                mainLayout = new dhtmlXLayoutObject(document.body, "3T");
+                mainLayout = new dhtmlXLayoutObject({parent: document.body, pattern: "3T", offsets: {top:0, right:0, bottom:0, left:0}});
                 mainLayout.cells("a").hideHeader();
                 mainLayout.cells("b").setCollapsedText("<span style='color:black; font-size : 1.5em;'>Menu Principal</span>");
                 mainLayout.cells("b").hideArrow();
                 mainLayout.setSeparatorSize(0, 0);
                 mainLayout.setSeparatorSize(1, 0);
-
+                mainLayout.setSeparatorSize(2, 0);
                 myToolbar = mainLayout.cells("a").attachToolbar({iconset: "awesome"});
                 myToolbar.setIconSize(32);
                 myToolbar.addText('add_pasos', null, '<div class="milky"></div>');
@@ -150,49 +148,34 @@
                 myToolbar.attachEvent("onClick", toolbar_onclic);
                 myToolbar.attachEvent("onkeyup", inpu_onKeyup);
                 myToolbar.setSkin('dhx_custom');
-
                 myPop = new dhtmlXPopup({toolbar: myToolbar, id: "b_user_admi"});
                 carga_estructura_pop(myPop);
                 myPop.attachEvent("onClick", pop_inclic);
-
                 myPop2 = new dhtmlXPopup({toolbar: myToolbar, id: "search-bar1"});
                 myPop2.attachEvent("onClick", pop_inclic2);
-
                 mainLayout.cells("b").hideHeader();
                 mainLayout.cells("a").setHeight(45);
                 mainLayout.cells("b").setWidth(240);
-                //mainLayout.cells("b").setText("Seleccione una opción");
                 mainLayout.cells("b").fixSize(true, true);
                 mainLayout.cells("b").attachHTMLString("<div id=\"dv-treeview\"></div>");
                 mainLayout.cells("c").hideHeader();
-                //mainLayout.cells("c").attachHTMLString('<div id="img_fondo_"></div>'); //
                 mainLayout.cells("c").attachHTMLString('<div id="img_fondo_"><div class="loader-container">  <div class="progress float shadow">    <div class="progress__item"></div>  </div></div></div>');//mainLayout.cells("c").attachHTMLString("<div id=\"dv-fondo\"></div>');
-
                 secLayout = new dhtmlXLayoutObject("dv-treeview", "2E");
                 secLayout.setSeparatorSize(0, 0);
                 secLayout.setSeparatorSize(1, 0);
                 secLayout.cells("a").hideHeader();
                 secLayout.cells("a").setHeight(150);
-
                 var Formlogo = secLayout.cells("a").attachForm();
                 Formlogo.load(form_logo, doOnload);
-
                 secLayout.cells("a").fixSize(true, true);
                 secLayout.cells("b").hideHeader();
-
                 mainTree = secLayout.cells("b").attachTree();
-                //mainTree.setXMLAutoLoading(BASE_URL + "home/menu/MAIN/Administrator/11");
                 mainTree.setImagePath("assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
                 mainTree.setXMLAutoLoading(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa);
-                //mainTree.enableTreeImages(false);
-                //mainTree.enableTextSigns(true);
-                //mainTree.enableMultiLineItems("150px");
                 mainTree.enableTreeLines(true);
                 mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
                 mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
                 dhxWins = new dhtmlXWindows();
-                //dhxWins.attachViewportTo("dv-fondo");
-                //$("#dv-header").parent().css("border-color", "#ebebeb");
             }
         </script>
 

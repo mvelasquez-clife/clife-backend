@@ -1,11 +1,44 @@
-var gridBusqueda, winGridBusqueda, winGridLayout, winToolbar;
+ /********************
+  *  Modo de Uso :
+  * en el "script.js" de cada modulo agregar :
+  * agregar en EL Tag <BODY> del plantilla XXXXXX.ejs
+  *  <script type="text/javascript"  src="/assets/ancestros/grid-busqueda.js"></script>
+  * 
+  * Luego agregar de acuerdo a su logica la sgte linea de codigo :
+  * 
+  *    var W_b_respo = new dhtmlXWindows();  
+  *    var output = await IniciarGridBusqueda(2, false, W_b_respo);
+  *    
+  *    1. Se crea una estancia de dhtmlXWindows
+  *    2. Se manda el objeto creado mediante la funcion  IniciarGridBusqueda();
+  *    
+  *===================================================
+  *     RESPUESTA :
+  *    { 
+  *      alias: "MAlbornozC"
+  *       ccosto: "Bazares y Farmacias"
+  *       codigo: "10818653"
+  *       nombre: "ALBORNOZ CHAGUA MAGALY"
+  *       vigencia: "Vigente"
+  *       }
+  *       
+  *    => para seleccionar datos : 
+  *       
+  *     output.seleccion[0].alias =>(String) devuelve el alias  
+  *     output.seleccion[0].ccosto =>(String) devuelve el nombre centro de costos 
+  *     output.seleccion[0].codigo =>(String) devuelve el codigo  
+  *     output.seleccion[0].nombre =>(String) devuelve el nombre  
+  *     output.seleccion[0].vigencia =>(String) devuelve el estado  
+  *          
+  *********************/
+ var gridBusqueda, winGridBusqueda, winGridLayout, winToolbar;
 var multi, tpEnti;
 
 IniciarGridBusqueda = (tipoEntidad, multiSelect, container) => {
     return new Promise(resolve => {
         multi = multiSelect;
         tpEnti = tipoEntidad;
-        winGridBusqueda = container.dhxWins.createWindow('winGridBusqueda',0,0,720,480);
+        winGridBusqueda = container.createWindow('winGridBusqueda',0,0,720,480);
             winGridBusqueda.center();
             winGridBusqueda.keepInViewport(true);
             winGridBusqueda.setModal(true);

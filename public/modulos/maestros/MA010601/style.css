@@ -1,6 +1,19 @@
+
+/******** aweson COLORS *******************/
+.txtred {
+    color: red!important;
+}
+.txtrgreen {
+    color: #31a354!important;
+}
+.txtrblue {
+    color:#04c!important  ;
+}
 .disable {
     opacity: 0.2;
 }
+
+
 .classfont{
     font-family:century gothic, verdana, arial, sans-serif!important;
 }

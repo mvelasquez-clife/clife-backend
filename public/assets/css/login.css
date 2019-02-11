@@ -1,3 +1,10 @@
+h3,h2{margin: 0px!important;}
+
+
+
+
+
+
 /*//////////////////////////////////////////////////////////////////
 [ FONT ]*/
 
@@ -177,17 +184,27 @@ iframe {
   justify-content: center;
   align-items: center;
   padding: 15px;
-  background-image:url('../images/login/bg.jpg');
+     background-color: #4caf50;
+  /*background-image:url('../images/login/bg.jpg');*/
   background-size: cover;
-  background-color: #ebebeb;
+  /*background-color: #ebebeb;*/
 }
-
+.logo {
+    width: 100%;
+}
 
 .wrap-login100 {
   width: 560px;
-  background: #fff;
+  background: #fcfcfc;
   border-radius: 10px;
   position: relative;
+  
+/*  display:block;
+  background-color: #f7f7f7;
+  -moz-box-shadow: 0 0 3px 3px #888;
+    -webkit-box-shadow: 0 0 3px 3px #888;
+	box-shadow: 0 0 3px 3px #888;*/
+        
 }
 
 

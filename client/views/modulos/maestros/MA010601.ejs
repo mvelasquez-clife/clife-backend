@@ -23,51 +23,41 @@
         <!-- script propio de la ventana -->
         <script type="text/javascript" src="<%=path%>script.js"></script>
         <!-- ancestro de la ventana de seguridad -->
-        <script type="text/javascript"  src="/assets/ancestros/seguridad.js"></script>
+        <script type="text/javascript"  src="/assets/ancestros/grid-busqueda.js"></script>
         <!-- scripts de la carga de la vista -->
         <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
         <script>
             var mainLayout, mySidebar, base_tollbar, estadook = 'VIGENTE';
             var __id = 0, Nombrenew, Codigo, Nombreold, Estado;
-            //st_form_s_sede, form_s_sede, form_s_departa, st_form_s_departa, form_s_seccio, st_form_s_seccio, form_s_oficina, st_form_s_oficina, id_sede, id_depar, id_seccop, id_ofici;
-            //var sedeCodigo, sedeEstado, myDataViewdepar, myDataViewsede,  myToolbarsede, myToolbarofici, myToolbarseccio, myToolbardeparta, myToolbarsede, __id = 0;
-            //var sedeCodigo, sedeNombreold, sedeEstado, sedeNombrenew,;
-            var st_form_base = [{type: "settings", labelWidth: 140},
-                {type: "block", blockOffset: 0, width: 450, list: [{type: "template", offsetLeft: 0, name: "title_usu"}]},
-                {type: "newcolumn"},
-                {type: "block", blockOffset: 25, width: 100, list: [{type: "button", offsetTop: 2, offsetLeft: 1, name: "fsalirw", className: "fsalirw", value: '<i class="fas fa-window-close"></i>'}]},
-                {type: "newcolumn"},
-                {type: "block", blockOffset: 0, list: [
-                        {type: "block", blockOffset: 25, offsetTop: 2, width: 455, list: [
-                                {type: "input", name: '__codigo', disabled: true, offsetTop: 15, inputWidth: 200, label: '<font class="input_font">Codigo</font>', required: true},
-                                {type: "input", disabled: false, name: '__nombres', inputWidth: 200, label: '<font class="input_font">Nombre </font>', required: true},
-                                {type: "combo", name: '__depacod', disabled: false, offsetLeft: 0, inputWidth: 150, label: '<font class="input_font">Departamento</font>', connector: BASE_URL + 'MA010601/c_list_depar/'+usrJson.empresa}, {type: "newcolumn"},
-                                {type: "combo", name: '__sedecod', disabled: false, offsetLeft: 0, inputWidth: 150, label: '<font class="input_font">Sede</font>', connector: BASE_URL + 'MA010601/c_list_sede/'+usrJson.empresa}, {type: "newcolumn"},
-                                {type: "combo", name: '__estado', disabled: false, offsetLeft: 0, inputWidth: 150, label: '<font class="input_font">Estado</font>', connector: BASE_URL + 'MA010601/c_list_estado/'+usrJson.empresa}, {type: "newcolumn"},
-                                {type: "combo", name: '__respon', disabled: false, offsetLeft: 0, inputWidth: 150, label: '<font class="input_font">Responsable</font>', connector: BASE_URL + 'MA010601/list_personal/'}, {type: "newcolumn"}
+            var st_form_base = [{type: "settings", labelWidth: 100},
+                {type: "block", blockOffset: 15, list: [
+                        {type: "block", blockOffset: 5, offsetTop: 10, width: 455, list: [
+                                {type: "input", name: '__codigo', disabled: true, offsetTop: 0, inputWidth: 200, label: '<font class="input_font">Codigo</font>', required: true},
+                                {type: "input", disabled: false, name: '__nombres', inputWidth: 320, label: '<font class="input_font">Nombre </font>', required: true},
+                                {type: "combo", name: '__depacod', disabled: false, filtering: true, offsetLeft: 0, inputWidth: 250, label: '<font class="input_font">Departamento</font>', connector: BASE_URL + 'MA010601/c_list_depar/' + usrJson.empresa}, {type: "newcolumn"},
+                                {type: "combo", name: '__sedecod', disabled: false, filtering: true, offsetLeft: 0, inputWidth: 250, label: '<font class="input_font">Sede</font>', connector: BASE_URL + 'MA010601/c_list_sede/' + usrJson.empresa}, {type: "newcolumn"},
+                                {type: "combo", name: '__estado', disabled: false, filtering: true, offsetLeft: 0, inputWidth: 250, label: '<font class="input_font">Estado</font>', connector: BASE_URL + 'MA010601/c_list_estado/' + usrJson.empresa}, {type: "newcolumn"},
+                                {type: "block", blockOffset: 0, width: 455, list: [
+                                        {type: "input", name: '__nrespon', label: 'Encargado', offsetLeft: 0, inputWidth: 250}, {type: "newcolumn"},
+                                        {type: "button", name: '__buscar', disabled: false, offsetLeft: 10, value: '<i class="fas fa-search"></i>'}
+                                    ]}
                             ]}
                     ]},
                 {type: "newcolumn"},
                 {type: "block", blockOffset: 5, width: 470, list: [
-                        {type: "button", offsetTop: 25, offsetLeft: 95, className: 'b_editc', name: "b_editc", value: "Editar"}, {type: "newcolumn"},
-                        {type: "button", offsetTop: 25, offsetLeft: 155, name: "b_savec", className: "b_savec", value: "Guardar", disabled: true}
+                        {type: "button", offsetTop: 25, offsetLeft: 95,  name: "b_save", value: "Guardar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 25, offsetLeft: 155, name: "b_cancel",  value: "Cancelar", disabled: false}
                     ]}
             ];
-            st_form_s_oficina = [];
-            // st_form_s_departa = [];
-            /* st_form_s_sede = [{type: "settings", labelWidth: 160},
-             //{type: "block", blockOffset: 0, width: 453, list: [{type: "template", offsetLeft: 15, name: "title_usu", format: name_usu}]},
-             {type: "newcolumn"},
-             {type: "block", blockOffset: 25, width: 100, list: [{type: "button", offsetTop: 2, offsetLeft: 1, name: "fsalirw", className: "fsalirw", value: '<i class="fas fa-window-close"></i>'}]}
-             ];*/
+         
             var base_tollbar = {iconset: "awesome", items: [
                     {id: "__nuevo", type: "button", disabled: false, text: "Nuevo", img: "fas fa-plus", imgdis: "fas fa-plus disable"},
                     {type: "separator"},
-                    {id: "__edit", type: "button", text: "Editar", disabled: true, img: "fas fa-edit", imgdis: "fas fa-edit disable"},
+                    {id: "__edit", type: "button", text: "Editar", disabled: true, img: "fas fa-edit txtrblue", imgdis: "fas fa-edit disable"},
                     {type: "separator"},
-                    {id: "__anula", type: "button", text: "Anular", disabled: true, img: "fas fa-ban", imgdis: "fas fa-ban disable"},
+                    {id: "__anula", type: "button", text: "Anular", disabled: true, img: "fas fa-ban txtred", imgdis: "fas fa-ban disable"},
                     {type: "separator"},
-                    {id: "__activar", type: "button", text: "Activar", disabled: true, img: "fas fa-check-circle", imgdis: "fas fa-check-circle disable"},
+                    {id: "__activar", type: "button", text: "Activar", disabled: true, img: "fas fa-check-circle txtrgreen", imgdis: "fas fa-check-circle disable"},
                     {type: "separator"}
                 ]};
             var struc_dataview = {container: "data_conten", drag: false, edit: true, select: true,
@@ -80,10 +70,10 @@
                 {id: "s_oficina", text: "OFICINAS", icon: "32/desktop.png"}
             ];
 
-            mainLayout = new dhtmlXLayoutObject('dhxDesktop', '1C');
+            mainLayout = new dhtmlXLayoutObject(document.body, '1C');
             mainLayout.cells('a').hideHeader();
             //sidebar
-            mySidebar = mainLayout.cells('a').attachSidebar({width: 130, single_cell: true, template: "icons_text", icons_path: "/assets/images/icons/iconsjhon/", items: sidebarjson});
+            mySidebar = mainLayout.cells('a').attachSidebar({parent: document.body, width:150, single_cell: true, template: "icons_text", icons_path: "/assets/images/icons/iconsjhon/", items: sidebarjson});
             mySidebar.attachEvent("onBeforeSelect", onselect_sidebar);
             f_s_sede(); //inicia por defecto el primer tab-sidebar
 
