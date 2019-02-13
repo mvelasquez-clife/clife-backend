@@ -15,7 +15,7 @@ const loginCtrl = {
                 return;
             }
             connection.execute(
-                    "SELECT CO_PERSONA,DE_ALIAS,CO_EMPRESA_USUARIO,CO_USUARIO,CO_TIPO_DOC_IDE,DE_NOMBRES,DE_SEXO,FE_NACIMIENTO,ST_ADMIN,DE_APELLIDO_PATERNO,DE_APELLIDO_MATERNO,CO_CENTRO_COSTO,ST_ACCESO_WAP,DE_NOMBRE_COSTOS,FE_REGISTRO,DE_DOCUMENTO,DE_MAIL_CORPO,DE_TELEFONO_CORPO FROM TABLE(PW_DATOS_USUARIO_LOGIN.F_DATOS_USUARIO_LOGIN(:usuario,:clave))",
+                    "select co_persona,de_alias,co_empresa_usuario,co_usuario,co_tipo_doc_ide,de_nombres,de_sexo,fe_nacimiento,st_admin,de_apellido_paterno,de_apellido_materno,co_centro_costo,st_acceso_wap,de_nombre_costos,fe_registro,de_documento,de_mail_corpo,de_telefono_corpo,de_fullname from table(pw_datos_usuario_login.f_datos_usuario_login(:usuario,:clave))",
                     {
                         usuario: {val: usuario},
                         clave: {val: clave}
@@ -57,7 +57,8 @@ const loginCtrl = {
                     fregistro: result.rows[0].FE_REGISTRO,
                     documento: result.rows[0].DE_DOCUMENTO,
                     mailcorpo: result.rows[0].DE_MAIL_CORPO,
-                    cellcorpo: result.rows[0].DE_TELEFONO_CORPO
+                    cellcorpo: result.rows[0].DE_TELEFONO_CORPO,
+                    fullname: result.rows[0].DE_FULLNAME
 
                 };
                 

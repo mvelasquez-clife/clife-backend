@@ -54,23 +54,26 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container) => {
                     gridBusqueda.attachHeader('#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter');
                     gridBusqueda.setInitWidthsP('10,45,20,10,10');
                     gridBusqueda.setColTypes('ron,rotxt,rotxt,rotxt,rotxt');
-                    gridBusqueda.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/");
-                    gridBusqueda.enablePaging(true, 250, 5, "bsq-pager");
-                    gridBusqueda.setPagingSkin("toolbar");
                     break;
                 case 2:
                     gridBusqueda.setHeader('Codigo,Nombre,Vigencia,C.Costo,Alias');
                     gridBusqueda.attachHeader('#numeric_filter,#text_filter,#select_filter,#select_filter,#text_filter');
                     gridBusqueda.setInitWidthsP('10,50,10,15,10');
                     gridBusqueda.setColTypes('ron,rotxt,rotxt,rotxt,rotxt');
-                    gridBusqueda.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/");
-                    gridBusqueda.enablePaging(true, 250, 5, "bsq-pager");
-                    gridBusqueda.setPagingSkin("toolbar");
+                    break;
+                case 3:
+                    gridBusqueda.setHeader('Codigo,Nombre,Vigencia,Alias,Correo');
+                    gridBusqueda.attachHeader('#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter');
+                    gridBusqueda.setInitWidthsP('10,50,10,15,10');
+                    gridBusqueda.setColTypes('ron,rotxt,rotxt,rotxt,rotxt');
                     break;
                 default: break;
             }
-            gridBusqueda.enableMultiselect(multiSelect);
-            gridBusqueda.init();
+                gridBusqueda.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/");
+                gridBusqueda.enablePaging(true, 250, 5, "bsq-pager");
+                gridBusqueda.setPagingSkin("toolbar");
+                gridBusqueda.enableMultiselect(multiSelect);
+                gridBusqueda.init();
             gridBusqueda.load('/api/ancestros/datos-modal-busqueda/' + tipoEntidad + '/' + usrJson.empresa, gridBusquedaDatosSuccess);
     });
 }
@@ -105,6 +108,14 @@ generaJsonFila = (rowId) => {
                 vigencia: gridBusqueda.cells(rowId,3).getValue(),
                 ccosto: gridBusqueda.cells(rowId,4).getValue(),
                 alias: gridBusqueda.cells(rowId,5).getValue()
+            };
+        case 3:
+            return {
+                codigo: gridBusqueda.cells(rowId,1).getValue(),
+                nombre: gridBusqueda.cells(rowId,2).getValue(),
+                vigencia: gridBusqueda.cells(rowId,3).getValue(),
+                alias: gridBusqueda.cells(rowId,4).getValue(),
+                correo: gridBusqueda.cells(rowId,5).getValue()
             };
         default: return null;
     }

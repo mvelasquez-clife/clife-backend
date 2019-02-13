@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Chat con Socket.IO</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <style>
+            html,body{height:100%;margin:0;padding:0;width:100%}
+            .dv-chat{height:100%;width:100%;}
+            .dv-chat-body{background-color:#ffffff;min-height:100px;width:100%;overflow-x:hidden;;overflow-y:auto;}
+            .dv-chat-body>div{box-sizing:border-box;padding:8px;width:100%;}
+            .dv-chat-footer{background-color:#e0e0e0;height:50px;width:100%;}
+            .chform-button-image{height:32px;position:relative;}
+            .chform-button-image:active{top:1;}
+            .dv-message{font-size:13px;font-family:sans-serif;margin-bottom:4px;}
+            .dv-message>img{height:24px;top:8px;position:relative;border-radius:12px;}
+            .dv-message>span{display:inline-block;margin:2px;padding:8px;}
+            .dv-message>span>img{cursor:pointer;}
+            .dv-message-in{text-align:left;}
+            .dv-message-in>span{background-color:#eeeeee;border-radius:8px 8px 8px 0;}
+            .dv-message-out{text-align:right;}
+            .dv-message-out>span{background-color:#00bcd4;border-radius:8px 8px 0 8px;color:#ffffff;}
+            .chform{box-sizing:border-box;padding:4px;width:100%;}
+            .chform>*{display:inline-block;vertical-align:top;}
+            .chform>input{border:none;border-radius:16px;box-sizing:border-box;color:#404040;height:36px;margin:4px;padding:8px 12px;}
+            .chform>button,.chform>a{background:transparent;border:0;border-radius:50%;cursor:pointer;height:42px;transition:background 250ms;width:42px;}
+            .chform>button{padding:6px 0px 4px 6px;}
+            .chform>a{box-sizing:border-box;padding:10px;}
+            .chform>button>img,.chform>a>img{height:24px;}
+            .chform>button:hover,.chform>a:hover{background-color:rgba(0,0,0,.05);}
+        </style>
+    </head>
+    <body></body>
+    <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="/assets/js/conf.js"></script>
+    <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+    <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+    <script type="text/javascript" src="/assets/js/paste.js"></script>
+    <script type="text/javascript" src="/assets/js/chat.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io('http://192.168.11.138:3001',{
+            query: {
+                alias: usrJson.alias,
+                codigo: usrJson.codigo,
+                nombre: (usrJson.nombre ? usrJson.nombre : usrJson.fullname),
+                empresa: usrJson.empresa
+            }
+        });
+        var mainLayout, mainRibbon, chatsTabbar, contactosTree;
+        mainLayout = new dhtmlXLayoutObject(document.body, '2U');
+            mainLayout.cells('a').setWidth(320);
+            mainLayout.cells('a').setText('Contactos');
+        mainRibbon = mainLayout.cells('a').attachRibbon();
+            mainRibbon.loadStruct(structs.chatRibbon);
+            mainRibbon.getInput('mensaje').placeholder = 'Escribe un mensaje personal';
+            mainRibbon.attachEvent('onClick', mainRibbonOnClick);
+        contactosTree = mainLayout.cells('a').attachTree();
+            contactosTree.deleteChildItems(0);
+            contactosTree.setImagePath('/assets/images/icons/chat/');
+			contactosTree.insertNewChild(0,1,'Contactos');
+			contactosTree.insertNewChild(0,2,'Grupos');
+            contactosTree.attachEvent('onDblClick', contactosTreeOnDblClick);
+        chatsTabbar = mainLayout.cells('b').attachTabbar();
+        socket.on('message', function (data) {
+            IniciarChat(data.from.id, data.from.name);
+            const divId = '#chat-' + data.from.id;
+            EscribeMensajeEntrante(divId, data.from.id, data.message);
+        });
+        socket.on('conectar', (data) => {
+            if(data.result) {
+                console.log('usuario', data.user, 'disponible');
+            }
+            else {
+                console.log('el usuario', data.user, 'está desconectado');
+            }
+        });
+        socket.on('iniciar', (data) => {
+            const divId = '#chat-' + data.receptor;
+            const mensajes = data.mensajes;
+            $(divId).children('div').empty();
+            for(var i in mensajes) {
+                const iMensaje = mensajes[i];
+                if(iMensaje.from == usrJson.codigo) {
+                    EscribeMensajeSaliente(divId, usrJson.codigo, iMensaje.message);
+                }
+                else {
+                    EscribeMensajeEntrante(divId, iMensaje.from, iMensaje.message);
+                }
+            }
+            //$('.dv-message>span>img').on('click', showImage);
+        });
+        /*contactosTree.insertNewChild(1,40721489,'Ruth Cebollas',null,'ic-user-online.png');
+        IniciarChat(40721489);*/
+        CargarListaContactos();
+    </script>
+</html>
