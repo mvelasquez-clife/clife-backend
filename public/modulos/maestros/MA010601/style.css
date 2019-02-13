@@ -1,0 +1,28 @@
+
+/******** aweson COLORS *******************/
+.txtred {
+    color: red!important;
+}
+.txtrgreen {
+    color: #31a354!important;
+}
+.txtrblue {
+    color:#04c!important  ;
+}
+.disable {
+    opacity: 0.2;
+}
+
+
+.classfont{
+    font-family:century gothic, verdana, arial, sans-serif!important;
+}
+#data_conten { cursor: pointer; width:100%;height:100%;  }
+.centrarpdiv{line-height: 20px;font-size: 1.7em;font-family:century gothic, verdana, arial, sans-serif!important; }
+
+textarea {
+  vertical-align: top;
+  width: 500px;
+  font-size: 2.0em;
+  height: 27px;
+}
