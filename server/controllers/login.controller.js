@@ -64,7 +64,8 @@ const loginCtrl = {
                     fregistro: result.rows[0].FE_REGISTRO,
                     documento: result.rows[0].DE_DOCUMENTO,
                     mailcorpo: result.rows[0].DE_MAIL_CORPO,
-                    cellcorpo: result.rows[0].DE_TELEFONO_CORPO
+                    cellcorpo: result.rows[0].DE_TELEFONO_CORPO,
+                    fullname: result.rows[0].DE_FULLNAME
                 };
                 const query = "update sg_usua_m set PASSWORD=:nclave where CO_EMPRESA_USUARIO=:emp and DE_ALIAS=:usua  and DE_CORREO = :email ";
                 const params = {nclave: hash, emp: emp, usua: user, email: mail};

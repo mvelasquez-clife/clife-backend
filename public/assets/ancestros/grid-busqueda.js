@@ -31,14 +31,14 @@
   *     output.seleccion[0].vigencia =>(String) devuelve el estado  
   *          
   *********************/
- var gridBusqueda, winGridBusqueda, winGridLayout, winToolbar;
+var gridBusqueda, winGridBusqueda, winGridLayout, winToolbar;
 var multi, tpEnti;
 
 IniciarGridBusqueda = (tipoEntidad, multiSelect, container) => {
     return new Promise(resolve => {
         multi = multiSelect;
         tpEnti = tipoEntidad;
-        winGridBusqueda = container.createWindow('winGridBusqueda',0,0,720,480);
+        winGridBusqueda = container.dhxWins.createWindow('winGridBusqueda',0,0,720,480);
             winGridBusqueda.center();
             winGridBusqueda.keepInViewport(true);
             winGridBusqueda.setModal(true);
