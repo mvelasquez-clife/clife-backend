@@ -81,6 +81,7 @@ server/ftp-access.js
 server/jwt.js
 server/local.js
 server/s3.js
+server/mongodb.js
 
 #bibliotecas de terceros
 public/assets/vendor

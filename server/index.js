@@ -3,7 +3,11 @@ const morgan = require('morgan');
 const cors = require('cors');
 const app = express();
 const bodyParser = require('body-parser');
+const http = require('http').Server(app);
+/*const io = require('socket.io')(http);*/
+const io = require('./chat');
 const host = require('./local');
+const chatHandler = require('./chat');
 const dbParams = require('./database');
 
 //configuraciones
@@ -41,7 +45,13 @@ app.use('/api/MA010601', require('./routes/maestros/MA010601.routes'));
 app.use('/api/LO01020201', require('./routes/logistica/LO01020201.routes'));
 app.use('/api/BA010304', require('./routes/finanzas/BA010304.routes'));
 app.use('/api/BA010305', require('./routes/finanzas/BA010305.routes'));
+//ruta del chat
+app.use('/chat', require('./routes/chat.routes'));
 
+//configura el chat
+/*io.set('origins', host.address);
+io.on('connection', chatHandler);*/
+io.ArrancarServidorChat(http);
 //arrancar el servidor
 app.listen(app.get('port'), () => {
     console.log("Servidor escuchando en el puerto ", app.get('port'));
