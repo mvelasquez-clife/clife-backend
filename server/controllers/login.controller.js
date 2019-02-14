@@ -22,15 +22,15 @@ const loginCtrl = {
                 return;
             }
             bcrypt.hash(clave, saltRounds).then(function (hash) {
-                const query = "update sg_usua_m set PASSWORD=:nclave where CO_EMPRESA_USUARIO=:emp and DE_ALIAS=:usua  and DE_CORREO = :email ";
-                const params = {nclave: hash, emp: emp, usua: user, email: mail};
+                const query = "call PW_DATOS_USUARIO_LOGIN.SP_SAVE_HASH_PASSWD(:emp,:nclave,:usua,:email,:o_resultado) ";
+                const params = {nclave: hash, emp: emp, usua: user, email: mail, o_resultado: {dir: oracledb.BIND_OUT, type: oracledb.STRING}};
                 conn.execute(query, params, responseParams, (error, result) => {
-                    conn.commit();
                     conn.close();
                     if (error) {
                         return   res.json({'error_query': error.stack});
                     } else {
-                        return   res.json({state: 'success', message: 'Se actualizó su contraseña...'});
+                        const {o_resultado} = result.outBinds;
+                        return   res.json({state: 'success', message: o_resultado});
                     }
                 });
             });
@@ -99,7 +99,6 @@ const loginCtrl = {
                         conn.close();
                     });
                 });
-
             },
             function (user, done) {
                 if (user.length > 0) {
@@ -198,18 +197,14 @@ const loginCtrl = {
                                 expiresIn: jwtKey.jwtloginexpire
                             });
                             return res.json({state: "success", data: {token: token, usuario: user}});
-                        }
-                        );
-                    })
+                        });
+                    });
                 } else
                     return res.json({state: "error", err: "No se encontraron coincidencias!"});
-
             }
         ], function (err) {
             return res.json({state: 'error', message: err});
         });
-
-
     }
 };
 

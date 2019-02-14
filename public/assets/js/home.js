@@ -159,11 +159,7 @@ onclicFormInfo = (name) => {
 };
 /******************** Guarda datos  ****************/
 save_infoperso = () => {
-    var obj = {};    //{empresa, co_usuario, co_persona, co_tipo_doc, co_documento, apepat, apemat, nombres, sexo, fecnac, mailcor, mailper, celcor, celper}
-    //obj['empresa']=usrJson.empresa;
-//    ({'empresa' : usrJson.empresa, 'codigo' :usrJson.codigo, 'copersona' : usrJson.copersona}).forEach((A,B) => {
-//        obj[elm] = elm;
-//    });
+    var obj = {};
     obj['empresa'] = usrJson.empresa, obj['codigo'] = usrJson.codigo, obj['copersona'] = usrJson.copersona;
     (['u_tipo_doc', 'u_documento', 'u_nombres', 'u_apepat', 'u_apemat', 'u_fecnac', 'u_sexo', 'u_mail', 'u_mail_p', 'u_tef_c', 'u_tef_p']).forEach((elm) => {
         if (elm === 'u_fecnac')
@@ -180,15 +176,11 @@ save_infoperso = () => {
 };
 /******************** Funcion para cerrar_Sesion se activa cuando hacen click en Popup.item.close_session  */
 logout = () => {
-    dhtmlx.confirm({
-        ok: "Si, cerrar mi sesión",
-        cancel: "No",
-        text: "¿Desea cerrar la sesión? Deberá ingresar sus credenciales la próxima vez que desee acceder al sistema.",
-        callback: (result) => {
-            if (result) {
-                localStorage.clear();
-                location.href = "/";
-            }
+    Swal.fire({
+        title: 'Cerrar Sesión', type: 'info', allowOutsideClick: false, confirmButtonText: 'Aceptar', showCancelButton: true, cancelButtonText: 'Cancelar', html: '<h4>Deberá ingresar sus datos la próxima vez que ingrese al sistema.</h4>'
+    }).then((result) => {
+        if (result.value) {
+            localStorage.clear(), location.href = "/";
         }
     });
 };

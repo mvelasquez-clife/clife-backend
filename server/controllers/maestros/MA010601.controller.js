@@ -12,22 +12,20 @@ const ma010601Controller = {
         const  {emp, codigo, nombre, vigencia, tipo} = req.body;
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
-                res.send({'error_conexion': err.stack});
+                res.send({state: 'error', message: err.stack});
                 return;
             }
-            if (tipo === 'sede')
-                var query = '  UPDATE  MA_EMPRESAS_SEDES_M SET DE_SEDE  = :nombre, ES_VIGENCIA =:vigencia  WHERE CO_EMPRESA =:emp  AND CO_SEDE = :codigo';
-            else
-                var query = '  UPDATE  MA_EMPRESAS_DPTOS_M SET DE_DPTO  = :nombre, ES_VIGENCIA =:vigencia  WHERE CO_EMPRESA =:emp  AND CO_DPTO = :codigo';
-            const params = {nombre: nombre, codigo: codigo, vigencia: vigencia, emp: emp};
+            const params = {emp_: emp, codigo_: codigo, nombre_: nombre, vigencia_: vigencia, tipo_: tipo, o_resultado: {dir: oracledb.BIND_OUT, type: oracledb.STRING}};
+            var query = 'call PW_MA010106.SAVE_SED_PDTO(:emp_,:codigo_,:nombre_,:vigencia_,:tipo_,:o_resultado)';
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
-                    res.send({'error_query': error.stack});
+                    res.send({sate: 'error', message: error.stack});
                     return;
                 } else {
+                    const {o_resultado} = result.outBinds;
                     res.json({
                         state: 'success',
-                        message: 'Datos Grabados correctamente'
+                        message: o_resultado
                     });
                 }
                 conn.commit();
@@ -42,9 +40,9 @@ const ma010601Controller = {
                 res.send({'error_conexion': err.stack});
                 return;
             }
-            const query = 'Select OFIC.CO_OFICINA \"Codigo\",OFIC.DE_OFICINA \"Nombre\",OFIC.CO_DPTO \"CodDepa\" ,  OFIC.CO_SEDE  \"CodSede\", OFIC.ES_VIGENCIA \"Vigencia\", NVL(OFIC.CO_RESPONSABLE,0) \"CodRespon\"   '
-                    + ' ,NVL(CATA.DE_NOMBRE_COMERCIAL,\'SIN RESPONSABLE\') \"NomRespon\"     FROM MA_EMPRESAS_OFIC_M  OFIC left join MA_CATA_ENTI_M CATA ON CATA.CO_CATALOGO_ENTIDAD =OFIC.CO_RESPONSABLE WHERE OFIC.CO_EMPRESA=:p_empresa ORDER BY OFIC.DE_OFICINA         ';
-            const params = {p_empresa: emp};
+            const query = 'Select CO_UNICO \"Codigo\",DE_NOMBRE \"Nombre\",CO_DPTO \"CodDepa\" ,  CO_SEDE  \"CodSede\", ES_VIGENCIA \"Vigencia\", CO_RESPONSABLE \"CodRespon\"   '
+                    + ' ,DE_NOMBRE_COMERCIAL \"NomRespon\"     FROM TABLE(PW_MA010106.F_SECC_OFI(:p_empresa,:tipo) )  ';
+            const params = {p_empresa: emp, tipo: 'oficina'};
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
                     res.send({'error_query': error.stack});
@@ -64,8 +62,9 @@ const ma010601Controller = {
                 res.send({'error_conexion': err.stack});
                 return;
             }
-            const query = 'select SECC.CO_SECCION \"Codigo\",SECC.DE_SECCION \"Nombre\",SECC.CO_DPTO \"CodDepa\" ,  SECC.CO_SEDE  \"CodSede\", SECC.ES_VIGENCIA \"Vigencia\", NVL(SECC.CO_RESPONSABLE,0) \"CodRespon\",NVL(CATA.DE_NOMBRE_COMERCIAL,\'SIN RESPONSABLE\') \"NomRespon\"     FROM MA_EMPRESAS_SECC_M  SECC left join MA_CATA_ENTI_M CATA ON CATA.CO_CATALOGO_ENTIDAD =SECC.CO_RESPONSABLE WHERE SECC.CO_EMPRESA=:p_empresa ORDER BY SECC.DE_SECCION    ';
-            const params = {p_empresa: emp};
+            const query = 'select CO_UNICO \"Codigo\" , DE_NOMBRE \"Nombre\",CO_DPTO \"CodDepa\" ,  CO_SEDE  \"CodSede\", ES_VIGENCIA \"Vigencia\",' +
+                    ' CO_RESPONSABLE \"CodRespon\",DE_NOMBRE_COMERCIAL \"NomRespon\"     FROM TABLE(PW_MA010106.F_SECC_OFI(:p_empresa,:tipo) )        ';
+            const params = {p_empresa: emp, tipo: 'seccion'};
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
                     res.send({'error_query': error.stack});
@@ -85,9 +84,8 @@ const ma010601Controller = {
                 res.send({'error_conexion': err.stack});
                 return;
             }
-            const query = 'SELECT  MA_EMPRESAS_DPTOS_M.CO_DPTO  \"Codigo\",           MA_EMPRESAS_DPTOS_M.DE_DPTO  \"Nombre\",            MA_EMPRESAS_DPTOS_M.ES_VIGENCIA  \"Vigencia\"  ' +
-                    'FROM MA_EMPRESAS_DPTOS_M     WHERE MA_EMPRESAS_DPTOS_M.CO_EMPRESA = :p_empresa    ';
-            const params = {p_empresa: emp};
+            const query = 'SELECT  CO_UNICO  \"Codigo\",         DE_NOMBRE  \"Nombre\",           VIGENCIA  \"Vigencia\" FROM  TABLE(PW_MA010106.F_SED_DEPA(:p_empresa,:tipo) )   ';
+            const params = {p_empresa: emp, tipo: 'depa'};
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
                     res.send({'error_query': error.stack});
@@ -107,9 +105,8 @@ const ma010601Controller = {
                 res.send({'error_conexion': err.stack});
                 return;
             }
-            const query = '  SELECT        MA_EMPRESAS_SEDES_M.CO_SEDE  \"Codigo\",            MA_EMPRESAS_SEDES_M.DE_SEDE  \"Nombre\",            MA_EMPRESAS_SEDES_M.ES_VIGENCIA \"Vigencia\"  ' +
-                    'FROM MA_EMPRESAS_SEDES_M     WHERE MA_EMPRESAS_SEDES_M.CO_EMPRESA = :p_empresa';
-            const params = {p_empresa: emp};
+            const query = '  SELECT        CO_UNICO  \"Codigo\",         DE_NOMBRE  \"Nombre\",           VIGENCIA \"Vigencia\"  FROM TABLE(PW_MA010106.F_SED_DEPA(:p_empresa,:tipo) ) ';
+            const params = {p_empresa: emp, tipo: 'sede'};
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
                     res.send({'error_query': error.stack});
@@ -155,9 +152,8 @@ const ma010601Controller = {
                 res.send({'error_conexion': err.stack});
                 return;
             }
-            const query = '  SELECT        MA_EMPRESAS_SEDES_M.CO_SEDE  VALUE,            MA_EMPRESAS_SEDES_M.DE_SEDE  TEXT,            MA_EMPRESAS_SEDES_M.ES_VIGENCIA \"Vigencia\"  ' +
-                    'FROM MA_EMPRESAS_SEDES_M     WHERE MA_EMPRESAS_SEDES_M.CO_EMPRESA = :p_empresa';
-            const params = {p_empresa: emp};
+            const query = '  SELECT CO_UNICO AS  VALUE,    DE_NOMBRE AS TEXT,      VIGENCIA \"Vigencia\"  FROM  TABLE(PW_MA010106.F_SED_DEPA(:p_empresa,:tipo) )';
+            const params = {p_empresa: emp,tipo : 'sede'};
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
                     res.send({'error_query': error.stack});
@@ -177,9 +173,8 @@ const ma010601Controller = {
                 res.send({'error_conexion': err.stack});
                 return;
             }
-            const query = 'SELECT  MA_EMPRESAS_DPTOS_M.CO_DPTO  VALUE,           MA_EMPRESAS_DPTOS_M.DE_DPTO TEXT,            MA_EMPRESAS_DPTOS_M.ES_VIGENCIA  \"Vigencia\"  ' +
-                    'FROM MA_EMPRESAS_DPTOS_M     WHERE MA_EMPRESAS_DPTOS_M.CO_EMPRESA = :p_empresa    ';
-            const params = {p_empresa: emp};
+            const query = 'SELECT CO_UNICO AS  VALUE,DE_NOMBRE AS  TEXT, VIGENCIA  \"Vigencia\" FROM TABLE(PW_MA010106.F_SED_DEPA(:p_empresa,:tipo) ) ';
+            const params = {p_empresa: emp,tipo:'depa'};
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
                     res.send({'error_query': error.stack});
@@ -196,67 +191,41 @@ const ma010601Controller = {
         const  {emp, tipo, codigo, nombre, coddepa, codsede, vigencia, respon} = req.body;         //console.log(req.body);
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
-                res.send({state: 'error', 'message': err.stack});
-                return;
+                return res.send({state: 'error', message: err.stack});
             }
-            if (tipo === 'seccion')
-                var query = '  UPDATE  MA_EMPRESAS_SECC_M SET DE_SECCION  = :nombre, ES_VIGENCIA =:vigencia,CO_DPTO =:depa,CO_SEDE = :sede,CO_RESPONSABLE=:respon  WHERE CO_EMPRESA =:emp  AND CO_SECCION = :codigo';
-            else
-                var query = '  UPDATE  MA_EMPRESAS_OFIC_M SET DE_OFICINA  = :nombre, ES_VIGENCIA =:vigencia,CO_DPTO =:depa,CO_SEDE = :sede,CO_RESPONSABLE=:respon  WHERE CO_EMPRESA =:emp  AND CO_OFICINA = :codigo';
-            const params = {nombre: nombre, codigo: codigo, vigencia: vigencia, emp: emp, respon: respon, depa: coddepa, sede: codsede};
+            const params = {nombre: nombre, codigo: codigo, vigencia: vigencia, tipo: tipo, emp: emp, respon: respon, depa: coddepa, sede: codsede, o_resultado: {dir: oracledb.BIND_OUT, type: oracledb.STRING}};
+            var query = 'call PW_MA010106.SAVE_SECC_OFI(:emp, :codigo, :nombre, :vigencia, :depa, :sede , : respon , :tipo , :o_resultado )';
             conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
                 if (error) {
-                    res.send({state: 'error', 'message': error.stack});
+                    res.send({state: 'error', message: error.stack});
                     return;
                 } else {
-                    res.json({
-                        state: 'success',
-                        message: 'Datos Grabados correctamente'
-                    });
-                }
-                conn.commit();
-                conn.close();
+                    const {o_resultado} = result.outBinds;
+                    res.json({state: 'success', message: o_resultado});
+                }               // conn.commit();
+
             });
         });
     },
     cambiaestado: (req, res) => {
         const  {emp, codigo, vigencia, tipo} = req.body;
-        console.log(req.body);
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
-                res.send({state: 'error', 'message': err.stack});
+                res.send({state: 'error', message: err.stack});
                 return;
             }
-            switch (tipo) {
-                case 'sede':
-                    var query = '  UPDATE  MA_EMPRESAS_SEDES_M SET  ES_VIGENCIA =:vigencia  WHERE CO_EMPRESA =:emp  AND CO_SEDE = :codigo';
-                    break;
-                case  'depa':
-                    var query = '  UPDATE  MA_EMPRESAS_DPTOS_M SET  ES_VIGENCIA =:vigencia  WHERE CO_EMPRESA =:emp  AND CO_DPTO = :codigo';
-                    break;
-                case  'seccion':
-                    var query = '  UPDATE  MA_EMPRESAS_SECC_M SET  ES_VIGENCIA =:vigencia  WHERE CO_EMPRESA =:emp  AND CO_SECCION = :codigo';
-                    break;
-                case  'oficina':
-                    var query = '  UPDATE  MA_EMPRESAS_OFIC_M SET  ES_VIGENCIA =:vigencia  WHERE CO_EMPRESA =:emp  AND CO_OFICINA = :codigo';
-                    break;
-                default:
-                    null;
-                    break;
-            }
-            const params = {codigo: codigo, vigencia: vigencia, emp: emp};
+            var query = '  call PW_MA010106.SAVE_ESTADO_ALL(:emp, :codigo, :vigencia, :tipo, :o_resultado)';
+            const params = {codigo: codigo, vigencia: vigencia, tipo: tipo, emp: emp, o_resultado: {dir: oracledb.BIND_OUT, type: oracledb.STRING}};
             conn.execute(query, params, responseParams, (error, result) => {
-                if (error) {
-                    res.send({state: 'error', 'message': error.stack});
-                    return;
-                } else {
-                    res.json({
-                        state: 'success',
-                        message: 'Datos Grabados correctamente'
-                    });
-                }
-                conn.commit();
                 conn.close();
+                if (error) {
+                    return  res.send({state: 'error', message: error.stack});
+                } else {
+                    const {o_resultado} = result.outBinds;
+                    return  res.json({state: 'success', message: o_resultado});
+                }
+
             });
         });
     }
