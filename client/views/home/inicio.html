@@ -25,7 +25,7 @@
         <script type="text/javascript" src="assets/js/home.js"></script>
         <script type="text/javascript" src="assets/js/sweetalert.js"></script>
         <script type="text/javascript">
-            var dhxWins, mainLayout, secLayout, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, folder_perfil, folder_fondo, form_infperso, form_seguridad, myWinsPerfil;
+            var dhxWinmain, mainLayout, secLayout,winId, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, folder_perfil, folder_fondo, form_infperso, form_seguridad, myWinsPerfil;
             var winLayout, winGrid;
             var sidebarjson = [
                 {id: "side_infperso", text: "Datos Personales", icon: "profile64.png", selected: true},
@@ -175,7 +175,7 @@
                 mainTree.enableTreeLines(true);
                 mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
                 mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
-                dhxWins = new dhtmlXWindows();
+                dhxWinmain = new dhtmlXWindows();
             }
         </script>
 

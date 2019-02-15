@@ -51,7 +51,7 @@ const ancestroController = {
             if(err) {
                 res.json({
                     state: 'error',
-                    message: err
+                    message: err.stack
                 });
                 return;
             }
@@ -66,7 +66,7 @@ const ancestroController = {
                     conn.close();
                     res.json({
                         state: 'error',
-                        message: error.Error
+                        message: error.stack
                     });
                     return;
                 }

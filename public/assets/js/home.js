@@ -310,12 +310,12 @@ toolbar_onclic = (name) => {
 mainTreeOnDblClick = (id) => {
     if (!mainTree.hasChildren(id)) {
         mainLayout.cells("b").collapse();
-        var winId = "win-" + id;
-        if (!dhxWins.isWindow(winId)) {
-            dhxWins.createWindow(winId, 0, 0, 1080, 550);
-            dhxWins.window(winId).setText(mainTree.getItemText(id));
-            dhxWins.window(winId).center();
-            dhxWins.window(winId).attachURL("modulo/" + id);
+        winId = "win-" + id;
+        if (!dhxWinmain.isWindow(winId)) {
+            dhxWinmain.createWindow(winId, 0, 0, 1080, 550);
+            dhxWinmain.window(winId).setText(mainTree.getItemText(id));
+            dhxWinmain.window(winId).center();
+            dhxWinmain.window(winId).attachURL("modulo/" + id);
         }
     }
     return true;
@@ -325,11 +325,11 @@ mainTreeOnDblClick = (id) => {
 pop_inclic2 = (id) => {
     mainLayout.cells("b").collapse();
     var winId = "win-" + id;
-    if (!dhxWins.isWindow(winId)) {
-        dhxWins.createWindow(winId, 0, 0, 1080, 550);
-        dhxWins.window(winId).setText(mainTree.getItemText(id));
-        dhxWins.window(winId).center();
-        dhxWins.window(winId).attachURL("modulo/" + id);
+    if (!dhxWinmain.isWindow(winId)) {
+        dhxWinmain.createWindow(winId, 0, 0, 1080, 550);
+        dhxWinmain.window(winId).setText(mainTree.getItemText(id));
+        dhxWinmain.window(winId).center();
+        dhxWinmain.window(winId).attachURL("modulo/" + id);
     }
 };
 
