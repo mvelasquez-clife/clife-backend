@@ -81,7 +81,7 @@ onbuttonclic = async (nam, wind, formu, winid) => {
         case '__buscar' :            //var W_b_respo = new dhtmlXWindows();
             var output = await IniciarGridBusqueda(4, false, mainLayout); console.log(output);
             if (output !== null) {
-                
+                console.log(output.seleccion[0]);
                 ubigeo = output.seleccion[0].ubigeo;
                 formu.setItemValue('__nubigeo', output.seleccion[0].descripcion);
             }

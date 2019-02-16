@@ -99,27 +99,27 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container) => {
                 gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter');
                 gridBusqueda.setInitWidthsP('10,45,20,10,10');
                 gridBusqueda.setColTypes('ron,rotxt,rotxt,rotxt,rotxt');
-                gridBusqueda.setColumnIds("codigo,descripcion,vigencia,observ1,observ2");
+                gridBusqueda.setColumnIds("ch,codigo,descripcion,vigencia,observ1,observ2");
                 break;
             case 2:
                 gridBusqueda.setHeader('#,Codigo,Nombre,Vigencia,C.Costo,Alias');
                 gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_filter,#select_filter,#select_filter,#text_filter');
                 gridBusqueda.setInitWidthsP('10,50,10,15,10');
-                gridBusqueda.setColTypes('ron,rotxt,rotxt,rotxt,rotxt');
-                gridBusqueda.setColumnIds("codigo,nombre,vigencia,ccosto,alias");
+                gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
+                gridBusqueda.setColumnIds("ch,codigo,nombre,vigencia,ccosto,alias");
                 break;
             case 3:
                 gridBusqueda.setHeader('#,Codigo,Nombre,Vigencia,Alias,Correo');
                 gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter');
                 gridBusqueda.setInitWidthsP('10,50,10,15,10');
-                gridBusqueda.setColTypes('ron,rotxt,rotxt,rotxt,rotxt');
-                gridBusqueda.setColumnIds("codigo,nombre,vigencia,alias,correo");
+                gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
+                gridBusqueda.setColumnIds("ch,codigo,nombre,vigencia,alias,correo");
                 break;
             case 4:
                 gridBusqueda.setHeader('#,Codigo,Descripcion,Vigencia,Codigos,Detalle2');
                 gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_search,#text_filter,#text_filter,#text_filter');
                 gridBusqueda.setInitWidthsP('5,15,80');
-                gridBusqueda.setColumnIds("ubigeo,descripcion,detalle1,detalle2");
+                gridBusqueda.setColumnIds("ch,ubigeo,descripcion,detalle1,detalle2");
                 //gridBusqueda.setColumnHidden(2, true);
                 ([3, 4, 5]).forEach((e) => {
                     gridBusqueda.setColumnHidden(e, true);
@@ -134,11 +134,11 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container) => {
         gridBusqueda.setPagingSkin("toolbar");
         gridBusqueda.enableMultiselect(multiSelect);
         gridBusqueda.init();
-        gridBusqueda.load('/api/ancestros/datos-modal-busqueda/' + tipoEntidad + '/' + usrJson.empresa, gridBusquedaDatosSuccess);
+        gridBusqueda.load('/api/ancestros/datos-modal-busqueda/' + tipoEntidad + '/' + usrJson.empresa);
     });
-}
+};
 
-gridBusquedaDatosSuccess = () => {
+/*gridBusquedaDatosSuccess = () => {
     //gridBusqueda.insertColumn(0, '', multi ? 'ch' : 'ra', 5);
     //gridBusqueda.uncheckAll();
     gridBusqueda.attachEvent('onRowSelect', gridBusquedaRowSelect);
@@ -149,9 +149,9 @@ gridBusquedaRowSelect = (rowId, colId) => {
 //    const current = parseInt(gridBusqueda.cells(rowId, 0).getValue());
 //    const newValue = (current + 1) % 2;
 //    gridBusqueda.cells(rowId, 0).setValue(newValue);
-};
+};*/
 
-generaJsonFila = (rowId) => {
+/*generaJsonFila = (rowId) => {
     switch (tpEnti) {
         case 1:
             return {
@@ -187,4 +187,4 @@ generaJsonFila = (rowId) => {
         default:
             return null;
     }
-};
+};*/

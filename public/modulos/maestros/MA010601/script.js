@@ -277,7 +277,7 @@ onbuttonclic = async (tipo, nam, formu, dataview, wind, tollbar) => {
             f_post_updates(tipo, formu.getItemValue('__codigo'), formu.getItemValue('__nombres'), formu.getItemValue('__depacod'), formu.getItemValue('__sedecod'), formu.getItemValue('__estado'), formu.getItemValue('__nrespon'), cod_respon, dataview, tollbar);
             break;
         case '__buscar' :            //var W_b_respo = new dhtmlXWindows();
-            var output = await IniciarGridBusqueda(3, true, mainLayout);
+            var output = await IniciarGridBusqueda(3, false, mainLayout);
             if (output !== null) {
                 cod_respon = output.seleccion[0].codigo;
                 formu.setItemValue('__nrespon', output.seleccion[0].nombre);
