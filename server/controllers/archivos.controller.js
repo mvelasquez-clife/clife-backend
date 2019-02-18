@@ -1,6 +1,7 @@
 const Client = require('ftp');
 const fs = require('fs');
 const fetcher = require('fetch-base64');
+const formidable = require('formidable');
 
 const ftpAccess = require('../ftp-access');
 
@@ -28,6 +29,44 @@ const archivosController = {
         });
         // connect to localhost:21 as anonymous
         c.connect(ftpAccess);
+    },
+    AdjuntarArchivoMensaje: async (req, res) => {
+        var form = new formidable.IncomingForm();
+        form.parse(req, (err, fields, files) => {
+            const empresa = fields.empresa;
+            const emisor = fields.emisor;
+            const path = __dirname + '/../../public/files/' + empresa + '/' + emisor + '/' + files.attach.name;
+            fs.rename(files.attach.path, path, function(err) {
+                if (err) next(err);
+                res.json({
+                    state: 'success',
+                    data: {
+                        url: '/files/' + empresa + '/' + emisor + '/' + files.attach.name,
+                        name: files.attach.name
+                    }
+                });
+            });
+        });
+        /*form.on('fileBegin', function (name, file){
+            file.path = __dirname + '/../../public/files/' + empresa + '/' + emisor + '/' + file.name;
+        });
+        form.on('file', function (name, file){
+            console.log('Uploaded ' + file.name);
+        });
+        //
+        form.on('field', (name, value) => {
+            if(name == 'empresa') empresa = value;
+            if(name == 'emisor') emisor = value;
+        });
+        form.on('fileBegin', function (name, file){
+            file.path = __dirname + '/../../public/files/' + empresa + '/' + emisor + '/' + file.name;
+        });
+        form.on('file', function (name, file){
+            console.log('Uploaded ' + file.name);
+        });
+        res.json({
+            state: 'success'
+        });*/
     }
 }
 

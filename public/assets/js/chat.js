@@ -25,6 +25,7 @@ const structs = {
         ]
     }
 };
+var listaContactos = [];
 mainRibbonOnClick = async (id) => {
     switch(id) {
         case 'nuevo':
@@ -47,15 +48,60 @@ contactosTreeOnDblClick = (id) => {
 IniciarChat = (id,name = contactosTree.getItemText(id)) => {
     if(!chatsTabbar.tabs(id)) {
         chatsTabbar.addTab(id, name, null, 0, true, true);
-            chatsTabbar.tabs(id).attachHTMLString('<div class="dv-chat"><div id="chat-' + id + '" class="dv-chat-body"><div></div></div><div class="dv-chat-footer"><form class="chform" id="chform-' + id + '"><a href="#" id="btn-add-' + id + '" data-to="' + id + '" data-contact="0" data-nombre="' + name + '" class="btn-add"><img src="/assets/images/icons/chat/user-add/cyan.svg"></a><input type="text" id="chform-input-' + id + '" placeholder="Escribe un mensaje o pega una imagen aquí" data-to="' + id + '"/><button><img class="chform-button-image" src="/assets/images/icons/chat/send/cyan.svg"/></button><form></div></div>');
+            chatsTabbar.tabs(id).attachHTMLString('<div id="div-' + id + '"></div>');
+            $('#div-' + id).append(
+                $('<div>').append(
+                    $('<div>')
+                ).addClass('dv-chat-body').attr('id','chat-' + id)
+            ).append(
+                $('<div>').append(
+                    $('<form>').append(
+                        $('<a>').append(
+                            $('<img>').attr('src', '/assets/images/icons/chat/user-add/cyan.svg')
+                        ).attr({
+                            'id': 'btn-add-' + id,
+                            'href': '#',
+                            'data-to': id,
+                            'data-contact': 0,
+                            'data-nombre': name
+                        }).addClass('btn-add')
+                    ).append(
+                        $('<label>').append(
+                            $('<img>').attr('src', '/assets/images/icons/chat/attach/cyan.svg')
+                        ).attr({
+                            'href': '#',
+                            'data-to': id,
+                            'for': 'chform-file-' + id
+                        })
+                    ).append(
+                        $('<input>').attr({
+                            id: 'chform-file-' + id,
+                            type: 'file',
+                            'data-id': id
+                        }).addClass('chform-file')
+                    ).append(
+                        $('<input>').attr({
+                            'type': 'text',
+                            'id': 'chform-input-' + id,
+                            'placeholder': 'Escribe un mensaje o pega una imagen aquí',
+                            'data-to': id
+                        })
+                    ).append(
+                        $('<button>').append(
+                            $('<img>').addClass('chform-button-image').attr('src', '/assets/images/icons/chat/send/cyan.svg')
+                        )
+                    ).addClass('chform').attr('id','chform-' + id)
+                ).addClass('dv-chat-footer')
+            ).addClass('dv-chat');
             const h = $('#chat-' + id).parent().height() - 50;
-            const w = $('#chform-' + id).width() - 118;
+            const w = $('#chform-' + id).width() - 160;
             $('#chform-input-' + id).width(w);
             $('#chat-' + id).height(h);
             $('#chform-' + id).attr({
                 'data-to': id
             }).on('submit', sendMessage);
             $('#btn-add-' + id).on('click', AgregarContacto);
+            $('#chform-file-' + id).on('change', AdjuntarArchivo);
             //
             $('#chform-input-' + id).pastableTextarea();
             $('#chform-input-' + id).on('pasteImage', function (ev, data){
@@ -86,6 +132,13 @@ IniciarChat = (id,name = contactosTree.getItemText(id)) => {
     }
     else {
         chatsTabbar.tabs(id).setActive();
+    }
+    //verifica si es contacto
+    for(var i in listaContactos) {
+        if(id == listaContactos[i].codigo) {
+            $('#btn-add-' + id).children('img').attr('src','/assets/images/icons/chat/user-contact/cyan.svg');
+            $('#btn-add-' + id).attr('data-contact',1);
+        }
     }
 }
 sendMessage = (event) => {
@@ -178,14 +231,94 @@ CargarListaContactos = () => {
     };
     $.post('/chat/lista-contactos', params, (response) => {
         if(response.state == 'success') {
-            const contactos = response.contactos;
-            for(var i in contactos) {
-                const iContacto = contactos[i];
+            listaContactos = response.contactos;
+            for(var i in listaContactos) {
+                const iContacto = listaContactos[i];
                 if(iContacto != null) {
                     contactosTree.insertNewChild(1, iContacto.codigo, iContacto.nombre, null, 'ic-user-online.png');
                 }
             }
         }
-        //const contactos = res
     }, 'json');
+}
+ConectarSocketChat = () => {
+    socket.on('message', function (data) {
+        IniciarChat(data.from.id, data.from.name);
+        const divId = '#chat-' + data.from.id;
+        EscribeMensajeEntrante(divId, data.from.id, data.message);
+    });
+    socket.on('conectar', (data) => {
+        if(data.result) {
+            console.log('usuario', data.user, 'disponible');
+        }
+        else {
+            console.log('el usuario', data.user, 'está desconectado');
+        }
+    });
+    socket.on('iniciar', (data) => {
+        const divId = '#chat-' + data.receptor;
+        const mensajes = data.mensajes;
+        $(divId).children('div').empty();
+        for(var i in mensajes) {
+            const iMensaje = mensajes[i];
+            if(iMensaje.from == usrJson.codigo) {
+                EscribeMensajeSaliente(divId, usrJson.codigo, iMensaje.message);
+            }
+            else {
+                EscribeMensajeEntrante(divId, iMensaje.from, iMensaje.message);
+            }
+        }
+    });
+    CargarListaContactos();
+}
+AdjuntarArchivo = (event) => {
+    const data = new FormData();
+    const divId = '#chat-' + event.delegateTarget.dataset.id;
+    $.each($('#chform-file-' + event.delegateTarget.dataset.id)[0].files, function(i, file) {
+        data.append('attach', file);
+    });
+/*
+emisor: {
+    id: parseInt(usrJson.codigo),
+    name: (usrJson.nombre ? usrJson.nombre : usrJson.fullname)
+},
+receptor: parseInt(dataset.to),
+empresa: usrJson.empresa,
+*/
+    data.append('emisor', usrJson.codigo);
+    data.append('empresa', usrJson.empresa);
+    //
+    const aid = 'id-' + new Date().getMilliseconds();
+    const mensaje = '<a class="chform-link" href="javascript:void(0)" id="' + aid + '">Subiendo archivo...</a>';
+    const msgdata = {
+        emisor: {
+            id: parseInt(usrJson.codigo),
+            name: (usrJson.nombre ? usrJson.nombre : usrJson.fullname)
+        },
+        receptor: parseInt(event.delegateTarget.dataset.id),
+        empresa: usrJson.empresa,
+        mensaje: mensaje
+    }
+    EscribeMensajeSaliente(divId, usrJson.codigo, mensaje);
+    //document.getElementById(inputId).value = '';
+    $.ajax({
+        url: '/files/message-attach',
+        data: data,
+        cache: false,
+        contentType: false,
+        processData: false,
+        method: 'POST',
+        type: 'POST',
+        success: (response) => {
+            if(response.state == 'success') {
+                $('#' + aid).attr({
+                    href: response.data.url,
+                    download: response.data.name
+                }).text(response.data.name);
+                //actualiza los valores en el mongodb
+                msgdata.mensaje = '<a class="chform-link" href="' + response.data.url + '" id="' + aid + '" download="' + response.data.name + '">' + response.data.name + '</a>';
+                socket.emit('message', msgdata);
+            }
+        }
+    });
 }
