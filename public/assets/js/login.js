@@ -84,16 +84,16 @@ async function save_recuperacion(event) {
 }
 
 
-function FormLoginOnSubmit(event) {
-    event.preventDefault();
+function FormLoginOnSubmit() {
     var p = {usuario: document.getElementById("usuario").value, clave: document.getElementById("clave").value};
     $.post(BASE_URL + "auth/login", p, function (response) {
+        resultado = response.state;
         if (response.state == "success") {
             localStorage.setItem('jwt', response.data.token);
             localStorage.setItem('usrjson', JSON.stringify(response.data.usuario));
             location.reload();
         } else {
-            Swal.fire({type: 'error', title: 'Ups!!.. algo salio mal!', text: response.err});
+            Swal.fire({type: 'error', title: 'Ups!!.. algo salio mal!', text: response.message});
         }
     }, "json");
 }

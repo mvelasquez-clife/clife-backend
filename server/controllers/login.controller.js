@@ -166,13 +166,12 @@ const loginCtrl = {
                         }
                         let responseParams = {outFormat: oracledb.OBJECT, maxRows: 1};
                         let p = {usuario: {val: usuario}, clave: {val: clave}};
-                        connection.execute("SELECT CO_PERSONA,DE_ALIAS,CO_EMPRESA_USUARIO,CO_USUARIO,CO_TIPO_DOC_IDE,DE_NOMBRES,DE_SEXO,FE_NACIMIENTO,ST_ADMIN,DE_APELLIDO_PATERNO,DE_APELLIDO_MATERNO,CO_CENTRO_COSTO,ST_ACCESO_WAP,DE_NOMBRE_COSTOS,FE_REGISTRO,DE_DOCUMENTO,DE_MAIL_CORPO,DE_TELEFONO_CORPO FROM TABLE(PW_DATOS_USUARIO_LOGIN.F_DATOS_USUARIO_LOGIN(:usuario,:clave))",
+                        connection.execute("SELECT CO_PERSONA,DE_ALIAS,CO_EMPRESA_USUARIO,CO_USUARIO,CO_TIPO_DOC_IDE,DE_NOMBRES,DE_SEXO,FE_NACIMIENTO,ST_ADMIN,DE_APELLIDO_PATERNO,DE_APELLIDO_MATERNO,CO_CENTRO_COSTO,ST_ACCESO_WAP,DE_NOMBRE_COSTOS,FE_REGISTRO,DE_DOCUMENTO,DE_MAIL_PERS,DE_TELEFONO_PERS,DE_MAIL_CORPO,DE_TELEFONO_CORPO,ST_EDI_TOTAL FROM TABLE(PW_DATOS_USUARIO_LOGIN.F_DATOS_USUARIO_LOGIN(:usuario,:clave))",
                                 p, responseParams, (error, result) => {
                             connection.close();
                             if (error) {
                                 return res.json({state: "error", err: error.stack});
                             }
-
                             const user = {
                                 copersona: result.rows[0].CO_PERSONA,
                                 alias: result.rows[0].DE_ALIAS,
@@ -190,9 +189,13 @@ const loginCtrl = {
                                 ncosto: result.rows[0].NOM_CCOSTOS,
                                 fregistro: result.rows[0].FE_REGISTRO,
                                 documento: result.rows[0].DE_DOCUMENTO,
+                                mailpers: result.rows[0].DE_MAIL_PERS,
+                                cellpers: result.rows[0].DE_TELEFONO_PERS,
                                 mailcorpo: result.rows[0].DE_MAIL_CORPO,
-                                cellcorpo: result.rows[0].DE_TELEFONO_CORPO
+                                cellcorpo: result.rows[0].DE_TELEFONO_CORPO,
+                                st_editotal: result.rows[0].ST_EDI_TOTAL
                             };
+                         // console.log(user);
                             const token = jwt.sign(user, jwtKey.jwtkeylogin, {
                                 expiresIn: jwtKey.jwtloginexpire
                             });

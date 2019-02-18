@@ -1,3 +1,16 @@
+/******** aweson COLORS *******************/
+.txtred {
+    color: red!important;
+}
+.txtrgreen {
+    color: #31a354!important;
+}
+.txtrblue {
+    color:#04c!important  ;
+}
+.disable {
+    opacity: 0.2;
+}
 ::-webkit-scrollbar {    width: 7px!important;}
 ::-webkit-scrollbar-track {  background: content-box!important;  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)!important;     border-radius: 10px!important;}
 ::-webkit-scrollbar-thumb { background: content-box!important;   border-radius: 10px!important;    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5)!important; }
@@ -42,8 +55,8 @@ div.name_ccostos{
 .dhxform_item_label_left.fsalirw div.dhxform_btn div.dhxform_btn_txt .fas.fa-window-close {    font-size: 2.2em;     color: red;}
 
 div.title_usu {
-     float : right;
-      text-transform: capitalize;
+    float : right;
+    text-transform: capitalize;
     text-align: center;
     font-weight:100;
     font-size: 20px !important;
@@ -85,7 +98,7 @@ div.user_name {
     cursor:pointer;
     width: 135px;
     height: 179px;
-    border: 3px dashed black;
+    border: 2px dashed black;
     padding : 4px;
 }
 #fphoto{ 
@@ -130,7 +143,7 @@ div.user_name {
     border-style: groove;
 }
 .dhxform_item_label_left.b_savec.disabled div.dhxform_btn{
-   opacity: 0.4;
+    opacity: 0.4;
 }
 /************************  CSS background FONDO animate ****/
 .loader-container {
@@ -308,7 +321,7 @@ div.user_name {
     cursor:pointer;
     width: 262px;
     height: 179px;
-    border: 3px dashed black;
+    border: 2px dashed black;
     padding : 4px;
 }
 
@@ -484,9 +497,11 @@ html {
 }*/
 .dhx_toolbar_dhx_custom.dhxtoolbar_icons_32 div.dhx_toolbar_text {padding: 0px;}
 div.milky{
-     background: url('../../assets/images/home/clife-cloud_panel2.png') no-repeat center ;
+    background: url('../../assets/images/home/clife-cloud_panel2.png') no-repeat center ;
     background-size: contain !important;
     width: 250px!important;
     margin: -5px;
     height: 45px;
+    /*    -webkit-filter: grayscale(100%);
+        -webkit-filter: brightness(300%);*/
 }

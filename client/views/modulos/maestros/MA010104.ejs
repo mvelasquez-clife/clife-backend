@@ -54,15 +54,13 @@
                         {type: "block", blockOffset: 0, offsetTop: 5, width: 450, list: [
                                 {type: "block", blockOffset: 10, position: "label-left", width: 450, list: [
                                         {type: "input",  offsetLeft: 2, labelWidth: 60, disabled: true, name: "__cod", width: 180, label: "Codigo :", value: "..."}, {type: "newcolumn"},
-                                        {type: "input",  offsetLeft: 2, name: "__direcc", width: 440, label: "Direccion :", value: "..."}, {type: "newcolumn"},
-                                        {type: "block", blockOffset: 0, offsetTop: 8 ,width: 440, list: [
-                                                {type: "input", name: '__nubigeo', labelWidth: 60,readonly:true, label: 'Ubigeo', offsetLeft: 0, inputWidth: 250}, {type: "newcolumn"},
-                                                {type: "button", name: '__buscar', disabled: false, offsetLeft: 10, value: '<i class="fas fa-search"></i>'}
+                                        {type: "input",  offsetLeft: 2, name: "__direcc",rows:2, style:"    background :  lemonchiffon;", width: 440, label: "Direccion :", value: "..."}, {type: "newcolumn"},
+                                        {type: "block", blockOffset: 0, offsetTop: 8 ,width: 490, list: [
+                                                {type: "input", name: '__nubigeo',  labelWidth: 60,readonly:true, label: 'Ubigeo', offsetLeft: 0, inputWidth: 370}, {type: "newcolumn"},
+                                                {type: "button", name: '__buscar', disabled: false, offsetLeft: 1, value: '<i class="fas fa-search"></i>'}
                                             ]},
                                             {type: "input", offsetTop: 5, offsetLeft: 2, name: "__corta", width: 440, label: "Dir. Corta :", value: "..."}, {type: "newcolumn"},
-                                       // {type: "combo", name: '__estado', disabled: false, filtering: true, offsetLeft: 0, inputWidth: 180, label: '<font class="input_font">Estado</font>', connector: BASE_URL + 'MA010104/c_list_estado/' + usrJson.empresa},
-                                   //     {type: "checkbox", offsetTop: 8, offsetLeft: 2, labelWidth: 90, name: "__principal", width: 440, label: "PRINCIPAL :", value: "..."}, 
-                                        {type: "checkbox", offsetTop: 5, offsetLeft: 2, labelWidth: 90, name: "__propio", width: 440, label: "PROPIO ? :", value: "..."}
+                                          {type: "checkbox", offsetTop: 8, offsetLeft: 2, labelWidth: 120, name: "__propio", width: 440, label: "LOCAL PROPIO :", value: "..."}
                                     ]}]}
                     ]},
                 {type: "newcolumn"},
