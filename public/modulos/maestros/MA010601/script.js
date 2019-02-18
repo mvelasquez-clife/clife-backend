@@ -134,7 +134,7 @@ onEdit = (key, dataview, tipo, cod, vigen, namold, tollbar) => {
                 f_post_update(tipo, cod, Nombrenew, vigen);
             } else {
                 dataview.set(dataview.getSelected(), {$selected: true, id: dataview.getSelected(), Nombre: namold, Codigo: cod, Vigencia: vigen});
-                 onSelectAntes(id, dataview, tollbar, estadook);
+                onSelectAntes(id, dataview, tollbar, estadook);
             }
 
         });
@@ -145,10 +145,10 @@ onEdit = (key, dataview, tipo, cod, vigen, namold, tollbar) => {
 f_post_update = (tipo, cod, nom, esta) => {
     var p = {emp: usrJson.empresa, codigo: cod, nombre: nom, vigencia: esta, tipo: tipo};
     $.post(BASE_URL + "MA010601/upsede-dep", p, function (res) {
-        if (res.state !== 'error') {
+        if (res.state === 'success') {
             Swal.fire('Bien!', res.message, 'success')
         } else
-            Swal.fire({type: 'error', title: 'Algo salió mal...', text: 'No se pudo cargar su imagen de Perfil Error :' + res.error, footer: '<a href="#">suba una nueva imagen, si el problema continua, comuníquese con el area de Sistemas</a>'});
+            Swal.fire({type: 'error', title: 'Algo salió mal...', text: res.message});
     }, "json");
 };
 
@@ -163,11 +163,11 @@ f_post_estado = (tipo, cod, new_esta, dataview, nom, tollbar) => {
 
     $.post(BASE_URL + "MA010601/c_estado", p, function (res) {
         if (res.state !== 'error') {
-            Swal.fire('Bien!', res.message, 'success'); 
+            Swal.fire('Bien!', res.message, 'success');
             if (tipo === 'sede' || tipo === 'depa') {
                 dataview.set(dataview.getSelected(), {$selected: true, id: dataview.getSelected(), Nombre: nom, Codigo: cod, Vigencia: new_esta});
                 onSelectAntes(dataview.getSelected(), dataview, tollbar, estadook);
-            } else { 
+            } else {
                 dataview.set(dataview.getSelected(), {$selected: true, id: dataview.getSelected(), Nombre: dataview.get(dataview.getSelected()).Nombre, CodDepa: dataview.get(dataview.getSelected()).CodDepa,
                     CodSede: dataview.get(dataview.getSelected()).CodSede, Codigo: dataview.get(dataview.getSelected()).Codigo, Vigencia: new_esta, NomRespon: dataview.get(dataview.getSelected()).NomRespon, CodRespon: dataview.get(dataview.getSelected()).CodRespon});
                 onSelectAntesSecc(dataview.getSelected(), dataview, tollbar, estadook);
@@ -217,7 +217,7 @@ f_s_oficina = () => {
 
 onSelectAntesSecc = (id, dataview, tollbar, estadook) => {
     __id = dataview.get(id).Codigo;
-    if (__id > 0) {
+    if (__id >= 0) {
         tollbar.enableItem('__edit');
         if ((dataview.get(id).Vigencia).toUpperCase() === estadook.toUpperCase()) {
             tollbar.enableItem('__anula');
@@ -276,11 +276,12 @@ onbuttonclic = async (tipo, nam, formu, dataview, wind, tollbar) => {
         case 'b_save':
             f_post_updates(tipo, formu.getItemValue('__codigo'), formu.getItemValue('__nombres'), formu.getItemValue('__depacod'), formu.getItemValue('__sedecod'), formu.getItemValue('__estado'), formu.getItemValue('__nrespon'), cod_respon, dataview, tollbar);
             break;
-        case '__buscar' :
-            var W_b_respo = new dhtmlXWindows();
-            var output = await IniciarGridBusqueda(2, false, W_b_respo);
-            cod_respon = output.seleccion[0].codigo;
-            formu.setItemValue('__nrespon', output.seleccion[0].nombre);
+        case '__buscar' :            //var W_b_respo = new dhtmlXWindows();
+            var output = await IniciarGridBusqueda(3, false, mainLayout);
+            if (output !== null) {
+                cod_respon = output.seleccion[0].codigo;
+                formu.setItemValue('__nrespon', output.seleccion[0].nombre);
+            }
             break;
         default:
             wind.close();
@@ -292,10 +293,10 @@ onbuttonclic = async (tipo, nam, formu, dataview, wind, tollbar) => {
 f_post_updates = (tipo, cod, nom, depa, sede, esta, nrespo, respons, dataview, tollbar) => {
     var p = {emp: usrJson.empresa, codigo: cod, nombre: nom, vigencia: esta, tipo: tipo, coddepa: depa, codsede: sede, respon: respons};
     $.post(BASE_URL + "MA010601/upsecc-ofic", p, function (res) {
-        if (res.state !== 'error') {
+        if (res.state === 'success') {
             dataview.set(dataview.getSelected(), {$selected: true, id: dataview.getSelected(), Nombre: nom, CodDepa: depa, CodSede: sede, Codigo: cod, Vigencia: esta, NomRespon: nrespo, CodRespon: respons});
             onSelectAntesSecc(dataview.getSelected(), dataview, tollbar, estadook);
-            Swal.fire('Bien!', res.message, 'success')
+            Swal.fire('Bien!', res.message, 'success');
         } else
             Swal.fire({type: 'error', title: 'Algo salió mal...', text: 'Error :' + res.messsage});
     }, "json");

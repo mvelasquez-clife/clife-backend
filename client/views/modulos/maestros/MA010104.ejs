@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Empresas</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">  
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        <style type="text/css">
+            html,body{height:100%;margin:0;padding:0;width:100%}
+            #dhxDesktop{height:100%;width:100%;}
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <!-- scripts principales -->
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <!-- script propio de la ventana -->
+        <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- ancestro de la ventana de seguridad -->
+        <script type="text/javascript"  src="/assets/ancestros/grid-busqueda.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script>
+            var mainLayout, mySidebar, base_tollbar, myForm, myDataView, estadook = 'VIGENTE', myToolBar,ubigeo,st_prin;
+            var __id = 0, Nombrenew, Codigo, Nombreold, Estado;
+            var st_form_base = [{type: "settings", labelWidth: 100},
+                {type: "block", blockOffset: 0, list: [
+                        {type: "block", blockOffset: 0, offsetTop: 10, width: 220, list: [
+                                {type: "block", blockOffset: 50, width: 220, list: [
+
+                                        {type: "settings", position: "label-top"},
+                                        {type: "template", name: "up_imgperfil", inputWidth: 115, inputHeight: 145, format: photo_usu},
+                                        {type: "template", name: "", className: "", style: "", inputHeight: 65}
+
+                                    ]}, {type: "block", blockOffset: 10, position: "label-left", width: 220, list: [
+                                        {type: "template", offsetTop: 25, offsetLeft: 2, labelWidth: 40, name: "f_ruc", width: 100, label: "RUC :", value: "2012387541", format: style}, {type: "newcolumn"},
+                                        {type: "template", offsetTop: 5, offsetLeft: 2, name: "f_nombre", width: 220, label: "NOMBRE :", value: "AACORPORACION LIFE SAC", format: style}, {type: "newcolumn"},
+                                        {type: "template", offsetTop: 5, offsetLeft: 2, name: "f_razsocial", width: 220, label: "RAZON SOCIAL :", value: "AACORPORACION LIFE SAC", format: style}, {type: "newcolumn"},
+                                        {type: "template", offsetTop: 5, offsetLeft: 2, labelWidth: 70, name: "f_moneda", width: 100, label: "MONEDA :", value: "SOLES", format: style}, {type: "newcolumn"},
+                                        {type: "template", offsetTop: 5, offsetLeft: 2, labelWidth: 70, name: "f_registro", width: 100, label: "REGISTRO :", value: " 01/01/2019", format: style}, {type: "newcolumn"},
+                                        {type: "template", offsetTop: 5, offsetLeft: 2, labelWidth: 70, name: "f_estado", width: 100, label: "ESTADO :", value: "VIGENTE", format: style}, {type: "newcolumn"}
+                                    ]}]}
+                    ]}
+
+            ];
+            var st_form_edit = [{type: "settings", labelWidth: 100},
+                {type: "block", blockOffset: 0, list: [
+                        {type: "block", blockOffset: 0, offsetTop: 5, width: 450, list: [
+                                {type: "block", blockOffset: 10, position: "label-left", width: 450, list: [
+                                        {type: "input",  offsetLeft: 2, labelWidth: 60, disabled: true, name: "__cod", width: 180, label: "Codigo :", value: "..."}, {type: "newcolumn"},
+                                        {type: "input",  offsetLeft: 2, name: "__direcc",rows:2, style:"    background :  lemonchiffon;", width: 440, label: "Direccion :", value: "..."}, {type: "newcolumn"},
+                                        {type: "block", blockOffset: 0, offsetTop: 8 ,width: 490, list: [
+                                                {type: "input", name: '__nubigeo',  labelWidth: 60,readonly:true, label: 'Ubigeo', offsetLeft: 0, inputWidth: 370}, {type: "newcolumn"},
+                                                {type: "button", name: '__buscar', disabled: false, offsetLeft: 1, value: '<i class="fas fa-search"></i>'}
+                                            ]},
+                                            {type: "input", offsetTop: 5, offsetLeft: 2, name: "__corta", width: 440, label: "Dir. Corta :", value: "..."}, {type: "newcolumn"},
+                                          {type: "checkbox", offsetTop: 8, offsetLeft: 2, labelWidth: 120, name: "__propio", width: 440, label: "LOCAL PROPIO :", value: "..."}
+                                    ]}]}
+                    ]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 5, width: 470, list: [
+                        {type: "button", offsetTop: 25, offsetLeft: 95,  name: "b_save", value: "Guardar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 25, offsetLeft: 155, name: "b_cancel",  value: "Cancelar", disabled: false}
+                    ]}
+
+            ];
+            var base_tollbar = {iconset: "awesome", items: [
+                    {id: "__nuevo", type: "button", disabled: false, text: "Nuevo", img: "fas fa-plus", imgdis: "fas fa-plus disable"},
+                    {type: "separator"},
+                    {id: "__edit", type: "button", text: "Editar", disabled: true, img: "fas fa-edit txtrblue", imgdis: "fas fa-edit disable"},
+                    {type: "separator"},
+                    {id: "__anula", type: "button", text: "Anular", disabled: true, img: "fas fa-ban txtred", imgdis: "fas fa-ban disable"},
+                    {type: "separator"},
+                    {id: "__activar", type: "button", text: "Activar", disabled: true, img: "fas fa-check-circle txtrgreen", imgdis: "fas fa-check-circle disable"},
+                    {type: "separator"},
+                    {id: "__principal", type: "button", text: "Marcar Principal", disabled: true, img: "fas fa-map-marker-alt txtrgreen", imgdis: "fas fa-map-marker-alt disable"},
+                    {type: "separator"}
+                ]};
+            var struc_dataview = {container: "data_conten", drag: false, edit: true, select: true,
+                type: {template: "<div><p class='fuente direcion' >#DE_DIRECCION#</p><div id='dircorta'>  <p class='fuente corta'><span>Direccion Corta :</span> #DE_DIRECCION_CORTA# </p> </div><div id='principal'><span>#NPRINCIPAL#</span></div>",
+
+                    height: 60},
+                autowidth: true};
+
+
+
+
+            mainLayout = new dhtmlXLayoutObject(document.body, '2U');
+            mainLayout.cells('a').hideHeader();
+            mainLayout.cells('a').setWidth(250);
+            mainLayout.cells('b').setText("D I R E C C I O N E S");
+            myForm = mainLayout.cells('a').attachForm(st_form_base);
+            myToolBar = mainLayout.cells("b").attachToolbar(base_tollbar);
+            myToolBar.setIconSize(48);
+            myToolBar.attachEvent("onClick", ontollbarclic);
+            // f_s_sede(); //inicia por defecto el primer tab-sidebar
+            myDataView = mainLayout.cells('b').attachDataView(struc_dataview);
+            mainLayout.cells("b").progressOn();
+            myDataView.load(BASE_URL + 'MA010104/cargardata/' + usrJson.empresa, "json");
+            mainLayout.cells("b").progressOff();
+            myDataView.attachEvent("onBeforeSelect", BeforeSelectDataview);
+            // myDataView.attachEvent("onAfterSelect", onAfterSelectDataview);
+        </script>
+    </body>
+</html>

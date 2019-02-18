@@ -6,9 +6,9 @@ const o2x = require('object-to-xml');
 const xmlparse = require('../xml-parser');
 const formidable = require('formidable');
 //const fs = require('fs');
-var fs = require('fs');
+var fs = require('fs-extra');
 //var path = require('path');
-
+const desiredMode = 0o2775;
 
 const util = require('util');
 const responseParams = {
@@ -17,14 +17,45 @@ const responseParams = {
 const homeController = {
 
     file_exist: (req, res) => {
-        const {co_usu} = req.body,
-        path_ = './public', Folderperfil = '/assets/photos/' + co_usu + '/img_perfil', Folderfondo = '/assets/photos/' + co_usu + '/img_fondo';
+        console.log('hola');
+        const {co_usu} = req.body;
+        var path_ = './public', Folderperfil = '/assets/photos/' + co_usu + '/img_perfil', Folderfondo = '/assets/photos/' + co_usu + '/img_fondo', pathbase__ = path_ + '/assets/photos/' + co_usu;
         var __srcperfil, __srcfondo;
         var folder = path_ + Folderperfil, folderf = path_ + Folderfondo;
-        var files = [fs.readdirSync(folder), fs.readdirSync(folderf)];
-        __srcperfil = (files[0].length > 0) ? Folderperfil + '/' + files[0] : '/assets/images/icons/iconsjhon/avatar_defecto.png';
-        __srcfondo = (files[0].length > 0) ? Folderfondo + '/' + files[1] : '/assets/images/icons/home/background3.png';
-        res.json({state: 'readfile', srcperfil: __srcperfil, srcfondo: __srcfondo});
+
+        //fs.ensureDirSync(path_ + Folderperfil, desiredMode);
+
+        fs.ensureDir(path_ + Folderperfil, desiredMode)
+                .then(() => {
+                    fs.ensureDir(path_ + Folderfondo, desiredMode)
+                            .then(() => {
+
+                                var files = [fs.readdirSync(folder), fs.readdirSync(folderf)];
+                                __srcperfil = (files[0].length > 0) ? Folderperfil + '/' + files[0] : '/assets/images/icons/iconsjhon/avatar_defecto.png';
+                                __srcfondo = (files[0].length > 0) ? Folderfondo + '/' + files[1] : '/assets/images/home/background3.jpg';
+                                res.json({state: 'readfile', srcperfil: __srcperfil, srcfondo: __srcfondo});
+
+                            }).catch(err => {
+                        console.error(err);
+                    });
+
+
+                }).catch(err => {
+            console.error(err);
+        });
+
+
+
+
+
+        /*       const {co_usu} = req.body;
+         var path_ = './public', Folderperfil = '/assets/photos/' + co_usu + '/img_perfil', Folderfondo = '/assets/photos/' + co_usu + '/img_fondo', pathbase__ = path_ + '/assets/photos/' + co_usu;
+         var __srcperfil, __srcfondo;
+         var folder = path_ + Folderperfil, folderf = path_ + Folderfondo;
+         var files = [fs.readdirSync(folder), fs.readdirSync(folderf)];
+         __srcperfil = (files[0].length > 0) ? Folderperfil + '/' + files[0] : '/assets/images/icons/iconsjhon/avatar_defecto.png';
+         __srcfondo = (files[0].length > 0) ? Folderfondo + '/' + files[1] : '/assets/images/icons/home/background3.png';
+         res.json({state: 'readfile', srcperfil: __srcperfil, srcfondo: __srcfondo});  */
     },
     upload: (req, res) => {
         var __req = req;
@@ -57,7 +88,7 @@ const homeController = {
         const {alias, empresa} = req.params;
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
-                 res.send({'error_conexion':err.stack});
+                res.send({'error_conexion': err.stack});
                 return;
             }
             const responseParams = {
@@ -67,7 +98,6 @@ const homeController = {
             const params1 = {alias: {val: alias}};
             conn.execute(query1, params1, responseParams, (error, result) => {
                 if (error) {
-                    //console.error(error);
                     conn.close();
                     return;
                 }
@@ -76,14 +106,10 @@ const homeController = {
             const params2 = {alias: {val: alias}, empresa: {val: empresa}, codigo: {val: id}};
             conn.execute(query2, params2, responseParams, (error, result) => {
                 if (error) {
-                      res.send({'error_query':err.stack});
+                    res.send({'error_query': err.stack});
                     conn.close();
                     return;
                 }
-                /*return res.json({
-                 id: id,
-                 items: result.rows
-                 });*/
                 var arr = [];
                 for (var i in result.rows) {
                     arr.push({
@@ -106,7 +132,7 @@ const homeController = {
         const {alias, empresa, txtsearch} = req.body;
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
-                  res.send({'error_conexion':err.stack});
+                res.send({'error_conexion': err.stack});
                 return;
             }
             const responseParams = {
@@ -116,7 +142,7 @@ const homeController = {
             const params1 = {alias: {val: alias}};
             conn.execute(query1, params1, responseParams, (error, result) => {
                 if (error) {
-                    res.send({'error_query':error.stack});
+                    res.send({'error_query': error.stack});
                     conn.close();
                     return;
                 }
@@ -148,36 +174,29 @@ const homeController = {
                         }
                     });
                 }
-
-                //  res.json({result.rows});
-//                 res.
-//                res.set('Content-Type', 'application/json');
-//                res.send(o2x({arr}));
-
-
             });
         });
     },
     list_tipodoc: (req, res) => {
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
-                 res.send({'error_conexion':err.stack});
-               
+                res.send({'error_conexion': err.stack});
+
                 return;
             }
             const query = "select co_tipo_doc_ide as value ,de_abrevia as label from table(pack_new_pers.f_list_tipodoc)";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
-                    res.send({'error_query':error.stack});
+                    res.send({'error_query': error.stack});
                     conn.close();
                     return;
                 }
 
                 res.set('Content-Type', 'text/xml');
-                res.send(xmlparse.renderSelect(result.rows,'1'));
+                res.send(xmlparse.renderSelect(result.rows, '1'));
 
-                
+
             });
         });
     },
@@ -206,11 +225,11 @@ const homeController = {
                 mailper: {val: u_mail_p},
                 celcor: {val: u_tef_c},
                 celper: {val: u_tef_p},
-
                 //parametros de salida
                 o_co_pers: {dir: oracledb.BIND_OUT, type: oracledb.NUMBER},
                 o_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING}
             };
+
             console.log(params);
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {

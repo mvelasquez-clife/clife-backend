@@ -5,20 +5,28 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous"/>
         <link rel="stylesheet" type="text/css" href="assets/vendor/bootstrap/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" type="text/css" href="assets/css/util.css">
         <link rel="stylesheet" type="text/css" href="assets/css/login.css">
+        <link rel="stylesheet" type="text/css" href="assets/css/component.css">
+
         <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
         <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+        <!--   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"> -->
         <script src="//code.jquery.com/jquery-3.3.1.js"></script>
         <!--script src="assets/vendor/bootstrap/js/popper.js"></script-->
         <script src="assets/vendor/bootstrap/js/bootstrap.min.js"></script>
         <!--<script src="assets/vendor/jquery/jquery-3.2.1.min.js"></script> -->
         <!--<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script> -->
         <script type="text/javascript" src="assets/js/sweetalert.js"></script>
+        <script type="text/javascript" src="assets/js/button/modernizr.custom.js"></script>
+        <script type="text/javascript" src="assets/js/button/classie.js"></script>  
+        <script type="text/javascript" src="assets/js/button/progressButton.js"></script>	
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.15.0/jquery.validate.min.js"></script> 
+
+        <!--    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-form-validator/2.3.26/jquery.form-validator.min.js"></script>-->
         <style>
             #overlay{
                 background-color: #4caf50;
@@ -55,12 +63,12 @@
                 </div>
                 <div class="text-center   " id="loginformu"  style="float:left; "  >
                     <h2 class="text-center txt1 p-b-30" style="font-size: 1.50em;">Inicio de Sesión</h2>
-                    <form id="form-login" class="login100-form  validate-form flex-sb flex-w " action="#" method="post">
+                    <form id="form-login" class="login100-form  validate-form  flex-sb flex-w " action method="post">
                         <!-- <span class="login100-form-title p-b-32">Zona Intranet</span> -->
 
                         <label for="usuario" class="txt1 p-b-11">Usuario</label>
                         <div class="wrap-input100 validate-input m-b-12" data-validate = "El usuario es requerido">
-                            <input class="input100" type="text" id="usuario" name="usuario" placeholder="Ingresa tu usuario" required>
+                            <input class="input100" type="text" id="usuario" name="usuario" placeholder="Ingresa tu usuario"  >
                             <span class="focus-input100"></span>
                         </div>
 
@@ -69,7 +77,8 @@
                             <span class="btn-show-pass">
                                 <i class="fa fa-eye"></i>
                             </span>
-                            <input class="input100" type="password" id="clave" name="clave" placeholder="Ingresa tu clave" required>
+                            <input class="input100" type="password" id="clave" name="clave" placeholder="Ingresa tu clave"  >
+
                             <span class="focus-input100"></span>
                         </div>
 
@@ -84,8 +93,9 @@
                              <button class="login100-form-btn">Ingresar al sistema</button>
                          </div> -->
                         <div class=" validate-input m-b-12" style="width  : 100%;">
-                            <!--<div class="form-group"> -->
-                            <input name="recover-submit" class="btn btn-lg btn-primary btn-block" value="Ingreso al Sistema" type="submit">
+                            <!--<div class="form-group">  -->
+                            <!--       <input name="recover-submit" class="btn btn-lg btn-primary btn-block" value="Ingreso al Sistema" type="submit"> -->
+                            <button class="btn btn-lg btn-primary btn-block progress-button" name="recover-submit"  data-style="rotate-side-down" data-perspective data-horizontal>Ingreso al Sistema</button>
                             <!--</div> -->
                         </div>
                     </form>
@@ -102,7 +112,7 @@
                             <span class="btn-show-pass">
                                 <i class="glyphicon glyphicon-envelope color-blue"></i>
                             </span>
-                            <input class="input100 " type="email" id="mailrecorder" name="mailrecorder" placeholder="Ingresa tu correo" required>
+                            <input class="input100 " type="email" id="mailrecorder" name="mailrecorder" placeholder="Ingresa tu correo" >
 
                         </div>
                         <div class="m-b-12" style="width  : 100%;">
@@ -129,10 +139,49 @@
 
         <script src="assets/js/login.js"></script>
         <script src="assets/js/conf.js"></script>
+
         <script type="text/javascript">
-            var mailenv;
+            var progress, interval, mailenv, instances, btn, resultado;
+            //  function progb() {
+
+            btn = [].slice.call(document.querySelectorAll('button.progress-button')).forEach(function (bttn) {
+                new ProgressButton(bttn, {
+                    callback: function (instance) {
+                        progress = 0;
+                        console.log((document.getElementById("usuario").value).length);
+                        if ((document.getElementById("usuario").value).length > 0 && (document.getElementById("clave").value).length > 0) {
+                            FormLoginOnSubmit();
+                            intervalos(instance);
+                        } else {
+                            $("#form-login").valid();
+                            instance._stop(-1);
+                            clearInterval(interval);
+                        }
+                    }
+                });
+            });
+            //  }
+            function intervalos(instance) {
+                interval = setInterval(function () {
+                    progress = Math.min(progress + Math.random() * 0.1, 1);
+                    instance._setProgress(progress);
+                    console.log(resultado);
+                    if (progress === 1 && resultado === undefined) {
+                        progress = 0;
+
+                    }
+                    if (resultado === 'error') {
+                        instance._stop(-1);
+                        clearInterval(interval);
+                        resultado = undefined;
+                    }
+
+                 
+                }, 200);
+            }
+       
             $(document).ready(function () {
-                //inicializa la pagina
+
                 $("#formolvidar").hide();
                 $('#link-olvidar').click(function () {
                     document.getElementById("usuario").value = '';
@@ -145,9 +194,12 @@
                     $("#formolvidar").toggle("slide");
                     $("#loginformu").toggle("slide");
                 });
-            });
-            $("#form-login").on("submit", FormLoginOnSubmit);
-            $("#formolvidar").on("submit", MailRecorder);
+            }
+            );
+          //    $("#form-login").on("submit", function(e){
+         //         e.preventDefault(); console.log('a');
+         //     });
+            // $("#formolvidar").on("submit", MailRecorder);
             if (localStorage.getItem('jwt')) {
                 location.href = "inicio";
             } else {

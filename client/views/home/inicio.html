@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>CLife Coud</title>
+        <title>CLife Cloud</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
         <link rel="stylesheet" type="text/css" href="assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
@@ -25,7 +25,7 @@
         <script type="text/javascript" src="assets/js/home.js"></script>
         <script type="text/javascript" src="assets/js/sweetalert.js"></script>
         <script type="text/javascript">
-            var dhxWins, mainLayout, secLayout, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, folder_perfil, folder_fondo, form_infperso, form_seguridad, myWinsPerfil;
+            var dhxWinmain, mainLayout, secLayout,winId, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, folder_perfil, folder_fondo, form_infperso, form_seguridad, myWinsPerfil;
             var winLayout, winGrid;
             var sidebarjson = [
                 {id: "side_infperso", text: "Datos Personales", icon: "profile64.png", selected: true},
@@ -74,18 +74,18 @@
                 {type: "block", blockOffset: 0, list: [
                         {type: "block", blockOffset: 25, offsetTop: 45, width: 250, list: [
                                 {type: "input", disabled: true, name: 'u_alias', inputWidth: 150, label: '<font class="input_font">Alias</font>', required: false},
-                                {type: "input", name: 'u_passwd', disabled: true, offsetTop: 15, inputWidth: 150, label: '<font class="input_font">Contraseña</font>', required: false}
+                                {type: "password", name: 'u_passwd', disabled: true, offsetTop: 15, inputWidth: 150, label: '<font class="input_font">Contraseña</font>', required: false}
                             ]},
                         {type: "newcolumn"},
                         {type: "block", blockOffset: 0, offsetTop: 45, offsetLeft: 25, width: 250, list: [
                                 {type: "input", name: 'u_mail_recu', disabled: true, label: '<font class="input_font">Email de Recuperación</font>', inputWidth: 250},
-                                {type: "input", name: 'u_repit_pwd', disabled: true, inputWidth: 200, label: '<font class="input_font">Repita Contraseña</font>', required: false}
+                                {type: "password", name: 'u_repit_pwd', disabled: true, inputWidth: 200, label: '<font class="input_font">Repita Contraseña</font>', required: false}
                             ]}
                     ]},
                 {type: "newcolumn"},
                 {type: "block", blockOffset: 5, width: 470, list: [
-                        {type: "button", offsetTop: 45, offsetLeft: 55, className: 'b_edit', name: "b_edits", value: "Editar"}, {type: "newcolumn"},
-                        {type: "button", offsetTop: 45, offsetLeft: 45, name: "b_saves", value: "Guardar"}
+                        {type: "button", offsetTop: 45, offsetLeft: 55, className: 'b_edits', name: "b_edits", value: '<i class="far fa-edit txtrgreen"></i> Editar'}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 45, offsetLeft: 45, name: "b_saves", value:  '<i class="far fa-save txtrblue"></i> Guardar'}
                     ]}
             ];
             var form_cuenta = [{type: "settings", labelWidth: 140},
@@ -109,17 +109,16 @@
                                 {type: "input", offsetTop: 15, name: 'u_tef_p', disabled: true, labelWidth: 112, label: '<i class="fas fa-mobile-alt"></i><font class="input_font"> Personal</font>', inputWidth: 100}, {type: "newcolumn"},
                                 {type: "radio", offsetTop: 20, name: 'u_sexo', disabled: true, labelWidth: 63, value: 'M', label: '<font class="input_font">Sexo (M)</font>'}, {type: "newcolumn"},
                                 {type: "radio", offsetTop: 20, name: 'u_sexo', disabled: true, offsetLeft: 25, labelWidth: 20, value: 'F', label: '<font class="input_font">(F)</font>'}, {type: "newcolumn"},
-                                {type: "input", offsetTop: 15, name: 'u_mail', disabled: true, label: '<font class="input_font">Em@il Corporativo</font>', inputWidth: 210}, {type: "newcolumn"},
-                                {type: "input", offsetTop: 15, name: 'u_mail_p', disabled: true, label: '<font class="input_font">Em@il Personal</font>', inputWidth: 210}
+                                {type: "input", offsetTop: 15, name: 'u_mail', disabled: true, label: '<font class="input_font">Em@il Corporativo</font>', inputWidth: 250}, {type: "newcolumn"},
+                                {type: "input", offsetTop: 15, name: 'u_mail_p', disabled: true, label: '<font class="input_font">Em@il Personal</font>', inputWidth: 250}
                             ]}
                     ]},
                 {type: "newcolumn"},
                 {type: "block", blockOffset: 5, width: 470, list: [
-                        {type: "button", offsetTop: 25, offsetLeft: 95, className: 'b_editc', name: "b_editc", value: "Editar"}, {type: "newcolumn"},
-                        {type: "button", offsetTop: 25, offsetLeft: 155, name: "b_savec", className: "b_savec", value: "Guardar", disabled: true}
+                        {type: "button", offsetTop: 25, offsetLeft: 95, className: 'b_editc', name: "b_editc", value: "<i class='far fa-edit txtrgreen'></i> Editar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 25, offsetLeft: 155, name: "b_savec", className: "b_savec", value: '<i class="far fa-save txtrblue"></i> Guardar', disabled: true}
                     ]}
             ];
-
             if (usrtoken === '') {
                 location.href = '/';
             } else {
@@ -159,7 +158,7 @@
                 mainLayout.cells("b").fixSize(true, true);
                 mainLayout.cells("b").attachHTMLString("<div id=\"dv-treeview\"></div>");
                 mainLayout.cells("c").hideHeader();
-                mainLayout.cells("c").attachHTMLString('<div id="img_fondo_"><div class="loader-container">  <div class="progress float shadow">    <div class="progress__item"></div>  </div></div></div>');//mainLayout.cells("c").attachHTMLString("<div id=\"dv-fondo\"></div>');
+                mainLayout.cells("c").attachHTMLString('<div id="img_fondo_" style=" background-size: cover;"><div class="loader-container">  <div class="progress float shadow">    <div class="progress__item"></div>  </div></div></div>');//mainLayout.cells("c").attachHTMLString("<div id=\"dv-fondo\"></div>');
                 secLayout = new dhtmlXLayoutObject("dv-treeview", "2E");
                 secLayout.setSeparatorSize(0, 0);
                 secLayout.setSeparatorSize(1, 0);
@@ -175,7 +174,7 @@
                 mainTree.enableTreeLines(true);
                 mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
                 mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
-                dhxWins = new dhtmlXWindows();
+                dhxWinmain = new dhtmlXWindows();
             }
         </script>
 

@@ -38,6 +38,7 @@ app.use('/api/ancestros', require('./routes/ancestros.routes'));
 //rutas para modulos
 app.use('/api/AD010102', require('./routes/administracion/AD010102.routes'));
 app.use('/api/AD010201', require('./routes/administracion/AD010201.routes'));
+app.use('/api/MA010104', require('./routes/maestros/MA010104.routes'));
 app.use('/api/MA010202', require('./routes/maestros/MA010202.routes'));
 app.use('/api/MA010201', require('./routes/maestros/MA010201.routes'));
 app.use('/api/MA010301', require('./routes/maestros/MA010301.routes'));
