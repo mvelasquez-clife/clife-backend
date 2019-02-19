@@ -4,27 +4,41 @@
         <title>CLife Cloud</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
-        <link rel="stylesheet" type="text/css" href="assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
-        <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
-        <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/skins/custom/dhtmlx.css"> 
-        <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/sources/dhtmlxCalendar/codebase/skins/dhtmlxcalendar_material.css">  
-        <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">    
-        <link rel="stylesheet" type="text/css" href="assets/css/main.css">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/custom/dhtmlx.css"> 
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxCalendar/codebase/skins/dhtmlxcalendar_material.css">  
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">    
+        <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
         <style type="text/css">
             html,body{  display: flex;height:100%;margin:0;padding:0;width:100%;  overflow: hidden}
             #img_fondo_{background-size:cover;height:100%;width:100%;position: absolute; }
         </style>
     </head>
-    <body>
+    <body onresize="PosicionarWinChat()">
         <!-- <div id="dhxViewport"></div> -->
-        <script type="text/javascript" src="assets/vendor/jquery/jquery-3.2.1.min.js"></script>
-        <script type="text/javascript" src="assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
-        <script type="text/javascript" src="assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
-        <script type="text/javascript" src="assets/vendor/dhtmlx/sources/dhtmlxToolbar/codebase/dhtmlxtoolbar.js"></script>  
-        <script type="text/javascript" src="assets/js/home.js"></script>
-        <script type="text/javascript" src="assets/js/sweetalert.js"></script>
-        <script type="text/javascript">
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/sources/dhtmlxToolbar/codebase/dhtmlxtoolbar.js"></script>  
+        <script type="text/javascript" src="/assets/js/home.js"></script>
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            const socket = io('http://192.168.11.138:3001',{
+                query: {
+                    codigo: usrJson.codigo,
+                    empresa: usrJson.empresa
+                }
+            });
+            socket.on('message', function (data) {
+                dhtmlx.message({
+                    text: '<span style="font-weight:bold;">Nuevo mensaje de ' + (data.from.name ? data.from.name : data.from.id) + '</span><br>[' + (new Date()).toISOString().split('T')[0] + '] <span style="font-style:italic;">' + data.message + '</span>',
+                    expire: 10000
+                })
+                console.log(data);
+            });
             var dhxWinmain, mainLayout, secLayout,winId, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, folder_perfil, folder_fondo, form_infperso, form_seguridad, myWinsPerfil;
             var winLayout, winGrid;
             var sidebarjson = [
@@ -169,12 +183,13 @@
                 secLayout.cells("a").fixSize(true, true);
                 secLayout.cells("b").hideHeader();
                 mainTree = secLayout.cells("b").attachTree();
-                mainTree.setImagePath("assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
+                mainTree.setImagePath("/assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
                 mainTree.setXMLAutoLoading(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa);
                 mainTree.enableTreeLines(true);
                 mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
                 mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
                 dhxWinmain = new dhtmlXWindows();
+                AbrirChat();
             }
         </script>
 

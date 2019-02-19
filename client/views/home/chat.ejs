@@ -15,7 +15,7 @@
             .dv-message{font-size:13px;font-family:sans-serif;margin-bottom:4px;}
             .dv-message>img{height:24px;top:8px;position:relative;border-radius:12px;}
             .dv-message>span{display:inline-block;margin:2px;padding:8px;}
-            .dv-message>span>img{cursor:pointer;}
+            .dv-message>span>img{cursor:pointer;height:auto !important;width:320px !important;}
             .dv-message-in{text-align:left;}
             .dv-message-in>span{background-color:#eeeeee;border-radius:8px 8px 8px 0;}
             .dv-message-out{text-align:right;}
@@ -35,6 +35,7 @@
         </style>
     </head>
     <body></body>
+    <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
     <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="/assets/js/conf.js"></script>
     <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
@@ -66,6 +67,7 @@
 			contactosTree.insertNewChild(0,2,'Grupos');
             contactosTree.attachEvent('onDblClick', contactosTreeOnDblClick);
         chatsTabbar = mainLayout.cells('b').attachTabbar();
+            chatsTabbar.attachEvent('onTabClose', chatsTabbaronTabClose);
         ConectarSocketChat();
     </script>
 </html>

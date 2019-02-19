@@ -37,7 +37,7 @@ const archivosController = {
             const emisor = fields.emisor;
             const path = __dirname + '/../../public/files/' + empresa + '/' + emisor + '/' + files.attach.name;
             fs.rename(files.attach.path, path, function(err) {
-                if (err) next(err);
+                if(err) throw(err);
                 res.json({
                     state: 'success',
                     data: {
@@ -47,26 +47,6 @@ const archivosController = {
                 });
             });
         });
-        /*form.on('fileBegin', function (name, file){
-            file.path = __dirname + '/../../public/files/' + empresa + '/' + emisor + '/' + file.name;
-        });
-        form.on('file', function (name, file){
-            console.log('Uploaded ' + file.name);
-        });
-        //
-        form.on('field', (name, value) => {
-            if(name == 'empresa') empresa = value;
-            if(name == 'emisor') emisor = value;
-        });
-        form.on('fileBegin', function (name, file){
-            file.path = __dirname + '/../../public/files/' + empresa + '/' + emisor + '/' + file.name;
-        });
-        form.on('file', function (name, file){
-            console.log('Uploaded ' + file.name);
-        });
-        res.json({
-            state: 'success'
-        });*/
     }
 }
 
