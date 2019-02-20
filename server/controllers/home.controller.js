@@ -9,53 +9,47 @@ const formidable = require('formidable');
 var fs = require('fs-extra');
 //var path = require('path');
 const desiredMode = 0o2775;
+const request = require('request');
 
 const util = require('util');
 const responseParams = {
     outFormat: oracledb.OBJECT
 };
 const homeController = {
+    buscadni: (req, res) => {
+        const {dni} = req.body;
+        var url = "https://aplicaciones007.jne.gob.pe/srop_publico/Consulta/Afiliado/GetNombresCiudadano?DNI=" + dni;
+        request({method: 'get',
+            url: url,
 
+            json: true
+        }, function (error, response, body) {
+            if (!error && response.statusCode === 200) {
+                res.json({state: 'success', value: body});
+            } else {
+                res.json({state: 'error', message: 'Lo sentimos, hubo un problema al generar la busqueda' + error});
+            }
+        });
+    },
     file_exist: (req, res) => {
-        console.log('hola');
         const {co_usu} = req.body;
         var path_ = './public', Folderperfil = '/assets/photos/' + co_usu + '/img_perfil', Folderfondo = '/assets/photos/' + co_usu + '/img_fondo', pathbase__ = path_ + '/assets/photos/' + co_usu;
         var __srcperfil, __srcfondo;
-        var folder = path_ + Folderperfil, folderf = path_ + Folderfondo;
-
-        //fs.ensureDirSync(path_ + Folderperfil, desiredMode);
-
+        var folder = path_ + Folderperfil, folderf = path_ + Folderfondo;         //fs.ensureDirSync(path_ + Folderperfil, desiredMode);
         fs.ensureDir(path_ + Folderperfil, desiredMode)
                 .then(() => {
                     fs.ensureDir(path_ + Folderfondo, desiredMode)
                             .then(() => {
-
                                 var files = [fs.readdirSync(folder), fs.readdirSync(folderf)];
                                 __srcperfil = (files[0].length > 0) ? Folderperfil + '/' + files[0] : '/assets/images/icons/iconsjhon/avatar_defecto.png';
                                 __srcfondo = (files[0].length > 0) ? Folderfondo + '/' + files[1] : '/assets/images/home/background3.jpg';
                                 res.json({state: 'readfile', srcperfil: __srcperfil, srcfondo: __srcfondo});
-
                             }).catch(err => {
-                        console.error(err);
+                        es.json({state: 'error', message: err});
                     });
-
-
                 }).catch(err => {
-            console.error(err);
+            res.json({state: 'error', message: err});
         });
-
-
-
-
-
-        /*       const {co_usu} = req.body;
-         var path_ = './public', Folderperfil = '/assets/photos/' + co_usu + '/img_perfil', Folderfondo = '/assets/photos/' + co_usu + '/img_fondo', pathbase__ = path_ + '/assets/photos/' + co_usu;
-         var __srcperfil, __srcfondo;
-         var folder = path_ + Folderperfil, folderf = path_ + Folderfondo;
-         var files = [fs.readdirSync(folder), fs.readdirSync(folderf)];
-         __srcperfil = (files[0].length > 0) ? Folderperfil + '/' + files[0] : '/assets/images/icons/iconsjhon/avatar_defecto.png';
-         __srcfondo = (files[0].length > 0) ? Folderfondo + '/' + files[1] : '/assets/images/icons/home/background3.png';
-         res.json({state: 'readfile', srcperfil: __srcperfil, srcfondo: __srcfondo});  */
     },
     upload: (req, res) => {
         var __req = req;
@@ -208,7 +202,7 @@ const homeController = {
                 console.error(err);
                 return;
             }
-            const query = "call PW_DATOS_USUARIO_LOGIN.sp_grabar_data_persona(:empresa,:co_usuario,:co_persona,:co_tipo_doc,:co_documento,:apepat,:apemat,:nombres,:sexo,:fecnac,:mailcor,:mailper,:celcor,:celper,:o_co_pers,:o_result)";
+            const query = "call PW_DATOS_USUARIO_LOGIN.sp_grabar_data_persona(:empresa,:co_usuario,:co_persona,:co_tipo_doc,:co_documento,:apepat,:apemat,:nombres,:sexo,:fecnac,:mailcor,:mailper,:celcor,:celper,:o_copersona,:o_result)";
 
             const params = {
                 empresa: {val: empresa},
@@ -226,7 +220,7 @@ const homeController = {
                 celcor: {val: u_tef_c},
                 celper: {val: u_tef_p},
                 //parametros de salida
-                o_co_pers: {dir: oracledb.BIND_OUT, type: oracledb.NUMBER},
+                o_copersona: {dir: oracledb.BIND_OUT, type: oracledb.NUMBER},
                 o_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING}
             };
 
@@ -240,11 +234,10 @@ const homeController = {
                     });
                     return;
                 }
-                const {o_co_pers, o_result} = result.outBinds;
-                if (o_co_pers > 0)
+                const {o_copersona, o_result} = result.outBinds;
+                if (o_copersona > 0)
                     res.json({
-                        state: 'success',
-                        message: o_result
+                        state: 'success', coperson: o_copersona, message: o_result
                     });
                 else
                     res.json({

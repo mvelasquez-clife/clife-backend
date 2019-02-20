@@ -15,5 +15,6 @@ router.post('/update_datos',homeController.update_datos);
 
 router.get('/list_tipodoc',homeController.list_tipodoc);
 
+router.post('/buscadni',homeController.buscadni);
 
 module.exports = router;

@@ -11,7 +11,7 @@
         <link rel="stylesheet" type="text/css" href="assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">    
         <link rel="stylesheet" type="text/css" href="assets/css/main.css">
         <style type="text/css">
-            html,body{  display: flex;height:100%;margin:0;padding:0;width:100%;  overflow: hidden}
+            html,body{  display: flex;height:100%;margin:0;padding:0;width:100%;  overflow: hidden; background-color: #2ec079;}
             #img_fondo_{background-size:cover;height:100%;width:100%;position: absolute; }
         </style>
     </head>
@@ -25,7 +25,7 @@
         <script type="text/javascript" src="assets/js/home.js"></script>
         <script type="text/javascript" src="assets/js/sweetalert.js"></script>
         <script type="text/javascript">
-            var dhxWinmain, mainLayout, secLayout,winId, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, folder_perfil, folder_fondo, form_infperso, form_seguridad, myWinsPerfil;
+            var dhxWinmain, mainLayout, secLayout, winId,form_personal, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, folder_perfil, folder_fondo, form_infperso,formini, form_seguridad, myWinsPerfil;
             var winLayout, winGrid;
             var sidebarjson = [
                 {id: "side_infperso", text: "Datos Personales", icon: "profile64.png", selected: true},
@@ -85,7 +85,7 @@
                 {type: "newcolumn"},
                 {type: "block", blockOffset: 5, width: 470, list: [
                         {type: "button", offsetTop: 45, offsetLeft: 55, className: 'b_edits', name: "b_edits", value: '<i class="far fa-edit txtrgreen"></i> Editar'}, {type: "newcolumn"},
-                        {type: "button", offsetTop: 45, offsetLeft: 45, name: "b_saves", value:  '<i class="far fa-save txtrblue"></i> Guardar'}
+                        {type: "button", offsetTop: 45, offsetLeft: 45, name: "b_saves", value: '<i class="far fa-save txtrblue"></i> Guardar'}
                     ]}
             ];
             var form_cuenta = [{type: "settings", labelWidth: 140},
@@ -116,65 +116,71 @@
                 {type: "newcolumn"},
                 {type: "block", blockOffset: 5, width: 470, list: [
                         {type: "button", offsetTop: 25, offsetLeft: 95, className: 'b_editc', name: "b_editc", value: "<i class='far fa-edit txtrgreen'></i> Editar"}, {type: "newcolumn"},
-                        {type: "button", offsetTop: 25, offsetLeft: 155, name: "b_savec", className: "b_savec", value: '<i class="far fa-save txtrblue"></i> Guardar', disabled: true}
+                        {type: "button", offsetTop: 25, offsetLeft: 155, name: "b_savec", className: "b_savec", value: '<i class="far fa-save txtrblue"></i> Guardar', disabled: true},{type: "newcolumn"},
+                        {type: "button", offsetTop: 25, offsetLeft: 5, name: "b_salirc", className: "b_salirc", value: '<i class="fas fa-power-off txtred"></i> Salir', hidden : true},{type: "newcolumn"}
                     ]}
             ];
             if (usrtoken === '') {
                 location.href = '/';
-            } else {
+            } else {console.log('antes');
+                console.log(usrJson);
                 dhtmlXCalendarObject.prototype.lang = "pe";
-                mainLayout = new dhtmlXLayoutObject({parent: document.body, pattern: "3T", offsets: {top:0, right:0, bottom:0, left:0}});
-                mainLayout.cells("a").hideHeader();
-                mainLayout.cells("b").setCollapsedText("<span style='color:black; font-size : 1.5em;'>Menu Principal</span>");
-                mainLayout.cells("b").hideArrow();
-                mainLayout.setSeparatorSize(0, 0);
-                mainLayout.setSeparatorSize(1, 0);
-                mainLayout.setSeparatorSize(2, 0);
-                myToolbar = mainLayout.cells("a").attachToolbar({iconset: "awesome"});
-                myToolbar.setIconSize(32);
-                myToolbar.addText('add_pasos', null, '<div class="milky"></div>');
-                myToolbar.addButton('b_hidemenu', null, '', null, null);
-                myToolbar.addInputsearch('search-bar1', null, null, null);
-                myToolbar.addSeparator(null, null);
-                myToolbar.addButton('b_user_admi', null, '', 'user64.png', null);
-                myToolbar.addButton('b_mail', null, '', 'user64.png', null);
-                myToolbar.setItemImage('b_hidemenu', "fas fa-bars");
-                myToolbar.setItemImage('b_user_admi', "fas fa-user-cog");
-                myToolbar.setItemImage('b_mail', "fas fa-envelope");
-                myToolbar.setWidth('b_user_admi', 200);
-                myToolbar.addSpacer("b_hidemenu");
-                myToolbar.setItemToolTip('b_hidemenu', 'Oculta o Muestra el Menú Principal');
-                myToolbar.attachEvent("onClick", toolbar_onclic);
-                myToolbar.attachEvent("onkeyup", inpu_onKeyup);
-                myToolbar.setSkin('dhx_custom');
-                myPop = new dhtmlXPopup({toolbar: myToolbar, id: "b_user_admi"});
-                carga_estructura_pop(myPop);
-                myPop.attachEvent("onClick", pop_inclic);
-                myPop2 = new dhtmlXPopup({toolbar: myToolbar, id: "search-bar1"});
-                myPop2.attachEvent("onClick", pop_inclic2);
-                mainLayout.cells("b").hideHeader();
-                mainLayout.cells("a").setHeight(45);
-                mainLayout.cells("b").setWidth(240);
-                mainLayout.cells("b").fixSize(true, true);
-                mainLayout.cells("b").attachHTMLString("<div id=\"dv-treeview\"></div>");
-                mainLayout.cells("c").hideHeader();
-                mainLayout.cells("c").attachHTMLString('<div id="img_fondo_" style=" background-size: cover;"><div class="loader-container">  <div class="progress float shadow">    <div class="progress__item"></div>  </div></div></div>');//mainLayout.cells("c").attachHTMLString("<div id=\"dv-fondo\"></div>');
-                secLayout = new dhtmlXLayoutObject("dv-treeview", "2E");
-                secLayout.setSeparatorSize(0, 0);
-                secLayout.setSeparatorSize(1, 0);
-                secLayout.cells("a").hideHeader();
-                secLayout.cells("a").setHeight(150);
-                var Formlogo = secLayout.cells("a").attachForm();
-                Formlogo.load(form_logo, doOnload);
-                secLayout.cells("a").fixSize(true, true);
-                secLayout.cells("b").hideHeader();
-                mainTree = secLayout.cells("b").attachTree();
-                mainTree.setImagePath("assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
-                mainTree.setXMLAutoLoading(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa);
-                mainTree.enableTreeLines(true);
-                mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
-                mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
-                dhxWinmain = new dhtmlXWindows();
+                if (usrJson.copersona === 0) {
+                    carga_nuevo_usuario();
+                } else {
+                    mainLayout = new dhtmlXLayoutObject({parent: document.body, pattern: "3T", offsets: {top: 0, right: 0, bottom: 0, left: 0}});
+                    mainLayout.cells("a").hideHeader();
+                    mainLayout.cells("b").setCollapsedText("<span style='color:black; font-size : 1.5em;'>Menu Principal</span>");
+                    mainLayout.cells("b").hideArrow();
+                    mainLayout.setSeparatorSize(0, 0);
+                    mainLayout.setSeparatorSize(1, 0);
+                    mainLayout.setSeparatorSize(2, 0);
+                    myToolbar = mainLayout.cells("a").attachToolbar({iconset: "awesome"});
+                    myToolbar.setIconSize(32);
+                    myToolbar.addText('add_pasos', null, '<div class="milky"></div>');
+                    myToolbar.addButton('b_hidemenu', null, '', null, null);
+                    myToolbar.addInputsearch('search-bar1', null, null, null);
+                    myToolbar.addSeparator(null, null);
+                    myToolbar.addButton('b_user_admi', null, '', 'user64.png', null);
+                    myToolbar.addButton('b_mail', null, '', 'user64.png', null);
+                    myToolbar.setItemImage('b_hidemenu', "fas fa-bars");
+                    myToolbar.setItemImage('b_user_admi', "fas fa-user-cog");
+                    myToolbar.setItemImage('b_mail', "fas fa-envelope");
+                    myToolbar.setWidth('b_user_admi', 200);
+                    myToolbar.addSpacer("b_hidemenu");
+                    myToolbar.setItemToolTip('b_hidemenu', 'Oculta o Muestra el Menú Principal');
+                    myToolbar.attachEvent("onClick", toolbar_onclic);
+                    myToolbar.attachEvent("onkeyup", inpu_onKeyup);
+                    myToolbar.setSkin('dhx_custom');
+                    myPop = new dhtmlXPopup({toolbar: myToolbar, id: "b_user_admi"});
+                    carga_estructura_pop(myPop);
+                    myPop.attachEvent("onClick", pop_inclic);
+                    myPop2 = new dhtmlXPopup({toolbar: myToolbar, id: "search-bar1"});
+                    myPop2.attachEvent("onClick", pop_inclic2);
+                    mainLayout.cells("b").hideHeader();
+                    mainLayout.cells("a").setHeight(45);
+                    mainLayout.cells("b").setWidth(240);
+                    mainLayout.cells("b").fixSize(true, true);
+                    mainLayout.cells("b").attachHTMLString("<div id=\"dv-treeview\"></div>");
+                    mainLayout.cells("c").hideHeader();
+                    mainLayout.cells("c").attachHTMLString('<div id="img_fondo_" style=" background-size: cover;"><div class="loader-container">  <div class="progress float shadow">    <div class="progress__item"></div>  </div></div></div>');//mainLayout.cells("c").attachHTMLString("<div id=\"dv-fondo\"></div>');
+                    secLayout = new dhtmlXLayoutObject("dv-treeview", "2E");
+                    secLayout.setSeparatorSize(0, 0);
+                    secLayout.setSeparatorSize(1, 0);
+                    secLayout.cells("a").hideHeader();
+                    secLayout.cells("a").setHeight(150);
+                    var Formlogo = secLayout.cells("a").attachForm();
+                    Formlogo.load(form_logo, doOnload);
+                    secLayout.cells("a").fixSize(true, true);
+                    secLayout.cells("b").hideHeader();
+                    mainTree = secLayout.cells("b").attachTree();
+                    mainTree.setImagePath("assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
+                    mainTree.setXMLAutoLoading(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa);
+                    mainTree.enableTreeLines(true);
+                    mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
+                    mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
+                    dhxWinmain = new dhtmlXWindows();
+                }
             }
         </script>
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Empresas</title>
+        <title>Cliente</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
         <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
@@ -30,21 +30,17 @@
             var mainLayout, mySidebar, base_tollbar, myForm, myDataView, estadook = 'VIGENTE', myToolBar, ubigeo, st_prin;
             var __id = 0, Nombrenew, Codigo, Nombreold, Estado;
             var st_form_base = [{type: "settings", labelWidth: 100},
-                {type: "block", blockOffset: 0, list: [
-                        {type: "block", blockOffset: 0, offsetTop: 10, width: 220, list: [
-                                {type: "block", blockOffset: 20, width: 220, list: [
-                                        {type: "settings", position: "label-top"},
-                                        {type: "template", name: "up_imgperfil", inputWidth: 185, inputHeight: 145, format: photo_usu},
-                                        {type: "template", name: "", className: "", style: "", inputHeight: 65}
-                                    ]}, {type: "block", blockOffset: 10, position: "label-left", width: 220, list: [
-                                        {type: "template", offsetTop: 25, offsetLeft: 2, labelWidth: 40, name: "f_ruc", width: 100, label: "RUC :", value: "...", format: style}, {type: "newcolumn"},
-                                        {type: "template", offsetTop: 5, offsetLeft: 2, name: "f_nombre", width: 220, label: "NOMBRE :", value: "AACORPORACION LIFE SAC", format: style}, {type: "newcolumn"},
-                                        {type: "template", offsetTop: 5, offsetLeft: 2, name: "f_razsocial", width: 220, label: "RAZON SOCIAL :", value: "AACORPORACION LIFE SAC", format: style}, {type: "newcolumn"},
-                                        {type: "template", offsetTop: 5, offsetLeft: 2, labelWidth: 70, name: "f_moneda", width: 100, label: "MONEDA :", value: "SOLES", format: style}, {type: "newcolumn"},
-                                        {type: "template", offsetTop: 5, offsetLeft: 2, labelWidth: 70, name: "f_registro", width: 100, label: "REGISTRO :", value: " 01/01/2019", format: style}, {type: "newcolumn"},
-                                        {type: "template", offsetTop: 5, offsetLeft: 2, labelWidth: 70, name: "f_estado", width: 100, label: "ESTADO :", value: "VIGENTE", format: style}, {type: "newcolumn"}
+           
+                        {type: "block", blockOffset: 0, offsetTop: 0, width: 1000, list: [
+                                  {type: "block", blockOffset: 0, position: "label-left", width: 80, list: [
+                                      {type: "button", width: 60, value: '<i class="fas fa-search"></i>', offsetLeft: 7, name: "b_buscar", tooltip: "BUSCAR UN CLIENTE", className: "b_buscar", hidden: false}
+                                       
+                                    ]},{type: "newcolumn"},
+                                {type: "block", blockOffset: 10, position: "label-left", width: 920, list: [
+                                        {type: "template", offsetTop: 5, offsetLeft: 2, labelWidth: 60, name: "f_cliente", width: 800, label: "Cliente :", value: "20123487541 - EMPRESA EMPERATRIZ SAC", format: style},
+                                        {type: "template", offsetTop: 5, offsetLeft: 2, name: "f_estado", labelWidth: 50, width: 50, label: "Estado :", value: "NO ASIGNADO", format: style}
                                     ]}]}
-                    ]}
+                  
             ];
             var st_form_edit = [{type: "settings", labelWidth: 100},
                 {type: "block", blockOffset: 0, list: [
@@ -79,30 +75,36 @@
                     {id: "__principal", type: "button", text: "Marcar Principal", disabled: true, img: "fas fa-map-marker-alt txtrgreen", imgdis: "fas fa-map-marker-alt disable"},
                     {type: "separator"}
                 ]};
-            var struc_dataview = {container: "data_conten", drag: false, edit: true, select: true,
-                type: {template: "<div><p class='fuente direcion' >#DE_DIRECCION#</p><div id='dircorta'>  <p class='fuente corta'><span>Direccion Corta :</span> #DE_DIRECCION_CORTA# </p> </div><div id='principal'><span>#NPRINCIPAL#</span></div>",
+            var sidebarjson = [
+                {id: "s_sede", text: "SEDES", icon: "32/disk_d.png", selected: true},
+                {id: "s_departa", text: "DEPARTAMENTOS", icon: "32/disk_e.png"},
+                {id: "s_seccio", text: "SECCIONES", icon: "32/desktop.png"},
+                {id: "s_oficina", text: "OFICINAS", icon: "32/desktop.png"}
+            ];
 
-                    height: 60},
-                autowidth: true};
 
 
 
 
-            mainLayout = new dhtmlXLayoutObject(document.body, '2U');
+
+            mainLayout = new dhtmlXLayoutObject(document.body, '2E');
             mainLayout.cells('a').hideHeader();
-            mainLayout.cells('a').setWidth(250);
-            mainLayout.cells('b').setText("D I R E C C I O N E S");
+            mainLayout.cells('b').hideHeader();
+            mainLayout.cells('b').setWidth(350);
+            mainLayout.cells('a').setHeight(70);
+            // mainLayout.cells('b').setText("D I R E C C I O N E S");
             myForm = mainLayout.cells('a').attachForm();
             myForm.load(st_form_base, doOnload);
-            myToolBar = mainLayout.cells("b").attachToolbar(base_tollbar);
-            myToolBar.setIconSize(48);
-            myToolBar.attachEvent("onClick", ontollbarclic);
+
+            /*  myToolBar = mainLayout.cells("b").attachToolbar(base_tollbar);
+             myToolBar.setIconSize(48);
+             myToolBar.attachEvent("onClick", ontollbarclic);*/
             // f_s_sede(); //inicia por defecto el primer tab-sidebar
-            myDataView = mainLayout.cells('b').attachDataView(struc_dataview);
-            mainLayout.cells("b").progressOn();
-            myDataView.load(BASE_URL + 'MA010104/cargardata/' + usrJson.empresa, "json");
-            mainLayout.cells("b").progressOff();
-            myDataView.attachEvent("onBeforeSelect", BeforeSelectDataview);
+
+
+            mySidebar = mainLayout.cells('b').attachSidebar({parent: document.body, width: 150, single_cell: true, template: "icons_text", icons_path: "/assets/images/icons/iconsjhon/", items: sidebarjson});
+            mySidebar.attachEvent("onBeforeSelect", onselect_sidebar);
+
             // myDataView.attachEvent("onAfterSelect", onAfterSelectDataview);
         </script>
     </body>

@@ -41,7 +41,6 @@ async function valida_token(tok) {
                     if (result.value) {
                         setTimeout(() => {
                             location.href = "/";
-                            //  $("#overlay").fadeOut(500, 'swing');
                         }, 1000);
                     }
                 });
@@ -93,7 +92,7 @@ function FormLoginOnSubmit() {
             localStorage.setItem('usrjson', JSON.stringify(response.data.usuario));
             location.reload();
         } else {
-            Swal.fire({type: 'error', title: 'Ups!!.. algo salio mal!', text: response.message});
+            Swal.fire({type: 'error', title: 'Verifica tu contreaseña </br>', text: response.message});
         }
     }, "json");
 }

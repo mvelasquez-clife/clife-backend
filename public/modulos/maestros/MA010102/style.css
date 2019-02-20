@@ -1,3 +1,12 @@
+/***************BOTON BUSCAR **********/
+div.dhxform_item_label_left.b_buscar div.dhxform_btn_txt {         
+    /*background-image: url('dhtmlx/codebase/imgs/cody_docu_48.png');*/       
+    /*    background-repeat: no-repeat;             */
+    background-position: 1px 3px;      
+    padding-left: 0px;                height : 50px;                margin: -1px -10px 1px 1px;     
+    cursor: pointer;            font-size: 4em;
+}
+
 /***********  CSS DATAVIEW *******************************/
 .corta { 
     padding : 0px;
@@ -11,11 +20,11 @@
     color: royalblue;
 }
 #dircorta{
-   
+
     width: 89%;
     float: left;}
 #principal {
-     font-size: 1.4em;
+    font-size: 1.4em;
     width: 11%;
     float: left;
     padding-top: 18px;
@@ -77,9 +86,15 @@
     font-size: 0.9em;
     padding-top: 26px;
 }
-.classfont{
-    font-size: 1.3em;
-    font-weight: 700;
+.s_estado {
+      font-size: 1.3em;
+    font-weigh: 700;
+    font-family:century gothic, verdana, arial, sans-serif!important;
+}
+
+.nomcliente{
+    font-size: 2.3em;
+    font-weigh: 700;
     font-family:century gothic, verdana, arial, sans-serif!important;
 }
 #fboton{

@@ -193,7 +193,10 @@ onSelectAntes = (id, dataview, tollbar, estadook) => {
     }
 };
 function style(name, value) {
-    return "<div class='classfont'>" + value + "</div>";
+    if (name === 'f_cliente')
+    return "<div class='nomcliente'>" + value + "</div>";
+else 
+        return "<div class='s_estado'>" + value + "</div>";
 }
 
 function  photo_usu(name, value) {
