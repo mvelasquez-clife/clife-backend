@@ -55,7 +55,7 @@ const ancestroController = {
                 });
                 return;
             }
-            const query = "select * from table (pack_new_sources.f_list_lupa_general(:p_id, :p_empresa, :p_extra))";
+            const query = "select * from table (pack_new_sources.f_list_lupa_general(:p_id, :p_empresa, :p_extra)) order by de_descripcion asc";
             const params = {
                 p_id: { val: id },
                 p_empresa: { val: empresa },

@@ -110,8 +110,8 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container) => {
                 break;
             case 3:
                 gridBusqueda.setHeader('#,Codigo,Nombre,Vigencia,Alias,Correo');
-                gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter');
-                gridBusqueda.setInitWidthsP('10,50,10,15,10');
+                gridBusqueda.attachHeader('#rspan,#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter');
+                gridBusqueda.setInitWidthsP('5,10,60,15,10');
                 gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
                 gridBusqueda.setColumnIds("ch,codigo,nombre,vigencia,alias,correo");
                 break;

@@ -14,7 +14,7 @@ const dbParams = require('./database');
 app.set('port', process.env.port || 3000);
 
 //middlewares
-app.use(morgan('dev'));
+//app.use(morgan('dev'));
 app.use(express.json());
 app.use(cors({origin: host.address}));
 app.use(bodyParser.urlencoded({extended: false}));

@@ -16,15 +16,30 @@ module.exports = {
                 dbo.collection(mongodb.collections.usuarios).find(query).toArray((err, result) => {
                     if(err) throw err;
                     if(result.length == 0) {
-                        dbo.collection(mongodb.collections.usuarios).insertOne({
-                            codigo: parseInt(user.codigo),
-                            nombre: user.nombre,
-                            empresa: parseInt(user.empresa),
-                            socketId: socket.id
-                        });
+                        if(user.hasOwnProperty('alias')) {
+                            dbo.collection(mongodb.collections.usuarios).insertOne({
+                                codigo: parseInt(user.codigo),
+                                nombre: user.nombre,
+                                empresa: parseInt(user.empresa),
+                                socketId: socket.id
+                            });
+                        }
+                        else {
+                            dbo.collection(mongodb.collections.usuarios).insertOne({
+                                codigo: parseInt(user.codigo),
+                                nombre: user.nombre,
+                                empresa: parseInt(user.empresa),
+                                alertsId: socket.id
+                            });
+                        }
                     }
                     else {
-                        dbo.collection(mongodb.collections.usuarios).updateOne(query, { $set: { socketId: socket.id } });
+                        if(user.hasOwnProperty('alias')) {
+                            dbo.collection(mongodb.collections.usuarios).updateOne(query, { $set: { socketId: socket.id } });
+                        }
+                        else {
+                            dbo.collection(mongodb.collections.usuarios).updateOne(query, { $set: { alertsId: socket.id } });
+                        }
                     }
                     db.close();
                 });
@@ -35,7 +50,12 @@ module.exports = {
                     if(err) throw(err);
                     const dbo = db.db(mongodb.db);
                     const query = { socketId: socket.id };
-                    dbo.collection(mongodb.collections.usuarios).updateOne(query, { $set: { socketId: null } });
+                    if(user.hasOwnProperty('alias')) {
+                        dbo.collection(mongodb.collections.usuarios).updateOne(query, { $set: { socketId: null } });
+                    }
+                    else {
+                        dbo.collection(mongodb.collections.usuarios).updateOne(query, { $set: { alertsId: null } });
+                    }
                 });
             });
             //establecer una conexión
@@ -60,7 +80,6 @@ module.exports = {
                         ]
                     };
                     dbo.collection(mongodb.collections.mensajes).find(queryMensajes).sort({sent:1}).toArray((err, result) => {
-                        console.log(result.length, 'mensajes encontrados');
                         const list = {
                             receptor: data.destino,
                             mensajes: result
@@ -89,6 +108,9 @@ module.exports = {
                                 message: data.mensaje
                             };
                             socket.to(destinatario.socketId).emit('message', message);
+                            if(destinatario.alertsId) {
+                                socket.to(destinatario.alertsId).emit('message', message);
+                            }
                             online = true;
                         }
                         const omensaje = {
@@ -100,6 +122,48 @@ module.exports = {
                         };
                         dbo.collection(mongodb.collections.mensajes).insertOne(omensaje);
                     });
+                });
+            });
+            //unirse a un grupo
+            socket.on('unir', (data) => {
+                socket.join(data.destino);
+            });
+            //solicita historial de mensajes del grupo
+            socket.on('chatroom-historial', (data) => {
+                mClient.connect(mongodb.uri, (err, db) => {
+                    if(err) throw(err);
+                    const dbo = db.db(mongodb.db);
+                    //busca mensajes anteriores
+                    const queryMensajes = { to: data.destino };
+                    dbo.collection(mongodb.collections.mensajes).find(queryMensajes).sort({sent:1}).toArray((err, result) => {
+                        const list = {
+                            receptor: data.destino,
+                            mensajes: result
+                        };
+                        io.to(data.destino).emit('chatroom-historial', list);
+                    });
+                });
+            });
+            //mensaje grupal
+            socket.on('chatroom', (data) => {
+                mClient.connect(mongodb.uri, (err, db) => {
+                    if(err) throw(err);
+                    const mensaje = {
+                        from: data.grupo,
+                        emisor: data.emisor,
+                        message: data.mensaje
+                    };
+                    io.to(data.grupo).emit('chatroom', mensaje);
+                    const dbo = db.db(mongodb.db);
+                    //guarda el mensaje
+                    const omensaje = {
+                        from: data.emisor.id,
+                        to: data.grupo,
+                        checked: true,
+                        message: data.mensaje,
+                        sent: new Date()
+                    };
+                    dbo.collection(mongodb.collections.mensajes).insertOne(omensaje);
                 });
             });
         });

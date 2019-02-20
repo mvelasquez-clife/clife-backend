@@ -27,6 +27,7 @@ carga_nuevo_usuario = () => {
 
 
 /********************Etructura del Popup*/
+var winChat, isMaximized = false;
 function carga_estructura_pop(Pop) {
     Pop.attachList("name", [
         {id: 'profile', name: "<div id='list_usu' >Cuenta</div>"},
@@ -461,4 +462,35 @@ busca_modulos = (value) => {
         myPop2.attachList("padre,flecha,name", response.data.l_items);
     }, "json");
 };
-            
+//integración con el chat
+AbrirChat = () => {
+    winChatId = 'winChat';
+    if(!dhxWinmain.isWindow(winChatId)) {
+        winChat = dhxWinmain.createWindow(winChatId, 0, 0, 480, 640);
+        winChat.setText('CloudChat v1.0');
+        PosicionarWinChat();
+        winChat.attachURL('/chat');
+        winChat.denyMove();
+        winChat.denyResize();
+        winChat.attachEvent('onParkUp', (w) => {
+            isMaximized = false;
+            PosicionarWinChat();
+        });
+        winChat.attachEvent('onParkDown', (w) => {
+            isMaximized = true;
+            PosicionarWinChat();
+        })
+    }
+}
+PosicionarWinChat = () => {
+    if(dhxWinmain.isWindow('winChat')) {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        if(isMaximized) {
+            winChat.setPosition(width - 480, height - 640);
+        }
+        else {
+            winChat.setPosition(width - 480, height - 30);
+        }
+    }
+}

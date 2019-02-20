@@ -60,6 +60,80 @@ const chatController = {
                 db.close();
             });
         });
+    },
+    ListaGrupos: (req, res) => {
+        const usuario = parseInt(req.body.usuario);
+        const empresa = parseInt(req.body.empresa);
+        mClient.connect(mongodb.uri, async (err, db) => {
+            if(err) throw(err);
+            const dbo = db.db(mongodb.db);
+            const query = { empresa: empresa, miembros: usuario };
+            const grupos = await dbo.collection(mongodb.collections.grupos).find(query).toArray();
+            const nGrupos = grupos.length;
+            const lista = [];
+            for(var i = 0; i < nGrupos; i++) {
+                lista.push({
+                    id: grupos[i].id,
+                    nombre: grupos[i].grupo + ' (' + grupos[i].miembros.length + ' miembros)'
+                });
+            }
+            res.json({
+                state: 'success',
+                grupos: lista
+            });
+        });
+    },
+    GuardarGrupo: (req, res) => {
+        const id = req.body.id;
+        const grupo = req.body.nombre;
+        const empresa = parseInt(req.body.empresa);
+        const miembros = JSON.parse(req.body.miembros);
+        mClient.connect(mongodb.uri, (err, db) => {
+            if(err) throw(err);
+            const dbo = db.db(mongodb.db);
+            dbo.collection(mongodb.collections.grupos).insertOne({
+                id: id,
+                grupo: grupo,
+                empresa: empresa,
+                miembros: miembros
+            }, (error, result) => {
+                db.close();
+                res.json({
+                    state: 'success'
+                });
+            });
+        });
+    },
+    MiembrosGrupo: (req, res) => {
+        const empresa = parseInt(req.body.empresa);
+        const grupo = req.body.grupo;
+        mClient.connect(mongodb.uri, async (err, db) => {
+            if(err) throw(err);
+            const dbo = db.db(mongodb.db);
+            const query = { id: grupo, empresa: empresa };
+            const iGrupo = await dbo.collection(mongodb.collections.grupos).find(query).toArray();
+            if(iGrupo.length > 0) {
+                const queryUsuarios = { codigo: { $in: iGrupo[0].miembros }, empresa: empresa };
+                dbo.collection(mongodb.collections.usuarios).find(queryUsuarios).project({ codigo: 1, nombre: 1 }).toArray((err, result) => {
+                    if(err) throw err;
+                    db.close();
+                    res.json({
+                        state: 'success',
+                        data: {
+                            miembros: result,
+                            grupo: iGrupo[0].grupo
+                        }
+                    });
+                });
+            }
+            else {
+                db.close();
+                res.json({
+                    state: 'error',
+                    message: 'Grupo incorrecto'
+                });
+            }
+        });
     }
 };
 
