@@ -318,6 +318,94 @@ const ba010305Controller = {
                 });
             });
         });
+    },
+    ComboTiposCobro: (req, res) => {
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err
+                });
+                return;
+            }
+            const query = "select co_tipo_cobro \"value\",de_nombre \"text\" from ma_tipo_cobr_m where st_vista_abono = 'S' order by co_tipo_cobro asc";
+            const params = {};
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    res.json({
+                        state: 'error',
+                        message: error
+                    });
+                    conn.close();
+                    return;
+                }
+                res.json({
+                    options: result.rows
+                });
+            });
+        });
+    },
+    ListaDocumentosPagoCliente: (req, res) => {
+        const { empresa, ruc } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err
+                });
+                return;
+            }
+            const query = "select co_documento,im_saldo,to_char(fec_venc,'yyyy-mm-dd'),nu_unico,st_letra,de_estadoletra,st_recaudo from table(pack_new_creditos_planilla.f_list_cta_cte(:p_empresa,:p_ruc))";
+            const params = {
+                p_empresa: { val: empresa },
+                p_ruc: { val: ruc }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    res.json({
+                        state: 'error',
+                        message: error
+                    });
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderXml(result.rows));
+            });
+        });
+    },
+    ComboBancos: (req, res) => {
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err
+                });
+                return;
+            }
+            const query = "select ta.co_banco \"value\",ta.de_nombre \"text\" from ba_banc_m ta join ma_pais_m tb on ta.co_pais = tb.co_pais where ta.es_vigencia = 'Vigente'";
+            const params = {};
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    res.json({
+                        state: 'error',
+                        message: error
+                    });
+                    conn.close();
+                    return;
+                }
+                res.json({
+                    options: result.rows
+                });
+            });
+        });
+    },
+    RegistraPagoPlanilla = (req, res) => {
+        const { vendedor, tipo, documento, importe, banco, serieret, nrodoc, regfecha } = req.body;
+        return res.json({
+            state: 'error',
+            message: 'ola ke ase'
+        });
     }
 };
 

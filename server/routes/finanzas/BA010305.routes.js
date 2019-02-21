@@ -12,5 +12,8 @@ router.get('/lista-monedas/:empresa/:vendedor', ba010305Controller.CargarListaMo
 router.post('/crear-nueva-planilla', ba010305Controller.CrearPlanillaCobranza);
 router.post('/abrir-planilla', ba010305Controller.AbrirPlanillaCobranza);
 router.post('/cerrar-planilla', ba010305Controller.CerrarPlanillaCobranza);
+router.get('/combo-tipos-cobro', ba010305Controller.ComboTiposCobro);
+router.get('/lista-documentos-cliente/:empresa/:ruc', ba010305Controller.ListaDocumentosPagoCliente);
+router.get('/combo-bancos', ba010305Controller.ComboBancos);
 
 module.exports = router;

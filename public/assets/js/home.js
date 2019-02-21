@@ -430,3 +430,17 @@ PosicionarWinChat = () => {
         }
     }
 }
+const socket = io('http://192.168.11.138:3001',{
+    query: {
+        codigo: usrJson.codigo,
+        empresa: usrJson.empresa
+    }
+});
+socket.on('message', function (data) {
+    if(!isMaximized) {
+        dhtmlx.message({
+            text: '<span style="font-weight:bold;">Nuevo mensaje de ' + (data.from.name ? data.from.name : data.from.id) + '</span><br>[' + (new Date()).toISOString().split('T')[0] + '] <span style="font-style:italic;">' + data.message + '</span>',
+            expire: 10000
+        })
+    }
+});

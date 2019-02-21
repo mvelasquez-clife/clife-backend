@@ -29,10 +29,7 @@ const structs = {
                 type:'block', text:'Planilla', list:[
                     { type:'button', id:'conciliar', text:'Conciliación', img: 'ic-conciliacion.svg', imgdis: 'ic-conciliacion-dis.svg', isbig: true },
                     { type:'button', id:'recibo', text:'Generar recibo', img: 'ic-recibo.svg', imgdis: 'ic-recibo-dis.svg', isbig: true },
-                    { type:'buttonSelect', id:'pago', text:'Registrar pago', img: 'ic-payment.svg', imgdis: 'ic-payment-dis.svg', isbig: true, items: [
-                        { id: 'efectivo', text: 'Efectivo' },
-                        { id: 'valores', text: 'Letra/cheque' }
-                    ]},
+                    { type:'button', id:'pago', text:'Registrar pago', img: 'ic-payment.svg', imgdis: 'ic-payment-dis.svg', isbig: true },
                     { type:'button', id:'deposito', text:'Registrar depósito', img: 'ic-deposit.svg', imgdis: 'ic-deposit-dis.svg', isbig: true }
                 ]
             }
@@ -60,9 +57,93 @@ const structs = {
             { type: 'newcolumn' },
             { type: 'button', name: 'cancelar', value: 'Cancelar', offsetLeft: 16 },
         ] },
+    ],
+    formPagoCliente: [
+        { type: 'settings', position: 'label-left', labelWidth: 80, offsetLeft: 12, offsetTop: 8 },
+        { type: 'input', label: 'Cliente', name: 'cliente', offsetTop: 12, inputWidth: 360 },
+        { type: 'hidden', name: 'ruc' },
+        { type: 'container', label: 'Documento', name: 'docsContainer', inputWidth: 480, inputHeight: 260 },
+        { type: 'combo', label: 'Tipo Pago', name: 'tpago', connector: '/api/BA010305/combo-tipos-cobro', inputWidth: 120 },
+        { type: 'block', blockOffset: 128, offsetTop: 0, list: [
+            { type: 'button', name: 'aceptar', value: '<b>Aceptar</b>', offsetLeft: 6 },
+            { type: 'newcolumn' },
+            { type: 'button', name: 'cancelar', value: 'Cancelar', offsetLeft: 16 },
+        ] }
+    ],
+    formPagoClienteEfectivo: [
+        { type: 'settings', position: 'label-left', offsetLeft: 4, offsetTop: 4 },
+        { type: 'block', blockOffset: 0, list: [
+            { type: 'block', blockOffset: 0, list: [
+                { type: 'label', label: '<img src="/assets/images/icons/window/ic-planilla-cobranza.svg" style="margin:24px 16px 12px;width:144px;"/>' }
+            ] },
+            { type: 'newcolumn' },
+            { type: 'block', blockOffset: 0, list: [
+                { type: 'settings', labelWidth: 60, inputWidth: 120, offsetTop: 24 },
+                { type: 'hidden', name: 'tpcobro' },
+                { type: 'hidden', name: 'documento' },
+                { type: 'label', label: 'Documento', labelWidth: 230, offsetTop: 32 },
+                { type: 'label', label: '<span id="sp-codigo-documento"></span>', labelWidth: 230, offsetTop: 8 },
+                { type: 'input', label: 'Importe', name: 'importe', offsetTop: 24 },
+                { type: 'block', offsetLeft: 0, offsetTop: 24, inputWidth: 320, list: [
+                    { type: 'button', name: 'aceptar', value: '<b>Registrar pago</b>', offsetLeft: 6 },
+                    { type: 'newcolumn' },
+                    { type: 'button', name: 'cancelar', value: 'Cancelar', offsetLeft: 8 },
+                ] }
+            ] }
+        ] }
+    ],
+    formPagoClienteCheque: [
+        { type: 'settings', position: 'label-left', offsetLeft: 4, offsetTop: 4 },
+        { type: 'block', blockOffset: 0, list: [
+            { type: 'block', blockOffset: 0, list: [
+                { type: 'label', label: '<img src="/assets/images/icons/window/ic-planilla-cobranza.svg" style="margin:24px 16px 12px;width:144px;"/>' }
+            ] },
+            { type: 'newcolumn' },
+            { type: 'block', blockOffset: 0, list: [
+                { type: 'settings', labelWidth: 75, inputWidth: 120, offsetTop: 16 },
+                { type: 'hidden', name: 'tpcobro' },
+                { type: 'hidden', name: 'documento' },
+                { type: 'label', label: 'Documento', labelWidth: 230, offsetTop: 24 },
+                { type: 'label', label: '<span id="sp-codigo-documento"></span>', labelWidth: 230, offsetTop: 8 },
+                { type: 'input', label: 'Importe', name: 'importe', offsetTop: 24 },
+                { type: 'combo', label: 'Banco', name: 'banco', inputWidth: 160, connector: '/api/BA010305/combo-bancos' },
+                { type: 'input', label: 'Nro.Comprobante', name: 'nrodoc' },
+                { type: 'calendar', label: 'Vencimiento', name: 'fecha', dateFormat: '%Y-%m-%d' },
+                { type: 'block', offsetLeft: 0, offsetTop: 24, inputWidth: 320, list: [
+                    { type: 'button', name: 'aceptar', value: '<b>Registrar pago</b>', offsetLeft: 6 },
+                    { type: 'newcolumn' },
+                    { type: 'button', name: 'cancelar', value: 'Cancelar', offsetLeft: 8 },
+                ] }
+            ] }
+        ] }
+    ],
+    formPagoClienteCertifRet: [
+        { type: 'settings', position: 'label-left', offsetLeft: 4, offsetTop: 4 },
+        { type: 'block', blockOffset: 0, list: [
+            { type: 'block', blockOffset: 0, list: [
+                { type: 'label', label: '<img src="/assets/images/icons/window/ic-planilla-cobranza.svg" style="margin:24px 16px 12px;width:144px;"/>' }
+            ] },
+            { type: 'newcolumn' },
+            { type: 'block', blockOffset: 0, list: [
+                { type: 'settings', labelWidth: 75, inputWidth: 120, offsetTop: 16 },
+                { type: 'hidden', name: 'tpcobro' },
+                { type: 'hidden', name: 'documento' },
+                { type: 'label', label: 'Documento', labelWidth: 230, offsetTop: 24 },
+                { type: 'label', label: '<span id="sp-codigo-documento"></span>', labelWidth: 230, offsetTop: 8 },
+                { type: 'input', label: 'Importe', name: 'importe', inputWidth: 160, offsetTop: 24 },
+                { type: 'input', label: 'Serie', name: 'serie', inputWidth: 80 },
+                { type: 'input', label: 'Número', name: 'nrodoc', inputWidth: 80 },
+                { type: 'calendar', label: 'Fecha', name: 'fecha', dateFormat: '%Y-%m-%d' },
+                { type: 'block', offsetLeft: 0, offsetTop: 24, inputWidth: 320, list: [
+                    { type: 'button', name: 'aceptar', value: '<b>Registrar pago</b>', offsetLeft: 6 },
+                    { type: 'newcolumn' },
+                    { type: 'button', name: 'cancelar', value: 'Cancelar', offsetLeft: 8 },
+                ] }
+            ] }
+        ] }
     ]
 };
-var winListaPlanillasDetalle, winCrearPlanilla, formCrearPlanilla;
+var winListaPlanillasDetalle, winCrearPlanilla, formCrearPlanilla, formPagoClientePagar;
 
 //formulario
 formFiltroOnFocus = async (id) => {
@@ -114,6 +195,7 @@ CargarPlanillasCobranza = (periodo, cobrador) => {
         gridPlanillas.attachHeader('#text_filter,#select_filter,#text_filter,#text_filter,#rspan,#select_filter,#rspan,#select_filter,#numeric_filter,#numeric_filter,#numeric_filter,#numeric_filter,#numeric_filter,#select_filter,#select_filter,#select_filter,#select_filter,#text_filter,#select_filter');
         gridPlanillas.setColTypes('rotxt,rotxt,rotxt,rotxt,ron,rotxt,ron,ron,ron,ron,ron,ron,dyn,ch,ch,ch,ron,rotxt,rotxt');
         gridPlanillas.setColAlign('left,left,left,left,center,left,center,left,right,right,right,right,right,center,center,center,right,left,left');
+        gridPlanillas.setIconsPath('/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/');
         gridPlanillas.setColumnHidden(4,true);
         gridPlanillas.setColumnHidden(6,true);
         gridPlanillas.setNumberFormat('0,000.00',8);
@@ -133,8 +215,8 @@ gridPlanillasOnSuccess = () => {
     const numRows = gridPlanillas.getRowsNum();
     for(var i = 0; i < numRows; i++) {
         const rowId = gridPlanillas.getRowId(i);
-        gridPlanillas.cells(rowId,0).setValue('/assets/images/icons/grid/ic-detalle.svg^Ver detalle de la planilla');
-        gridPlanillas.cells(rowId,2).setValue('/assets/images/icons/grid/ic-print.svg^Imprimir planilla');
+        gridPlanillas.cells(rowId,0).setValue('../../../../../../images/icons/grid/ic-detalle.svg^Ver detalle de la planilla');
+        gridPlanillas.cells(rowId,2).setValue('../../../../../../images/icons/grid/ic-print.svg^Imprimir planilla');
         if(gridPlanillas.cells(rowId,15).getValue() == 0) {
             gridPlanillas.setCellTextStyle(rowId,1,'color:#f44336;font-style:italic;');
         }
@@ -171,7 +253,7 @@ gridPlanillasOnRowSelect = (rowId, colId) => {
 }
 
 //layout - detalle de planilla
-var tabbarWinListaPlanillasDetalle, gridWinListaPlanillasPagosEfectivo, gridWinListaPlanillasValores, gridWinListaPlanillasNotas, gridWinListaPlanillasDepositos, tabbarWinListaPlanillasGraficos, winImagenVoucher, winExtractoBancario;
+var tabbarWinListaPlanillasDetalle, gridWinListaPlanillasPagosEfectivo, gridWinListaPlanillasValores, gridWinListaPlanillasNotas, gridWinListaPlanillasDepositos, tabbarWinListaPlanillasGraficos, winImagenVoucher, winPago, tabbarPago, gridPagoDocumentos, winExtractoBancario;
 ConfigurarLayoutDetallePlanilla = (co_planilla) => {
     layoutWinListaPlanillas = winListaPlanillasDetalle.attachLayout('2U');
         layoutWinListaPlanillas.cells('a').setText('Detalle de la planilla');
@@ -356,9 +438,162 @@ ribbonPlanillasOnClick = async (id) => {
                 });
             }
             break;
+        case 'pago':
+            winPago = mainLayout.dhxWins.createWindow('winPago',0,0,640,480);
+                winPago.setText('Ingresar pago a la planilla');
+                winPago.setModal(true);
+                winPago.keepInViewport(true);
+                winPago.center();
+            tabbarPago = winPago.attachTabbar();
+                tabbarPago.addTab('cliente','Cliente',null,null,true);
+            formPagoCliente = tabbarPago.cells('cliente').attachForm();
+                formPagoCliente.load(structs.formPagoCliente);
+                formPagoCliente.attachEvent('onFocus', formPagoClienteOnFocus);
+                formPagoCliente.attachEvent('onButtonClick', formPagoClienteOnButtonClick);
+                formPagoCliente.attachEvent('onChange', formPagoClienteOnChange);
+            gridPagoDocumentos = new dhtmlXGridObject(formPagoCliente.getContainer('docsContainer'));
+                gridPagoDocumentos.setHeader('Documento,Deuda,Vence,N.Unico,Estado,Banco,');
+                gridPagoDocumentos.setInitWidthsP('25,25,15,10,10,10,0');
+                gridPagoDocumentos.setColTypes('rotxt,ron,rotxt,rotxt,rotxt,rotxt,rotxt');
+                gridPagoDocumentos.setColAlign('left,right,right,left,left,left,left');
+                gridPagoDocumentos.setNumberFormat('S/ 0,000.00',1);
+                gridPagoDocumentos.setColumnHidden(6, true);
+                gridPagoDocumentos.setIconsPath('/assets/images/icons/grid/');
+                gridPagoDocumentos.init();
+                //gridPagoDocumentos.insertColumn(0,'','img',5);
+            break;
         default: break;
     }
 }
+
+//
+formPagoClienteOnFocus = async (id) => {
+    if(id == 'cliente') {
+        var output = await IniciarGridBusqueda(5, false, mainLayout, formFiltro.getItemValue('codigo'));
+        if(output) {
+            const cliente = output.seleccion[0];
+            formPagoCliente.setItemValue('ruc', cliente.codigo);
+            formPagoCliente.setItemValue('cliente', cliente.rsocial + ' - ' + cliente.ncomercial);
+            gridPagoDocumentos.clearAll();
+            //gridPagoDocumentos.deleteColumn(0);
+            gridPagoDocumentos.load('/api/BA010305/lista-documentos-cliente/' + usrJson.empresa + '/' + cliente.codigo, () => {
+                gridPagoDocumentos.insertColumn(0,'','img',5);
+                const nRows = gridPagoDocumentos.getRowsNum();
+                for(var i = 0; i < nRows; i++) {
+                    gridPagoDocumentos.cells2(i,0).setValue(gridPagoDocumentos.cells2(i,6).getValue() == 'S' ? 'ic-ok.svg' : 'ic-danger.svg^No se puede pagar el documento porque ya se encuentra en el banco');
+                }
+            });
+        }
+    }
+}
+formPagoClienteOnButtonClick = (id) => {
+    switch(id) {
+        case 'aceptar':
+            const tpago = formPagoCliente.getItemValue('tpago');
+            MostrarFormularioPago(tpago, true);
+            break;
+        case 'cancelar':
+            winPago.close();
+            break;
+        default: break;
+    }
+}
+formPagoClienteOnChange = (name, value) => {
+    switch(name) {
+        case 'tpago':
+            MostrarFormularioPago(value, false);
+            break;
+        default: break;
+    }
+}
+MostrarFormularioPago = (tpago, showAlert) => {
+    const rId = gridPagoDocumentos.getSelectedRowId();
+    if(rId) {
+        const documento = gridPagoDocumentos.cells(rId,1).getValue();
+        if(gridPagoDocumentos.cells(rId,6).getValue() == 'N') {
+            dhtmlx.alert({
+                title: 'No se puede pagar este documento',
+                type: 'confirm-error',
+                text: 'El documento <b><i>' + documento + '</i></b> ya se encuentra en el banco'
+            });
+            //return false;
+        }
+        if(!tpago) {
+            dhtmlx.alert({
+                title: 'No se puede continuar',
+                type: 'confirm-error',
+                text: 'Debe elegir un tipo de pago para continuar'
+            });
+            return false;
+        }
+        //abre una nueva pestaña
+        IngresarPagoDocumento(tpago, documento);
+    }
+    else {
+        if(showAlert) {
+            dhtmlx.alert({
+                title: 'No se puede continuar',
+                type: 'confirm-error',
+                text: 'Seleccione primero un documento para realizar el pago'
+            });
+        }
+    }
+}
+IngresarPagoDocumento = (tpago, documento) => {
+    if(tabbarPago.tabs('ingreso')) {
+        tabbarPago.tabs('ingreso').setActive();
+    }
+    else {
+        tabbarPago.addTab('ingreso','Pago',null,null,true);
+    }
+    tabbarPago.tabs('ingreso').detachObject();
+    formPagoClientePagar = tabbarPago.tabs('ingreso').attachForm();
+    switch(tpago) {
+        case 1:
+        case 10:
+        case 11:
+        case 15:
+            formPagoClientePagar.loadStruct(structs.formPagoClienteEfectivo);
+            break;
+        case 3:
+        case 6:
+        case 7:
+            formPagoClientePagar.loadStruct(structs.formPagoClienteCheque);
+            break;
+        case 4:
+            formPagoClientePagar.loadStruct(structs.formPagoClienteCertifRet);
+            break;
+        default:
+            break;
+    }
+    if(document.getElementById('sp-codigo-documento')) document.getElementById('sp-codigo-documento').innerHTML = documento;
+    formPagoClientePagar.setItemValue('tpcobro', tpago);
+    formPagoClientePagar.setItemValue('documento', documento);
+    formPagoClientePagar.attachEvent('onButtonClick', formPagoClientePagarOnClick);
+}
+formPagoClientePagarOnClick = (id) => {
+    switch(id) {
+        case 'aceptar':
+            const tpago = formPagoClientePagar.getItemValue('tpcobro');
+            const params = {
+                vendedor: formFiltro.getItemValue('codigo'),
+                tipo: tpago,
+                documento: formPagoClientePagar.getItemValue('documento'),
+                importe: formPagoClientePagar.getItemValue('importe'),
+                banco: formPagoClientePagar.getItemValue('banco'),
+                serieret: formPagoClientePagar.getItemValue('serie'),
+                nrodoc: formPagoClientePagar.getItemValue('nrodoc'),
+                regfecha: formPagoClientePagar.getItemValue('fecha',true)
+            };
+            console.log(params);
+            break;
+        case 'cancelar':
+            winPago.close();
+            break;
+        default: break;
+    }
+}
+//
 
 CerrarPlanillaCobranza = () => {
     const rowId = gridPlanillas.getSelectedRowId();

@@ -34,107 +34,114 @@
 var gridBusqueda, winGridBusqueda, winGridLayout, winToolbar;
 var multi, tpEnti;
 
-IniciarGridBusqueda = (tipoEntidad, multiSelect, container) => {
+IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => {
     return new Promise(resolve => {
         multi = multiSelect;
         tpEnti = tipoEntidad;
-        winGridBusqueda = container.dhxWins.createWindow('winGridBusqueda', 0, 0, 720, 480);
-        winGridBusqueda.center();
-        winGridBusqueda.keepInViewport(true);
-        winGridBusqueda.setModal(true);
-        winGridBusqueda.setText('Búsqueda');
-        winGridBusqueda.button('close').hide();
-        winGridBusqueda.button('park').hide();
-        winGridBusqueda.button('minmax').hide();
-
-
-        //    winGridBusqueda.setPagingSkin("bricks", 'skyblue');
-
-        winGridBusqueda.attachStatusBar({
-            paging: true,
-            text: "<div id='bsq-pager'></div>"
-        });
-
-
-        winToolbar = winGridBusqueda.attachToolbar();
-        winToolbar.setIconsPath('/assets/images/icons/');
-        winToolbar.addButton('btok', null, 'Confirmar selección', 'ic-add.png', '');
-        winToolbar.addButton('btno', null, 'Cancelar', 'ic-delete.png', '');
-        //winToolbar.disableItem('btok');
-        winToolbar.attachEvent('onClick', (id) => {
-            switch (id) {
-                case 'btok':
-                    let arr_out = [];
-                    var checked = gridBusqueda.getCheckedRows(0);
-                    if (checked.length > 0) {
-                        var array = checked.split(",");
-                        if ((multi === true && array.length > 1) || (multi === false && array.length === 1)) {
-                            array.forEach(function (valor) {
-                                arr_out.push(gridBusqueda.getRowData(valor));
-                            });
-                            const out = {seleccion: arr_out};
-                            winGridBusqueda.close();
-                            resolve(out);
+        if(container.dhxWins.isWindow('winGridBusqueda')) {
+            winGridBusqueda.bringToTop();
+        }
+        else {
+            winGridBusqueda = container.dhxWins.createWindow('winGridBusqueda', 0, 0, 720, 480);
+            winGridBusqueda.center();
+            winGridBusqueda.keepInViewport(true);
+            winGridBusqueda.setModal(true);
+            winGridBusqueda.setText('Búsqueda');
+            winGridBusqueda.button('close').hide();
+            winGridBusqueda.button('park').hide();
+            winGridBusqueda.button('minmax').hide();
+            //    winGridBusqueda.setPagingSkin("bricks", 'skyblue');
+            winGridBusqueda.attachStatusBar({
+                paging: true,
+                text: "<div id='bsq-pager'></div>"
+            });
+            winToolbar = winGridBusqueda.attachToolbar();
+            winToolbar.setIconsPath('/assets/images/icons/');
+            winToolbar.addButton('btok', null, 'Confirmar selección', 'ic-add.png', '');
+            winToolbar.addButton('btno', null, 'Cancelar', 'ic-delete.png', '');
+            //winToolbar.disableItem('btok');
+            winToolbar.attachEvent('onClick', (id) => {
+                switch (id) {
+                    case 'btok':
+                        let arr_out = [];
+                        var checked = gridBusqueda.getCheckedRows(0);
+                        if (checked.length > 0) {
+                            var array = checked.split(",");
+                            if ((multi === true && array.length > 1) || (multi === false && array.length === 1)) {
+                                array.forEach(function (valor) {
+                                    arr_out.push(gridBusqueda.getRowData(valor));
+                                });
+                                const out = {seleccion: arr_out};
+                                winGridBusqueda.close();
+                                resolve(out);
+                            } else
+                                Swal.fire({type: 'error', title: 'Debe eligir sólo UNO!'});
                         } else
-                            Swal.fire({type: 'error', title: 'Debe eligir sólo UNO!'});
-                    } else
-                        Swal.fire({type: 'error', title: 'Debe eligir almenos UNO!'});
+                            Swal.fire({type: 'error', title: 'Debe eligir almenos UNO!'});
+                        break;
+                    case 'btno':
+                        winGridBusqueda.close();
+                        resolve(null);
+                        break;
+                    default:
+                        winGridBusqueda.close();
+                        resolve(null);
+                        break;
+                }
+            });
+            gridBusqueda = winGridBusqueda.attachGrid();
+            switch (tipoEntidad) {
+                case 1://busqueda de productos
+                    gridBusqueda.setHeader('#,Codigo,Descripción,Vigencia,Observaciones 1,Observaciones 2');
+                    gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter');
+                    gridBusqueda.setInitWidthsP('5,10,45,10,15,15');
+                    gridBusqueda.setColTypes('ron,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,codigo,descripcion,vigencia,observ1,observ2");
                     break;
-                case 'btno':
-                    winGridBusqueda.close();
-                    resolve(null);
+                case 2://busqueda de vendedores
+                    gridBusqueda.setHeader('#,Codigo,Nombre,Vigencia,C.Costo,Alias');
+                    gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_filter,#select_filter,#select_filter,#text_filter');
+                    gridBusqueda.setInitWidthsP('5,10,45,10,20,10');
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,codigo,nombre,vigencia,ccosto,alias");
+                    break;
+                case 3://busqueda de usuarios erp
+                    gridBusqueda.setHeader('#,Codigo,Nombre,Vigencia,Alias,Correo');
+                    gridBusqueda.attachHeader('#rspan,#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter');
+                    gridBusqueda.setInitWidthsP('5,10,45,10,15,15');
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,codigo,nombre,vigencia,alias,correo");
+                    break;
+                case 4:
+                    gridBusqueda.setHeader('#,Codigo,Descripcion,Vigencia,Codigos,Detalle2');
+                    gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_search,#text_filter,#text_filter,#text_filter');
+                    gridBusqueda.setInitWidthsP('5,10,85');
+                    gridBusqueda.setColumnIds("ch,ubigeo,descripcion,detalle1,detalle2");
+                    //gridBusqueda.setColumnHidden(2, true);
+                    ([3, 4, 5]).forEach((e) => {
+                        gridBusqueda.setColumnHidden(e, true);
+                    });
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
+                    break;
+                case 5://busqueda de clientes
+                    gridBusqueda.setHeader('#,RUC,Razón Social,,Nombre Comercial,');
+                    gridBusqueda.attachHeader('#rspan,#text_filter,#text_filter,#rspan,#text_filter,#rspan');
+                    gridBusqueda.setInitWidthsP('5,15,40,0,40,0');
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,codigo,ncomercial,nose,rsocial,alias");
+                    gridBusqueda.setColumnHidden(3, true);
+                    gridBusqueda.setColumnHidden(5, true);
                     break;
                 default:
-                    winGridBusqueda.close();
-                    resolve(null);
                     break;
             }
-        });
-        gridBusqueda = winGridBusqueda.attachGrid();
-
-
-        switch (tipoEntidad) {
-            case 1:
-                gridBusqueda.setHeader('#,Codigo,Descripción,Vigencia,Observaciones 1,Observaciones 2');
-                gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter');
-                gridBusqueda.setInitWidthsP('10,45,20,10,10');
-                gridBusqueda.setColTypes('ron,rotxt,rotxt,rotxt,rotxt');
-                gridBusqueda.setColumnIds("ch,codigo,descripcion,vigencia,observ1,observ2");
-                break;
-            case 2:
-                gridBusqueda.setHeader('#,Codigo,Nombre,Vigencia,C.Costo,Alias');
-                gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_filter,#select_filter,#select_filter,#text_filter');
-                gridBusqueda.setInitWidthsP('10,50,10,15,10');
-                gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
-                gridBusqueda.setColumnIds("ch,codigo,nombre,vigencia,ccosto,alias");
-                break;
-            case 3:
-                gridBusqueda.setHeader('#,Codigo,Nombre,Vigencia,Alias,Correo');
-                gridBusqueda.attachHeader('#rspan,#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter');
-                gridBusqueda.setInitWidthsP('5,10,60,15,10');
-                gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
-                gridBusqueda.setColumnIds("ch,codigo,nombre,vigencia,alias,correo");
-                break;
-            case 4:
-                gridBusqueda.setHeader('#,Codigo,Descripcion,Vigencia,Codigos,Detalle2');
-                gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_search,#text_filter,#text_filter,#text_filter');
-                gridBusqueda.setInitWidthsP('5,15,80');
-                gridBusqueda.setColumnIds("ch,ubigeo,descripcion,detalle1,detalle2");
-                //gridBusqueda.setColumnHidden(2, true);
-                ([3, 4, 5]).forEach((e) => {
-                    gridBusqueda.setColumnHidden(e, true);
-                });
-                gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
-                break;
-            default:
-                break;
+            gridBusqueda.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/");
+            gridBusqueda.enablePaging(true, 250, 5, "bsq-pager");
+            gridBusqueda.setPagingSkin("toolbar");
+            gridBusqueda.enableMultiselect(multiSelect);
+            gridBusqueda.init();
+            gridBusqueda.load('/api/ancestros/datos-modal-busqueda/' + tipoEntidad + '/' + usrJson.empresa + '/' + extraParam);
         }
-        gridBusqueda.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/");
-        gridBusqueda.enablePaging(true, 250, 5, "bsq-pager");
-        gridBusqueda.setPagingSkin("toolbar");
-        gridBusqueda.enableMultiselect(multiSelect);
-        gridBusqueda.init();
-        gridBusqueda.load('/api/ancestros/datos-modal-busqueda/' + tipoEntidad + '/' + usrJson.empresa);
     });
 };
 

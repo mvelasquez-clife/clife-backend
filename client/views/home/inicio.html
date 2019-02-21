@@ -21,24 +21,11 @@
         <script type="text/javascript" src="/assets/js/conf.js"></script>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
         <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
-        <script type="text/javascript" src="/assets/vendor/dhtmlx/sources/dhtmlxToolbar/codebase/dhtmlxtoolbar.js"></script>  
-        <script type="text/javascript" src="/assets/js/home.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/sources/dhtmlxToolbar/codebase/dhtmlxtoolbar.js"></script>
         <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
         <script src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="/assets/js/home.js"></script>
         <script>
-            const socket = io('http://192.168.11.138:3001',{
-                query: {
-                    codigo: usrJson.codigo,
-                    empresa: usrJson.empresa
-                }
-            });
-            socket.on('message', function (data) {
-                dhtmlx.message({
-                    text: '<span style="font-weight:bold;">Nuevo mensaje de ' + (data.from.name ? data.from.name : data.from.id) + '</span><br>[' + (new Date()).toISOString().split('T')[0] + '] <span style="font-style:italic;">' + data.message + '</span>',
-                    expire: 10000
-                })
-                console.log(data);
-            });
             var dhxWinmain, mainLayout, secLayout,winId, mainTree, mainWindow, myToolbar, myPop, myPop2, myList, rpta_search, mySidebar, folder_perfil, folder_fondo, form_infperso, form_seguridad, myWinsPerfil;
             var winLayout, winGrid;
             var sidebarjson = [

@@ -47,7 +47,7 @@ const ancestroController = {
 
     getGridPruebaData: (req, res) => {
         oracledb.getConnection(dbParams, (err, conn) => {
-            const { id, empresa } = req.params;
+            const { id, empresa, param } = req.params;
             if(err) {
                 res.json({
                     state: 'error',
@@ -59,7 +59,7 @@ const ancestroController = {
             const params = {
                 p_id: { val: id },
                 p_empresa: { val: empresa },
-                p_extra: { val: '' }
+                p_extra: { val: param }
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 if(error) {
