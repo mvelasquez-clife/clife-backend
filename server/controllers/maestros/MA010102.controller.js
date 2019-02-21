@@ -17,7 +17,6 @@ const ma010104Controller = {
             var formu = new formidable.IncomingForm();
             formu.maxFileSize = 2 * 1024 * 1024;
             formu.on('fileBegin', function (name, file) {
-                console.log(file.name);
                 file.path = './public/assets/images/' + file.name;
             });
             formu.on('file', function (name, file) {

@@ -143,12 +143,10 @@
         <script type="text/javascript">
             var progress, interval, mailenv, instances, btn, resultado;
             //  function progb() {
-
             btn = [].slice.call(document.querySelectorAll('button.progress-button')).forEach(function (bttn) {
                 new ProgressButton(bttn, {
                     callback: function (instance) {
-                        progress = 0;
-                        console.log((document.getElementById("usuario").value).length);
+                        progress = 0;//                        console.log((document.getElementById("usuario").value).length);
                         if ((document.getElementById("usuario").value).length > 0 && (document.getElementById("clave").value).length > 0) {
                             FormLoginOnSubmit();
                             intervalos(instance);
@@ -164,24 +162,19 @@
             function intervalos(instance) {
                 interval = setInterval(function () {
                     progress = Math.min(progress + Math.random() * 0.1, 1);
-                    instance._setProgress(progress);
-                    console.log(resultado);
+                    instance._setProgress(progress);//                    console.log(resultado);
                     if (progress === 1 && resultado === undefined) {
                         progress = 0;
-
                     }
                     if (resultado === 'error') {
                         instance._stop(-1);
                         clearInterval(interval);
                         resultado = undefined;
                     }
-
-                 
                 }, 200);
             }
        
             $(document).ready(function () {
-
                 $("#formolvidar").hide();
                 $('#link-olvidar').click(function () {
                     document.getElementById("usuario").value = '';
@@ -199,7 +192,7 @@
           //    $("#form-login").on("submit", function(e){
          //         e.preventDefault(); console.log('a');
          //     });
-            // $("#formolvidar").on("submit", MailRecorder);
+             $("#formolvidar").on("submit", MailRecorder);
             if (localStorage.getItem('jwt')) {
                 location.href = "inicio";
             } else {

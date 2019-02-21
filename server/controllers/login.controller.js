@@ -166,7 +166,7 @@ const loginCtrl = {
                         }
                         let responseParams = {outFormat: oracledb.OBJECT, maxRows: 1};
                         let p = {usuario: {val: usuario}, clave: {val: clave}};
-                        connection.execute("SELECT CO_PERSONA,DE_ALIAS,CO_EMPRESA_USUARIO,CO_USUARIO,CO_TIPO_DOC_IDE,DE_NOMBRES,DE_SEXO,FE_NACIMIENTO,ST_ADMIN,DE_APELLIDO_PATERNO,DE_APELLIDO_MATERNO,CO_CENTRO_COSTO,ST_ACCESO_WAP,DE_NOMBRE_COSTOS,FE_REGISTRO,DE_DOCUMENTO,DE_MAIL_PERS,DE_TELEFONO_PERS,DE_MAIL_CORPO,DE_TELEFONO_CORPO,ST_EDI_TOTAL FROM TABLE(PW_DATOS_USUARIO_LOGIN.F_DATOS_USUARIO_LOGIN(:usuario,:clave))",
+                        connection.execute("SELECT CO_PERSONA,NVL(DE_ALIAS,'-') as DE_ALIAS,CO_EMPRESA_USUARIO,CO_USUARIO,NVL(CO_TIPO_DOC_IDE,'1') AS CO_TIPO_DOC_IDE,NVL(DE_NOMBRES,'-') AS DE_NOMBRES,DE_SEXO,FE_NACIMIENTO,ST_ADMIN,NVL(DE_APELLIDO_PATERNO,'-') as DE_APELLIDO_PATERNO,NVL(DE_APELLIDO_MATERNO,'-') as DE_APELLIDO_MATERNO,CO_CENTRO_COSTO,ST_ACCESO_WAP,NVL(DE_NOMBRE_COSTOS,'-') AS DE_NOMBRE_COSTOS,FE_REGISTRO,NVL(DE_DOCUMENTO,'0') AS DE_DOCUMENTO,DE_MAIL_PERS,DE_TELEFONO_PERS,DE_MAIL_CORPO,DE_TELEFONO_CORPO,NVL(ST_EDI_TOTAL,'S') AS ST_EDI_TOTAL FROM TABLE(PW_DATOS_USUARIO_LOGIN.F_DATOS_USUARIO_LOGIN(:usuario,:clave))",
                                 p, responseParams, (error, result) => {
                             connection.close();
                             if (error) {
@@ -194,8 +194,9 @@ const loginCtrl = {
                                 mailcorpo: result.rows[0].DE_MAIL_CORPO,
                                 cellcorpo: result.rows[0].DE_TELEFONO_CORPO,
                                 st_editotal: result.rows[0].ST_EDI_TOTAL
+                              //  st_mapers : result.rows[0].ST_EXIST_MPERS
                             };
-                         // console.log(user);
+                          console.log(user);
                             const token = jwt.sign(user, jwtKey.jwtkeylogin, {
                                 expiresIn: jwtKey.jwtloginexpire
                             });
@@ -203,7 +204,7 @@ const loginCtrl = {
                         });
                     });
                 } else
-                    return res.json({state: "error", err: "No se encontraron coincidencias!"});
+                    return res.json({state: "error", message: "No se encontraron coincidencias!"});
             }
         ], function (err) {
             return res.json({state: 'error', message: err});

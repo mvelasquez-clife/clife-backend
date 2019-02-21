@@ -12,6 +12,19 @@ dhtmlXCalendarObject.prototype.langData["pe"] = {
     today: "Hoy",
     clear: "Borrar"
 };
+/*******************************/
+carga_nuevo_usuario = () => {
+
+    Swal.fire({
+        title: 'Hola ' + usrJson.alias,
+        text: ' Te damos la bienvenida a nuestra Plataforma virtual Clife Cloud, a continuacion, porfavor ingrese sus datos personales para poder continuar...',
+        width: 500,
+    })
+    crear_ventana(formini, 700, 500, 0);
+
+
+};
+
 
 /********************Etructura del Popup*/
 var winChat, isMaximized = false;
@@ -32,7 +45,7 @@ pop_inclic = (id) => {
             logout();
             break;
         case 'profile':
-            crear_ventana();
+            crear_ventana(form_infperso, 700, 450, 1);
             break;
         default:
             null;
@@ -40,21 +53,21 @@ pop_inclic = (id) => {
     }
 };
 /********************crea una Windows al hacer click en  Popup.items.profile */
-crear_ventana = () => {
+crear_ventana = (form, width, height, stado) => {
     myWinsPerfil = new dhtmlXWindows();
-    myWinsPerfil.createWindow({id: "w_cuenta", left: 0, top: 0, width: 700, height: 450, center: true});
+    myWinsPerfil.createWindow({id: "w_cuenta", left: 0, top: 0, width: width, height: height, center: true});
     myWinsPerfil.window('w_cuenta').hideHeader();
     mySidebar = myWinsPerfil.window('w_cuenta').attachSidebar({width: 120, single_cell: false, template: "icons_text", icons_path: "assets/images/icons/iconsjhon/", items: sidebarjson});
-    mySidebar.attachEvent("onBeforeSelect", function (id, lastId) {
+    mySidebar.attachEvent("onSelect", function (id, lastId) {
         switch (id) {
             case 'side_infperso':
-                f_side_infperso();
+                f_side_infperso(form, stado);
                 break;
             case 'side_segu':
-                f_side_segu();
+                f_side_segu(form_seguridad, stado);
                 break;
             case 'side_person':
-                f_side_personaliza();
+                f_side_personaliza(form_personal, stado);
                 break;
             default:
                 null;
@@ -62,61 +75,93 @@ crear_ventana = () => {
         }
         return true;
     });
-    f_side_infperso();
+    f_side_infperso(form, stado);
 };
 
 /********************Agrega el fomulario dentro del item Sidebar  'side_infperso' => Datos Personales*/
-f_side_infperso = () => {
-    form_infperso = mySidebar.cells("side_infperso").attachForm();
-    form_infperso.loadStruct(form_cuenta);
-    form_infperso.setSkin("material");   // ([]).forEach({});
-    form_infperso.setItemValue('u_tipo_doc', JSON.parse(localStorage.getItem('usrjson')).tipodoc);
-    form_infperso.setItemValue('u_documento', JSON.parse(localStorage.getItem('usrjson')).documento);
-    form_infperso.setItemValue('u_nombres', JSON.parse(localStorage.getItem('usrjson')).nombre);
-    form_infperso.setItemValue('u_apepat', JSON.parse(localStorage.getItem('usrjson')).apepat);
-    form_infperso.setItemValue('u_apemat', JSON.parse(localStorage.getItem('usrjson')).apemat);
-    form_infperso.setItemValue('u_fecnac', JSON.parse(localStorage.getItem('usrjson')).fecnaci);
-    form_infperso.checkItem('u_sexo', JSON.parse(localStorage.getItem('usrjson')).sexo);
-    form_infperso.setItemValue('u_mail', JSON.parse(localStorage.getItem('usrjson')).mailcorpo);
-    form_infperso.setItemValue('u_tef_c', JSON.parse(localStorage.getItem('usrjson')).cellcorpo);
-    form_infperso.setItemValue('u_mail_p', JSON.parse(localStorage.getItem('usrjson')).mailpers);
-    form_infperso.setItemValue('u_tef_p', JSON.parse(localStorage.getItem('usrjson')).cellpers);
-    st_edicion();
-    form_infperso.attachEvent('onChange', function () { /////////////cambia a MAYUSCULAS al escribir
-        form_infperso.setItemValue('u_apepat', form_infperso.getItemValue('u_apepat').toString().toUpperCase());
-        form_infperso.setItemValue('u_nombres', form_infperso.getItemValue('u_nombres').toString().toUpperCase());
-        form_infperso.setItemValue('u_apemat', form_infperso.getItemValue('u_apemat').toString().toUpperCase());
+f_side_infperso = (form, st) => {
+    form = mySidebar.cells("side_infperso").attachForm();
+    form.loadStruct(form_cuenta);
+    form.setSkin("material");   // ([]).forEach({});
+    form.setItemValue('u_tipo_doc', JSON.parse(localStorage.getItem('usrjson')).tipodoc);
+    form.setItemValue('u_documento', JSON.parse(localStorage.getItem('usrjson')).documento);
+    form.setItemValue('u_nombres', JSON.parse(localStorage.getItem('usrjson')).nombre);
+    form.setItemValue('u_apepat', JSON.parse(localStorage.getItem('usrjson')).apepat);
+    form.setItemValue('u_apemat', JSON.parse(localStorage.getItem('usrjson')).apemat);
+    form.setItemValue('u_fecnac', JSON.parse(localStorage.getItem('usrjson')).fecnaci);
+    form.checkItem('u_sexo', JSON.parse(localStorage.getItem('usrjson')).sexo);
+    form.setItemValue('u_mail', JSON.parse(localStorage.getItem('usrjson')).mailcorpo);
+    form.setItemValue('u_tef_c', JSON.parse(localStorage.getItem('usrjson')).cellcorpo);
+    form.setItemValue('u_mail_p', JSON.parse(localStorage.getItem('usrjson')).mailpers);
+    form.setItemValue('u_tef_p', JSON.parse(localStorage.getItem('usrjson')).cellpers);
+    st_edicion(form,st);
+    if (st == 0) {
+        console.log('S');
+        form.hideItem('b_editc');
+        form.showItem('b_salirc');
+        form.enableItem('b_savec');
+        // form.disableItem('u_tipo_doc');
+        (['u_fecnac', 'u_tef_c', 'u_tef_p', 'u_mail', 'u_mail_p', 'u_sexo']).forEach((elem) => {
+            if (elem === 'u_sexo') {
+                form.enableItem(elem, 'M');
+                form.enableItem(elem, 'F');
+            } else {
+                form.enableItem(elem);
+            }
+        });
+    }
+    form.attachEvent('onChange', function () { /////////////cambia a MAYUSCULAS al escribir
+        form.setItemValue('u_apepat', form.getItemValue('u_apepat').toString().toUpperCase());
+        form.setItemValue('u_nombres', form.getItemValue('u_nombres').toString().toUpperCase());
+        form.setItemValue('u_apemat', form.getItemValue('u_apemat').toString().toUpperCase());
     });
     //  form_infperso.attachEvent("onInputChange", function (name, value, form) {
     //      if (value.indexOf("@") !== -1)  //devuelve -1 cuando no encuentra el valor buscado en un string
     //         form_infperso.setItemValue(name, form_infperso.getItemValue(name) + 'corporacionlife.com.pe');
     //  });
-    form_infperso.attachEvent("onButtonClick", onclicFormInfo);
+    form.attachEvent("onInputChange", function (name, value, form) {
+        if (value.length === 8 && name === 'u_documento' && form.getItemValue('u_tipo_doc') === '1') {
+            Swal.fire({title: 'Validando DNI ingresado!', allowEscapeKey: false, html: '<h4>Permitanos completar sus datos, Un momento porfavor</h4>', timer: 0, allowOutsideClick: false, onBeforeOpen: () => {
+                    Swal.showLoading();
+                }});
+            var p = {dni: form.getItemValue('u_documento')};
+            $.post(BASE_URL + "home/buscadni", p, function (res) {
+                var value = res.value.split('|');
+                form.setItemValue('u_apepat', value[0]);
+                form.setItemValue('u_apemat', value[1]);
+                form.setItemValue('u_nombres', value[2]);
+                Swal.close();
+            }, "json");
+
+        }
+    });
+    form.attachEvent("onButtonClick", (name) => {
+        onclicFormInfo(name, form, st)
+    });
 
 };
 
 /********************Agrega el fomulario dentro del item Sidebar  'side_segu' => Seguridad */
-f_side_segu = () => {
-    form_seguridad = mySidebar.cells("side_segu").attachForm();
-    form_seguridad.loadStruct(form_segu);
-    form_seguridad.setSkin("material");
-    form_seguridad.hideItem('u_repit_pwd');
-    form_seguridad.setItemValue('u_alias', JSON.parse(localStorage.getItem('usrjson')).alias);
-    form_seguridad.setItemValue('u_mail_recu', JSON.parse(localStorage.getItem('usrjson')).mailcorpo);
+f_side_segu = (form, st) => {
+    form = mySidebar.cells("side_segu").attachForm();
+    form.loadStruct(form_segu);
+    form.setSkin("material");
+    form.hideItem('u_repit_pwd');
+    form.setItemValue('u_alias', JSON.parse(localStorage.getItem('usrjson')).alias);
+    form.setItemValue('u_mail_recu', JSON.parse(localStorage.getItem('usrjson')).mailcorpo);
 
-    form_seguridad.attachEvent("onButtonClick", onclicFormInfo);
+    form.attachEvent("onButtonClick", (name) => {
+        onclicFormInfo(name, form)
+    });
 };
 
 /********************Agrega el fomulario dentro del item Sidebar  'side_person' => Personalizacion */
-f_side_personaliza = () => {
-
-    var form_personal = mySidebar.cells("side_person").attachForm();
-    form_personal.loadStruct(form_pesonaliza);
-    form_personal.setSkin("material");
+f_side_personaliza = (form, st) => {
+    form = mySidebar.cells("side_person").attachForm();
+    form.loadStruct(form_pesonaliza);
+    form.setSkin("material");
     $('#photocharge').attr('src', folder_perfil);
     $('#fondocharge').attr('src', folder_fondo);
-    form_personal.attachEvent("onButtonClick", onclicFormInfo);
-
     var json = [{'id_form': '#eventFormperfil', datos: {'input_file': '#fphoto', 'div_content': 'file_name', 'ruta': JSON.parse(localStorage.getItem('usrjson')).codigo + '/img_perfil/' + JSON.parse(localStorage.getItem('usrjson')).codigo + '_profile.png', 'img_id': '#photo_img_'}},
         {'id_form': '#eventFormfondo', datos: {'input_file': '#ffondo', 'div_content': 'file_name', 'ruta': JSON.parse(localStorage.getItem('usrjson')).codigo + '/img_fondo/' + JSON.parse(localStorage.getItem('usrjson')).codigo + '_fondo.png', 'img_id': '#img_fondo_'}}];
     (json).forEach((elem) => {
@@ -141,35 +186,38 @@ f_side_personaliza = () => {
     });
 };
 /********************* VERIFICA ST EDICION TOTAL ************/
-st_edicion = () => { // console.log(JSON.parse(localStorage.getItem('usrjson')).st_editotal);
+st_edicion = (form,st) => { // console.log(JSON.parse(localStorage.getItem('usrjson')).st_editotal);
     if (JSON.parse(localStorage.getItem('usrjson')).st_editotal === 'N') {
         (['u_nombres', 'u_apepat', 'u_tipo_doc', 'u_documento', 'u_apemat']).forEach((elem) => {
-            form_infperso.disableItem(elem);
+            form.disableItem(elem);
         });
     } else {
         (['u_nombres', 'u_apepat', 'u_tipo_doc', 'u_documento', 'u_apemat']).forEach((elem) => {
-            form_infperso.enableItem(elem);
+            form.enableItem(elem);
         });
     }
 };
 /************Funcion onclic Formulario Info personal ************************************/
-onclicFormInfo = async (name) => {
+onclicFormInfo = async (name, form, st) => {
     switch (name) {
+        case 'b_salirc':
+            logout();
+            break;
         case 'fsalirw':
             myWinsPerfil.window('w_cuenta').close();
             break;
         case 'b_edits' :
-            form_seguridad.enableItem('u_passwd');
-            form_seguridad.showItem('u_repit_pwd');
-            form_seguridad.enableItem('u_repit_pwd');
+            form.enableItem('u_passwd');
+            form.showItem('u_repit_pwd');
+            form.enableItem('u_repit_pwd');
             break;
         case 'b_saves':
-            if (form_seguridad.getItemValue('u_passwd') === form_seguridad.getItemValue('u_repit_pwd')) {
+            if (form.getItemValue('u_passwd') === form.getItemValue('u_repit_pwd')) {
                 Swal.fire({title: 'Guardando contraseña!', html: '<h4>Un momento porfavor</h4>', timer: 0, allowOutsideClick: false, onBeforeOpen: () => {
                         Swal.showLoading();
                     }});
                 let promise = new Promise((resolve, rejected) => {
-                    var p = {clave: form_seguridad.getItemValue('u_passwd'), emp: usrJson.empresa, user: usrJson.alias, mail: usrJson.mailcorpo};
+                    var p = {clave: form.getItemValue('u_passwd'), emp: usrJson.empresa, user: usrJson.alias, mail: usrJson.mailcorpo};
                     $.post(BASE_URL + "auth/savepassword", p, function (res) {
                         return   resolve(res);
                     }, "json");
@@ -189,17 +237,18 @@ onclicFormInfo = async (name) => {
                 Swal.fire({type: 'error', title: 'Incorrecto...', text: 'Porfavor, las contraseñas deben ser iguales...'});
             break;
         case 'b_editc':
-            st_edicion();
+            st_edicion(form,st);
             (['u_fecnac', 'u_sexo', 'u_mail', 'u_mail_p', 'u_tef_c', 'u_tef_p', 'b_savec']).forEach((elem) => {
                 if (elem === 'u_sexo')
                     (['F', 'M']).forEach((val) => {
-                        form_infperso.enableItem(elem, val);
+                        form.enableItem(elem, val);
                     });
-                form_infperso.enableItem(elem);
+                form.enableItem(elem);
             });
             break;
         case 'b_savec':
-            save_infoperso();
+            save_infoperso(form, st);
+
             break;
         default:
             null;
@@ -207,25 +256,40 @@ onclicFormInfo = async (name) => {
     }
 };
 /******************** Guarda datos  ****************/
-save_infoperso = () => {
+save_infoperso = (form, st) => {
+    Swal.fire({title: 'Guardando sus datos!', allowEscapeKey: false, html: '<h4>Un momento porfavor</h4>', timer: 0, allowOutsideClick: false, onBeforeOpen: () => {
+            Swal.showLoading();
+        }});
     var obj = {};
     obj['empresa'] = JSON.parse(localStorage.getItem('usrjson')).empresa, obj['codigo'] = JSON.parse(localStorage.getItem('usrjson')).codigo, obj['copersona'] = JSON.parse(localStorage.getItem('usrjson')).copersona;
     (['u_tipo_doc', 'u_documento', 'u_nombres', 'u_apepat', 'u_apemat', 'u_fecnac', 'u_sexo', 'u_mail', 'u_mail_p', 'u_tef_c', 'u_tef_p']).forEach((elm) => {
         if (elm === 'u_fecnac')
-            obj[elm] = form_infperso.getCalendar(elm).getDate(true);
+            obj[elm] = form.getCalendar(elm).getDate(true);
         else
-            obj[elm] = form_infperso.getItemValue(elm);
+            obj[elm] = form.getItemValue(elm);
     });
     $.post(BASE_URL + "home/update_datos", obj, function (res) {
         if (res.state !== 'error') {
-            usernvo = {"copersona": JSON.parse(localStorage.getItem('usrjson')).copersona, "alias": JSON.parse(localStorage.getItem('usrjson')).alias, "empresa": JSON.parse(localStorage.getItem('usrjson')).empresa, "codigo": JSON.parse(localStorage.getItem('usrjson')).codigo, "tipodoc": JSON.parse(localStorage.getItem('usrjson')).tipodoc,
-                "nombre": form_infperso.getItemValue('u_nombres'), "sexo": form_infperso.getItemValue('u_sexo'), "fecnaci": form_infperso.getCalendar('u_fecnac').getDate(true), "stadmin": JSON.parse(localStorage.getItem('usrjson')).stadmin,
-                "apemat": form_infperso.getItemValue('u_apemat'), "apepat": form_infperso.getItemValue('u_apepat'), "ccosto": JSON.parse(localStorage.getItem('usrjson')).ccosto, "stwap": JSON.parse(localStorage.getItem('usrjson')).stwap, "fregistro": JSON.parse(localStorage.getItem('usrjson')).fregistro,
-                "documento": JSON.parse(localStorage.getItem('usrjson')).documento, "mailpers": form_infperso.getItemValue('u_mail_p'), "cellpers": form_infperso.getItemValue('u_tef_p'), "mailcorpo": form_infperso.getItemValue('u_mail'), "cellcorpo": form_infperso.getItemValue('u_tef_c'),
+            usernvo = {"copersona": res.coperson, "alias": JSON.parse(localStorage.getItem('usrjson')).alias, "empresa": JSON.parse(localStorage.getItem('usrjson')).empresa, "codigo": JSON.parse(localStorage.getItem('usrjson')).codigo, "tipodoc": JSON.parse(localStorage.getItem('usrjson')).tipodoc,
+                "nombre": form.getItemValue('u_nombres'), "sexo": form.getItemValue('u_sexo'), "fecnaci": form.getCalendar('u_fecnac').getDate(true), "stadmin": JSON.parse(localStorage.getItem('usrjson')).stadmin,
+                "apemat": form.getItemValue('u_apemat'), "apepat": form.getItemValue('u_apepat'), "ccosto": JSON.parse(localStorage.getItem('usrjson')).ccosto, "stwap": JSON.parse(localStorage.getItem('usrjson')).stwap, "fregistro": JSON.parse(localStorage.getItem('usrjson')).fregistro,
+                "documento": form.getItemValue('u_documento'), "mailpers": form.getItemValue('u_mail_p'), "cellpers": form.getItemValue('u_tef_p'), "mailcorpo": form.getItemValue('u_mail'), "cellcorpo": form.getItemValue('u_tef_c'),
                 "st_editotal": 'N'}
-
             localStorage.setItem('usrjson', JSON.stringify(usernvo));
-            Swal.fire('Bien!', res.message, 'success');
+            usrJson = JSON.parse(localStorage.getItem('usrjson')) || '';
+            console.log('post');
+            console.log(usrJson);
+            Swal.close();
+            Swal.fire('Bien!', res.message, 'success').then((result) => {
+                if (result.value) {
+                    if (st === 0) {
+
+                        location.href = '/';
+                    }
+                }
+            });
+
+
         } else
             Swal.fire({type: 'error', title: 'Algo salió mal...', text: 'No se pudo guardar sus Datos :' + res.message, footer: '<a href="#">Comuníquese con el area de Sistemas</a>'});
     }, "json");
