@@ -141,9 +141,38 @@ const structs = {
                 ] }
             ] }
         ] }
+    ],
+    formDepositoPlanilla: [
+        { type: 'settings', position: 'label-left', offsetLeft: 4, offsetTop: 4 },
+        { type: 'block', blockOffset: 0, list: [
+            { type: 'block', blockOffset: 0, list: [
+                { type: 'settings', labelWidth: 75, inputWidth: 80, offsetTop: 12 },
+                { type: 'hidden', name: 'vendedor' },
+                { type: 'hidden', name: 'fname' },
+                { type: 'combo', label: 'Planilla', name: 'planilla', inputWidth: 120, connector: '' },
+                { type: 'combo', label: 'Banco', name: 'banco', inputWidth: 180, connector: '/api/BA010305/combo-bancos' },
+                { type: 'combo', label: 'Cuenta', name: 'cuenta', inputWidth: 160 },
+                { type: 'calendar', label: 'Fecha', name: 'fecha', dateFormat: '%Y-%m-%d' },
+                { type: 'input', label: 'Nro.Operación', name: 'operacion' },
+                { type: 'input', label: '<b style="color:#009688;">Importe</b>', name: 'importe', inputWidth: 100 },
+                { type: 'button', name: 'aceptar', value: '<b>Registrar depósito</b>', offsetLeft: 24, offsetTop: 24 },
+                { type: 'button', name: 'cancelar', value: 'Cancelar', offsetLeft: 24, offsetTop: 2 }
+                /*{ type: 'block', offsetLeft: 0, offsetTop: 24, inputWidth: 20, offsetLeft: 16, list: [
+                    { type: 'button', name: 'aceptar', value: '<b>Registrar depósito</b>', offsetLeft: 6 },
+                    { type: 'newcolumn' },
+                    { type: 'button', name: 'cancelar', value: 'Cancelar', offsetLeft: 8 },
+                ] }*/
+            ] },
+            { type: 'newcolumn' },
+            { type: 'block', blockOffset: 16, list: [
+                { type: 'settings', labelWidth: 50, inputWidth: 120, offsetTop: 12 },
+                { type: 'file', label: 'Voucher', name: 'voucher' },
+                { type: 'container', label: '&nbsp;', name: 'preview', inputWidth: 200, offsetTop: 12 }
+            ] }
+        ] }
     ]
 };
-var winListaPlanillasDetalle, winCrearPlanilla, formCrearPlanilla, formPagoClientePagar;
+var winListaPlanillasDetalle, winCrearPlanilla, formCrearPlanilla, formPagoClientePagar, winDeposito, formDepositoPlanilla;
 
 //formulario
 formFiltroOnFocus = async (id) => {
@@ -172,6 +201,8 @@ formFiltroOnButtonClick = (name) => {
             ribbonPlanillas.disable('cerrar');
             ribbonPlanillas.disable('conciliar');
             ribbonPlanillas.disable('recibo');
+            ribbonPlanillas.disable('pago');
+            //ribbonPlanillas.disable('deposito');
             mainLayout.cells('a').collapse();
             const periodo = formFiltro.getItemValue('periodo');
             const cobrador = formFiltro.getItemValue('codigo');
@@ -205,6 +236,80 @@ CargarPlanillasCobranza = (periodo, cobrador) => {
         gridPlanillas.setNumberFormat('0,000.00',12);
         gridPlanillas.init();
     gridPlanillas.load(BASE_URL + 'BA010305/lista-planillas/' + usrJson.empresa + '/' + cobrador + '/' + periodo, gridPlanillasOnSuccess);
+    //
+    layoutDepositos.cells('a').detachObject();
+    gridDepositos = layoutDepositos.cells('a').attachGrid();
+        gridDepositos.setHeader('Comprobante,Planilla,Banco,Importe depósito,Depósito total planilla,Importe planilla,Cuenta,,Fecha depósito,Transacción bancaria,');
+        gridDepositos.setInitWidths('100,100,240,120,120,120,150,30,90,100,30');
+        gridDepositos.attachHeader('#text_filter,#text_filter,#select_filter,#numeric_filter,#numeric_filter,#numeric_filter,#select_filter,#rspan,#text_filter,#text_filter,#rspan');
+        gridDepositos.setColTypes('rotxt,rotxt,rotxt,ron,ron,ron,rotxt,img,rotxt,rotxt,img');
+        gridDepositos.setColAlign('right,left,left,right,right,right,left,center,left,left,left');
+        gridDepositos.setIconsPath('/assets/images/icons/grid/');
+        gridDepositos.setNumberFormat('0,000.00',3);
+        gridDepositos.setNumberFormat('0,000.00',4);
+        gridDepositos.setNumberFormat('0,000.00',5);
+        gridDepositos.init();
+    gridDepositos.load('/api/BA010305/lista-depositos/' + cobrador + '/' + usrJson.empresa + '/' + periodo, gridDepositosOnSuccess);
+    //carga el grafico de periodos
+    const params = {
+        vendedor: cobrador,
+        empresa: usrJson.empresa,
+        periodo: periodo
+    };
+    $.post('/api/BA010305/grafico-depositos', params, (response) => {
+        if(response.state == 'success') {
+            $('#ch-depositos').highcharts({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: 1,//null,
+                    plotShadow: false
+                },
+                title: {
+                    text: 'Depósitos'
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>S/ {point.y:.2f}%</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: 'Importe depositado',
+                    data: [
+                        ['Depositado', parseFloat(response.data.deposito)],
+                        ['Faltante', parseFloat(response.data.nodepo)]
+                    ]
+                }]
+            });
+        }
+        else alert(response.message);
+    }, 'json');
+}
+gridDepositosOnSuccess = () => {
+    gridDepositos.attachEvent('onRowSelect', (rowId, colId) => {
+        if(colId == 10) {
+            winImagenVoucher = mainLayout.dhxWins.createWindow('winImagenVoucher',0,0,480,320);
+                winImagenVoucher.setText('Mostrando imagen del voucher');
+                winImagenVoucher.setModal(true);
+                winImagenVoucher.keepInViewport(true);
+                winImagenVoucher.center();
+            const cuenta = gridDepositos.cells(rowId,6).getValue();
+            const operacion = gridDepositos.cells(rowId,0).getValue();
+            const vFecha = gridDepositos.cells(rowId,8).getValue().split('-');
+            winImagenVoucher.attachURL('/files/img-voucher/' + cuenta + '/' + vFecha[0] + vFecha[1] + '/' + operacion);
+        }
+    });
 }
 gridPlanillasOnSuccess = () => {
     primeraCargaLista = true;
@@ -231,6 +336,9 @@ gridPlanillasOnSuccess = () => {
 gridPlanillasOnRowSelect = (rowId, colId) => {
     const co_planilla = gridPlanillas.cells(rowId,1).getValue();
     const vigencia = gridPlanillas.cells(rowId,20).getValue();
+    const liquidado = gridPlanillas.cells(rowId,16).getValue();
+    const recibo = gridPlanillas.cells(rowId,17).getValue();
+    const importe = gridPlanillas.cells(rowId,12).getValue();
     switch(colId) {
         case 0:
             winListaPlanillasDetalle = mainLayout.dhxWins.createWindow('winGridBusqueda',0,0,1200,600);
@@ -246,10 +354,18 @@ gridPlanillasOnRowSelect = (rowId, colId) => {
     }
     if(vigencia == 'Vigente') {
         ribbonPlanillas.enable('cerrar');
+        ribbonPlanillas.enable('pago');
     }
     else {
         ribbonPlanillas.disable('cerrar');
+        ribbonPlanillas.disable('pago');
+    }/*
+    if(liquidado == 0 && recibo == 0 && (importe > 0 || vigencia == 'Vigente')) {
+        ribbonPlanillas.enable('deposito');
     }
+    else {
+        ribbonPlanillas.disable('deposito');
+    }*/
 }
 
 //layout - detalle de planilla
@@ -270,11 +386,13 @@ ConfigurarLayoutDetallePlanilla = (co_planilla) => {
         tabbarWinListaPlanillasDetalle.addTab('valores','Cheques/Letras');
         tabbarWinListaPlanillasDetalle.addTab('notas','Notas de crédito');
     gridWinListaPlanillasPagosEfectivo = tabbarWinListaPlanillasDetalle.tabs('efectivo').attachGrid();
-        gridWinListaPlanillasPagosEfectivo.setHeader('Documento,Moneda,Importe cobranza,Tipo de cobro,Letra/cheque,Recibo entregado,Documento pago,Fecha vencimiento');
-        gridWinListaPlanillasPagosEfectivo.setInitWidthsP('15,8,12,15,10,10,20,10');
-        gridWinListaPlanillasPagosEfectivo.setColTypes('rotxt,rotxt,ron,rotxt,ch,ch,rotxt,rotxt');
-        gridWinListaPlanillasPagosEfectivo.setColAlign('left,left,right,left,center,center,left,left');
+        gridWinListaPlanillasPagosEfectivo.setHeader('Documento,Moneda,Importe cobranza,Tipo de cobro,Letra/cheque,Recibo entregado,Documento pago,Fecha vencimiento,');
+        gridWinListaPlanillasPagosEfectivo.setInitWidthsP('15,8,12,15,10,10,14,11,0');
+        gridWinListaPlanillasPagosEfectivo.setColTypes('rotxt,rotxt,ron,rotxt,ch,ch,rotxt,rotxt,ron');
+        gridWinListaPlanillasPagosEfectivo.setColAlign('left,left,right,left,center,center,left,left,left');
         gridWinListaPlanillasPagosEfectivo.setNumberFormat('0,000.00',2);
+        gridWinListaPlanillasPagosEfectivo.setColumnHidden(8);
+        gridWinListaPlanillasPagosEfectivo.setIconsPath('/assets/images/icons/');
         gridWinListaPlanillasPagosEfectivo.init();
     gridWinListaPlanillasValores = tabbarWinListaPlanillasDetalle.tabs('valores').attachGrid();
         gridWinListaPlanillasValores.setHeader('Cheque,Fecha,Cliente,Importe,Saldo,Banco,Moneda,Documento');
@@ -312,10 +430,44 @@ CargarPagosEfectivo = (co_planilla) => {
 }
 PagosEfectivoSuccess = () => {
     gridWinListaPlanillasPagosEfectivo.attachEvent('onEditCell', PagosEfectivoOnEditCell);
+    gridWinListaPlanillasPagosEfectivo.attachEvent('onRowSelect', PagosEfectivoOnRowSelect);
     tabbarWinListaPlanillasDetalle.tabs('efectivo').progressOff();
+    gridWinListaPlanillasPagosEfectivo.insertColumn(8,'','img',5);
+    const nRows = gridWinListaPlanillasPagosEfectivo.getRowsNum();
+    for(var i = 0; i < nRows; i++) {
+        gridWinListaPlanillasPagosEfectivo.cells2(i,8).setValue('ic-close.svg^Eliminar pago');
+    }
 }
 PagosEfectivoOnEditCell = (stage,rId,cInd,nValue,oValue) => {
     return false;
+}
+PagosEfectivoOnRowSelect = (rowId,colId) => {
+    if(colId == 8) {
+        dhtmlx.confirm({
+            title: 'Eliminar pago',
+            type: 'confirm-error',
+            text: '¿Realmente desea eliminar este pago? Recuerde que no se puede deshacer esta operación',
+            callback: (result) => {
+                if(result) {
+                    const params = {
+                        vendedor: formFiltro.getItemValue('codigo'),
+                        empresa: usrJson.empresa,
+                        documento: gridWinListaPlanillasPagosEfectivo.cells(rowId,0).getValue(),
+                        tpcobro: gridWinListaPlanillasPagosEfectivo.cells(rowId,9).getValue()
+                    };
+                    $.post('/api/BA010305/eliminar-pago', params, (response) => {
+                        if(response.state == 'success') {
+                            gridWinListaPlanillasPagosEfectivo.deleteRow(rowId);
+                            dhtmlx.alert('¡Pago eliminado!');
+                            const iPeriodo = formFiltro.getItemValue('periodo');
+                            CargarPlanillasCobranza(iPeriodo, params.vendedor);
+                        }
+                    }, 'json');
+                }
+            }
+        });
+console.log(params);
+    }
 }
 
 //grid pagos letras/cheques
@@ -370,7 +522,8 @@ gridWinListaPlanillasDepositosOnRowSelect = (rowId,colId) => {
             const cuenta = gridWinListaPlanillasDepositos.cells(rowId,3).getValue();
             const operacion = gridWinListaPlanillasDepositos.cells(rowId,4).getValue();
             const periodo = gridWinListaPlanillasDepositos.cells(rowId,10).getValue();
-            winImagenVoucher.attachURL('/files/img-voucher/' + cuenta + '/' + periodo + '/' + operacion);
+            const vFecha = gridWinListaPlanillasDepositos.cells(rowId,6).getValue().split('-');
+            winImagenVoucher.attachURL('/files/img-voucher/' + cuenta + '/' + vFecha[0] + vFecha[1] + '/' + operacion);
             break;
         case 7:
             winExtractoBancario = mainLayout.dhxWins.createWindow('winExtractoBancario',0,0,480,320);
@@ -462,10 +615,90 @@ ribbonPlanillasOnClick = async (id) => {
                 gridPagoDocumentos.init();
                 //gridPagoDocumentos.insertColumn(0,'','img',5);
             break;
+        case 'deposito':
+            winDeposito = mainLayout.dhxWins.createWindow('winPago',0,0,720,540);
+                winDeposito.setText('Ingresar depósito');
+                winDeposito.setModal(true);
+                winDeposito.keepInViewport(true);
+                winDeposito.center();
+            formDepositoPlanilla = winDeposito.attachForm();
+                structs.formDepositoPlanilla[1].list[0].list[3].connector = '/api/BA010305/combo-planillas/' + formFiltro.getItemValue('codigo') + '/' + usrJson.empresa;
+                formDepositoPlanilla.loadStruct(structs.formDepositoPlanilla);
+                formDepositoPlanilla.getInput('voucher').setAttribute('accept', 'image/*');
+                formDepositoPlanilla.getContainer('preview').innerHTML = '<img id="img-preview" style="width:100%;">';
+                formDepositoPlanilla.attachEvent('onChange', formDepositoPlanillaOnChange);
+                formDepositoPlanilla.attachEvent('onButtonClick', formDepositoPlanillaOnButtonClick);
+            break;
         default: break;
     }
 }
-
+formDepositoPlanillaOnChange = (name, value) => {
+    switch(name) {
+        case 'banco':
+            const params = {
+                banco: value,
+                empresa: usrJson.empresa,
+                moneda: 1
+            };
+            $.post('/api/BA010305/combo-cuentas', params, (response) => {
+                if(response.state == 'success') {
+                    formDepositoPlanilla.getCombo('cuenta').setComboText('');
+                    formDepositoPlanilla.getCombo('cuenta').setComboValue('');
+                    formDepositoPlanilla.reloadOptions('cuenta', response.data);
+                }
+                else alert(response.message);
+            }, 'json');
+            break;
+        case 'voucher':
+            const file = formDepositoPlanilla.getInput('voucher').files[0];
+            formDepositoPlanilla.setItemValue('fname', file.name);
+            //tienes q redimensionar la imagen para q no pese mucho alv
+            getBase64(file).then(
+                data => $('#img-preview').attr('src', data)
+            );
+            break;
+        default: break;
+    }
+}
+getBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+formDepositoPlanillaOnButtonClick = (name) => {
+    switch(name) {
+        case 'aceptar':
+            const params = {
+                vendedor: formFiltro.getItemValue('codigo'),
+                empresa: usrJson.empresa,
+                planilla: formDepositoPlanilla.getItemValue('planilla'),
+                banco: formDepositoPlanilla.getItemValue('banco'),
+                cuenta: formDepositoPlanilla.getItemValue('cuenta'),
+                fecha: formDepositoPlanilla.getItemValue('fecha', true),
+                operacion: formDepositoPlanilla.getItemValue('operacion'),
+                importe: formDepositoPlanilla.getItemValue('importe'),
+                base64: $('#img-preview').attr('src'),
+                name: formDepositoPlanilla.getItemValue('fname')
+            };
+            $.post('/api/BA010305/guarda-deposito', params, (response) => {
+                if(response.state == 'success') {
+                    dhtmlx.alert('Depósito registrado');
+                    winDeposito.close();
+                    const iPeriodo = formFiltro.getItemValue('periodo');
+                    CargarPlanillasCobranza(iPeriodo, params.vendedor);
+                }
+                else alert(response.message);
+            }, 'json');
+            break;
+        case 'cancelar':
+            winDeposito.close();
+            break;
+        default: break;
+    }
+}
 //
 formPagoClienteOnFocus = async (id) => {
     if(id == 'cliente') {
@@ -516,7 +749,7 @@ MostrarFormularioPago = (tpago, showAlert) => {
                 type: 'confirm-error',
                 text: 'El documento <b><i>' + documento + '</i></b> ya se encuentra en el banco'
             });
-            //return false;
+//            return false;
         }
         if(!tpago) {
             dhtmlx.alert({
@@ -577,6 +810,7 @@ formPagoClientePagarOnClick = (id) => {
             const tpago = formPagoClientePagar.getItemValue('tpcobro');
             const params = {
                 vendedor: formFiltro.getItemValue('codigo'),
+                empresa: usrJson.empresa,
                 tipo: tpago,
                 documento: formPagoClientePagar.getItemValue('documento'),
                 importe: formPagoClientePagar.getItemValue('importe'),
@@ -585,7 +819,15 @@ formPagoClientePagarOnClick = (id) => {
                 nrodoc: formPagoClientePagar.getItemValue('nrodoc'),
                 regfecha: formPagoClientePagar.getItemValue('fecha',true)
             };
-            console.log(params);
+            $.post('/api/BA010305/registra-pago-planilla', params, (response) => {
+                if(response.state == 'success') {
+                    const iPeriodo = formFiltro.getItemValue('periodo');
+                    const recaudador = formFiltro.getItemValue('codigo');
+                    winPago.close();
+                    CargarPlanillasCobranza(iPeriodo, recaudador);
+                    dhtmlx.alert('Pago registrado');
+                }
+            }, 'json');
             break;
         case 'cancelar':
             winPago.close();

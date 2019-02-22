@@ -15,5 +15,12 @@ router.post('/cerrar-planilla', ba010305Controller.CerrarPlanillaCobranza);
 router.get('/combo-tipos-cobro', ba010305Controller.ComboTiposCobro);
 router.get('/lista-documentos-cliente/:empresa/:ruc', ba010305Controller.ListaDocumentosPagoCliente);
 router.get('/combo-bancos', ba010305Controller.ComboBancos);
+router.post('/registra-pago-planilla', ba010305Controller.RegistraPagoPlanilla);
+router.get('/combo-planillas/:vendedor/:empresa', ba010305Controller.ComboPlanillas);
+router.post('/combo-cuentas', ba010305Controller.ComboCuentasBancarias);
+router.post('/guarda-deposito', ba010305Controller.GuardarDeposito);
+router.post('/eliminar-pago', ba010305Controller.EliminarPago);
+router.get('/lista-depositos/:vendedor/:empresa/:periodo', ba010305Controller.ListaDepositos);
+router.post('/grafico-depositos', ba010305Controller.GraficoDepositos);
 
 module.exports = router;
