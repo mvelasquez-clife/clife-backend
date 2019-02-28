@@ -16,7 +16,7 @@
         <script type="text/javascript" src="<%=path%>script.js"></script>
         <script src="https://code.highcharts.com/highcharts.src.js"></script>
         <script type="text/javascript">
-            var mainLayout, formFiltro, mainTabbar, gridPlanillas, ribbonPlanillas, ribbonDepositos, gridDepositos, layoutDepositos;
+            var mainLayout, formFiltro, mainTabbar, gridPlanillas, ribbonPlanillas, ribbonDepositos, gridDepositos, layoutDepositos, winConciliacion, layoutConciliacion, gridConciliacionTransacciones, gridConciliacionDepositos, formConciliacion, gridConciliacion, gridRecibosCaja;
             mainLayout = new dhtmlXLayoutObject(document.body, '3W');
                 mainLayout.cells('a').setWidth(240);
                 mainLayout.cells('a').setText('Búsqueda de planillas');
@@ -31,6 +31,7 @@
             mainTabbar = mainLayout.cells('b').attachTabbar();
                 mainTabbar.addTab('planillas','Planillas encontradas',null,null,true);
                 mainTabbar.addTab('depositos','Depósitos registrados');
+                mainTabbar.addTab('recibos','Recibos de caja');
             layoutDepositos = mainTabbar.tabs('depositos').attachLayout('2E');
                 layoutDepositos.cells('a').hideHeader();
                 layoutDepositos.cells('b').setText('Gráficos');

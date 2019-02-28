@@ -86,7 +86,7 @@ IniciarFormularioSeguridad = (windowId, container) => {
                                         alert(response.message);
                                     }
                                 }, 'json').always(() => {
-                                    winFormularioSeguridad.progressOff();
+                                    if(winFormularioSeguridad) winFormularioSeguridad.progressOff();
                                 });
                                 break;
                             case 'fsCancelar':

@@ -3,8 +3,8 @@ const structs = {
     formFiltro: [
         { type: 'settings', position: 'label-top' },
         { type: 'combo',offsetLeft: 8,name: 'periodo', width: '200', label: 'Periodo :', connector: BASE_URL + 'BA010305/combo-periodos/' + usrJson.empresa },
-        { type: 'input', offsetLeft: 8, name: 'vendedor', width: '200', label: 'Nombre Vendedor:', value: 'Todos' },
-        { type: 'hidden', name: 'codigo', value: '0' },
+        { type: 'input', offsetLeft: 8, name: 'vendedor', width: '200', label: 'Nombre Vendedor:', value: (usrJson.stadmin == 'S' ? 'Todos' : (usrJson.nombre + ' ' + usrJson.apepat + ' ' + usrJson.apemat)) },
+        { type: 'hidden', name: 'codigo', value: (usrJson.stadmin == 'S' ? '0' : usrJson.codigo) },
         { type: 'hidden', name: 'alias', value: usrJson.alias },
         { type: 'button', width: 120, offsetLeft: 6, className: 'bt-big', value: '<img src="/assets/images/icons/anim-search.svg"><span>Buscar</span>' ,name: 'buscar' }
     ],
@@ -170,19 +170,36 @@ const structs = {
                 { type: 'container', label: '&nbsp;', name: 'preview', inputWidth: 200, offsetTop: 12 }
             ] }
         ] }
+    ],
+    formConciliacion: [
+        { type: 'settings', position: 'label-left', labelWidth: 80, offsetLeft: 10 },
+        { type: 'input',offsetLeft: 8,name: 'planilla', inputWidth: 200, label: 'Planilla:', offsetTop: 10 },
+        { type: 'input', offsetLeft: 8, name: 'fecha', inputWidth: 80, label: 'Fecha: ', value: new Date().toISOString().split('T')[0] },
+        { type: 'container', label: 'Documentos', name: 'conciliaciones', inputWidth: 360, inputHeight: 440 },
+        { type: 'button', width: 120, offsetLeft: 90, className: 'bt-big', value: '<b>Conciliar</b>', name: 'conciliar', offsetTop: 15 }
+    ],
+    formReciboPlanilla: [
+        { type: 'settings', position: 'label-left', labelWidth: 80, offsetLeft: 10 },
+        { type: 'combo', offsetLeft: 8,name: 'serie', inputWidth: 120, label: 'Serie:', offsetTop: 10, connector: '/api/BA010305/combo-series/' + usrJson.empresa },
+        { type: 'input', offsetLeft: 8,name: 'concepto', inputWidth: 240, label: 'Concepto:', offsetTop: 10 },
+        { type: 'input', offsetLeft: 8,name: 'codigo', inputWidth: 100, label: 'Recaudador:', offsetTop: 10 },
+        { type: 'input', offsetLeft: 8,name: 'recaudador', inputWidth: 260, label: '&nbsp;', offsetTop: 10 },
+        { type: 'button', width: 144, offsetLeft: 90, className: 'bt-big', value: '<b>Generar recibo</b>', name: 'generar', offsetTop: 15 }
     ]
 };
-var winListaPlanillasDetalle, winCrearPlanilla, formCrearPlanilla, formPagoClientePagar, winDeposito, formDepositoPlanilla;
+var winListaPlanillasDetalle, winCrearPlanilla, formCrearPlanilla, formPagoClientePagar, winDeposito, formDepositoPlanilla, winRecibo, formRecibo;
 
 //formulario
 formFiltroOnFocus = async (id) => {
-    if(id == 'vendedor') {
-        var output = await IniciarGridBusqueda(2, false, mainLayout);
-        if(output) {
-            const recaudador = output.seleccion[0];
-            formFiltro.setItemValue('codigo', recaudador.codigo);
-            formFiltro.setItemValue('vendedor', recaudador.nombre);
-            formFiltro.setItemValue('alias', recaudador.alias);
+    if(usrJson.stadmin == 'S') {
+        if(id == 'vendedor') {
+            var output = await IniciarGridBusqueda(2, false, mainLayout);
+            if(output) {
+                const recaudador = output.seleccion[0];
+                formFiltro.setItemValue('codigo', recaudador.codigo);
+                formFiltro.setItemValue('vendedor', recaudador.nombre);
+                formFiltro.setItemValue('alias', recaudador.alias);
+            }
         }
     }
 }
@@ -196,6 +213,13 @@ formFiltroOnButtonClick = (name) => {
                 ribbonPlanillas = mainTabbar.tabs('planillas').attachRibbon();
                     ribbonPlanillas.loadStruct(structs.ribbonPlanillas);
                     ribbonPlanillas.attachEvent('onClick', ribbonPlanillasOnClick);
+                if(usrJson.stadmin != 'S') {
+                    ribbonPlanillas.hide('graficos');
+                    ribbonPlanillas.hide('seguridad');
+                    ribbonPlanillas.hide('abrir');
+                    ribbonPlanillas.hide('conciliar');
+                    ribbonPlanillas.hide('recibo');
+                }
             }
             ribbonPlanillas.disable('abrir');
             ribbonPlanillas.disable('cerrar');
@@ -205,7 +229,7 @@ formFiltroOnButtonClick = (name) => {
             //ribbonPlanillas.disable('deposito');
             mainLayout.cells('a').collapse();
             const periodo = formFiltro.getItemValue('periodo');
-            const cobrador = formFiltro.getItemValue('codigo');
+            const cobrador = usrJson.stadmin != 'S' ? usrJson.codigo : formFiltro.getItemValue('codigo')
             CargarPlanillasCobranza(periodo, cobrador);
             GenerarGraficosPlanillas(periodo, cobrador);
             break;
@@ -295,6 +319,35 @@ CargarPlanillasCobranza = (periodo, cobrador) => {
         }
         else alert(response.message);
     }, 'json');
+    //grid de depositos
+    CargarRecibosCaja(cobrador);
+}
+CargarRecibosCaja = (cobrador) => {
+    if(gridRecibosCaja) {
+        mainTabbar.tabs('recibos').detachObject();
+        gridRecibosCaja = null;
+    }
+    gridRecibosCaja = mainTabbar.tabs('recibos').attachGrid();
+        gridRecibosCaja.setHeader('#,,Nro. recibo,Fecha registro,Código recaudador,Recaudador,Ingreso,Depósito,Recibido,Concepto,Código registra,Registra');
+        gridRecibosCaja.setInitWidths('30,30,100,100,80,240,120,120,120,240,80,240');
+        gridRecibosCaja.attachHeader('#rspan,"rspan,#text_filter,#text_filter,#text_filter,#text_filter,#numeric_filter,#numeric_filter,#numeric_filter,#text_filter,#text_filter,#text_filter');
+        gridRecibosCaja.setColTypes('ron,img,rotxt,rotxt,ron,rotxt,ron,ron,dyn,rotxt,ron,rotxt');
+        gridRecibosCaja.setColAlign('right,center,left,right,right,left,right,right,right,left,right,left');
+        gridRecibosCaja.setIconsPath('/assets/images/icons/grid/');
+        gridRecibosCaja.setNumberFormat('0,000.00',6);
+        gridRecibosCaja.setNumberFormat('0,000.00',7);
+        gridRecibosCaja.setNumberFormat('0,000.00',8);
+        gridRecibosCaja.init();
+        mainTabbar.tabs('recibos').progressOn();
+        gridRecibosCaja.load('/api/BA010305/lista-recibos/' + usrJson.empresa + '/' + cobrador + '/R', gridRecibosCajaOnSuccess);
+}
+gridRecibosCajaOnSuccess = () => {
+    const numRows = gridRecibosCaja.getRowsNum();
+    for(var i = 0; i < numRows; i++) {
+        gridRecibosCaja.cells2(i,0).setValue(i + 1);
+        gridRecibosCaja.cells2(i,1).setValue('ic-print.svg^Imprimir recibo');
+    }
+    mainTabbar.tabs('recibos').progressOff();
 }
 gridDepositosOnSuccess = () => {
     gridDepositos.attachEvent('onRowSelect', (rowId, colId) => {
@@ -466,7 +519,6 @@ PagosEfectivoOnRowSelect = (rowId,colId) => {
                 }
             }
         });
-console.log(params);
     }
 }
 
@@ -571,7 +623,7 @@ ribbonPlanillasOnClick = async (id) => {
             const rowId = gridPlanillas.getSelectedRowId();
             if(rowId > -1) {
                 const planilla = gridPlanillas.cells(rowId,1).getValue();
-                const recaudador = formFiltro.getItemValue('codigo');
+                const recaudador = usrJson.stadmin != 'S' ? usrJson.codigo : formFiltro.getItemValue('codigo')
                 dhtmlx.confirm('¿Desea abrir la planilla ' + planilla + '?', (result) => {
                     if(result) {
                         const params = {
@@ -629,7 +681,281 @@ ribbonPlanillasOnClick = async (id) => {
                 formDepositoPlanilla.attachEvent('onChange', formDepositoPlanillaOnChange);
                 formDepositoPlanilla.attachEvent('onButtonClick', formDepositoPlanillaOnButtonClick);
             break;
+        case 'conciliar':
+            const currRowId = gridPlanillas.getSelectedRowId();
+            const coPlanilla = gridPlanillas.cells(currRowId,1).getValue();
+            const conciliado = gridPlanillas.cells(currRowId,15).getValue();
+            if(conciliado == '0') {
+                winConciliacion = mainLayout.dhxWins.createWindow('winCrearPlanilla',0,0,1280,640);
+                    winConciliacion.setText('Conciliación de depósitos - Planilla ' + coPlanilla);
+                    winConciliacion.setModal(true);
+                    winConciliacion.center();
+                    winConciliacion.keepInViewport(true);
+                layoutConciliacion = winConciliacion.attachLayout('3J');
+                    layoutConciliacion.cells('a').hideHeader();
+                    layoutConciliacion.cells('b').hideHeader();
+                    layoutConciliacion.cells('b').setWidth(480);
+                    layoutConciliacion.cells('c').hideHeader();
+                gridConciliacionDepositos = layoutConciliacion.cells('a').attachGrid();
+                    gridConciliacionDepositos.setHeader(',Banco,Cuenta,Comprobante,Importe,Fecha registro,Cod.Transaccion,Estado conciliacion,Fecha conciliacion,Extracto,Documento,Descripcion');
+                    gridConciliacionDepositos.setInitWidths('30,80,160,80,90,80,80,80,80,100,80,240');
+                    gridConciliacionDepositos.setColTypes('img,rotxt,rotxt,rotxt,ron,rotxt,rotxt,rotxt,rotxt,ron,rotxt,rotxt');
+                    gridConciliacionDepositos.setColAlign('center,left,left,left,right,left,left,left,left,left,left,left');
+                    gridConciliacionDepositos.setNumberFormat('S/ 0,000.00',4);
+                    gridConciliacionDepositos.setIconsPath('/assets/images/icons/grid/');
+                    gridConciliacionDepositos.init();
+                    layoutConciliacion.cells('a').progressOn();
+                    gridConciliacionDepositos.load('/api/BA010305/lista-depositos-conciliacion/' + usrJson.empresa + '/' + coPlanilla, gridConciliacionDepositosOnSuccess);
+                gridConciliacionTransacciones = layoutConciliacion.cells('c').attachGrid();
+                    gridConciliacionTransacciones.setHeader(',Extracto,Cuenta,Fecha,Concepto,Nro.Operacion,Importe abono,Importe cargo,Sucursal,Referencia,Tipo transaccion,Fecha conciliacion,Estado conciliacion,Clase doc.,Sugerido,Nro.Documento');
+                    gridConciliacionTransacciones.setInitWidths('30,80,160,80,240,80,100,100,80,160,80,80,100,80,100,100');
+                    gridConciliacionTransacciones.setColTypes('img,ron,rotxt,rotxt,rotxt,ron,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt');
+                    gridConciliacionTransacciones.setColAlign('left,right,left,left,left,left,right,right,left,left,left,left,center,left,left,left');
+                    gridConciliacionTransacciones.setNumberFormat('S/ 0,000.00',6);
+                    gridConciliacionTransacciones.setNumberFormat('S/ 0,000.00',7);
+                    gridConciliacionTransacciones.setIconsPath('/assets/images/icons/grid/');
+                    gridConciliacionTransacciones.init();
+                    gridConciliacionTransacciones.attachEvent('onRowSelect', gridConciliacionTransaccionesOnRowSelect);
+                formConciliacion = layoutConciliacion.cells('b').attachForm();
+                    formConciliacion.loadStruct(structs.formConciliacion);
+                    formConciliacion.setItemValue('planilla', coPlanilla);
+                    formConciliacion.attachEvent('onButtonClick', formConciliacionOnButtonClick);
+                gridConciliacion = new dhtmlXGridObject(formConciliacion.getContainer('conciliaciones'));
+                    gridConciliacion.setHeader(',Banco,Cuenta,Comprobante,Importe,Transaccion,Extracto');
+                    gridConciliacion.setInitWidths('30,80,160,80,90,80,80');
+                    gridConciliacion.setColTypes('img,rotxt,rotxt,rotxt,ron,rotxt,ron');
+                    gridConciliacion.setColAlign('center,left,left,left,right,left,right');
+                    gridConciliacion.setNumberFormat('S/ 0,000.00',4);
+                    gridConciliacion.setIconsPath('/assets/images/icons/grid/');
+                    gridConciliacion.init();
+                    gridConciliacion.attachEvent('onRowSelect', gridConciliacionOnRowSelect);
+            }
+            else {
+                dhtmlx.alert({
+                    title: 'No se puede conciliar',
+                    type: 'alert-error',
+                    text: 'La planilla ' + gridPlanillas.cells(currRowId,1).getValue() + ' ya está conciliada'
+                });
+            }
+            break;
+        case 'recibo':
+            winRecibo = mainLayout.dhxWins.createWindow('winRecibo',0,0,400,320);
+                winRecibo.setText('Genera recibo de planilla');
+                winRecibo.setModal(true);
+                winRecibo.keepInViewport(true);
+                winRecibo.center();
+            formRecibo = winRecibo.attachForm();
+                formRecibo.loadStruct(structs.formReciboPlanilla);
+                formRecibo.setItemValue('codigo', formFiltro.getItemValue('codigo'));
+                formRecibo.setItemValue('recaudador', formFiltro.getItemValue('vendedor'));
+                formRecibo.attachEvent('onButtonClick', formReciboOnClick);
+            break;
         default: break;
+    }
+}
+gridConciliacionDepositosOnSuccess = () => {
+    layoutConciliacion.cells('a').progressOff();
+    const numFilas = gridConciliacionDepositos.getRowsNum();
+    for(var i = 0; i < numFilas; i++) {
+        const rowId = gridConciliacionDepositos.getRowId(i);
+        gridConciliacionDepositos.setCellTextStyle(rowId,0,'cursor:pointer;');
+    }
+    gridConciliacionDepositos.attachEvent('onRowSelect', gridConciliacionDepositosOnRowSelect);
+}
+gridConciliacionDepositosOnRowSelect = (rowId, colId) => {
+    if(colId == 0) {
+        winImagenVoucher = mainLayout.dhxWins.createWindow('winImagenVoucher',0,0,480,320);
+            winImagenVoucher.setText('Mostrando imagen del voucher');
+            winImagenVoucher.setModal(true);
+            winImagenVoucher.keepInViewport(true);
+            winImagenVoucher.center();
+        const cuenta = gridConciliacionDepositos.cells(rowId,2).getValue();
+        const operacion = gridConciliacionDepositos.cells(rowId,3).getValue();
+        const vFecha = gridConciliacionDepositos.cells(rowId,5).getValue().split('-');
+        winImagenVoucher.attachURL('/files/img-voucher/' + cuenta + '/' + vFecha[0] + vFecha[1] + '/' + operacion);
+    }
+    else {
+        const cuenta = gridConciliacionDepositos.cells(rowId,2).getValue();
+        const transaccion = gridConciliacionDepositos.cells(rowId,6).getValue();
+        layoutConciliacion.cells('c').progressOn();
+        gridConciliacionTransacciones.clearAll();
+        gridConciliacionTransacciones.load('/api/BA010305/lista-extractos-conciliacion/' + cuenta + '/' + transaccion, gridConciliacionTransaccionesOnSuccess);
+    }
+}
+gridConciliacionTransaccionesOnSuccess = () => {
+    layoutConciliacion.cells('c').progressOff();
+    const numFilas = gridConciliacionTransacciones.getRowsNum();
+    if(numFilas == 0) {
+        dhtmlx.message({
+            type: 'error',
+            text: 'No hay extractos que coincidan en monto con el depósito seleccionado',
+            expire: 5000
+        });
+    }
+    else {
+        for(var i = 0; i < numFilas; i++) {
+            const rowId = gridConciliacionTransacciones.getRowId(i);
+            const sugerido = gridConciliacionTransacciones.cells(rowId,14).getValue();
+            gridConciliacionTransacciones.setCellTextStyle(rowId,0,'cursor:pointer;');
+            switch(sugerido) {
+                case 'V': //coincide en todo
+                    gridConciliacionTransacciones.setRowColor(rowId,'#b2ebf2');
+                    break;
+                case 'T': //coincide en importe y fecha, pero no en nro operacion
+                    gridConciliacionTransacciones.setRowColor(rowId,'#fff9c4');
+                    break;
+                default:break; //S, coincide solo en importe
+            }
+        }
+    }
+    //resalta las filas p
+    ResaltarFilas();
+}
+gridConciliacionTransaccionesOnRowSelect = (rowId,colId) => {
+    if(colId == 0) {
+        const depRowId = gridConciliacionDepositos.getSelectedRowId();
+        const transaccion = gridConciliacionDepositos.cells(depRowId,6).getValue();
+        const extracto = gridConciliacionTransacciones.cells(rowId,1).getValue();
+        //const conciliado = gridConciliacionDepositos.cells(depRowId,7).getValue();
+        if(VerificaConciliacion(transaccion, extracto)) {
+            const rowData = [
+                'ic-delete.svg^Eliminar',
+                gridConciliacionDepositos.cells(depRowId,1).getValue(),
+                gridConciliacionDepositos.cells(depRowId,2).getValue(),
+                gridConciliacionDepositos.cells(depRowId,3).getValue(),
+                gridConciliacionDepositos.cells(depRowId,4).getValue(),
+                gridConciliacionDepositos.cells(depRowId,6).getValue(),
+                gridConciliacionTransacciones.cells(rowId,1).getValue()
+            ];
+            gridConciliacion.addRow(transaccion + '|' + extracto, rowData.join(','));
+            //resalta las filas
+            gridConciliacionDepositos.setRowColor(transaccion,'#c8e6c9');
+            gridConciliacionTransacciones.setRowColor(extracto,'#c8e6c9');
+        }
+        else {
+            dhtmlx.alert({
+                title: 'No se puede conciliar',
+                type: 'confirm-error',
+                text: 'Ya ha asociado un extracto bancario para conciliar este depósito'
+            });
+        }
+    }
+}
+formReciboOnClick = (name) => {
+    switch(name) {
+        case 'generar':
+            dhtmlx.confirm({
+                ok: 'Generar recibo',
+                cancel: 'No',
+                text: '¿Desea generar el recibo?',
+                callback: (result) => {
+                    if(result) {
+                        winRecibo.progressOn();
+                        var sDetalle = '';
+                        const numRows = gridPlanillas.getRowsNum();
+                        for(var i = 0; i < numRows; i++) {
+                            const iPlanilla = gridPlanillas.cells2(i,1).getValue();
+                            const iImporte = gridPlanillas.cells2(i,11).getValue();
+                            const iDeposito = gridPlanillas.cells2(i,13).getValue();
+                            const iValores = gridPlanillas.cells2(i,12).getValue();
+                            const iFila = [iPlanilla, iImporte, iDeposito, iValores, ''].join('@*@');
+                            sDetalle += iFila + '@-@';
+                        }
+                        const params = {
+                            serie: formRecibo.getItemValue('serie'),
+                            concepto: formRecibo.getItemValue('concepto'),
+                            recaudador: formRecibo.getItemValue('codigo'),
+                            detalle: sDetalle,
+                            cantidad: numRows,
+                            alias: usrJson.alias
+                        };
+                        $.post('/api/BA010305/genera-recibo', params, (response) => {
+                            if(response.state == 'success') {
+                                const recibo = response.data.recibo;
+                                if(recibo != '') {
+                                    alert('Se generó el recibo ' + recibo);
+                                    winRecibo.progressOff();
+                                    winRecibo.close();
+                                    const iPeriodo = formFiltro.getItemValue('periodo');
+                                    const recaudador = usrJson.stadmin != 'S' ? usrJson.codigo : formFiltro.getItemValue('codigo')
+                                    CargarPlanillasCobranza(iPeriodo, recaudador);
+                                    CargarRecibosCaja(recaudador);
+                                }
+                            }
+                            else alert(response.message);
+                        }, 'json');
+                    }
+                }
+            });
+            break;
+        default: break;
+    }
+}
+ResaltarFilas = () => {
+    const numConciliaciones = gridConciliacion.getRowsNum();
+    for(var i = 0; i < numConciliaciones; i++) {
+        const iTransaccion = gridConciliacion.cells2(i,5).getValue();
+        const iExtracto = gridConciliacion.cells2(i,6).getValue();
+        if(gridConciliacionDepositos.doesRowExist(iTransaccion)) gridConciliacionDepositos.setRowColor(iTransaccion,'#c8e6c9');
+        if(gridConciliacionTransacciones.doesRowExist(iExtracto)) gridConciliacionTransacciones.setRowColor(iExtracto,'#c8e6c9');
+    }
+}
+gridConciliacionOnRowSelect = (rowId, colId) => {
+    if(colId == 0) {
+        dhtmlx.confirm({
+            ok: 'Si, eliminar',
+            cancel: 'No',
+            text: '¿Desea anular esta conciliación?',
+            callback: (result) => {
+                if(result) {
+                    gridConciliacion.deleteRow(rowId);
+                }
+            }
+        });
+    }
+}
+VerificaConciliacion = (transaccion, extracto) => {
+    const numRows = gridConciliacion.getRowsNum();
+    var existe = false;
+    for(var i = 0; i < numRows; i++) {
+        existe = existe || (gridConciliacion.cells2(i,5).getValue() == transaccion);
+    }
+    return !existe;
+}
+formConciliacionOnButtonClick = (name) => {
+    switch(name) {
+        case 'conciliar':
+            dhtmlx.confirm({
+                ok: 'Si, continuar',
+                cancel: 'No',
+                text: 'Se procederá a conciliar los depósitos seleccionados. Recuerde que no podrá deshacer esta operación. ¿Desea continuar?',
+                callback: (result) => {
+                    const ListaConciliacion = [];
+                    //
+                    const numRows = gridConciliacion.getRowsNum();
+                    for(var i = 0; i < numRows; i++) {
+                        ListaConciliacion.push(gridConciliacion.cells2(i,5).getValue() + '@' + gridConciliacion.cells2(i,6).getValue());
+                    }
+                    //
+                    winConciliacion.progressOn();
+                    const params = {
+                        alias: usrJson.alias,
+                        lista: JSON.stringify(ListaConciliacion)
+                    };
+                    $.post('/api/BA010305/conciliar-depositos', params, (response) => {
+                        winConciliacion.progressOff();
+                        if(response.state == 'success') {
+                            dhtmlx.alert('Depósitos conciliados correctamente');
+                            winConciliacion.close();
+                            const iPeriodo = formFiltro.getItemValue('periodo');
+                            const recaudador = usrJson.stadmin != 'S' ? usrJson.codigo : formFiltro.getItemValue('codigo')
+                            CargarPlanillasCobranza(iPeriodo, recaudador);
+                        }
+                        else alert(response.message);
+                    }, 'json');
+                }
+            });
+            break;
     }
 }
 formDepositoPlanillaOnChange = (name, value) => {
@@ -749,7 +1075,7 @@ MostrarFormularioPago = (tpago, showAlert) => {
                 type: 'confirm-error',
                 text: 'El documento <b><i>' + documento + '</i></b> ya se encuentra en el banco'
             });
-//            return false;
+            return false;
         }
         if(!tpago) {
             dhtmlx.alert({
@@ -822,7 +1148,7 @@ formPagoClientePagarOnClick = (id) => {
             $.post('/api/BA010305/registra-pago-planilla', params, (response) => {
                 if(response.state == 'success') {
                     const iPeriodo = formFiltro.getItemValue('periodo');
-                    const recaudador = formFiltro.getItemValue('codigo');
+                    const recaudador = usrJson.stadmin != 'S' ? usrJson.codigo : formFiltro.getItemValue('codigo')
                     winPago.close();
                     CargarPlanillasCobranza(iPeriodo, recaudador);
                     dhtmlx.alert('Pago registrado');
@@ -841,7 +1167,7 @@ CerrarPlanillaCobranza = () => {
     const rowId = gridPlanillas.getSelectedRowId();
     if(rowId > -1) {
         const planilla = gridPlanillas.cells(rowId,1).getValue();
-        const recaudador = formFiltro.getItemValue('codigo');
+        const recaudador = usrJson.stadmin != 'S' ? usrJson.codigo : formFiltro.getItemValue('codigo')
         const alias = formFiltro.getItemValue('alias');
         dhtmlx.confirm('¿Desea cerrar la planilla ' + planilla + '?', (result) => {
             if(result) {
@@ -873,7 +1199,7 @@ CrearPlanillaCobranza = () => {
         winCrearPlanilla.button('minmax').hide();
     formCrearPlanilla = winCrearPlanilla.attachForm();
         formCrearPlanilla.loadStruct(structs.formCreaPlanilla, () => {
-            const recaudador = formFiltro.getItemValue('codigo');
+            const recaudador = usrJson.stadmin != 'S' ? usrJson.codigo : formFiltro.getItemValue('codigo')
             const params = {
                 empresa: usrJson.empresa,
                 vendedor: recaudador
@@ -927,7 +1253,7 @@ formCrearPlanillaOnClick = (id) => {
                     const out = response.data;
                     if(out.resultado == 1) {
                         const iPeriodo = formFiltro.getItemValue('periodo');
-                        const iVendedor = formFiltro.getItemValue('codigo');
+                        const iVendedor = usrJson.stadmin != 'S' ? usrJson.codigo : formFiltro.getItemValue('codigo')
                         document.getElementById('sp-codigo-planilla').innerHTML = out.mensaje + ' creada';
                         document.getElementById('sp-mensaje').innerHTML = 'Planilla creada con éxito';
                         CargarPlanillasCobranza(iPeriodo, iVendedor);

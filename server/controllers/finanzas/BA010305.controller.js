@@ -650,6 +650,210 @@ const ba010305Controller = {
                 });
             });
         });
+    },
+    ListaDepositosConciliacion: (req, res) => {
+        const { empresa, planilla } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                console.error(err);
+                return;
+            }
+            const query = "select 'ic-picture.svg',tb.de_abreviatura,ta.co_cuenta_corriente,ta.co_comprobante,ta.im_deposito,to_char(ta.fe_registro,'yyyy-mm-dd'),ta.co_transa_bancaria_tran id,td.es_conciliacion,case td.es_conciliacion when 'S' then to_char(td.fe_conciliacion,'yyyy-mm-dd') else '-' end,td.co_extracto_bancario,td.co_documento,td.de_descripcion from ba_depo_plan_cobr_m ta join ba_banc_m tb on ta.co_banco = tb.co_banco join ba_tran_banc_d td on ta.co_empresa= td.co_empresa and ta.co_transa_bancaria_tran= td.co_transa_bancaria_tran where ta.co_planilla_cobranza = :p_planilla and ta.co_empresa = :p_empresa and td.es_conciliacion = 'N'";
+            const params = {
+                p_empresa: { val: empresa },
+                p_planilla: { val: planilla }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    console.error(error);
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderXml(result.rows));
+            });
+        });
+    },
+    ListaExtractosConciliacion: (req, res) => {
+        return new Promise(async (resolve, reject) => {
+            const { cuenta, transaccion } = req.params;
+            let conn;
+            try {
+                conn = await oracledb.getConnection(dbParams);
+                //ejecuta el sp_marcar_coincidencias
+                const QuerySugeridos = "call pack_bancos2do.sp_marcar_coincidencias(:p_transaccion)";
+                const ParamsSugeridos = {
+                    p_transaccion: { val: transaccion }
+                };
+                await conn.execute(QuerySugeridos, ParamsSugeridos, responseParams);
+                //genera la data
+                //const QueryExtractos = "select 'ic-select.svg^Seleccionar',co_extracto_bancario id,co_cuenta_corriente,to_char(fe_movimiento,'yyyy-mm-dd'),de_concepto,nu_operacion,im_abono,im_cargo,de_sucursal_banco,de_referencia,co_tipo_transaccion,to_char(fe_conciliado,'yyyy-mm-dd'),st_conciliado,co_clase_documento,st_sugerido,nu_documento from ba_extr_banc_t where co_cuenta_corriente = :p_cuenta and st_conciliado = 'N' and st_sugerido <> 'N' and fe_conciliado is null order by st_sugerido desc, im_cargo desc";
+                const QueryExtractos = "select 'ic-select.svg^Seleccionar',co_extracto_bancario id,co_cuenta_corriente,to_char(fe_movimiento,'yyyy-mm-dd'),de_concepto,nu_operacion,im_abono,im_cargo,de_sucursal_banco,de_referencia,co_tipo_transaccion,to_char(fe_conciliado,'yyyy-mm-dd'),st_conciliado,co_clase_documento,st_sugerido,nu_documento from ba_extr_banc_t where co_cuenta_corriente = :p_cuenta and st_conciliado = 'N' and st_sugerido <> 'N' order by st_sugerido desc, im_cargo desc";
+                const ParamsExtractos = {
+                    p_cuenta: { val: cuenta }
+                };
+                const result = await conn.execute(QueryExtractos, ParamsExtractos, responseParams);
+                res.set('Content-Type', 'text/xml');
+                resolve(res.send(xmlParser.renderXml(result.rows)));
+            }
+            catch(error) {
+                resolve(res.json({
+                    state: 'error',
+                    message: error
+                }));
+                return;
+            }
+        });
+        /*const { cuenta, transaccion } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                console.error(err);
+                return;
+            }
+            const query = "select 'ic-select.svg^Seleccionar',co_extracto_bancario,co_cuenta_corriente,to_char(fe_movimiento,'yyyy-mm-dd'),de_concepto,nu_operacion,im_cargo,im_abono,de_sucursal_banco,de_referencia,co_tipo_transaccion,to_char(fe_conciliado,'yyyy-mm-dd'),st_conciliado,co_clase_documento,st_sugerido,nu_documento from ba_extr_banc_t where co_cuenta_corriente = :p_cuenta and st_conciliado = 'N' order by st_sugerido desc, im_cargo desc";
+            const params = {
+                p_cuenta: { val: cuenta }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    console.error(error);
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderXml(result.rows));
+            });
+        });*/
+    },
+    ConciliarDepositos: (req, res) => {
+        return new Promise(async (resolve, reject) => {
+            const { alias, lista } = req.body;
+            const vLista = JSON.parse(lista);
+            let conn;
+            try {
+                conn = await oracledb.getConnection(dbParams);
+                //
+                const querySesion = "call pack_venta.sm_activar_empresa(:p_alias)";
+                const paramsSesion = { p_alias: { val: alias } };
+                var result = await conn.execute(querySesion, paramsSesion, responseParams);
+                //ejecutar los sp para conciliar
+                const numberOfQuerys = vLista.length;
+                for(var i = 0; i < numberOfQuerys; i++) {
+                    const splista = vLista[i].split('@');
+                    const iTransaccion = splista[0];
+                    const iExtracto = splista[1];console.log('iTransaccion, iExtracto', iTransaccion, iExtracto);
+                    var queryConcilia = "call pack_bancos2do.sp_marca_conciliado(:p_transaccion, :p_extracto)";
+                    var paramsConcilia = {
+                        p_transaccion: { val: iTransaccion },
+                        p_extracto: { val: iExtracto }
+                    };
+                    await conn.execute(queryConcilia, paramsConcilia, responseParams);
+                }
+                await conn.close();
+                resolve(res.json({
+                    state: 'success'
+                }));
+            }
+            catch(error) {
+                if(conn) {
+                    try {
+                        await conn.close();
+                    }
+                    catch (err) {
+                        reject(res.json({
+                            state: 'error',
+                            message: err
+                        }));
+                    }
+                }
+                reject(res.json({
+                    state: 'error',
+                    message: error
+                }));
+            }
+        });
+    },
+    ComboSeries: (req, res) => {
+        const { empresa } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                console.error(err);
+                return;
+            }
+            const query = "select co_serie value, de_serie || ' [' || nu_cantidad || ']' text from co_seri_nvo where co_empresa = :p_empresa and co_tipo_doc_administr = 623 and es_vigencia = 'Vigente'";
+            const params = {
+                p_empresa: { val: empresa }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    console.error(error);
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderCombo(result.rows));
+            });
+        });
+    },
+    GeneraRecibo: async (req, res) => {
+        return new Promise(async (resolve, reject) => {
+            const { serie, concepto, recaudador, detalle, cantidad, alias } = req.body;
+            let conn;
+            try {
+                conn = await oracledb.getConnection(dbParams);
+                //ejecuta el activar empresa
+                const QuerySesion = "call pack_venta.sm_activar_empresa(:p_alias)";
+                const ParamsSesion = { p_alias: { val: alias } };
+                await conn.execute(QuerySesion, ParamsSesion, responseParams);
+                //genera el recibo
+                const ls_cabecera = serie + '@*@' + recaudador + '@*@' + concepto;
+                const QueryRecibo = "call pack_cobranza2.sp_gen_recibo_caja(:p_cabecera,:p_detalle,:p_cantidad,:o_resultado)";
+                const ParamsRecibo = {
+                    p_cabecera: { val: ls_cabecera },
+                    p_detalle: { val: detalle },
+                    p_cantidad: { val: cantidad },
+                    o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                };
+                const result = await conn.execute(QueryRecibo, ParamsRecibo, responseParams);
+                const { o_resultado } = result.outBinds;
+                await conn.close();
+                resolve(res.json({
+                    state: 'success',
+                    data: {
+                        recibo: o_resultado
+                    }
+                }));
+            }
+            catch(error) {
+                reject(res.json({
+                    state: 'error',
+                    message: error
+                }));
+            }
+        });
+    },
+    ListaRecibos: (req, res) => {
+        const { empresa, recaudador, recibo } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                console.error(err);
+                return;
+            }
+            const query = "select '' idx,'' icon,t1.co_recibo_caja,to_char(t1.fe_sys,'yyyy-mm-dd'),t1.co_recaudador,ce_r.de_razon_social de_recaudador,t1.im_total_ingreso,t1.im_total_deposito,t1.im_total_recibido,t1.de_concepto,t1.co_usuario_reg,ce_u.de_razon_social de_usuario_reg from ba_reci_caja_c t1 inner join ma_cata_enti_m ce_r on t1.co_recaudador = ce_r.co_catalogo_entidad inner join ma_cata_enti_m ce_u on t1.co_usuario_reg = ce_u.co_catalogo_entidad where t1.co_empresa = :p_empresa and t1.co_recaudador = :p_recaudador";
+            const params = {
+                p_empresa: { val: empresa },
+                p_recaudador: { val: recaudador }
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {
+                    console.error(error);
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderXml(result.rows));
+            });
+        });
     }
 };
 

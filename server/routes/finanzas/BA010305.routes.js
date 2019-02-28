@@ -22,5 +22,11 @@ router.post('/guarda-deposito', ba010305Controller.GuardarDeposito);
 router.post('/eliminar-pago', ba010305Controller.EliminarPago);
 router.get('/lista-depositos/:vendedor/:empresa/:periodo', ba010305Controller.ListaDepositos);
 router.post('/grafico-depositos', ba010305Controller.GraficoDepositos);
+router.get('/lista-depositos-conciliacion/:empresa/:planilla', ba010305Controller.ListaDepositosConciliacion);
+router.get('/lista-extractos-conciliacion/:cuenta/:transaccion', ba010305Controller.ListaExtractosConciliacion);
+router.post('/conciliar-depositos', ba010305Controller.ConciliarDepositos);
+router.get('/combo-series/:empresa', ba010305Controller.ComboSeries);
+router.post('/genera-recibo', ba010305Controller.GeneraRecibo);
+router.get('/lista-recibos/:empresa/:recaudador/:recibo', ba010305Controller.ListaRecibos);
 
 module.exports = router;
