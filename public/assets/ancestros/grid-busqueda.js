@@ -38,10 +38,9 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
     return new Promise(resolve => {
         multi = multiSelect;
         tpEnti = tipoEntidad;
-        if(container.dhxWins.isWindow('winGridBusqueda')) {
+        if (container.dhxWins.isWindow('winGridBusqueda')) {
             winGridBusqueda.bringToTop();
-        }
-        else {
+        } else {
             winGridBusqueda = container.dhxWins.createWindow('winGridBusqueda', 0, 0, 720, 480);
             winGridBusqueda.center();
             winGridBusqueda.keepInViewport(true);
@@ -131,6 +130,18 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
                     gridBusqueda.setColumnIds("ch,codigo,ncomercial,nose,rsocial,alias");
                     gridBusqueda.setColumnHidden(3, true);
                     gridBusqueda.setColumnHidden(5, true);
+                    gridBusqueda.enableSmartRendering(true, 50);
+
+                    break;
+                case 6://lista de precios
+                    gridBusqueda.setHeader('#,CodListado,Nombre,Moneda,Moneda,SerieListado');
+                    gridBusqueda.attachHeader('#rspan,#text_filter,#text_filter,#rspan,#text_filter,#rspan');
+                    gridBusqueda.setInitWidthsP('5,15,45,20,15,15');
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,colistado,nombre,moneda,cmone,serielistado");
+                    gridBusqueda.setColumnHidden(4, true);
+                    gridBusqueda.enableSmartRendering(true);
+
                     break;
                 default:
                     break;
@@ -146,52 +157,52 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
 };
 
 /*gridBusquedaDatosSuccess = () => {
-    //gridBusqueda.insertColumn(0, '', multi ? 'ch' : 'ra', 5);
-    //gridBusqueda.uncheckAll();
-    gridBusqueda.attachEvent('onRowSelect', gridBusquedaRowSelect);
-};
-
-gridBusquedaRowSelect = (rowId, colId) => {
-    winToolbar.enableItem('btok');
-//    const current = parseInt(gridBusqueda.cells(rowId, 0).getValue());
-//    const newValue = (current + 1) % 2;
-//    gridBusqueda.cells(rowId, 0).setValue(newValue);
-};*/
+ //gridBusqueda.insertColumn(0, '', multi ? 'ch' : 'ra', 5);
+ //gridBusqueda.uncheckAll();
+ gridBusqueda.attachEvent('onRowSelect', gridBusquedaRowSelect);
+ };
+ 
+ gridBusquedaRowSelect = (rowId, colId) => {
+ winToolbar.enableItem('btok');
+ //    const current = parseInt(gridBusqueda.cells(rowId, 0).getValue());
+ //    const newValue = (current + 1) % 2;
+ //    gridBusqueda.cells(rowId, 0).setValue(newValue);
+ };*/
 
 /*generaJsonFila = (rowId) => {
-    switch (tpEnti) {
-        case 1:
-            return {
-                codigo: gridBusqueda.cells(rowId, 1).getValue(),
-                descripcion: gridBusqueda.cells(rowId, 2).getValue(),
-                vigencia: gridBusqueda.cells(rowId, 3).getValue(),
-                observ1: gridBusqueda.cells(rowId, 4).getValue(),
-                observ2: gridBusqueda.cells(rowId, 5).getValue()
-            };
-        case 2:
-            return {
-                codigo: gridBusqueda.cells(rowId, 1).getValue(),
-                nombre: gridBusqueda.cells(rowId, 2).getValue(),
-                vigencia: gridBusqueda.cells(rowId, 3).getValue(),
-                ccosto: gridBusqueda.cells(rowId, 4).getValue(),
-                alias: gridBusqueda.cells(rowId, 5).getValue()
-            };
-        case 3:
-            return {
-                codigo: gridBusqueda.cells(rowId, 1).getValue(),
-                nombre: gridBusqueda.cells(rowId, 2).getValue(),
-                vigencia: gridBusqueda.cells(rowId, 3).getValue(),
-                alias: gridBusqueda.cells(rowId, 4).getValue(),
-                correo: gridBusqueda.cells(rowId, 5).getValue()
-            };
-        case 4:
-            return {
-                ubigeo: gridBusqueda.cells(rowId, 2).getValue(),
-                descripcion: gridBusqueda.cells(rowId, 3).getValue(),
-                detalle1: gridBusqueda.cells(rowId, 4).getValue(),
-                detalle2: gridBusqueda.cells(rowId, 5).getValue()
-            };
-        default:
-            return null;
-    }
-};*/
+ switch (tpEnti) {
+ case 1:
+ return {
+ codigo: gridBusqueda.cells(rowId, 1).getValue(),
+ descripcion: gridBusqueda.cells(rowId, 2).getValue(),
+ vigencia: gridBusqueda.cells(rowId, 3).getValue(),
+ observ1: gridBusqueda.cells(rowId, 4).getValue(),
+ observ2: gridBusqueda.cells(rowId, 5).getValue()
+ };
+ case 2:
+ return {
+ codigo: gridBusqueda.cells(rowId, 1).getValue(),
+ nombre: gridBusqueda.cells(rowId, 2).getValue(),
+ vigencia: gridBusqueda.cells(rowId, 3).getValue(),
+ ccosto: gridBusqueda.cells(rowId, 4).getValue(),
+ alias: gridBusqueda.cells(rowId, 5).getValue()
+ };
+ case 3:
+ return {
+ codigo: gridBusqueda.cells(rowId, 1).getValue(),
+ nombre: gridBusqueda.cells(rowId, 2).getValue(),
+ vigencia: gridBusqueda.cells(rowId, 3).getValue(),
+ alias: gridBusqueda.cells(rowId, 4).getValue(),
+ correo: gridBusqueda.cells(rowId, 5).getValue()
+ };
+ case 4:
+ return {
+ ubigeo: gridBusqueda.cells(rowId, 2).getValue(),
+ descripcion: gridBusqueda.cells(rowId, 3).getValue(),
+ detalle1: gridBusqueda.cells(rowId, 4).getValue(),
+ detalle2: gridBusqueda.cells(rowId, 5).getValue()
+ };
+ default:
+ return null;
+ }
+ };*/

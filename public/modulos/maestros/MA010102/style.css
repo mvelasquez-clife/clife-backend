@@ -1,11 +1,49 @@
+/*******************************************/
+
+
+ 
+.dhxform_obj_material div.dhxform_img.btn2state_0 {
+   background: url("../../../assets/images/icons/iconsjhon/toggleon64.png") no-repeat center ;
+    width: 42px;
+    height: 20px;
+     background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center; 
+};
+.dhxform_obj_material div.dhxform_img.btn2state_1 {
+  background: url("../../../assets/images/icons/iconsjhon/toggleoff64.png") no-repeat center;
+    width: 42px;
+    height: 20px;
+     background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center; 
+};
+.dhxform_obj_material div.disabled div.dhxform_img.btn2state_0 {
+    background: url("../../../assets/images/icons/iconsjhon/toggleoff64_disable.png") no-repeat center;
+    width: 42px;
+     background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center; 
+    height: 20px;
+}
+.dhxform_obj_material div.disabled div.dhxform_img.btn2state_1 {
+   background: url("../../../assets/images/icons/iconsjhon/toggleoff64_disable.png") no-repeat center; 
+    width: 42px;
+    height: 20px;
+     background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center; 
+    
+}
+
 /***************BOTON BUSCAR **********/
-div.dhxform_item_label_left.b_buscar div.dhxform_btn_txt {         
-    /*background-image: url('dhtmlx/codebase/imgs/cody_docu_48.png');*/       
-    /*    background-repeat: no-repeat;             */
+/*div.dhxform_item_label_left.b_buscar div.dhxform_btn_txt {         
+    background-image: url('dhtmlx/codebase/imgs/cody_docu_48.png');       
+        background-repeat: no-repeat;             
     background-position: 1px 3px;      
     padding-left: 0px;                height : 50px;                margin: -1px -10px 1px 1px;     
     cursor: pointer;            font-size: 4em;
-}
+}*/
 
 /***********  CSS DATAVIEW *******************************/
 .corta { 
@@ -42,13 +80,20 @@ div.dhxform_item_label_left.b_buscar div.dhxform_btn_txt {
 .txtrgreen {
     color: #31a354!important;
 }
+.txtoran {
+    color : #1faeff;
+}
+
 .txtrblue {
     color:#04c!important  ;
 }
 .disable {
     opacity: 0.2;
 }
-
+.padt-5-f1-8{
+   padding-top: 1px;
+font-size: 1.8em;
+}
 
 /************ CSS IMG PERFIL - MODULO PERSONALIZACION */
 #emp_img_{

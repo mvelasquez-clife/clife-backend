@@ -4,9 +4,9 @@
         <title>Cliente</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
-        <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css"> -->
         <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
-        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">  
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">   -->
         <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
         <style type="text/css">
@@ -24,24 +24,40 @@
         <script type="text/javascript" src="<%=path%>script.js"></script>
         <!-- ancestro de la ventana de seguridad -->
         <script type="text/javascript"  src="/assets/ancestros/grid-busqueda.js"></script>
+        <script type="text/javascript"  src="/assets/ancestros/seguridad.js"></script>
         <!-- scripts de la carga de la vista -->
         <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
         <script>
-            var mainLayout, mySidebar, base_tollbar, myForm, myDataView, estadook = 'VIGENTE', myToolBar, ubigeo, st_prin;
-            var __id = 0, Nombrenew, Codigo, Nombreold, Estado;
+            var mainLayout, mySidebar, base_tollbar, myForm, estadook = 'VIGENTE', codcliente, Wind_, json_select, permiso_cataedit = 'S', co_cata_entidad = 0, cocliente = 0, co_listadopre = 0, co_seri_listado = 0, cocliente_corpo = 0, nom_clien_corpo = '';
+            var __id = 0, Nombrenew, Codigo, Nombreold, Estado, lc_frzvta, lc_comneda, lc_stperman, lc_obs, lc_monto;
             var st_form_base = [{type: "settings", labelWidth: 100},
-           
-                        {type: "block", blockOffset: 0, offsetTop: 0, width: 1000, list: [
-                                  {type: "block", blockOffset: 0, position: "label-left", width: 80, list: [
-                                      {type: "button", width: 60, value: '<i class="fas fa-search"></i>', offsetLeft: 7, name: "b_buscar", tooltip: "BUSCAR UN CLIENTE", className: "b_buscar", hidden: false}
-                                       
-                                    ]},{type: "newcolumn"},
-                                {type: "block", blockOffset: 10, position: "label-left", width: 920, list: [
-                                        {type: "template", offsetTop: 5, offsetLeft: 2, labelWidth: 60, name: "f_cliente", width: 800, label: "Cliente :", value: "20123487541 - EMPRESA EMPERATRIZ SAC", format: style},
-                                        {type: "template", offsetTop: 5, offsetLeft: 2, name: "f_estado", labelWidth: 50, width: 50, label: "Estado :", value: "NO ASIGNADO", format: style}
-                                    ]}]}
-                  
+                {type: "block", blockOffset: 0, offsetTop: 0, width: 'auto', list: [
+                        {type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                                {type: "template", offsetTop: 2, offsetLeft: 2, labelWidth: 60, name: "b_cliente", label: "Cliente :", value: "Busque un cliente", format: style}, {type: "newcolumn"},
+                                {type: "button", width: 60, value: '<i class="fas fa-search padt-5-f1-8"></i>', offsetTop: 0, offsetLeft: 7, name: "b_buscar", tooltip: "BUSCAR UN CLIENTE", hidden: false}, {type: "newcolumn"},
+                                {type: "block", blockOffset: 0, position: "label-left", width: 920, list: [
+                                        {type: "template", offsetTop: 5, offsetLeft: 2, name: "b_estado", labelWidth: 50, width: 150, label: "Estado :", value: "", format: style}, {type: "newcolumn"},
+                                        {type: "template", offsetTop: 5, offsetLeft: 100, name: "b_asignado", labelWidth: 60, width: 150, label: "Asignado :", value: "", format: style}, {type: "newcolumn"},
+                                        {type: "template", offsetTop: 5, offsetLeft: 100, name: "b_registro", labelWidth: 60, width: 150, label: "Registro :", value: "", format: style}, {type: "newcolumn"}
+                                    ]}
+                            ]}]}
             ];
+            var st_form_lcredito = [{type: "settings", labelWidth: 100},
+                {type: "block", blockOffset: 20, list: [
+                        {type: "select", disabled: false, name: '_fuerzavta', labelWidth: 100, inputWidth: 250, label: 'Fuerza Venta :', connector: BASE_URL + 'MA010102/list_lincredito/' + usrJson.empresa}, {type: "newcolumn"},
+                        {type: "select", disabled: false, name: '_clmoneda', labelWidth: 100, inputWidth: 250, label: 'Moneda :', connector: BASE_URL + 'MA010102/list_moneda'}, {type: "newcolumn"},
+                        {type: "input", name: '__nucredito', labelWidth: 100, readonly: false, label: 'Monto :', offsetLeft: 0, inputWidth: 250}, {type: "newcolumn"},
+                        {type: "input", offsetLeft: 0, labelWidth: 100, readonly: false, name: "__obscredito", rows: 2, style: "    background :  lemonchiffon;", width: 250, label: "Obervacion :", value: "..."},
+                        {type: "checkbox", offsetTop: 8, disabled: false, offsetLeft: 2, labelWidth: 120, name: "__stcredperm", width: 440, label: "Credito Permanente ?", value: "..."}
+                    ]},
+                {type: "newcolumn"},
+                {type: "block", blockOffset: 5, list: [
+                        {type: "button", offsetTop: 25, offsetLeft: 15, name: "bc_nuevo", value: "Nuevo"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 25, offsetLeft: 15, name: "bc_save", value: "Guardar"}, {type: "newcolumn"},
+                        {type: "button", offsetTop: 25, offsetLeft: 15, name: "b_cancel", value: "Cancelar", disabled: false}, {type: "newcolumn"}
+                    ]}
+            ];
+
             var st_form_edit = [{type: "settings", labelWidth: 100},
                 {type: "block", blockOffset: 0, list: [
                         {type: "block", blockOffset: 0, offsetTop: 5, width: 450, list: [
@@ -64,25 +80,107 @@
 
             ];
             var base_tollbar = {iconset: "awesome", items: [
-                    {id: "__nuevo", type: "button", disabled: false, text: "Nuevo", img: "fas fa-plus", imgdis: "fas fa-plus disable"},
+                    {id: "__nuevo", type: "button", disabled: false, text: "Nuevo", img: "fas fa-plus txtrgreen", imgdis: "fas fa-plus disable txtrgreen"},
                     {type: "separator"},
-                    {id: "__edit", type: "button", text: "Editar", disabled: true, img: "fas fa-edit txtrblue", imgdis: "fas fa-edit disable"},
+                    {id: "__edit", type: "button", text: "Editar", disabled: true, img: "fas fa-edit txtred", imgdis: "fas fa-user-edit disable txtred"},
                     {type: "separator"},
-                    {id: "__anula", type: "button", text: "Anular", disabled: true, img: "fas fa-ban txtred", imgdis: "fas fa-ban disable"},
+                    /*   {id: "__asignar", type: "button", text: "Asignar", disabled: false, img: "fas fa-user-check txtrblue", imgdis: "fas fa-user-check disable txtrblue"},
+                     {type: "separator"},*/
+                    {id: "__save", type: "button", text: "Guardar", disabled: true, img: "fas fa-save txtoran", imgdis: "fas fa-save disable txtoran"},
                     {type: "separator"},
-                    {id: "__activar", type: "button", text: "Activar", disabled: true, img: "fas fa-check-circle txtrgreen", imgdis: "fas fa-check-circle disable"},
+
+                    {id: "__cancel", type: "button", text: "Cancelar", disabled: true, img: "fas fa-edit txtrblue", imgdis: "fas fa-edit disable"},
                     {type: "separator"},
-                    {id: "__principal", type: "button", text: "Marcar Principal", disabled: true, img: "fas fa-map-marker-alt txtrgreen", imgdis: "fas fa-map-marker-alt disable"},
+                    {id: "__lincredito", type: "button", text: "Linea Crédito", disabled: false, img: "fas fa-hand-holding-usd txtrgreen", imgdis: "fas fa-hand-holding-usd disable"},
                     {type: "separator"}
+                    /*      {id: "__anula", type: "button", text: "Anular", disabled: true, img: "fas fa-ban txtred", imgdis: "fas fa-ban disable"},
+                     {type: "separator"},
+                     {id: "__activar", type: "button", text: "Activar", disabled: true, img: "fas fa-check-circle txtrgreen", imgdis: "fas fa-check-circle disable"},
+                     {type: "separator"},
+                     {id: "__principal", type: "button", text: "Marcar Principal", disabled: true, img: "fas fa-map-marker-alt txtrgreen", imgdis: "fas fa-map-marker-alt disable"},
+                     {type: "separator"}*/
                 ]};
             var sidebarjson = [
-                {id: "s_sede", text: "SEDES", icon: "32/disk_d.png", selected: true},
-                {id: "s_departa", text: "DEPARTAMENTOS", icon: "32/disk_e.png"},
-                {id: "s_seccio", text: "SECCIONES", icon: "32/desktop.png"},
-                {id: "s_oficina", text: "OFICINAS", icon: "32/desktop.png"}
+                {id: "s_datos", text: "DATOS CLIENTE", icon: "32/disk_d.png", selected: true},
+                {id: "s_direccion", text: "DIRECCIONES", icon: "32/disk_e.png"},
+                {id: "s_giro", text: "GIRO DE NEGOCIO", icon: "32/desktop.png"},
+                {id: "s_garante", text: "GARANTES", icon: "32/desktop.png"},
+                {id: "s_contacto", text: "CONTACTOS", icon: "32/desktop.png"},
+                {id: "s_cuentas", text: "CTAS BANCARIAS", icon: "32/desktop.png"},
+                {id: "s_documento", text: "DOC. ADJUNTOS", icon: "32/desktop.png"},
+                {id: "s_antecedente", text: "ANTECEDENTES", icon: "32/desktop.png"},
+                {id: "s_comunicacion", text: "COMUNICACIÓN", icon: "32/desktop.png"}
             ];
 
+            var f_datos_cliente = [{type: "settings", labelWidth: 100},
+                {type: "checkbox", labelWidth: 145, offsetLeft: 10, checked: false, disabled: true, offsetTop: 10, label: "<b>Datos Personales ?</b>", name: "st_personales", list: [
+                        {type: "block", blockOffset: 10, position: "label-left", width: 'auto', list: [
+                                {type: "select", disabled: true, name: '_tipodoc', labelWidth: 120, inputWidth: 150, label: '<font class="input_font">Tipo Documento</font>', connector: BASE_URL + 'home/list_tipodoc/'}, {type: "newcolumn"},
+                                {type: "input", readonly: true, value: '', offsetLeft: 47, inputWidth: 110, name: "_nudocumento", label: 'Nro Documento :', validate: "ValidInteger"}, {type: "newcolumn"},
+                                {type: "button", width: 20, disabled: true, value: '<i class="fas fa-search"></i>', offsetTop: 0, offsetLeft: 7, name: "b_dniservice", tooltip: "BUSCAR CLIENTE", hidden: false}, {type: "newcolumn"}
+                                //  {type: "input", width: 60, value: '', offsetLeft: 27, labelWidth: 60, name: "_freg", label: 'Registro :'}, {type: "newcolumn"}
+                            ]}, {type: "newcolumn"},
+                        {type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                                {type: "select", disabled: true, name: '_tipoper', offsetLeft: 10, labelWidth: 120, inputWidth: 170, label: 'Tipo Persona', connector: BASE_URL + 'MA010102/list_tipopers/'}, {type: "newcolumn"},
+                                {type: "select", disabled: true, name: '_vigencia', offsetLeft: 85, labelWidth: 80, inputWidth: 100, label: 'Vigencia :', connector: BASE_URL + 'MA010102/list_estadocleinte/'}, {type: "newcolumn"}
+                            ]}, {type: "newcolumn"},
+                        {type: "input", readonly: true, name: '_razsocial', offsetLeft: 10, labelWidth: 120, inputWidth: 550, label: 'Razon Social :', required: true},
+                        {type: "input", readonly: true, name: '_nomcomer', offsetLeft: 10, labelWidth: 120, inputWidth: 550, label: 'Nombre Comercial :', required: true},
+                        {type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                                {type: "input", readonly: true, name: '_apepat', offsetLeft: 10, labelWidth: 120, inputWidth: 230, label: 'Ape. Paterno :'}, {type: "newcolumn"},
+                                {type: "input", readonly: true, name: '_apemat', offsetLeft: 10, labelWidth: 120, inputWidth: 230, label: 'Ape. Materno :'}, {type: "newcolumn"},
+                                {type: "input", readonly: true, name: '_nombres', offsetLeft: 10, labelWidth: 120, inputWidth: 230, label: 'Nombres :'}
+                            ]}, {type: "newcolumn"},
+                        {type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                                {type: "select", disabled: true, name: '_procedencia', offsetLeft: 10, labelWidth: 120, inputWidth: 150, label: 'Procedencia :', connector: BASE_URL + 'MA010102/list_procedencia/'}, {type: "newcolumn"},
+                                {type: "select", disabled: true, name: '_origen', offsetLeft: 20, labelWidth: 60, inputWidth: 150, label: 'Origen :', connector: BASE_URL + 'MA010102/list_origen/'}, {type: "newcolumn"},
+                                {type: "input", readonly: true, name: '_fredcata', offsetLeft: 20, labelWidth: 60, inputWidth: 150, label: 'Registro :'}, {type: "newcolumn"}
+                            ]}
+                    ]}, {type: "newcolumn"},
 
+                {type: "checkbox", labelWidth: 145, offsetLeft: 10, checked: false, disabled: true, offsetTop: 20, label: "<b>Agregar como Cliente ?</b>", name: "st_cliente", list: [
+                        {type: "block", blockOffset: 0, position: "label-left", offsetTop: 10, width: 'auto', list: [
+                                {type: "select", disabled: true, name: '_tipocliente', offsetLeft: 10, labelWidth: 80, inputWidth: 100, label: 'Tipo cliente :', connector: BASE_URL + 'MA010102/list_tipocliente/'}, {type: "newcolumn"},
+                                {type: "checkbox", disabled: true, name: '_ch_listaprecio', offsetLeft: 10, labelWidth: 80, inputWidth: 5, label: 'Lista precio :'}, {type: "newcolumn"},
+                                {type: "input", readonly: true, name: '_listaprecios', offsetLeft: 10, labelWidth: 1, disabled: true, inputWidth: 400, label: ''}, {type: "newcolumn"},
+                                {type: "button", width: 60, disabled: true, value: '<i class="fas fa-search padt-5-f1-8"></i>', offsetTop: 0, offsetLeft: 7, name: "b_busprecios", tooltip: "BUSCAR UNA LISTA DE PRECIOS", hidden: false}, {type: "newcolumn"}
+                            ]}, {type: "newcolumn"},
+
+                        {type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                                {type: "checkbox", disabled: true, name: '_ch_recaudo', offsetLeft: 10, labelWidth: 120, inputWidth: 10, label: 'Recaudo Bancario :'}, {type: "newcolumn"},
+                                {type: "select", disabled: true, name: '_tipobanco', offsetLeft: 0, labelWidth: 1, inputWidth: 200, label: ' ', connector: BASE_URL + 'MA010102/list_banco/'}, {type: "newcolumn"},
+                                {type: "select", disabled: true, name: '_tipo_negoc', offsetLeft: 10, labelWidth: 0, inputWidth: 150, label: 'Tipo Negocio :', connector: BASE_URL + 'MA010102/list_tiponego/'}, {type: "newcolumn"},
+                                {type: "checkbox", disabled: true, name: '_ch_excepcredito', offsetLeft: 10, labelWidth: 130, inputWidth: 5, label: 'Exceptua Sol Crédito :'}, {type: "newcolumn"}
+                            ]},
+                        {type: "newcolumn"},
+
+                        {type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                                {type: "checkbox", disabled: true, name: '_ch_agenretenedor', offsetLeft: 10, labelWidth: 120, inputWidth: 5, label: 'Ag. Retenedor ?'}, {type: "newcolumn"},
+                                {type: "checkbox", disabled: true, name: '_ch_agentpercep', offsetLeft: 10, labelWidth: 100, inputWidth: 5, label: 'Ag. Percepción ?'}, {type: "newcolumn"},
+                                {type: "checkbox", disabled: true, name: '_ch_clinuevo', offsetLeft: 10, labelWidth: 100, inputWidth: 5, label: 'Cliente Nuevo ?'}, {type: "newcolumn"},
+                                {type: "input", readonly: true, name: '_ingreso', value: '0', offsetLeft: 10, labelWidth: 50, inputWidth: 100, label: 'Ingreso'}, {type: "newcolumn"}
+                            ]}, {type: "newcolumn"},
+                        {type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                                {type: "checkbox", disabled: true, name: '_ch_clicorporativo', offsetLeft: 10, labelWidth: 120, inputWidth: 5, label: 'Cliente Corporativo ?'}, {type: "newcolumn"},
+                                {type: "input", readonly: true, name: '_clientecorporativo', offsetLeft: 10, labelWidth: 1, inputWidth: 280, label: '', disabled: true}, {type: "newcolumn"},
+                                {type: "button", width: 60, value: '<i class="fas fa-search padt-5-f1-8"></i>', offsetTop: 0, offsetLeft: 7, disabled: true, name: "b_clientecorp", tooltip: "BUSCAR CLIENTES CORPORATIVOS", hidden: false}, {type: "newcolumn"},
+                                        //{type: "button", width: 60, value: '<i class="far fa-credit-card padt-5-f1-8"></i>', offsetTop: 0, offsetLeft: 7, disabled: false, name: "b_creditolinea", tooltip: "AGREGAR LINEA DE CREDITO", hidden: false}, {type: "newcolumn"}
+                            ]}, {type: "newcolumn"},
+                        {type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                                {type: "input", readonly: true, name: '_creditototal', value: '0.00', offsetLeft: 10, labelWidth: 100, inputWidth: 150, label: 'Credito Total : '}, {type: "newcolumn"},
+                                {type: "input", readonly: true, name: '_deudatotal', value: '0.00', offsetLeft: 10, labelWidth: 100, inputWidth: 150, label: 'Deuda Total : '}, {type: "newcolumn"}
+                            ]}, {type: "newcolumn"},
+                        {type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                                {type: "input", readonly: true, name: '_email', offsetLeft: 10, labelWidth: 100, inputWidth: 350, label: 'Email : '}, {type: "newcolumn"},
+                                {type: "input", readonly: true, name: '_webpage', offsetLeft: 10, labelWidth: 100, inputWidth: 350, label: 'Webpage : '}, {type: "newcolumn"}
+                            ]},
+                        {type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                                {type: "input", readonly: true, name: '_fregcliente', value: '', offsetLeft: 10, labelWidth: 100, inputWidth: 120, label: 'Registro Cliente : '}, {type: "newcolumn"},
+                                {type: "select", disabled: true, name: '_clvigencia', offsetLeft: 10, labelWidth: 100, inputWidth: 120, label: 'Vigencia Cliente : ', connector: BASE_URL + 'MA010102/list_estadocleinte/'}, {type: "newcolumn"},
+                                {type: "input", readonly: true, name: '_fretiro', offsetLeft: 10, labelWidth: 100, inputWidth: 120, label: 'Retiro : '}, {type: "newcolumn"}
+                            ]}
+                    ]}
+            ];
 
 
 
@@ -95,6 +193,7 @@
             // mainLayout.cells('b').setText("D I R E C C I O N E S");
             myForm = mainLayout.cells('a').attachForm();
             myForm.load(st_form_base, doOnload);
+            myForm.attachEvent("onButtonClick", onBuscaMaestro);
 
             /*  myToolBar = mainLayout.cells("b").attachToolbar(base_tollbar);
              myToolBar.setIconSize(48);
@@ -102,8 +201,10 @@
             // f_s_sede(); //inicia por defecto el primer tab-sidebar
 
 
-            mySidebar = mainLayout.cells('b').attachSidebar({parent: document.body, width: 150, single_cell: true, template: "icons_text", icons_path: "/assets/images/icons/iconsjhon/", items: sidebarjson});
+            mySidebar = mainLayout.cells('b').attachSidebar({parent: document.body, width: 150, single_cell: false, template: "text", icons_path: "/assets/images/icons/iconsjhon/", items: sidebarjson});
             mySidebar.attachEvent("onBeforeSelect", onselect_sidebar);
+            f_s_datos();
+            valores_defecto();
 
             // myDataView.attachEvent("onAfterSelect", onAfterSelectDataview);
         </script>
