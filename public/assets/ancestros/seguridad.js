@@ -79,15 +79,17 @@ IniciarFormularioSeguridad = (windowId, container) => {
                                             id: windowId,
                                             result: 'S'
                                         };
+                                        if(winFormularioSeguridad) winFormularioSeguridad.progressOff();
                                         winFormularioSeguridad.close();
                                         resolve(JSON.stringify(pOut));
                                     }
                                     else {
-                                        alert(response.message);
+                                        alert(response.result);
                                     }
-                                }, 'json').always(() => {
-                                    if(winFormularioSeguridad) winFormularioSeguridad.progressOff();
-                                });
+                                }, 'json');
+                                //.always(() => {
+                                 //   if(winFormularioSeguridad) winFormularioSeguridad.progressOff();
+                                //});
                                 break;
                             case 'fsCancelar':
                                 FormularioSeguridad.setItemValue('fsUsuario','');

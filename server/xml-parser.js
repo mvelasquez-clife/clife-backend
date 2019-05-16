@@ -19,6 +19,30 @@ module.exports = {
             }
         });
     },
+    renderComboAll: (jsonRows) => {
+        var arr = [];
+        for(var i in jsonRows) {
+            var iRow = jsonRows[i];
+            if(i == 0) {
+                arr.push({
+                    '@': { value: iRow.CO_ZONA_COMERCIAL, selected: true}, 
+                    '#': iRow.DE_NOMBRE
+                });
+            }
+            else {
+                arr.push({
+                    '@': { value: iRow.CO_ZONA_COMERCIAL},
+                    '#': iRow.DE_NOMBRE
+                });
+            }
+        }
+        return o2x({
+            '?xml version="1.0" encoding="utf-8"?' : null,
+            complete: {
+                option: arr
+            }
+        });
+    },
     renderCombo: (jsonRows) => {
         var arr = [];
         for(var i in jsonRows) {

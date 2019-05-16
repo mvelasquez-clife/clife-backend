@@ -23,7 +23,7 @@
         <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
         <script type="text/javascript" src="/assets/vendor/dhtmlx/sources/dhtmlxToolbar/codebase/dhtmlxtoolbar.js"></script>
         <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
-        <script src="/socket.io/socket.io.js"></script>
+      <!--  <script src="/socket.io/socket.io.js"></script> -->
         <script type="text/javascript" src="/assets/js/home.js"></script>
         <script>
             var dhxWinmain, mainLayout, secLayout, winId, formini, mainTree, mainWindow, myToolbar, myPop, myPop2, myList,
@@ -190,7 +190,7 @@
                     mainTree.load(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa + '?id=MAIN');
                     mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
                     dhxWinmain = new dhtmlXWindows();
-                    AbrirChat();
+                    //AbrirChat();
                 }
             }
         </script>

@@ -70,13 +70,13 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
                                 array.forEach(function (valor) {
                                     arr_out.push(gridBusqueda.getRowData(valor));
                                 });
-                                const out = {seleccion: arr_out};
+                                const out = { seleccion: arr_out };
                                 winGridBusqueda.close();
                                 resolve(out);
                             } else
-                                Swal.fire({type: 'error', title: 'Debe eligir sólo UNO!'});
+                                Swal.fire({ type: 'error', title: 'Debe eligir sólo UNO!' });
                         } else
-                            Swal.fire({type: 'error', title: 'Debe eligir almenos UNO!'});
+                            Swal.fire({ type: 'error', title: 'Debe eligir almenos UNO!' });
                         break;
                     case 'btno':
                         winGridBusqueda.close();
@@ -111,7 +111,7 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
                     gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
                     gridBusqueda.setColumnIds("ch,codigo,nombre,vigencia,alias,correo");
                     break;
-                case 4:
+                case 4://busqueda ubigeo
                     gridBusqueda.setHeader('#,Codigo,Descripcion,Vigencia,Codigos,Detalle2');
                     gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_search,#text_filter,#text_filter,#text_filter');
                     gridBusqueda.setInitWidthsP('5,10,85');
@@ -141,7 +141,15 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
                     gridBusqueda.setColumnIds("ch,colistado,nombre,moneda,cmone,serielistado");
                     gridBusqueda.setColumnHidden(4, true);
                     gridBusqueda.enableSmartRendering(true);
-
+                    break;
+                case 11://lista de bancos
+                    gridBusqueda.setHeader('#,CodBnaco,Nombre,Estado,Pais,NomPais');
+                    gridBusqueda.attachHeader('#rspan,#text_filter,#text_filter,#rspan,#text_filter,#rspan');
+                    gridBusqueda.setInitWidthsP('5,15,45,20,15,15');
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,codbanco,n_banco,stado,copais,nompais");
+                    gridBusqueda.setColumnHidden(4, true);
+                    gridBusqueda.enableSmartRendering(true);
                     break;
                 default:
                     break;
@@ -161,7 +169,7 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
  //gridBusqueda.uncheckAll();
  gridBusqueda.attachEvent('onRowSelect', gridBusquedaRowSelect);
  };
- 
+
  gridBusquedaRowSelect = (rowId, colId) => {
  winToolbar.enableItem('btok');
  //    const current = parseInt(gridBusqueda.cells(rowId, 0).getValue());
