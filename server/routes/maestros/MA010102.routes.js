@@ -7,6 +7,8 @@ router.get('/list_tipopers', ma010102Controller.list_tipopers);
 
 router.get('/rubro', ma010102Controller.rubro);
 
+router.get('/documentos/:cliente/:emp', ma010102Controller.documentos);
+
 router.get('/list_procedencia', ma010102Controller.list_procedencia);
 
 router.get('/list_origen', ma010102Controller.list_origen);
@@ -18,6 +20,8 @@ router.get('/grid_linea/:emp/:cliente', ma010102Controller.grid_linea);
 router.get('/list_banco', ma010102Controller.list_banco);
 
 router.get('/cargo_repre', ma010102Controller.cargo_repre); 
+
+router.get('/tipocta', ma010102Controller.tipocta); 
 
 router.get('/list_tiponego', ma010102Controller.list_tiponego);
 
@@ -45,11 +49,17 @@ router.get('/cuentas/:cocliente', ma010102Controller.cuentas);
 
 router.get('/giro_nego/:cocliente', ma010102Controller.giro_nego);
 
+router.get('/data_antec/:cocliente/:empr', ma010102Controller.data_antec); 
+
+router.get('/data_comu/:cocliente/:empr', ma010102Controller.data_comu); 
+
 router.get('/dvisita', ma010102Controller.dvisita);
 
 router.get('/dcobranza', ma010102Controller.dcobranza);
 
 router.get('/list_moneda', ma010102Controller.list_moneda);
+
+router.get('/list_operador', ma010102Controller.list_operador); 
 
 router.get('/cargafzvta/:co_direccion/:emp/:zncomer', ma010102Controller.cargafzvta);
 
@@ -67,13 +77,21 @@ router.get('/gridfz_fvta_d/:coddirecc/:empresa/:cozona', ma010102Controller.grid
 
 router.post('/list_datos_cliente', ma010102Controller.list_datos_cliente);
 
+router.post('/grabantece', ma010102Controller.grabantece); 
+
+router.post('/grabacomu', ma010102Controller.grabacomu); 
+
 router.post('/grabagironego', ma010102Controller.grabagironego); 
 
-router.post('/grabacontacto', ma010102Controller.grabacontacto);  
+router.post('/grabacuentas', ma010102Controller.grabacuentas); 
 
 router.post('/grabagarantes', ma010102Controller.grabagarantes);  
 
 router.post('/update_fv', ma010102Controller.update_fv); 
+
+router.post('/documentosup/:cliente/:emp', ma010102Controller.documentosup);
+
+router.post('/docu_clear/:cliente/:emp/:file', ma010102Controller.docu_clear);
 
 router.post('/updatezon_comer', ma010102Controller.updatezon_comer);
 

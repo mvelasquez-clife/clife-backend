@@ -38,9 +38,6 @@ onBuscaMaestro = async (name) => {
         myForm.setItemValue('b_cliente', data.codigo + ' ' + data.nom_comer);
         myForm.setItemValue('b_estado', data.vigencia);
         myForm.setItemValue('b_asignado', data.asignado);
-
-
-        //    beforechange(data);
     });
 };
 async function _async_form(cliente, item, data) {
@@ -70,6 +67,15 @@ function _selec_sidevar(cliente, item) {
                 case 's_cuentas':
                     f_s_ctaban();
                     break;
+                case 's_documento':
+                    f_s_doc();
+                    break;
+                case 's_antecedente':
+                    f_s_antecedentes();
+                    break;
+                case 's_comunicacion':
+                    f_s_comunica();
+                    break;
                 default:
                     null;
                     break;
@@ -91,7 +97,6 @@ function cargar_datos_clie(data) {
     if (data.CO_CLIENTE > 0) {
         myFormdatos.checkItem('st_cliente'), myFormdatos.checkItem('st_personales'), myFormdatos.enableItem('st_cliente'), myFormdatos.enableItem('st_personales'), myFormdatos.setReadonly('st_cliente', true), myFormdatos.setReadonly('st_personales', true);
     } else {
-        //myFormdatos.uncheckItem('st_cliente'), myFormdatos.uncheckItem('st_personales');
         myFormdatos.uncheckItem('st_cliente'), myFormdatos.checkItem('st_personales'), myFormdatos.enableItem('st_cliente'), myFormdatos.enableItem('st_personales'), myFormdatos.setReadonly('st_cliente', true), myFormdatos.setReadonly('st_personales', true);
     }
     cocliente = data.CO_CLIENTE, co_cata_entidad = data.CO_CATALOGO_ENTIDAD, permiso_cataedit = data.ST_PERMISO_EDITAR_CATA_ENTI, co_listadopre = data.CO_LISTADO_PRECIOS, co_seri_listado = data.CO_SERIE_LISTADO;
@@ -162,6 +167,7 @@ function style(name, value) {
 }
 
 onselect_sidebar = (id, lastId) => {
+
     _item_sidebar = id;
     switch (id) {
         case 's_datos':
@@ -184,6 +190,16 @@ onselect_sidebar = (id, lastId) => {
         case 's_cuentas':
             f_s_ctaban();
             break;
+        case 's_documento':
+            f_s_doc();
+            break;
+        case 's_antecedente':
+            f_s_antecedentes();
+            break;
+        case 's_comunicacion':
+            f_s_comunica();
+            break;
+
         default:
             null;
             break;
@@ -285,10 +301,6 @@ f_s_direcc = () => {
         });
     } else {
         no_select_client(myLaouy_Direc, 's_direccion');
-        /*   myLaouy_Direc = mySidebar.cells("s_direccion").attachLayout('1C');
-           myLaouy_Direc.cells("a").attachHTMLString('<div class="nomcliente" style="text-align: center;         padding-bottom: 3%;"> SELECCIONE UN CLIENTE, POR FAVOR...</div><div  id="imgcargue" style="position: absolute;        top: 20; right: 10; bottom: 10; left: 10;              background: url(/assets/images/otros/icono-buscar-datos-nuevo.jpg)        no-repeat     center;         -webkit-background-size: cover;        -moz-background-size: cover;        -o-background-size: cover;         background-size: auto;"></div>');
-           myLaouy_Direc.cells("a").hideHeader();*/
-
     }
 };
 function _txtgrid(grid, column) {
@@ -373,99 +385,102 @@ function __onSelectAntes(id, dataview, tollbar, estadook) {
     }
 }
 
-
 f_s_datos = () => {
-    myLaouy_Dat = mySidebar.cells("s_datos").attachLayout('1C');
+    //     = mySidebar.cells("s_datos").attachLayout('1C');
     if (cocliente > 0) {
-        typeof (myLaouy_Dat) === undefined ? null : myLaouy_Dat.unload();
-        myLaouy_Dat = mySidebar.cells("s_datos").attachLayout('1C');
-        myLaouy_Dat.cells("a").hideHeader();
-        myToolbardatos = myLaouy_Dat.cells("a").attachToolbar(base_tollbar);
-        myToolbardatos.setIconSize(48);
-        myToolbardatos.attachEvent("onClick", ontollbarclic);
-        myFormdatos = myLaouy_Dat.cells("a").attachForm(f_datos_cliente);
-        form_ini();
-        myFormdatos.attachEvent("onButtonClick", async (name) => {
-            var output;
-            switch (name) {
-                case 'b_dniservice':
-                    mySidebar.cells("s_datos").progressOn(); // Wind_.window("wbusq").progressOn();
-                    var p = { dni: myFormdatos.getItemValue('_nudocumento') };
-                    $.post(BASE_URL + "home/buscadni", p, function (res) {
-                        var value = res.value.split('|');
-                        if (value[0].length > 0 || value[1].length > 0) {
-                            myFormdatos.setItemValue('_apepat', ''), myFormdatos.setItemValue('_apemat', ''), myFormdatos.setItemValue('_nombres', ''), myFormdatos.setItemValue('_razsocial', ''), myFormdatos.setItemValue('_nomcomer', '');
-                            myFormdatos.setItemValue('_apepat', value[0]), myFormdatos.setItemValue('_apemat', value[1]), myFormdatos.setItemValue('_nombres', value[2]), myFormdatos.setItemValue('_razsocial', value[0] + ' ' + value[1] + ' ' + value[2]), myFormdatos.setItemValue('_nomcomer', value[0] + ' ' + value[1] + ' ' + value[2]);
-                        }
-                    }, "json");
-                    mySidebar.cells("s_datos").progressOff(); ///    Wind_.window("wbusq").progressOff();
-                    break;
-                case 'b_busprecios':
-                    output = await IniciarGridBusqueda(6, false, mainLayout);
-                    if (output !== null) {
-                        co_listadopre = output.seleccion[0].colistado;
-                        co_seri_listado = output.seleccion[0].serielistado;
-                        myFormdatos.setItemValue('_listaprecios', output.seleccion[0].colistado + ' ' + output.seleccion[0].nombre);
-                    }
-                    break;
-                case 'b_clientecorp':
-                    output = await IniciarGridBusqueda(5, false, mainLayout);
-                    if (output !== null) {
-                        // console.log(output);
-                        cocliente_corpo = output.seleccion[0].codigo;
-                        nom_clien_corpo = output.seleccion[0].ncomercial;
-                        myFormdatos.setItemValue('_clientecorporativo', cocliente_corpo + ' ' + nom_clien_corpo);
-                        //                    co_seri_listado = output.seleccion[0].serielistado;
-                        //                    myFormdatos.setItemValue('_listaprecios', output.seleccion[0].colistado + ' ' + output.seleccion[0].nombre);
-                    }
-                    break;
-                default:
-                    null;
-                    break;
-            }
-        });
-        myFormdatos.attachEvent("onChange", function (name, value, state) {
-            switch (name) {
-                case '_tipoper':
-                    if (value === '02' || value === '04') {
-                        myFormdatos.setItemValue('_apepat', ''), myFormdatos.setItemValue('_apemat', ''), myFormdatos.setItemValue('_nombres', ''), myFormdatos.disableItem('_apepat'), myFormdatos.disableItem('_apemat'), myFormdatos.disableItem('_nombres');
-                    } else {
-                        myFormdatos.enableItem('_apepat'), myFormdatos.enableItem('_apemat'), myFormdatos.enableItem('_nombres');
-                    }
-                    break;
-                case '_ch_listaprecio':
-                    if (state === false) {
-                        co_listado = 0, myFormdatos.setItemValue('_listaprecios', ''), myFormdatos.disableItem('_listaprecios'), myFormdatos.disableItem('b_busprecios');
-                    } else
-                        myFormdatos.enableItem('_listaprecios'), myFormdatos.enableItem('b_busprecios');
-                    break;
-                case '_ch_clicorporativo':
-                    if (state === false) {
-                        myFormdatos.disableItem('_clientecorporativo'), myFormdatos.setItemValue('_clientecorporativo', ''), myFormdatos.disableItem('b_clientecorp'); //, myFormdatos.disableItem('b_creditolinea');
-                    } else {
-                        myFormdatos.enableItem('_clientecorporativo'), myFormdatos.enableItem('b_clientecorp'); //, myFormdatos.enableItem('b_creditolinea');
-                    }
-                    break;
-                default:
-                    if (name === '_ch_recaudo' || name === '_ch_excepcredito') {
-                        if (state === false) {
-                            myFormdatos.disableItem('_tipobanco'), myFormdatos.setItemValue('_tipobanco', "0");
-                        } else
-                            myFormdatos.enableItem('_tipobanco');
-                    }
-                    break;
-            }
-        });
-        //beforechange(data);
+        carga_form_cliente();
     } else {
         no_select_client(myLaouy_Dat, 's_datos');
-        /*myLaouy_Dat = mySidebar.cells("s_datos").attachLayout('1C');
-        myLaouy_Dat.cells("a").attachHTMLString('<div class="nomcliente" style="text-align: center;         padding-bottom: 3%;"> SELECCIONE UN CLIENTE, POR FAVOR...</div><div  id="imgcargue"    style="position: absolute;     top: 20; right: 10; bottom: 10; left: 10;              background: url(/assets/images/otros/icono-buscar-datos-nuevo.jpg)        no-repeat     center;         -webkit-background-size: cover;        -moz-background-size: cover;        -o-background-size: cover;         background-size: auto;"></div>');
-        myLaouy_Dat.cells("a").hideHeader();*/
-
     }
 };
 
+function carga_form_cliente() {
+    typeof (myLaouy_Dat) === undefined ? null : myLaouy_Dat.unload();
+    myLaouy_Dat = mySidebar.cells("s_datos").attachLayout('1C');
+    myLaouy_Dat.cells("a").hideHeader();
+    myToolbardatos = myLaouy_Dat.cells("a").attachToolbar(base_tollbar);
+    myToolbardatos.setIconSize(48);
+    myToolbardatos.attachEvent("onClick", ontollbarclic);
+    myFormdatos = myLaouy_Dat.cells("a").attachForm(f_datos_cliente);
+    form_ini();
+    myToolbardatos.disableItem('__edit');//,myToolbardatos.enableItem('__save'),myToolbardatos.enableItem('__cancel');
+    myFormdatos.attachEvent("onButtonClick", async (name) => {
+        var output;
+        switch (name) {
+            case 'b_dniservice': //console.log(parseFloat(myFormdatos.getItemValue('_nudocumento')));
+                if ((myFormdatos.getItemValue('_nudocumento')).replace(/ /g, "").length > 0) {
+                    myFormdatos.setItemValue('_nudocumento', (myFormdatos.getItemValue('_nudocumento')).replace(/ /g, ""));
+                    mySidebar.cells("s_datos").progressOn(); // Wind_.window("wbusq").progressOn();
+                    var p = { dni: myFormdatos.getItemValue('_nudocumento') };
+                    $.post(BASE_URL + "home/buscadni", p, function (res) {
+                        console.log(res);
+                        if (res.state !== 'error') {
+                            var value = res.value.split('|');
+                            if (value[0].length > 0 || value[1].length > 0) {
+                                myFormdatos.setItemValue('_apepat', ''), myFormdatos.setItemValue('_apemat', ''), myFormdatos.setItemValue('_nombres', ''), myFormdatos.setItemValue('_razsocial', ''), myFormdatos.setItemValue('_nomcomer', '');
+                                myFormdatos.setItemValue('_apepat', value[0]), myFormdatos.setItemValue('_apemat', value[1]), myFormdatos.setItemValue('_nombres', value[2]), myFormdatos.setItemValue('_razsocial', value[0] + ' ' + value[1] + ' ' + value[2]), myFormdatos.setItemValue('_nomcomer', value[0] + ' ' + value[1] + ' ' + value[2]);
+                            }
+                        } else { dhtmlx.message({ type: "error", text: "Verifique el DNI/RUC, solo se permite NUMEROS[0-9], por favor", expire: 5000 }); }
+                    }, "json");
+                    mySidebar.cells("s_datos").progressOff(); ///    Wind_.window("wbusq").progressOff();
+                } else {
+                    dhtmlx.message({ type: "error", text: "Tiene q ingresar un Numero de Documento correcto y sin espacios en blanco, por favor", expire: 5000 });
+                }
+                break;
+            case 'b_busprecios':
+                output = await IniciarGridBusqueda(6, false, mainLayout);
+                if (output !== null) {
+                    co_listadopre = output.seleccion[0].colistado;
+                    co_seri_listado = output.seleccion[0].serielistado;
+                    myFormdatos.setItemValue('_listaprecios', output.seleccion[0].colistado + ' ' + output.seleccion[0].nombre);
+                }
+                break;
+            case 'b_clientecorp':
+                output = await IniciarGridBusqueda(5, false, mainLayout);
+                if (output !== null) {
+                    cocliente_corpo = output.seleccion[0].codigo;
+                    nom_clien_corpo = output.seleccion[0].ncomercial;
+                    myFormdatos.setItemValue('_clientecorporativo', cocliente_corpo + ' ' + nom_clien_corpo);
+                }
+                break;
+            default:
+                null;
+                break;
+        }
+    });
+    myFormdatos.attachEvent("onChange", function (name, value, state) {
+        switch (name) {
+            case '_tipoper':
+                if (value === '02' || value === '04') {
+                    myFormdatos.setItemValue('_apepat', ''), myFormdatos.setItemValue('_apemat', ''), myFormdatos.setItemValue('_nombres', ''), myFormdatos.disableItem('_apepat'), myFormdatos.disableItem('_apemat'), myFormdatos.disableItem('_nombres');
+                } else {
+                    myFormdatos.enableItem('_apepat'), myFormdatos.enableItem('_apemat'), myFormdatos.enableItem('_nombres');
+                }
+                break;
+            case '_ch_listaprecio':
+                if (state === false) {
+                    co_listado = 0, myFormdatos.setItemValue('_listaprecios', ''), myFormdatos.disableItem('_listaprecios'), myFormdatos.disableItem('b_busprecios');
+                } else
+                    myFormdatos.enableItem('_listaprecios'), myFormdatos.enableItem('b_busprecios');
+                break;
+            case '_ch_clicorporativo':
+                if (state === false) {
+                    myFormdatos.disableItem('_clientecorporativo'), myFormdatos.setItemValue('_clientecorporativo', ''), myFormdatos.disableItem('b_clientecorp'); //, myFormdatos.disableItem('b_creditolinea');
+                } else {
+                    myFormdatos.enableItem('_clientecorporativo'), myFormdatos.enableItem('b_clientecorp'); //, myFormdatos.enableItem('b_creditolinea');
+                }
+                break;
+            default:
+                if (name === '_ch_recaudo' || name === '_ch_excepcredito') {
+                    if (state === false) {
+                        myFormdatos.disableItem('_tipobanco'), myFormdatos.setItemValue('_tipobanco', "0");
+                    } else
+                        myFormdatos.enableItem('_tipobanco');
+                }
+                break;
+        }
+    });
+}
 ontollbarclic = async (id) => {
     switch (id) {
         case '__lincredito':
@@ -497,11 +512,9 @@ ontollbarclic = async (id) => {
                                 Swal.fire('Bien!', res.message, 'success');
                                 myGridLineaC.clearAll();
                                 myGridLineaC.load(BASE_URL + 'MA010102/grid_linea/' + usrJson.empresa + '/' + cocliente);
-                                //Windln_.window("wbusln").close();
                             }
                         }, "json");
                         break;
-
                     default:
                         null;
                         break;
@@ -541,11 +554,13 @@ ontollbarclic = async (id) => {
                 myFormdatos.uncheckItem('st_personales'), myFormdatos.uncheckItem('st_cliente'), myToolbardatos.disableItem('__save'), myToolbardatos.disableItem('__cancel');
             }
             break;
-        case '__nuevo':
+        case '__nuevo':// console.log('nuevo');
             codcliente = 0, myToolbardatos.disableItem('__edit'), permiso_cataedit = 'S';
-            myForm.setItemValue('b_cliente', ''), myForm.setItemValue('b_estado', ''), myForm.setItemValue('b_asignado', '');
-            myFormdatos.checkItem('st_personales'), myFormdatos.enableItem('st_personales');
-            myFormdatos.checkItem('st_cliente'), myFormdatos.enableItem('st_cliente'), myToolbardatos.disableItem('__lincredito');
+            myForm.setItemValue('b_estado', ''), myForm.setItemValue('b_asignado', ''), myForm.setItemValue('b_registro', '');
+            myFormdatos.checkItem('st_personales'), myFormdatos.enableItem('st_personales'), myFormdatos.enableItem('_vigencia'),
+                myFormdatos.checkItem('st_cliente'), myFormdatos.enableItem('st_cliente'),
+                //   myToolbardatos.disableItem('__lincredito');
+                myFormdatos.enableItem('st_cliente'), myFormdatos.uncheckItem('st_cliente');
             myToolbardatos.enableItem('__save'), myToolbardatos.enableItem('__cancel');
             myFormdatos.enableItem('b_dniservice');
             myFormdatos.setItemValue('_clvigencia', 'Vigente');
@@ -863,7 +878,7 @@ function valores_defecto() {
 }
 
 f_s_giro_ne = () => {
-    myLayou_giro = mySidebar.cells("s_giro").attachLayout('1C');
+    //  myLayou_giro = mySidebar.cells("s_giro").attachLayout('1C');
     let _option = '0';
     if (cocliente > 0) {
         myLayou_giro = mySidebar.cells("s_giro").attachLayout('2U');
@@ -958,7 +973,7 @@ f_cleam_fgiro = (sel_giro, op) => {
 }
 
 f_s_garante = () => {
-    myLayou_gara = mySidebar.cells("s_garante").attachLayout('1C');
+    //  myLayou_gara = mySidebar.cells("s_garante").attachLayout('1C');
     let _option = '0';
     if (cocliente > 0) {
         myLayou_gara = mySidebar.cells("s_garante").attachLayout('2U');
@@ -1070,9 +1085,8 @@ f_cleam_fgara = (sel_, op) => {
     }
 }
 
-
 f_s_contactos = () => {
-    myLayou_contac = mySidebar.cells("s_contacto").attachLayout('1C');
+    //myLayou_contac = mySidebar.cells("s_contacto").attachLayout('1C');
     if (cocliente > 0) {
         myLayou_contac = mySidebar.cells("s_contacto").attachLayout('2U');
         myLayou_contac.cells("a").hideHeader();
@@ -1093,16 +1107,8 @@ f_s_contactos = () => {
                 case 'b_save':
                     if (myForm_contac.validate() === Boolean(true)) {
                         let p = {
-                            xoption: _option,
-                            x_co_catalogo: cocliente,
-                            x_cargo_repre: myForm_contac.getItemValue('cont_carg_repre'),
-                            x_co_repre: myForm_contac.getItemValue('cont_co_repres'),
-                            x_apellidos: myForm_contac.getItemValue('cont_apellido'),
-                            x_nombres: myForm_contac.getItemValue('cont_nombres'),
-                            x_mail: myForm_contac.getItemValue('cont_email'),
-                            x_telefono: myForm_contac.getItemValue('cont_telf'),
-                            x_estado: myForm_contac.getItemValue('cont_stado')
-
+                            xoption: _option, x_co_catalogo: cocliente, x_cargo_repre: myForm_contac.getItemValue('cont_carg_repre'), x_co_repre: myForm_contac.getItemValue('cont_co_repres'),
+                            x_apellidos: myForm_contac.getItemValue('cont_apellido'), x_nombres: myForm_contac.getItemValue('cont_nombres'), x_mail: myForm_contac.getItemValue('cont_email'), x_telefono: myForm_contac.getItemValue('cont_telf'), x_estado: myForm_contac.getItemValue('cont_stado')
                         };
                         $.post(BASE_URL + "MA010102/grabacontacto", p, function (res) {
                             if (parseFloat(res.codigo) > 0) {
@@ -1155,7 +1161,6 @@ f_s_contactos = () => {
     }
 };
 
-
 f_cleam_fcontac = (sel_, op) => {
     myForm_contac.setItemValue('cont_carg_repre', sel_.cargo_repre),
         myForm_contac.setItemValue('cont_co_repres', sel_.co_repres),
@@ -1185,7 +1190,6 @@ f_cleam_fcontac = (sel_, op) => {
     }
 }
 
-
 f_act_form_cont = (stado) => {
     switch (stado) {
         case 'disabled':
@@ -1207,9 +1211,8 @@ f_act_form_cont = (stado) => {
 
 }
 
-
 f_s_ctaban = () => {
-    myLayou_cbanc = mySidebar.cells("s_cuentas").attachLayout('1C');
+    //myLayou_cbanc = mySidebar.cells("s_cuentas").attachLayout('1C');
     if (cocliente > 0) {
         myLayou_cbanc = mySidebar.cells("s_cuentas").attachLayout('2U');
         myLayou_cbanc.cells("a").hideHeader();
@@ -1220,16 +1223,17 @@ f_s_ctaban = () => {
         myForm_cbanc.attachEvent("onValidateError", function (name, value, result) {
             result ? '' : Swal.fire({ type: 'error', title: 'Alerta...', text: 'Debe ingresar solo numeros en los campos en rojo' });
         });
-        myForm_cbanc.attachEvent("onButtonClick", function (name) {
+        myForm_cbanc.attachEvent("onButtonClick", async (name) => {
             switch (name) {
                 case '_b_banco':
-                    var output = await IniciarGridBusqueda(4, false, mainLayout);
+                    var output = await IniciarGridBusqueda(11, false, mainLayout);
                     if (output !== null) {
-                        ubigeo = output.seleccion[0].ubigeo;
-                        formu.setItemValue('__nubigeo', output.seleccion[0].descripcion);
+                        cobanco_s = output.seleccion[0].codbanco, copais_s = output.seleccion[0].copais;
+                        myForm_cbanc.setItemValue('n_banco', output.seleccion[0].n_banco);
+                        myForm_cbanc.setItemValue('pais_banco', output.seleccion[0].nompais);
                     }
                     break;
-                case 'b_add': sel_cbancid = undefined, _option = 'nuevo', sel_cbanc = {}, myGridcbanc.clearSelection(), f_cleam_cbanc(sel_cbanc, 'nuevo'), myForm_cbanc.disableItem('b_add'), myForm_cbanc.disableItem('b_edit'), myForm_cbanc.enableItem('b_save'), myForm_cbanc.enableItem('b_cancel');
+                case 'b_add': co_seq = 0, sel_cbancid = undefined, _option = 'nuevo', sel_cbanc = {}, myGridcbanc.clearSelection(), f_cleam_cbanc(sel_cbanc, 'nuevo'), myForm_cbanc.disableItem('b_add'), myForm_cbanc.disableItem('b_edit'), myForm_cbanc.enableItem('b_save'), myForm_cbanc.enableItem('b_cancel');
                     break;
                 case 'b_edit':
                     _option = 'edit', f_cleam_cbanc(sel_cbanc, 'edit'), myForm_cbanc.disableItem('b_edit'), myForm_cbanc.disableItem('b_add');
@@ -1237,16 +1241,29 @@ f_s_ctaban = () => {
                 case 'b_save':
                     if (myForm_cbanc.validate() === Boolean(true)) {
                         let p = {
-                            xoption: _option
+                            /* xoption in varchar2,x_co_catalogo in number,x_tipo_cta in number,x_numcta in number,x_estado in varchar2,x_cobanco in varchar2,x_copais in number,idseq in number*/
+                            xoption: _option, x_co_catalogo: cocliente, x_tipo_cta: myForm_cbanc.getItemValue('n_tipocta'), x_numcta: myForm_cbanc.getItemValue('nro_cta'), x_estado: myForm_cbanc.getItemValue('cta_stado'),
+                            x_cobanco: cobanco_s, x_copais: copais_s, idseq: co_seq
                         };
                         $.post(BASE_URL + "MA010102/grabacuentas", p, function (res) {
                             if (parseFloat(res.codigo) > 0) {
                                 let newId = (new Date()).valueOf();
+                                let t = myForm_cbanc.getSelect('n_tipocta');
                                 if (_option === 'nuevo') {
-                                    myGridcbanc.addRow(newId, myForm_cbanc.getItemValue('cont_co_repres') + ',' + myForm_cbanc.getItemValue('cont_apellido') + ',' + myForm_cbanc.getItemValue('cont_nombres') + ',' + myForm_cbanc.getItemValue('cont_email') + ',' + myForm_cbanc.getItemValue('cont_carg_repre') + ',' + cocliente + ',' + res.fe_reg + ',' + ',,' + myForm_cbanc.getItemValue('cont_telf'));
+                                    myGridcbanc.addRow(newId, cocliente + ',' + myForm_cbanc.getItemValue('n_tipocta') + ',' + myForm_cbanc.getItemValue('nro_cta') + ',' +
+                                        myForm_cbanc.getItemValue('cta_stado') + ',' + cobanco_s + ',' + copais_s + ',' + res.fe_reg + ',' + myForm_cbanc.getItemValue('n_banco') + ',' +
+                                        myForm_cbanc.getItemValue('pais_banco') + ',' + t.options[t.selectedIndex].text + ',' + res.codigo);
                                 } else {
-                                    myGridcbanc.cells(sel_contid, 1).setValue(myForm_cbanc.getItemValue('cont_apellido')), myGridcbanc.cells(sel_cbancid, 2).setValue(myForm_cbanc.getItemValue('cont_nombres')), myGridcbanc.cells(sel_contid, 3).setValue(myForm_cbanc.getItemValue('cont_email')), myGridcbanc.cells(sel_cbancid, 4).setValue(myForm_cbanc.getItemValue('cont_carg_repre')), myGridcbanc.cells(sel_cbancid, 7).setValue(myForm_cbanc.getItemValue('cont_stado')), myGridcbanc.cells(sel_cbancid, 9).setValue(myForm_cbanc.getItemValue('cont_telf')), myGridcbanc.setRowTextStyle(sel_cbancid, myForm_cbanc.getItemValue('cont_stado') === 'Retirado' ? "text-decoration: line-through;" : "text-decoration: none;"),
-                                        myGridcontac.clearSelection(), sel_contid = undefined, sel_cbanc = {};
+                                    myGridcbanc.cells(sel_cbancid, 1).setValue(myForm_cbanc.getItemValue('n_tipocta')),
+                                        myGridcbanc.cells(sel_cbancid, 2).setValue(myForm_cbanc.getItemValue('nro_cta')),
+                                        myGridcbanc.cells(sel_cbancid, 3).setValue(myForm_cbanc.getItemValue('cta_stado')),
+                                        myGridcbanc.cells(sel_cbancid, 4).setValue(cobanco_s),
+                                        myGridcbanc.cells(sel_cbancid, 5).setValue(copais_s),
+                                        myGridcbanc.cells(sel_cbancid, 7).setValue(myForm_cbanc.getItemValue('n_banco')),
+                                        myGridcbanc.cells(sel_cbancid, 8).setValue(myForm_cbanc.getItemValue('pais_banco')),
+                                        myGridcbanc.cells(sel_cbancid, 9).setValue(t.options[t.selectedIndex].text),
+                                        myGridcbanc.setRowTextStyle(sel_cbancid, myForm_cbanc.getItemValue('cta_stado') === 'Retirado' ? "text-decoration: line-through;" : "text-decoration: none;"),
+                                        myGridcbanc.clearSelection(), sel_cbancid = undefined, sel_cbanc = {};
                                 }
                                 myForm_cbanc.setItemValue('titleform', 'Seleccione Contacto'), f_cleam_cbanc({}, 'save');
                                 Swal.fire('Bien!', res.message, 'success');
@@ -1257,25 +1274,25 @@ f_s_ctaban = () => {
                     }
                     break;
                 case 'b_cancel': sel_cbancid = undefined, _option = '0', myForm_cbanc.enableItem('b_add'), sel_cbanc = {}, myGridcbanc.clearSelection(),
-                    f_cleam_cbanc(sel_cbanc, 'cancel'), myForm_cbanc.disableItem('b_edit'), myForm_contac.disableItem('b_save');
+                    f_cleam_cbanc(sel_cbanc, 'cancel'), myForm_cbanc.disableItem('b_edit'), myForm_cbanc.disableItem('b_save');
                     break;
             }
         });
         myGridcbanc = myLayou_cbanc.cells("a").attachGrid();
-        myGridcbanc.setHeader("coCliente,Tipo_cta,Numero,Estado,Banco,Pais,Fe.Reg,Nom.Bnaco,Nom.Pais,Nom.Tipo");
-        myGridcbanc.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro,ro");
-        myGridcbanc.setInitWidthsP("10,20,20,20,10,10,10,10,10,10");
-        myGridcbanc.setColumnIds("co_catalo,co_tipo,numero,estado,cobanco,copais,fereg,n_banco,n_pais,n_tipo");
+        myGridcbanc.setHeader("coCliente,Tipo_cta,Numero,Estado,Banco,Pais,Fe.Reg,Nom.Bnaco,Nom.Pais,Nom.Tipo,Coseq");
+        myGridcbanc.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro");
+        myGridcbanc.setInitWidthsP("0,0,30,20,0,0,0,30,10,10,0");
+        myGridcbanc.setColumnIds("co_catalo,co_tipo,numero,estado,cobanco,copais,fereg,n_banco,n_pais,n_tipo,coseq");
         myGridcbanc.init();
-        /*  ([0, 4, 5]).forEach((elem) => {
-                myGridcbanc.setColumnHidden(elem, true);
-            })*/
+        ([0, 1, 4, 6, 5, 10]).forEach((elem) => {
+            myGridcbanc.setColumnHidden(elem, true);
+        });
         myLayou_cbanc.cells("a").progressOn();
         myGridcbanc.load(BASE_URL + 'MA010102/cuentas/' + cocliente);
         myLayou_cbanc.cells("a").progressOff();
         myGridcbanc.attachEvent("onRowSelect", function (rId, ind) {
-            sel_cbanc = myGridcbanc.getRowData(rId); sel_cbancid = rId;
-            f_cleam_cbanc(sel_cbanc, 'select');
+            sel_cbanc = myGridcbanc.getRowData(rId); sel_cbancid = rId, co_seq = sel_cbanc.coseq,
+                f_cleam_cbanc(sel_cbanc, 'select'); console.log(sel_cbanc);
         });
         _txtgrid(myGridcbanc, 3);
     } else {
@@ -1283,50 +1300,47 @@ f_s_ctaban = () => {
     }
 };
 
-
 f_cleam_cbanc = (sel_, op) => {
-    myForm_cbanc.setItemValue('cont_carg_repre', sel_.cargo_repre),
-        myForm_cbanc.setItemValue('cont_co_repres', sel_.co_repres),
-        myForm_cbanc.setItemValue('cont_apellido', sel_.de_apell),
-        myForm_cbanc.setItemValue('cont_nombres', sel_.de_nombre),
-        myForm_cbanc.setItemValue('cont_email', sel_.de_mail),
-        myForm_cbanc.setItemValue('cont_telf', sel_.nu_telef),
-        myForm_cbanc.setItemValue('cont_f_reg', sel_.fe_reg);
+    myForm_cbanc.setItemValue('n_banco', sel_.n_banco),
+        myForm_cbanc.setItemValue('pais_banco', sel_.n_pais),
+        myForm_cbanc.setItemValue('n_tipocta', sel_.co_tipo),
+        myForm_cbanc.setItemValue('nro_cta', sel_.numero),
+        myForm_cbanc.setItemValue('cta_freg', sel_.fereg),
+        myForm_cbanc.setItemValue('cta_stado', sel_.estado);
 
     switch (op) {
         case 'cancel':
-            myForm_cbanc.disableItem('cont_stado'), myForm_cbanc.disableItem('cont_carg_repre'), myForm_cbanc.setItemValue('titleform', 'Seleccione Contacto ');
+            myForm_cbanc.setItemValue('titleform', 'Seleccione una Cuenta '), myForm_cbanc.disableItem('_b_banco');
             break;
         case 'select':
-            f_act_form_cbanc('disabled'), myForm_cbanc.disableItem('cont_carg_repre'), myForm_cbanc.disableItem('cont_co_repres'), myForm_cbanc.disableItem('cont_stado'), myForm_cbanc.enableItem('b_add'), myForm_cbanc.enableItem('b_edit'), myForm_cbanc.setItemValue('titleform', 'Visualizando ' + sel_.de_apell);
+            f_act_form_cbanc('disabled'), myForm_cbanc.disableItem('n_tipocta'), myForm_cbanc.enableItem('b_add'), myForm_cbanc.enableItem('b_edit'), myForm_cbanc.setItemValue('titleform', 'Visualizando ' + sel_.n_banco);
             break;
         case 'edit':
-            f_act_form_cbanc(), myForm_cbanc.setItemValue('titleform', 'Editando ' + sel_.de_apell), myForm_cbanc.disableItem('cont_carg_repre'), myForm_cbanc.disableItem('cont_co_repres');
+            f_act_form_cbanc(), myForm_cbanc.enableItem('_b_banco'), myForm_cbanc.setItemValue('titleform', 'Editando ' + sel_.n_banco);
             break;
         case 'nuevo':
-            f_act_form_cbanc(), myForm_cbanc.enableItem('cont_carg_repre'), myForm_cbanc.enableItem('cont_co_repres'), myForm_cbanc.enableItem('cont_stado'), myForm_cbanc.setItemValue('titleform', 'Nuevo Contacto');
+            f_act_form_cbanc(), myForm_cbanc.setItemValue('titleform', 'Nueva Cuenta Bancaria');
             break;
         default:
-            myForm_cbanc.disableItem('b_save'), myForm_contac.disableItem('b_cancel'), myForm_contac.enableItem('b_add');
+            myForm_cbanc.disableItem('b_save'), myForm_cbanc.disableItem('b_cancel'), myForm_cbanc.enableItem('b_add');
             break;
     }
 }
 
-
 f_act_form_cbanc = (stado) => {
     switch (stado) {
         case 'disabled':
-            (['cont_co_repres', 'cont_apellido', 'cont_nombres', 'cont_email', 'cont_telf', 'cont_f_reg', 'cont_f_retiro']).forEach((elem) => {
+            (['n_banco', 'pais_banco', 'cta_freg']).forEach((elem) => {
                 myForm_cbanc.setReadonly(elem, true);
-            }), (['b_save', 'b_cancel', 'cont_stado', 'cont_carg_repre']).forEach((elem) => {
+            }), (['b_save', 'b_cancel', '_b_cta', 'cta_stado']).forEach((elem) => {
                 myForm_cbanc.disableItem(elem);
             });
             break;
         default:
-            (['cont_co_repres', 'cont_apellido', 'cont_nombres', 'cont_email', 'cont_telf', 'cont_f_reg', 'cont_f_retiro']).forEach((elem) => {
+            (['nro_cta', 'cta_freg']).forEach((elem) => {
                 myForm_cbanc.setReadonly(elem, false);
             }),
-                (['b_save', 'b_cancel', 'cont_stado', 'cont_carg_repre']).forEach((elem) => {
+                (['b_save', 'n_tipocta', 'b_cancel', '_b_cta', '_b_banco', 'cta_stado']).forEach((elem) => {
                     myForm_cbanc.enableItem(elem);
                 });
             break;
@@ -1334,242 +1348,325 @@ f_act_form_cbanc = (stado) => {
 
 }
 
+f_s_doc = () => {
+    //   myLayou_doc = mySidebar.cells("s_documento").attachLayout('1C'); console.log(cocliente);
+    if (cocliente > 0) {
+        myLayou_doc.cells("a").hideHeader();
+        myLayou_doc.cells("a").attachHTMLString('<div id="vault"  style="width : 100%; height:100%;" ><div>');
+        let conf = {
+            scaleFactor: 4, uploader: {
+                target: BASE_URL + "MA010102/documentosup/" + cocliente + '/' + usrJson.empresa
+            }, mode: "grid", customScroll: true
+        };
+        var vault = new dhx.Vault("vault", conf);
+        vault.toolbar.data.remove("remove-all", { icon: "far fa-trash-alt" });
+        myLayou_doc.cells("a").progressOn();
+        vault.events.on("BeforeRemove", function (file) {
+            $.post(BASE_URL + "MA010102/docu_clear/" + cocliente + '/' + usrJson.empresa + '/' + file.name, {}, (res) => {
+                if (parseFloat(res.codigo) > 0) {
+                    var filtered = files__.filter(function (item) {
+                        return item.name !== file.name;
+                    });
+                    files__ = filtered;
+                    Swal.fire('Bien!', 'Documento borrado OK!...', 'success');
+                    return true;
+                } else {
+                    Swal.fire({ type: 'error', title: 'Error al borrar el archivo...', text: res.message });
+                    return false;
+                }
+
+            });
+        });
+
+        vault.toolbar.data.add({ type: "iconButton", id: "carrousel", tooltip: "Visualizar todas las imagenes", icon: "fas fa-external-link-alt" }, 2);
+
+        vault.toolbar.events.on("click", function (id) {
+            if (id === "carrousel") {
+                if (files__.length > 0) {
+                    Windfiles = new dhtmlXWindows();
+                    Windfiles_id = Windfiles.createWindow("wfiles", 0, 0, 1020, 580);
+                    Windfiles.window("wfiles").setText("Visualización de Imagenes [jpg,png,bmp]");
+                    Windfiles.window("wfiles").setModal(true);
+                    Windfiles.window("wfiles").center();
+                    myCarouselFile = Windfiles.window("wfiles").attachCarousel(); //{ offset_item: 20, item_width: 288, item_height: 338 }
+                    (files__).forEach((file) => {
+                        var partfil = (file.name).split(".");
+                        if (partfil[1] == 'jpg' || partfil[1] == 'png' || partfil[1] == 'bmp') {
+                            var id = myCarouselFile.addCell();
+                            myCarouselFile.cells(id).attachHTMLString("<div style='position: relative; left: 0px; top: 0px; overflow: auto; width: 100%; height: 100%;'>" +
+                                "<img id='" + file.name + "' src='" + file.preview + "' style='max-width:100%; height:auto;'></div>");//ondragstart='return false;
+                        }
+                    });
+                } else {
+                    dhx.message({
+                        text: "No hay documentos que mostrar", css: "dhx-error", expire: 4000
+                    });
+                }
+            }
+        });
+
+        vault.events.on("beforeAdd", function (item) {
+            console.log(item);
+            var extension = item.file.name.split(".");
+            var predicate = extension[1] === 'xls' ? false : true;
+            if (!predicate) {
+                dhx.message({
+                    text: "Documento Invalido.. Solo se permiten Imagenes", css: "dhx-error", expire: 4000
+                });
+            }
+            if (predicate) {
+                files__.push({ 'name': item.file.name, 'preview': '/assets/images/ma010102/' + cocliente + '/' + item.file.name })
+            }
+            return predicate;
+        });
+
+        $.get(BASE_URL + "MA010102/documentos/" + cocliente + '/' + usrJson.empresa, {}, (res) => {
+            if (res.path_server === 'fail') {
+                Swal.fire({ type: 'error', title: 'Error al crear la carpeta en el servidor de archivos 248...', text: res.message });
+            } else { //Swal.fire('Imagenes cargadas del servidor ', res.message, 'success'); 
+                dhtmlx.message("Sincronizado completo!");
+            }
+            vault.data.parse(res.files), files__ = res.files;
+
+            myLayou_doc.cells("a").progressOff();
+        });
+    } else {
+        no_select_client(myLayou_doc, 's_documento');
+    }
+}
 
 
+f_s_antecedentes = () => {
+    //myLayou_antec = mySidebar.cells("s_antecedente").attachLayout('1C');
+    let _option = '0';
+    if (cocliente > 0) {
+        myLayou_antec = mySidebar.cells("s_antecedente").attachLayout('2U');
+        myLayou_antec.cells("a").hideHeader();
+        myLayou_antec.cells("b").hideHeader();
+        myLayou_antec.cells("a").setWidth(660);
+        myLayou_antec.setSeparatorSize(0, 0);
+        myForm_antc = myLayou_antec.cells("b").attachForm(f_antecedentes);
+        myForm_antc.attachEvent("onValidateError", function (name, value, result) {
+            result ? '' : Swal.fire({ type: 'error', title: 'Alerta...', text: 'Debe ingresar solo numeros en los campos en rojo' });
+        });
+        myForm_antc.attachEvent("onButtonClick", function (name) {
+            switch (name) {
+                case 'b_add': sel_antid = undefined, _option = 'nuevo', sel_ant = {}, myGridant.clearSelection(), f_cleam_fant(sel_ant, 'nuevo'),
+                    myForm_antc.disableItem('b_add'), myForm_antc.disableItem('b_edit'), myForm_antc.enableItem('b_save'), myForm_antc.enableItem('b_cancel');
+                    break;
+                case 'b_edit':
+                    _option = 'edit', f_cleam_fant(sel_ant, 'edit'), myForm_antc.disableItem('b_edit'), myForm_antc.disableItem('b_add'),
+                        myForm_antc.enableItem('b_save'), myForm_antc.enableItem('b_cancel');
+                    break;
+                case 'b_save':
+                    let p = {
+                        xoption: _option, x_cliente: cocliente, xemp: usrJson.empresa, xusureg: usrJson.codigo, xgarante: sel_ant.cod_ant,
+                        xant_detalle: myForm_antc.getItemValue('ant_detalle'), xant_satisfa: myForm_antc.getItemValue('ant_satisfa'),
+                        xant_referencia: myForm_antc.getItemValue('ant_referencia')
+                    };
+                    $.post(BASE_URL + "MA010102/grabantece", p, function (res) {
+                        if (parseFloat(res.codigo) > 0) {
+                            let newId = (new Date()).valueOf();
+                            if (_option === 'nuevo') {
+                                myGridant.addRow(newId, res.codigo + ',' + myForm_antc.getItemValue('ant_detalle') + ',' + myForm_antc.getItemValue('ant_satisfa') + ',' + myForm_antc.getItemValue('ant_referencia') + ',' +
+                                    usrJson.codigo + ',' + res.fecha + ',' + usrJson.empresa + ',' + cocliente + ',' + usrJson.alias);
+                            } else {
+                                myGridant.cells(sel_antid, 1).setValue(myForm_antc.getItemValue('ant_detalle'));
+                                myGridant.cells(sel_antid, 2).setValue(myForm_antc.getItemValue('ant_satisfa'));
+                                myGridant.cells(sel_antid, 3).setValue(myForm_antc.getItemValue('ant_referencia'));
+                                myGridant.clearSelection(), sel_antid = undefined, sel_ant = {};
+                            }
+                            myForm_antc.setItemValue('titleform', 'Seleccione Giro Negocio'), f_cleam_fant({}, 'save');
+                            Swal.fire('Bien!', res.message, 'success');
+                        } else {
+                            Swal.fire({ type: 'error', title: 'Algo salió mal...', text: res.message });
+                        }
+                    }, "json");
+                    break;
+                case 'b_cancel': sel_antid = undefined, _option = '0', myForm_antc.enableItem('b_add'), sel_ant = {},
+                    myGridant.clearSelection(), f_cleam_fant(sel_ant, 'cancel'), myForm_antc.disableItem('b_edit'), myForm_antc.disableItem('b_save');
+                    break;
+            }
+        });
+
+        myGridant = myLayou_antec.cells("a").attachGrid();
+        myGridant.setHeader("Codigoant,Observaciones,Rng Satisf.,Referencia,Usuario,F.Registro,empre,catalogo,U.Registra");
+        myGridant.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro");
+        myGridant.setInitWidthsP("10,70,30,15,20,15,10,10,10");
+        myGridant.setColAlign("left,left,left,center,center,center,left,left,left,left");
+        myGridant.setColumnIds("cod_ant,de_obser,rng_satisf,de_refere,co_usuario,fe_regis,ant_emp,ant_catalogo,usuareg");
+        myGridant.init();
+        myGridant.setColumnHidden(0, true), myGridant.setColumnHidden(4, true), myGridant.setColumnHidden(6, true), myGridant.setColumnHidden(7, true);// myGridant.setColumnHidden(6, true);
+        myLayou_antec.cells("a").progressOn();
+        myGridant.load(BASE_URL + 'MA010102/data_antec/' + cocliente + '/' + usrJson.empresa, function () { myLayou_antec.cells("a").progressOff(); });
+        myGridant.attachEvent("onRowSelect", function (rId, ind) {
+            sel_ant = myGridant.getRowData(rId); sel_antid = rId;
+            f_cleam_fant(sel_ant, 'select');
+        });
+    } else {
+        no_select_client(myLayou_antec, 's_antecedente');
+    }
+}
+f_cleam_fant = (sel_ant, op) => {
+    myForm_antc.setItemValue('ant_detalle', sel_ant.de_obser);
+    myForm_antc.setItemValue('ant_satisfa', sel_ant.rng_satisf);
+    myForm_antc.setItemValue('ant_referencia', sel_ant.de_refere);
+    myForm_antc.setItemValue('ant_usua', sel_ant.usuareg);
+    myForm_antc.setItemValue('ant_fesys', sel_ant.fe_regis);
+    switch (op) {
+        case 'cancel':
+            myForm_antc.setReadonly('ant_detalle', true), myForm_antc.setReadonly('ant_satisfa', true), myForm_antc.setReadonly('ant_referencia', true),
+                myForm_antc.setItemValue('titleform', 'Seleccione un Antecedente ');
+            break;
+        case 'select':
+            myForm_antc.setReadonly('ant_satisfa', true), myForm_antc.setReadonly('ant_referencia', true),
+                myForm_antc.setReadonly('ant_detalle', true), myForm_antc.setReadonly('ant_usua', true), myForm_antc.setReadonly('ant_fesys', true), myForm_antc.enableItem('b_edit'),
+                myForm_antc.setItemValue('titleform', 'Visualizando');
+            break;
+        case 'edit':
+            myForm_antc.setReadonly('ant_detalle', false),
+                myForm_antc.setReadonly('ant_satisfa', false), myForm_antc.setReadonly('ant_referencia', false);
+            myForm_antc.setItemValue('titleform', 'Editando ');
+            break;
+        case 'nuevo':
+            myForm_antc.setReadonly('ant_detalle', false), myForm_antc.setReadonly('ant_satisfa', false), myForm_antc.setReadonly('ant_referencia', false),
+                myForm_antc.setReadonly('ant_usua', true), myForm_antc.setReadonly('ant_fesys', true),
+                myForm_antc.setItemValue('titleform', 'Nuevo Antecedente');
+            break;
+        default:
+            myForm_antc.disableItem('b_save'), myForm_antc.disableItem('b_cancel'), myForm_antc.enableItem('b_add');
+            break;
+    }
+}
+
+
+
+
+f_s_comunica = () => {
+    // myLayou_comu = mySidebar.cells("s_comunicacion").attachLayout('1C');
+    let _option = '0';
+    if (cocliente > 0) {
+        myLayou_comu = mySidebar.cells("s_comunicacion").attachLayout('2U');
+        myLayou_comu.cells("a").hideHeader();
+        myLayou_comu.cells("b").hideHeader();
+        myLayou_comu.cells("a").setWidth(660);
+        myLayou_comu.setSeparatorSize(0, 0);
+        myForm_comu = myLayou_comu.cells("b").attachForm(f_comunicacion);
+        myForm_comu.attachEvent("onValidateError", function (name, value, result) {
+            result ? '' : Swal.fire({ type: 'error', title: 'Alerta...', text: 'Debe ingresar solo numeros en los campos en rojo' });
+        });
+        myForm_comu.attachEvent("onButtonClick", function (name) {
+            switch (name) {
+                case 'b_add': sel_comid = undefined, _option = 'nuevo', sel_com = {}, myGridcom.clearSelection(), f_cleam_comunica(sel_com, 'nuevo'),
+                    myForm_comu.disableItem('b_add'), myForm_comu.disableItem('b_edit'), myForm_comu.enableItem('b_save'), myForm_comu.enableItem('b_cancel');
+                    break;
+                case 'b_edit':
+                    _option = 'edit', f_cleam_comunica(sel_com, 'edit'), myForm_comu.disableItem('b_edit'), myForm_comu.disableItem('b_add'),
+                        myForm_comu.enableItem('b_save'), myForm_comu.enableItem('b_cancel');
+                    break;
+                case 'b_save':
+                    let p = {
+                        xoption: _option, x_cliente: cocliente, xemp: usrJson.empresa,
+                        xoperador: myForm_comu.getItemValue('selc_operador'), xnumero: myForm_comu.getItemValue('num_celular'),
+                        xvigente: myForm_comu.getItemValue('num_stado'), xdif: sel_com.numdif
+                    };
+                    $.post(BASE_URL + "MA010102/grabacomu", p, function (res) {
+                        if (parseFloat(res.codigo) > 0) {
+                            let newId = (new Date()).valueOf();
+                            let t = myForm_comu.getSelect('selc_operador');
+
+                            if (_option === 'nuevo') {
+                                myGridcom.addRow(newId, myForm_comu.getItemValue('selc_operador') + ',' + res.codigo + ',' + myForm_comu.getItemValue('num_celular')
+                                    + ',' + myForm_comu.getItemValue('num_stado') + ',' +
+                                    '1' + ',' + t.options[t.selectedIndex].text);
+                            } else {
+                                myGridcom.cells(sel_comid, 5).setValue(t.options[t.selectedIndex].text);
+                                myGridcom.cells(sel_comid, 2).setValue(myForm_comu.getItemValue('num_celular'));
+                                myGridcom.cells(sel_comid, 3).setValue(myForm_comu.getItemValue('num_stado'));
+                                myGridcom.setRowTextStyle(sel_comid, myForm_comu.getItemValue('num_stado') === 'Retirado' ? "text-decoration: line-through;" : "text-decoration: none;"),
+                                    myGridcom.clearSelection(), sel_comid = undefined, sel_com = {};
+                            }
+                            myForm_comu.setItemValue('titleform', 'Seleccione Giro Negocio'), f_cleam_comunica({}, 'save');
+                            Swal.fire('Bien!', res.message, 'success');
+                        } else {
+                            Swal.fire({ type: 'error', title: 'Algo salió mal...', text: res.message });
+                        }
+                    }, "json");
+                    break;
+                case 'b_cancel': sel_comid = undefined, _option = '0', myForm_comu.enableItem('b_add'), sel_com = {},
+                    myGridcom.clearSelection(), f_cleam_comunica(sel_com, 'cancel'), myForm_comu.disableItem('b_edit'), myForm_comu.disableItem('b_save');
+                    break;
+            }
+        });
+
+        myGridcom = myLayou_comu.cells("a").attachGrid();
+        myGridcom.setHeader("Operador,Dif,Numero,E.stado,Proridad,NOpera");
+        myGridcom.setColTypes("ro,ro,ro,ro,ro,ro");
+        myGridcom.setInitWidthsP("0,40,40,40,0,20");
+        myGridcom.setColAlign("left,left,left,left,left,left");
+        myGridcom.setColumnIds("codope,numdif,num_cel,stado,nu_priori,copera");
+        myGridcom.init();
+        myGridcom.setColumnHidden(0, true), myGridcom.setColumnHidden(1, true), myGridcom.setColumnHidden(4, true); //, myGridcom.setColumnHidden(7, true);// myGridant.setColumnHidden(6, true);
+        myLayou_comu.cells("a").progressOn();
+        myGridcom.load(BASE_URL + 'MA010102/data_comu/' + cocliente + '/' + usrJson.empresa, function () { myLayou_comu.cells("a").progressOff(); });
+        myGridcom.attachEvent("onRowSelect", function (rId, ind) {
+            sel_com = myGridcom.getRowData(rId); sel_comid = rId; console.log(sel_com);
+            f_cleam_comunica(sel_com, 'select');
+        });
+        _txtgrid(myGridcom, 3);
+    } else {
+        no_select_client(myLayou_comu, 's_comunicacion');
+    }
+}
+
+
+f_cleam_comunica = (sel_com, op) => {
+    myForm_comu.setItemValue('selc_operador', sel_com.codope);
+    myForm_comu.setItemValue('num_celular', sel_com.num_cel);
+    myForm_comu.setItemValue('num_stado', sel_com.stado);
+
+    switch (op) {
+        case 'cancel':
+            myForm_comu.setReadonly('ant_detalle', true), myForm_comu.setReadonly('ant_satisfa', true), myForm_comu.setReadonly('ant_referencia', true),
+                myForm_comu.setItemValue('titleform', 'Seleccione un Antecedente ');
+            break;
+        case 'select':
+            myForm_comu.disableItem('selc_operador'), myForm_comu.disableItem('num_stado'),
+                myForm_comu.setReadonly('num_celular', true),
+                myForm_comu.enableItem('b_edit'),
+                myForm_comu.setItemValue('titleform', 'Visualizando');
+            break;
+        case 'edit':
+            myForm_comu.disableItem('selc_operador'), myForm_comu.enableItem('num_stado'),
+                myForm_comu.setReadonly('num_celular', false),
+                myForm_comu.setItemValue('titleform', 'Editando ');
+            break;
+        case 'nuevo':
+            myForm_comu.disableItem('selc_operador'), myForm_comu.enableItem('num_stado'),
+                myForm_comu.setReadonly('num_celular', false),
+                myForm_comu.setItemValue('titleform', 'Nuevo Celular/Fijo');
+            break;
+        default:
+            myForm_comu.disableItem('b_save'), myForm_comu.disableItem('b_cancel'), myForm_comu.enableItem('b_add');
+            break;
+    }
+}
 
 
 no_select_client = (Layout, sidetab) => {
     Layout = mySidebar.cells(sidetab).attachLayout('1C');
-    Layout.cells("a").attachHTMLString('<div class="nomcliente" style="text-align: center;         padding-bottom: 3%;"> SELECCIONE UN CLIENTE, POR FAVOR...</div><div  id="imgcargue"    style="position: absolute;     top: 20; right: 10; bottom: 10; left: 10;              background: url(/assets/images/otros/icono-buscar-datos-nuevo.jpg)        no-repeat     center;         -webkit-background-size: cover;        -moz-background-size: cover;        -o-background-size: cover;         background-size: auto;"></div>');
+    if (sidetab == 's_datos') {
+        Layout.cells("a").attachHTMLString('<div class="nomcliente" style="text-align: center;  text-align:center; padding-bottom: 3%;"> BUSQUE UN CLIENTE, POR FAVOR...</div><div id="b_nuewclie">Genere uno nuevo Aquí </div><div  id="imgcargue"    style="position: absolute;     top: 20; right: 10; bottom: 10; left: 10;              background: url(/assets/images/otros/icono-buscar-datos-nuevo.jpg)        no-repeat     center;         -webkit-background-size: cover;        -moz-background-size: cover;        -o-background-size: cover;         background-size: auto;"></div>');
+        $("#b_nuewclie").click(function () {
+            if (sidetab == 's_datos') {
+                myLaouy_Dat = mySidebar.cells("s_datos").attachLayout('1C');
+                myForm.setItemValue('b_cliente', 'Nuevo Registro'), carga_form_cliente();
+
+            }
+        });
+    } else {
+        Layout.cells("a").attachHTMLString('<div class="nomcliente" style="text-align: center;  text-align:center; padding-bottom: 3%;"> BUSQUE UN CLIENTE, POR FAVOR...</div><div  id="imgcargue"    style="position: absolute;     top: 20; right: 10; bottom: 10; left: 10;              background: url(/assets/images/otros/icono-buscar-datos-nuevo.jpg)        no-repeat     center;         -webkit-background-size: cover;        -moz-background-size: cover;        -o-background-size: cover;         background-size: auto;"></div>');
+    }
     Layout.cells("a").hideHeader();
 }
-
-
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-BeforeSelectDataview = (id) => {
-    myToolBar.enableItem('__edit');
-    var data = myDataView.get(id);
-    if (data.CO_DIRECCION_EMPRESA > 0) {
-        if ((data.ES_VIGENCIA).toUpperCase() === estadook) {
-            myToolBar.enableItem('__anula');
-            myToolBar.disableItem('__activar');
-        } else {
-            myToolBar.disableItem('__anula');
-            myToolBar.enableItem('__activar');
-        }
-        (data.ST_PRINCIPAL).toUpperCase() === 'S' ? myToolBar.disableItem('__principal') : myToolBar.enableItem('__principal');
-    } else {
-        (['__anula', '__activar', '__edit', '__principal']).forEach((elem) => {
-            myToolBar.disableItem(elem);
-        });
-    }
-};
-
-
-/*************** NUEVA DIRECCION **********/
-f_post_new = () => {
-    var Win_ = new dhtmlXWindows();
-    var Winid_ = Win_.createWindow("w1", 0, 0, 520, 380);
-    Win_.window("w1").hideHeader();
-    Win_.window("w1").setModal(true);
-    Win_.window("w1").denyResize();
-    Win_.window("w1").center();
-    form = Winid_.attachForm(st_form_edit);
-    form.setSkin("material");
-    form.hideItem('__cod');
-    form.setItemValue('__cod', '0');
-    nrpincipal = 'N';
-    form.attachEvent("onButtonClick", (name) => {
-        onbuttonclic('nuevo', name, Winid_, form, Win_.window("w1"));
-    });
-};
-/*************** Cambia estado a los items ***********************************/
-f_post_estado = (id, new_esta, dataview, tollbar) => {
-    mainLayout.cells("b").progressOn();
-    var p = { emp: usrJson.empresa, codigo: dataview.get(id).CO_DIRECCION_EMPRESA, vigencia: new_esta };
-    $.post(BASE_URL + "MA010104/c_estado", p, function (res) {
-
-        if (res.state !== 'error') {
-            if (new_esta.toUpperCase() === 'PRINCIPAL') {
-                myDataView.clearAll();
-                myDataView.load(BASE_URL + 'MA010104/cargardata/' + usrJson.empresa, "json");
-                myToolBar.disableItem('__principal');
-            } else {
-                dataview.set(id, {
-                    $selected: true, id: id, CO_DIRECCION_EMPRESA: dataview.get(id).CO_DIRECCION_EMPRESA, DE_DIRECCION: dataview.get(id).DE_DIRECCION, NUBIGEO: dataview.get(id).NUBIGEO, DE_DIRECCION_CORTA: dataview.get(id).DE_DIRECCION_CORTA,
-                    NPRINCIPAL: dataview.get(id).ST_PRINCIPAL === 'S' ? 'PRINCIPAL' : ' ', CO_UBIGEO: dataview.get(id).CO_UBIGEO, ST_PROPIO: dataview.get(id).ST_PROPIO, ES_VIGENCIA: new_esta, ST_PRINCIPAL: dataview.get(id).ST_PRINCIPAL
-                });
-                onSelectAntes(id, dataview, tollbar, estadook);
-            }
-            Swal.fire('Bien!', res.message, 'success');
-        } else
-            Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'No se pudoActualizar sus cambios  :' + res.message });
-    }, "json");
-    mainLayout.cells("b").progressOff();
-};
-
-createFormulario = () => {
-    var W_b_orden = new dhtmlXWindows();
-    var W_b_ordenid = W_b_orden.createWindow("w__", 250, 80, 520, 380);
-    W_b_orden.window("w__").hideHeader();
-    W_b_orden.window("w__").setModal(true);
-    W_b_orden.window("w__").denyResize();
-    //W_b_orden.window("w__").center();
-    form = W_b_ordenid.attachForm(st_form_edit);
-    form.setSkin("material");
-    form.setItemValue('__cod', myDataView.get(myDataView.getSelected()).CO_DIRECCION_EMPRESA);
-    form.setItemValue('__direcc', myDataView.get(myDataView.getSelected()).DE_DIRECCION);
-    form.setItemValue('__nubigeo', myDataView.get(myDataView.getSelected()).NUBIGEO);
-    form.setItemValue('__corta', myDataView.get(myDataView.getSelected()).DE_DIRECCION_CORTA);
-    st_prin = myDataView.get(myDataView.getSelected()).ST_PRINCIPAL;
-    nrpincipal = st_prin === 'S' ? 'PRINCIPAL' : ' ';
-    myDataView.get(myDataView.getSelected()).ST_PROPIO === 'S' ? form.checkItem('__propio') : form.uncheckItem('__propio');
-    ubigeo = myDataView.get(myDataView.getSelected()).CO_UBIGEO;
-    form.attachEvent("onButtonClick", (name) => {
-        onbuttonclic('update', name, W_b_ordenid, form, W_b_orden.window("w__"));
-    });
-};
-
-onbuttonclic = async (accion, nam, wind, formu, winid) => {
-    switch (nam) {
-        case 'b_save':
-            st_pro = form.isItemChecked('__propio') ? 'S' : 'N';
-            winid.progressOn();
-            f_post_updates(accion, formu.getItemValue('__cod'), formu.getItemValue('__direcc'), formu.getItemValue('__corta'), st_pro, ubigeo, formu.getItemValue('__nubigeo'), nrpincipal);
-            winid.progressOff();
-            wind.close();
-            break;
-        case '__buscar':            //var W_b_respo = new dhtmlXWindows();
-            var output = await IniciarGridBusqueda(4, false, mainLayout);
-            if (output !== null) {
-                ubigeo = output.seleccion[0].ubigeo;
-                formu.setItemValue('__nubigeo', output.seleccion[0].descripcion);
-            }
-            break;
-        default:
-            wind.close();
-            break;
-    }
-};
-
-f_post_updates = (acci, cod, dir, cor, tpro, ubi, nubi, nprin) => {
-    var p = { accion: acci, emp: usrJson.empresa, codigo: cod, direc: dir, dcorta: cor, stpropio: tpro, ubigeo: ubi };
-    $.post(BASE_URL + "MA010104/update", p, function (res) {
-        if (acci === 'nuevo') {
-            if (res.state === 'success') {
-                myDataView.clearAll();
-                myDataView.load(BASE_URL + 'MA010104/cargardata/' + usrJson.empresa, "json");
-            }
-        } else {
-            if (res.state === 'success') {
-                myDataView.set(myDataView.getSelected(), {
-                    $selected: true, id: myDataView.getSelected(), CO_DIRECCION_EMPRESA: cod, DE_DIRECCION: dir, NUBIGEO: nubi, DE_DIRECCION_CORTA: cor,
-                    NPRINCIPAL: nprin, CO_UBIGEO: ubi, ST_PROPIO: tpro, ES_VIGENCIA: myDataView.get(myDataView.getSelected()).ES_VIGENCIA, ST_PRINCIPAL: st_prin
-                });
-                onSelectAntes(myDataView.getSelected(), myDataView, myToolBar, estadook);
-                Swal.fire('Bien!', res.message, 'success');
-            }
-        }
-        if (res.state !== 'success')
-            Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'Error :' + res.message });
-    }, "json");
-};
-
-onSelectAntes = (id, dataview, tollbar, estadook) => {
-    if (dataview.get(id).CO_DIRECCION_EMPRESA >= 0) {
-        tollbar.enableItem('__edit');
-        if ((dataview.get(id).ES_VIGENCIA).toUpperCase() === estadook.toUpperCase()) {
-            tollbar.enableItem('__anula');
-            tollbar.disableItem('__activar');
-        } else {
-            tollbar.disableItem('__anula');
-            tollbar.enableItem('__activar');
-        }
-        (dataview.get(id).ST_PRINCIPAL).toUpperCase() === 'S' ? tollbar.disableItem('__principal') : tollbar.enableItem('__principal');
-    } else {
-        (['__anula', '__activar', '__edit', '__principal']).forEach((elem) => {
-            tollbar.disableItem(elem);
-        });
-    }
-};
-
-
-function photo_usu(name, value) {
-    switch (name) {
-        case "up_imgperfil":
-            return '<div class="photoup"><img id="emp_img_" /><form id="eventFormemp" action="" enctype="multipart/form-data" method="post"><input type="file" id="fileemp" name="upload" onchange="readURL(this);" ><p id="formp" class="classfont">Clic en la imagen o arrastre una nueva imagen</p><input id="fboton" type="submit" value="Cambiar Perfil"></form></div>';
-            break;
-        default:
-            null;
-            break;
-    }
-}
-/******************** Funcion  readURL() se activa cuando onchange="readURL(this);" del form>input - file => verifica que la imagen subida sea type=imagen, ademas actualiza la imagen del fomulario    */
-function readURL(input) { //funcion carga imagen al seleccionar
-    var selector = input.id;
-    var ext_file = $('#' + selector).val().split('.').pop().toLowerCase();
-    if ($.inArray(ext_file, ['gif', 'png', 'jpg', 'jpeg']) == -1)
-        Swal.fire({ type: 'error', title: 'Archivo Incorrecto...', text: 'Esto no es una imagen', footer: '<a href="#">*** Tipos permitidos [gif, png, jpg, jpeg]</a>' });
-    else
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                //  var id_img = selector === 'fphoto' ? 'photocharge' : 'fondocharge';
-                $('#emp_img_').attr('src', e.target.result);
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-}
-doOnload = () => {
-    var p = { emp: JSON.parse(localStorage.getItem('usrjson')).empresa };
-    $.post(BASE_URL + "MA010104/datos_empresa", p, function (res) {
-        //        console.log(res[0]);
-        if (res.length > 0) {
-            myForm.setItemValue('f_ruc', res[0].RUC);
-            myForm.setItemValue('f_nombre', res[0].DE_NOMBRE);
-            myForm.setItemValue('f_razsocial', res[0].DE_RAZ_SOCIAL);
-            myForm.setItemValue('f_moneda', res[0].MONEDA);
-            myForm.setItemValue('f_registro', res[0].FE_REGIS);
-            myForm.setItemValue('f_estado', res[0].ES_VIGENCIA);
-        }
-    }, "json");
-
-    $.post(BASE_URL + "MA010104/file_exist", p, function (res) {
-        if (res.state !== 'error') {
-            $("#emp_img_").attr("src", res.srclogo);
-        } else
-            Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'No se pudo cargar su imagen de Perfil Error :' + res.error, footer: '<a href="#">suba una nueva imagen, si el problema continua, comuníquese con el area de Sistemas</a>' });
-    }, "json");
-    var json = [{ 'id_form': '#eventFormemp', datos: { 'input_file': '#fileemp', 'div_content': 'file_name', 'ruta': 'ma010104/' + JSON.parse(localStorage.getItem('usrjson')).empresa + '/' + JSON.parse(localStorage.getItem('usrjson')).empresa + '_logo.png', 'img_id': '#emp_img_' } }];
-    (json).forEach((elem) => {
-        $(elem.id_form).submit(function (e) {
-            e.preventDefault();
-            Swal.fire({
-                title: 'Subiendo Imagen!', html: '<h4>Un momento porfavor</h4>', timer: 0, allowOutsideClick: false, onBeforeOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            var fd = new FormData(); //objecto FormData para estrucutra los campos enviados en el formulario
-            var file = $(elem.datos.input_file).get(0).files[0]; //console.log(file);
-            fd.append(elem.datos.div_content, file, elem.datos.ruta);
-            $.ajax({
-                url: BASE_URL + 'MA010104/upload', data: fd, processData: false, cache: false, contentType: false, type: 'POST',
-                success: function (data) { //console.log('data');
-                    if (data.state !== 'success')
-                        Swal.fire({ type: 'error', title: 'Algo paso...', text: data.error, footer: '<a href="#">El peso maximo es 2MB</a>' });//                    dhtmlx.message({                        title: "Close",                    type: "alert-warning",                    text: "You can't close this window!",                       callback: function () {                          dhtmlx.alert("Test alert");                     }                  });
-                    else
-                        Swal.fire({ title: 'Conforme!', text: 'Imagen subida.', type: 'success', allowOutsideClick: false, confirmButtonText: 'Ingresar al Sistema' });
-                }
-            }, 'json');
-        });
-    });
-};
 

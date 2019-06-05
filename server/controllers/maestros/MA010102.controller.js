@@ -5,11 +5,231 @@ const formidable = require('formidable');
 const moment = require('moment');
 const o2x = require('object-to-xml');
 var fs = require('fs-extra');
+const Busboy = require('busboy');
+const readChunk = require('read-chunk');
+const fileType = require('file-type');
+var Client = require('ftp');
+var path = require('path');
 const desiredMode = 0o2775;
 const responseParams = {
     outFormat: oracledb.OBJECT
 };
+
+const config = {
+    host: '192.168.0.248',
+    port: 21,
+    user: 'admlife',
+    password: 'L1f3$21',
+    size: 500000000
+    // type: 'ftp'
+};
+
+
 const ma010102Controller = {
+    docu_clear: (req, res) => {
+        const { cliente, emp, file } = req.params;
+        const pathserver = '/publico/document/' + emp + '/CLIENTES/' + cliente + '/' + file;
+        const pathfs = 'public/assets/images/ma010102/' + cliente + '/' + file;
+        var c = new Client();
+
+        function remove() {
+            return new Promise((resolve, reject) => {
+                var c1 = new Client();
+                c1.get(pathserver, false, function (err, stream) {
+                    if (err) { console.log('no esta en el servidor o ocurrio un error..'); resolve(0); } else {
+                        stream.once('close', function () {
+                            c1.delete(pathserver, function (err) {
+                                if (err) console.log('Error ' + err);
+                                console.log('borrado del servidor OK');
+                            });
+                            c1.end();
+                        });
+                    }
+                });
+                c1.connect(config);
+                fs.unlink(pathfs, (err) => {
+                    if (err) {
+                        resolve(0);
+                        return
+                    }
+                    resolve(1);
+                })
+            });
+        }
+
+        c.on('ready', function () {
+            var results = remove();            //var results = Promise.all(actions);
+            results.then(data => {
+                res.set('Content-Type', 'application/json');
+                res.send(JSON.stringify({ 'codigo': data }));
+            });
+        });
+        c.connect(config);
+    },
+
+    documentosup: (req, res) => {
+        const { cliente, emp } = req.params;
+        const busboy = new Busboy({ headers: req.headers });
+        var steup = false;
+        var filenm = '';
+        var savenm = '';
+        var c = new Client();
+        function upserver(file) {
+            return new Promise((resolve, reject) => {
+                c.on('ready', function () {
+                    c.put(savenm, file, function (err) {
+                        if (err) { steup = false, console.log(err); } else {
+                            resolve(true);
+                        }
+                        c.end();
+                    });
+                });
+
+                c.connect(config);
+            });
+        }
+
+        busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
+            filenm = filename;
+            var saveTo = path.join('public/assets/images/ma010102/' + cliente + '/', filename);
+            savenm = saveTo;
+            file.pipe(fs.createWriteStream(saveTo));
+        });
+        busboy.on('finish', function () {
+            var searchserver = '/publico/document/' + emp + '/CLIENTES/' + cliente + '/' + filenm;
+            results = upserver(searchserver);            //var results = Promise.all(actions);
+            results.then(data => {
+                res.set('Content-Type', 'application/json');
+                res.send({ "state": data, "steup": data });
+            });
+        });
+        return req.pipe(busboy);
+    },
+    documentos: (req, res) => {
+        const { cliente, emp } = req.params;
+        const pathfs = 'public/assets/images/ma010102/' + cliente;
+        const pathserver = '/publico/document/' + emp + '/CLIENTES/' + cliente;
+        const pathserver_p = '/publico/document/' + emp + '/CLIENTES/';
+        const path_prev = path.join('/assets/images/ma010102/', cliente);
+        var c = new Client();
+        if (!fs.existsSync(pathfs)) {
+            fs.mkdirSync(pathfs);
+        }
+        function filesasync(elem) {
+            return new Promise((resolve, reject) => {
+                var sarchPathlocal = path.join(pathfs);
+                var sarchPath = path.join(pathfs + '/' + elem.name);
+                var searchserver = pathserver + '/' + elem.name;
+                fs.exists(sarchPath, (exists) => {
+                    if (!exists) {
+                        var c1 = new Client();
+                        c1.get(searchserver, false, function (err, stream) {
+                            let saveTo = path.join(pathfs + '/', elem.name);
+                            if (err) throw err;
+                            stream.once('close', function () {
+                                resolve(elem.name);
+                                c1.end();
+                            });
+                            stream.pipe(fs.createWriteStream(saveTo), function () {
+                            });
+                        });
+                        c1.connect(config);
+                    } else {
+                        resolve('file exists ' + elem.name);
+                    }
+                });
+            });
+        }
+        function find(list) {
+            var st = 0;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].name == String(cliente)) {
+                    return new Promise((resolve, reject) => {
+                        st = 1;
+                        resolve(1);
+                    });
+                    break;
+                }
+            }
+            if (st === 0) {
+                return new Promise((resolve, reject) => {
+                    resolve(0);
+                });
+            }
+        }
+        function server_folfer(path) {            //console.log(path);
+            return new Promise((resolve, reject) => {
+                var c2 = new Client();
+                c2.on('ready', function () {
+                    c2.list(path, false, function (err, list) {
+                        if (err) console.log(err);
+                        if (list.length > 0) {
+                            var results = find(list);
+                            results.then(data => {
+                                if (data == 1) {
+                                    resolve('createdold');
+                                } else {
+                                    c2.mkdir(path, false, function (err) {
+                                        if (err) {
+                                            resolve('fail' + err);
+                                        } else {
+                                            resolve('created');
+                                        }
+                                        c2.end();
+                                    });
+                                }
+                            });
+                        } else {
+                            resolve('nolistLCIENTE');
+                        }
+                    });
+                });
+                c2.connect(config);
+            });
+        }
+
+        c.on('ready', function () {
+            c.list(pathserver, false, function (err, list) {
+                if (err) console.log(' c.get :' + err);
+                if (list.length === 0) {
+                    var results = server_folfer(pathserver_p);            //var results = Promise.all(actions);
+                    results.then(data => {
+                        res.set('Content-Type', 'application/json');
+                        res.send(JSON.stringify({ 'path_server': data, 'files': {} }));
+                    });
+                } else {
+                    var actions = list.map(function (obj) {
+                        return filesasync(obj);
+                    });
+                    var results = Promise.all(actions);
+                    results.then(data => {
+                        var files_ = [];
+                        fs.readdirSync(pathfs).forEach(file => {// onsole.log(file);
+                            var stats = fs.statSync(pathfs + '/' + file);
+                            var fileSizeInBytes = stats["size"];
+                            const buffer = readChunk.sync(pathfs + '/' + file, 0, fileType.minimumBytes);
+                            var mimest = fileType(buffer), objtype = mimest.mime.split("/");
+                            if (objtype[0] == 'image') {
+                                files_.push({
+                                    'id': file, 'name': file, 'size': fileSizeInBytes, 'link': path_prev + '/' + file, 'status': "uploaded",
+                                    'preview': path_prev + '/' + file, 'type': mimest.mime
+                                });
+                            } else {
+                                files_.push({
+                                    'id': file, 'name': file, 'size': fileSizeInBytes, 'link': path_prev + '/' + file, 'status': "uploaded",
+                                    'type': mimest.mime
+                                });
+                            }
+                        });
+                        res.set('Content-Type', 'application/json');
+                        res.send(JSON.stringify({ 'path_server': 'createdold', 'files': files_ }));
+                    });
+                }
+                c.end();
+            });
+        });
+        c.connect(config);
+    },
     list_moneda: (req, res) => {
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
@@ -29,7 +249,25 @@ const ma010102Controller = {
             });
         });
     },
-
+    list_operador: (req, res) => {
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ 'error_conexion': err.stack });
+                return;
+            } //co_tipo_doc_ide as value ,de_abrevia as label
+            const query = "    select CO_TIPO_COMUNICACION  as value, DE_NOMBRE AS label    from MA_TIPO_COMU_M    ";
+            const params = {};
+            conn.execute(query, params, responseParams, (error, result) => {
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderSelect(result.rows, '1'));
+            });
+        });
+    },
     cargafzvta: (req, res) => {
         const { co_direccion, emp, zncomer } = req.params;
         oracledb.getConnection(dbParams, (err, conn) => {
@@ -382,6 +620,46 @@ const ma010102Controller = {
             });
         });
     },
+    data_comu: (req, res) => {
+        const { cocliente, empr } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = '  SELECT * FROM TABLE(PACK_NEW_MAESTROS.F_L_COMUNI_WEB(:xcliente,:xemp)) ';
+            const params = { xcliente: cocliente, xemp: empr };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderXml(result.rows));
+            });
+        });
+    },
+    data_antec: (req, res) => {
+        const { cocliente, empr } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = '  SELECT * FROM TABLE(PACK_NEW_MAESTROS.F_L_ANTEC_WEB(:xcliente,:xemp)) ';
+            const params = { xcliente: cocliente, xemp: empr };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderXml(result.rows));
+            });
+        });
+    },
     giro_nego: (req, res) => {
         const { cocliente } = req.params;
         oracledb.getConnection(dbParams, (err, conn) => {
@@ -486,6 +764,25 @@ const ma010102Controller = {
                 }
                 res.set('Content-Type', 'text/xml');
                 res.send(xmlParser.renderXml(result.rows));
+            });
+        });
+    },
+    tipocta: (req, res) => {
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ 'error_conexion': err.stack });
+                return;
+            } //co_tipo_doc_ide as value ,de_abrevia as label
+            const query = "  SELECT CO_TIPO_CUENTA AS value,  DE_NOMBRE AS label  FROM MA_TIPO_CUEN_M   ";
+            const params = {};
+            conn.execute(query, params, responseParams, (error, result) => {
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderSelect(result.rows, '1'));
             });
         });
     },
@@ -660,14 +957,14 @@ const ma010102Controller = {
         });
     },
     grabacontacto: (req, res) => {
-        const { xoption,x_co_catalogo, x_cargo_repre,x_co_repre ,  x_apellidos, x_nombres, x_mail, x_telefono,  x_estado} = req.body;
+        const { xoption, x_co_catalogo, x_cargo_repre, x_co_repre, x_apellidos, x_nombres, x_mail, x_telefono, x_estado } = req.body;
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error_conec', message: err.stack });
                 return;
             }
             const params = {
-                xoption: xoption, x_cargo_repre: parseInt(x_cargo_repre),x_co_repre :x_co_repre, x_co_catalogo: parseInt(x_co_catalogo), x_apellidos: x_apellidos,
+                xoption: xoption, x_cargo_repre: parseInt(x_cargo_repre), x_co_repre: x_co_repre, x_co_catalogo: parseInt(x_co_catalogo), x_apellidos: x_apellidos,
                 x_nombres: x_nombres, x_mail: x_mail, x_telefono: x_telefono, x_estado: x_estado,
                 x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }, x_de_result: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
             };
@@ -712,9 +1009,86 @@ const ma010102Controller = {
             });
         });
     },
+    grabacuentas: (req, res) => {
+        const { xoption, x_co_catalogo, x_tipo_cta, x_numcta, x_estado, x_cobanco, x_copais, idseq } = req.body;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error_conec', message: err.stack });
+                return;
+            }
+            const params = {
+                xoption: xoption, x_co_catalogo: parseInt(x_co_catalogo), x_tipo_cta: parseInt(x_tipo_cta), x_numcta: parseInt(x_numcta), x_estado: x_estado, x_cobanco: x_cobanco,
+                x_copais: parseInt(x_copais),
+                idseq: parseInt(idseq), x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }, x_de_result: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            var query = 'CALL PACK_NEW_MAESTROS.SP_SAVE_CUENTAS_WEB(:xoption,:x_co_catalogo,:x_tipo_cta,:x_numcta,:x_estado,:x_cobanco,:x_copais,:idseq,:x_result,:x_de_result)';
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ state: 'error_query', message: error.stack });
+                    return;
+                } else {
+                    const { x_result, x_de_result } = result.outBinds;
+                    diaActual = new Date();
+                    res.json({ state: 'success', codigo: x_result, message: x_de_result, fe_reg: moment().format('DD-MM-YYYY HH:mm:ss') });
+                }
+            });
+        });
+    },
+    grabacomu: (req, res) => {
+        const {  xoption,x_cliente,xemp,xoperador, xnumero, xvigente,xdif  } = req.body;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error_conec', message: err.stack });
+                return;
+            }
+            const params = {   xoption: xoption, x_cliente : parseInt( x_cliente),  xemp :parseInt(xemp),
+                xoperador: parseInt(xoperador),
+                xnumero:parseInt(xnumero), xvigente:xvigente,
+                xdif :xdif == undefined ? 0 : parseInt(xdif),
+                x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }, x_de_result: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            var query = 'CALL PACK_NEW_MAESTROS.SP_SAVE_COMUNI_WEB(:xoption,:x_cliente,:xemp,:xoperador,:xnumero,:xvigente,:xdif,:x_result,:x_de_result)';
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ state: 'error_query', message: error.stack });
+                    return;
+                } else {
+                    const { x_result, x_de_result } = result.outBinds;
+                    diaActual = new Date();
+                    res.json({ state: 'success', codigo: x_result, message: x_de_result, fecha: moment().format('DD-MM-YYYY HH:mm:ss') });
+                }
+            });
+        });
+    },
+    grabantece: (req, res) => {
+        const {  xoption,x_cliente,xemp,xusureg, xant_detalle, xant_satisfa,xant_referencia,xgarante } = req.body;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error_conec', message: err.stack });
+                return;
+            }
+            const params = {   xoption: xoption, x_cliente : parseInt( x_cliente),  xemp :parseInt(xemp),xusureg: parseInt(xusureg),
+                xant_detalle:xant_detalle, xant_satisfa:xant_satisfa.length == 0 ? null :  parseInt(xant_satisfa),
+                xant_referencia : xant_referencia.length == 0 ? null :  parseInt(xant_referencia), cogarante :xgarante == undefined ? 0 : parseInt(xgarante),
+                x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }, x_de_result: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            var query = 'CALL PACK_NEW_MAESTROS.SP_SAVE_ANTECE_WEB(:xoption,:x_cliente,:xemp,:xusureg,:xant_detalle,:xant_satisfa,:xant_referencia,:cogarante,:x_result,:x_de_result)';
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ state: 'error_query', message: error.stack });
+                    return;
+                } else {
+                    const { x_result, x_de_result } = result.outBinds;
+                    diaActual = new Date();
+                    res.json({ state: 'success', codigo: x_result, message: x_de_result, fecha: moment().format('DD-MM-YYYY HH:mm:ss') });
+                }
+            });
+        });
+    },
     grabagironego: (req, res) => {
-        /*xoption : _option,x_co_catalogo_entidad :cocliente , xcorubro :  myForm_giro.getItemValue('_giro'),xdetalle :  myForm_giro.getItemValue('giro_detalle'),
-                    xvigencia :  myForm_giro.getItemValue('giro_stado')*/
         const { xoption, x_co_catalogo_entidad, xcorubro, xdetalle, xvigencia } = req.body;
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
@@ -806,21 +1180,9 @@ const ma010102Controller = {
     },
     grabadirec: (req, res) => {
         const { x_alias,
-            x_co_usuario,
-            x_co_direccion_entidad,
-            x_co_catalogo_entidad,
-            x_co_ubigeo,
-            x_co_via,
-            x_co_zona,
-            x_de_nombre_zona,
-            x_de_nombre_via,
-            x_nu_numero,
-            x_de_interior,
-            x_de_referencias,
-            x_nu_local_principal,
-            x_de_codigo_postal, x_es_registro, x_de_altitud,
-            x_de_latitud,
-            x_de_zoom, x_de_hora_ini_atencion,
+            x_co_usuario, x_co_direccion_entidad, x_co_catalogo_entidad,
+            x_co_ubigeo, x_co_via, x_co_zona, x_de_nombre_zona, x_de_nombre_via, x_nu_numero, x_de_interior, x_de_referencias, x_nu_local_principal,
+            x_de_codigo_postal, x_es_registro, x_de_altitud, x_de_latitud, x_de_zoom, x_de_hora_ini_atencion,
             x_de_hora_fin_atencion, x_st_erased, x_cadena, x_cant_filas } = req.body;
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
@@ -830,26 +1192,15 @@ const ma010102Controller = {
 
             const params = {
                 x_alias: x_alias,
-                x_co_usuario: parseInt(x_co_usuario),
-                x_co_direccion_entidad: x_co_direccion_entidad,
-                x_co_catalogo_entidad: parseInt(x_co_catalogo_entidad),
-                x_co_ubigeo: x_co_ubigeo,
-                x_co_via: parseInt(x_co_via),
-                x_co_zona: parseInt(x_co_zona),
-                x_de_nombre_zona: x_de_nombre_zona,
-                x_de_nombre_via: x_de_nombre_via,
-                x_nu_numero: parseInt(x_nu_numero),
-                x_de_interior: x_de_interior,
-                x_de_referencias: x_de_referencias,
-                x_nu_local_principal: parseInt(x_nu_local_principal),
-                x_de_codigo_postal: x_de_codigo_postal, x_es_registro: x_es_registro, x_de_altitud: x_de_altitud,
-                x_de_latitud: x_de_latitud,
-                x_de_zoom: x_de_zoom, x_de_hora_ini_atencion: new Date(1970, 1, 1, (x_de_hora_ini_atencion).split(':')[0] - 5, (x_de_hora_ini_atencion).split(':')[1], 0),
+                x_co_usuario: parseInt(x_co_usuario), x_co_direccion_entidad: x_co_direccion_entidad,
+                x_co_catalogo_entidad: parseInt(x_co_catalogo_entidad), x_co_ubigeo: x_co_ubigeo, x_co_via: parseInt(x_co_via), x_co_zona: parseInt(x_co_zona),
+                x_de_nombre_zona: x_de_nombre_zona, x_de_nombre_via: x_de_nombre_via, x_nu_numero: parseInt(x_nu_numero), x_de_interior: x_de_interior,
+                x_de_referencias: x_de_referencias, x_nu_local_principal: parseInt(x_nu_local_principal), x_de_codigo_postal: x_de_codigo_postal, x_es_registro: x_es_registro, x_de_altitud: x_de_altitud,
+                x_de_latitud: x_de_latitud, x_de_zoom: x_de_zoom, x_de_hora_ini_atencion: new Date(1970, 1, 1, (x_de_hora_ini_atencion).split(':')[0] - 5, (x_de_hora_ini_atencion).split(':')[1], 0),
                 x_de_hora_fin_atencion: new Date(1970, 1, 1, (x_de_hora_fin_atencion).split(':')[0] - 5, (x_de_hora_fin_atencion).split(':')[1], 0), x_st_erased: x_st_erased, x_cadena: x_cadena, x_cant_filas: parseInt(x_cant_filas), o_xresultado: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }, o_deresultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
             };
             console.log(params);
             var query = 'call PACK_NEW_MAESTROS.sp_cata_enti_dire_grabar (:x_alias,:x_co_usuario,:x_co_direccion_entidad,:x_co_catalogo_entidad, :x_co_ubigeo, :x_co_via, :x_co_zona, :x_de_nombre_zona, :x_de_nombre_via, :x_nu_numero, :x_de_interior, :x_de_referencias, :x_nu_local_principal, :x_de_codigo_postal, :x_es_registro, :x_de_altitud, :x_de_latitud, :x_de_zoom, :x_de_hora_ini_atencion, :x_de_hora_fin_atencion, :x_st_erased, :x_cadena, :x_cant_filas, :o_xresultado, :o_deresultado)';
-            //       PROCEDURE sp_cata_enti_cliente_grabar                  (st_permiso_editar_cata_enti , x_empresa,    x_alias ,x_co_catalogo_entidad,x_de_razon_social,x_nu_documento   ,x_co_tipo_persona,x_co_tipo_doc_ide  ,x_de_procedencia,x_de_ape_paterno,x_de_ape_materno ,x_de_nombre     ,x_de_nombre_comercial,x_de_origen ,x_co_cliente ,x_co_tipo_cliente   ,x_st_recaudo  ,x_co_banco ,x_co_tipo_negocio  ,x_co_listado_precios,x_co_serie_listado ,x_st_agente_retenedor  ,x_st_agente_percepcion ,x_st_cliente_nvo  ,x_co_periodo_clien_nvo  ,x_st_cliente_corporativo ,x_co_cliente_corporativo ,x_im_credito_total ,x_im_deuda_total ,x_de_email ,x_de_webpage    ,x_es_vigencia_cliente ,x_fe_retiro_cliente,x_result out number,x_de_result out varchar2) AS
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
                 if (error) {
@@ -860,7 +1211,6 @@ const ma010102Controller = {
                     diaActual = new Date();
                     res.json({ state: 'success', codigo: o_xresultado, message: o_deresultado });
                 }
-                // conn.commit();
 
             });
         });
