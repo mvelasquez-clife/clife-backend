@@ -393,7 +393,6 @@ function __onSelectAntes(id, dataview, tollbar, estadook) {
 }
 
 f_s_datos = () => {
-    myLaouy_Dat = mySidebar.cells("s_datos").attachLayout('1C');
     if (cocliente > 0) {
         carga_form_cliente();
     } else {
@@ -420,7 +419,6 @@ function carga_form_cliente() {
                     mySidebar.cells("s_datos").progressOn(); // Wind_.window("wbusq").progressOn();
                     var p = { dni: myFormdatos.getItemValue('_nudocumento') };
                     $.post(BASE_URL + "home/buscadni", p, function (res) {
-                        console.log(res);
                         if (res.state !== 'error') {
                             var value = res.value.split('|');
                             if (value[0].length > 0 || value[1].length > 0) {
@@ -886,7 +884,7 @@ function valores_defecto() {
 }
 
 f_s_giro_ne = () => {
-    myLayou_giro = mySidebar.cells("s_giro").attachLayout('1C');
+    //  myLayou_giro = mySidebar.cells("s_giro").attachLayout('1C');
     let _option = '0';
     if (cocliente > 0) {
         myLayou_giro = mySidebar.cells("s_giro").attachLayout('2U');
@@ -981,7 +979,7 @@ f_cleam_fgiro = (sel_giro, op) => {
 }
 
 f_s_garante = () => {
-    myLayou_gara = mySidebar.cells("s_garante").attachLayout('1C');
+    //  myLayou_gara = mySidebar.cells("s_garante").attachLayout('1C');
     let _option = '0';
     if (cocliente > 0) {
         myLayou_gara = mySidebar.cells("s_garante").attachLayout('2U');
@@ -1094,7 +1092,7 @@ f_cleam_fgara = (sel_, op) => {
 }
 
 f_s_contactos = () => {
-    myLayou_contac = mySidebar.cells("s_contacto").attachLayout('1C');
+    //myLayou_contac = mySidebar.cells("s_contacto").attachLayout('1C');
     if (cocliente > 0) {
         myLayou_contac = mySidebar.cells("s_contacto").attachLayout('2U');
         myLayou_contac.cells("a").hideHeader();
@@ -1220,7 +1218,7 @@ f_act_form_cont = (stado) => {
 }
 
 f_s_ctaban = () => {
-    myLayou_cbanc = mySidebar.cells("s_cuentas").attachLayout('1C');
+    //myLayou_cbanc = mySidebar.cells("s_cuentas").attachLayout('1C');
     if (cocliente > 0) {
         myLayou_cbanc = mySidebar.cells("s_cuentas").attachLayout('2U');
         myLayou_cbanc.cells("a").hideHeader();
