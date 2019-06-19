@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
         integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.css" type="text/css">
     <style type="text/css">
         html,
         body {
@@ -33,6 +34,7 @@
     <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="/assets/js/conf.js"></script>
     <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+    <script src="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.js"></script>
     <!-- script propio de la ventana -->
     <!--<script type="text/javascript" src="<%=path%>script.js"></script> -->
     <script type="text/javascript" src="<%=path%>script.js"></script>
@@ -42,26 +44,24 @@
     <!-- scripts de la carga de la vista -->
     <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
     <script type="text/javascript">
-        var myGridfz, myCombo, sel_giroid, subgrid, sel_giro, mainLayout, myFormdatos, mySidebar, myLaouy_Direc, myGridLineaC, cod_direc, myToolbardirecc, base_tollbar, myForm, estadook = 'VIGENTE', codcliente, Wind_, json_select, permiso_cataedit = 'S', _item_sidebar = 's_datos',
+        var myGridfz,myLayou_gara,myLayou_giro, myCarouselFile, myCombo,myLaouy_Dat ,myLayou_doc,myLayou_contac,myLayou_cbanc, myLayou_doc,myLayou_antec ,myLayou_comu, co_seq, sel_giroid,sel_antid,cobanco_s, copais_s, subgrid, sel_giro, mainLayout, myFormdatos, mySidebar, myLaouy_Direc, myGridLineaC, cod_direc, myToolbardirecc, base_tollbar, myForm, estadook = 'VIGENTE', codcliente, Wind_, json_select, permiso_cataedit = 'S', _item_sidebar = 's_datos',
             sel_zc, sel_zcid, subgrilla, sel_fv, sel_fvid, data, co_cata_entidad = 0, cocliente = 0, co_listadopre = 0, co_seri_listado = 0, cocliente_corpo = 0, nom_clien_corpo = '';
         var __id = 0, Nombrenew, Codigo, myFormdirecc, Nombreold, Estado, lc_frzvta, lc_comneda, lc_stperman, lc_obs, lc_monto;
         var myFormfz, myFormzc, myFormdirecc, estadook = 'VIGENTE', mySidebar, co_ubigeo, co_direccion = 0, _selecobject, zncomer = 0;
         /* var struc_dataview = {container: "data_conten", drag: false, edit: true, select: true, type: {template: "<p  >#DE_PAIS#</p><br><span class='centrarpdiv'>#DE_DIRECCION#</span>", height: 60}, autowidth: true};*/
         var st_form_base = [{ type: "settings", labelWidth: 100 },
-
-        {
-            type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+        { type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
                 { type: "template", offsetTop: 2, offsetLeft: 2, labelWidth: 60, name: "b_cliente", label: "Cliente :", value: "Busque un cliente", format: style }, { type: "newcolumn" },
                 { type: "button", width: 60, value: '<i class="fas fa-search padt-5-f1-8"></i>', offsetTop: 0, offsetLeft: 7, name: "b_buscar", tooltip: "BUSCAR UN CLIENTE", hidden: false }, { type: "newcolumn" },
-                {
-                    type: "block", blockOffset: 0, position: "label-left", width: 920, list: [
+         ]}, {
+                    type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
                         { type: "template", offsetTop: 5, offsetLeft: 2, name: "b_estado", labelWidth: 50, width: 150, label: "Estado :", value: "", format: style }, { type: "newcolumn" },
                         { type: "template", offsetTop: 5, offsetLeft: 100, name: "b_asignado", labelWidth: 60, width: 150, label: "Asignado :", value: "", format: style }, { type: "newcolumn" },
                         { type: "template", offsetTop: 5, offsetLeft: 100, name: "b_registro", labelWidth: 60, width: 150, label: "Registro :", value: "", format: style }, { type: "newcolumn" }
                     ]
                 }
-            ]
-        }
+          
+       
         ];
         var st_form_lcredito = [{ type: "settings", labelWidth: 100 },
         {
@@ -231,30 +231,100 @@
             ]
         },
         {
-           
-                    type: "block", blockOffset: 20, offsetTop: 10, width: 390, list: [
-                         {type: "block", blockOffset: 20, offsetTop: 10, width: 390, list: [
-                                { type: "input", name: 'n_banco',   disabled: true, offsetLeft: 0, value: '0', labelWidth: 80, inputWidth: 100, label: 'Banco' },{ type: "newcolumn" },
-                                { type: "input", name: 'pais_banco',   disabled: true, offsetLeft: 0, value: '0', labelWidth: 80, inputWidth: 50, label: '' },{ type: "newcolumn" },
-                                { type: "button", name: '_b_banco', disabled: true, offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }
-                        ]},
-                        {type: "block", blockOffset: 20, offsetTop: 10, width: 390, list: [
-                                { type: "input", name: 'n_banco',   disabled: true, offsetLeft: 0, value: '0', labelWidth: 80, inputWidth: 100, label: 'Tipo Cuenta' },{ type: "newcolumn" },
-                                { type: "button", name: '_b_cta', disabled: true, offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }
-                        ]},
 
-                        { type: "input", name: 'nro_cta', disabled: true,readonly: true, offsetLeft: 0, labelWidth: 80, inputWidth: 200, label: 'Nro Cta' },
-                       
-                        { type: "input", name: 'cta_freg', disabled: true, readonly: true, offsetLeft: 0, maxLength: 15, labelWidth: 80, inputWidth: 200, label: 'Fe.Regis' },
-                        { type: "select", name: "cta_stado", value: '', labelWidth: 80, offsetLeft: 0, disabled: true, inputWidth: 200, label: 'Estado :', connector: BASE_URL + 'MA010102/c_list_estado' },
-                       
+            type: "block", blockOffset: 20, offsetTop: 10, width: 500, list: [
+                {
+                    type: "block", blockOffset: 0, offsetTop: 10, width: 500, list: [
+                        { type: "input", name: 'n_banco', offsetLeft: 0, readonly: true, value: '0', labelWidth: 80, inputWidth: 250, label: 'Banco' }, { type: "newcolumn" },
+                        { type: "input", name: 'pais_banco', offsetLeft: 0, readonly: true, value: '0', labelWidth: 80, inputWidth: 50, label: '' }, { type: "newcolumn" },
+                        { type: "button", name: '_b_banco', disabled: true, offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }
                     ]
-            
+                },
+                {
+                    type: "block", blockOffset: 0, offsetTop: 10, width: 390, list: [
+                        { type: "select", name: 'n_tipocta', offsetLeft: 0, value: '0', labelWidth: 80, inputWidth: 200, label: 'Tipo Cuenta', connector: BASE_URL + 'MA010102/tipocta' }, { type: "newcolumn" },
+                        //  { type: "button", name: '_b_cta', disabled: true, offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }
+                    ]
+                },
+
+                { type: "input", name: 'nro_cta', readonly: true, offsetLeft: 0, labelWidth: 80, inputWidth: 200, label: 'Nro Cta' },
+
+                { type: "input", name: 'cta_freg', disabled: true, readonly: true, offsetLeft: 0, maxLength: 15, labelWidth: 80, inputWidth: 200, label: 'Fe.Regis' },
+                { type: "select", name: "cta_stado", value: '', labelWidth: 80, offsetLeft: 0, disabled: true, inputWidth: 200, label: 'Estado :', connector: BASE_URL + 'MA010102/c_list_estado' },
+
+            ]
+
         },
         {
             type: "block", blockOffset: 5, offsetTop: 20, width: 510, list: [
                 { type: "button", offsetTop: 2, offsetLeft: 5, name: "b_add", value: "NUEVO" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 2, offsetLeft: 5, name: "b_edit", value: "Editar" }, { type: "newcolumn" },
+                { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_save", value: "Guardar Cambios" }, { type: "newcolumn" },
+                { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_cancel", value: "NO Guardar Cambios" }, { type: "newcolumn" }
+
+            ]
+        }];
+        var f_antecedentes = [{ type: "settings", labelWidth: 100 },
+        {
+            type: "block", blockOffset: 5, offsetTop: 5, width: 510, list: [
+                { type: "template", offsetTop: 5, offsetLeft: 2, name: "titleform", width: 510, value: "Seleccione un Antecedente", format: titleformgiro },
+            ]
+        },
+        {
+            type: "block", offsetTop: 10, blockOffset: 40, position: "label-left", list: [
+                {
+                    type: "block", blockOffset: 20, offsetTop: 10, width: 590, list: [
+                        //  { type: "select", name: 'cont_carg_repre', disabled: true, offsetLeft: 0, value: '0', labelWidth: 80, inputWidth: 200, label: 'Cargo Repres.', connector: BASE_URL + 'MA010102/cargo_repre/' },
+                        { type: "input", name: 'ant_detalle', readonly: true, offsetLeft: 0,rows:2,maxLength: 70, labelWidth: 80, inputWidth: 200, label: 'Detalle' },
+                        { type: "input", name: 'ant_satisfa', readonly: true, offsetLeft: 0,  labelWidth: 80, inputWidth: 80, label: 'Rng Satisfaccion' },
+                        { type: "input", name: 'ant_referencia', readonly: true, offsetLeft: 0,  labelWidth: 80, inputWidth: 80, label: 'Referencia' },
+                        {
+                            type: "block", blockOffset: 0, offsetTop: 5, list: [
+                                { type: "input", name: 'ant_ccosto', labelWidth: 80,hidden:true,readonly: true, label: 'Centro Costos', offsetLeft: 0, inputWidth: 260 }, { type: "newcolumn" },
+                                { type: "button", name: '__buscacosto', disabled: true,hidden:true, offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },
+                                
+                            ]
+                        },
+                        { type: "input", name: 'ant_usua', readonly: true, disabled:true, offsetLeft: 0, maxLength: 70, labelWidth: 80, inputWidth: 200, label: 'Usuario' },
+                        { type: "input", name: 'ant_fesys',  readonly: true,disabled:true, offsetLeft: 0, labelWidth: 80, inputWidth: 200, label: 'Fe.Registro' }
+                        //{ type: "input", name: 'ant_empre', disabled: true, readonly: true, offsetLeft: 0, maxLength: 15, labelWidth: 80, inputWidth: 200, label: 'Empresa' }
+                       
+                    ]
+                }
+            ]
+        },
+        {
+            type: "block", blockOffset: 5, offsetTop: 20, width: 510, list: [
+                { type: "button", offsetTop: 2, offsetLeft: 5, name: "b_add", value: "NUEVO" }, { type: "newcolumn" },
+                { type: "button", offsetTop: 2, offsetLeft: 5,disabled: true, name: "b_edit", value: "Editar" }, { type: "newcolumn" },
+                { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_save", value: "Guardar Cambios" }, { type: "newcolumn" },
+                { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_cancel", value: "NO Guardar Cambios" }, { type: "newcolumn" }
+
+            ]
+        }];
+        var f_comunicacion = [{ type: "settings", labelWidth: 100 },
+        {
+            type: "block", blockOffset: 5, offsetTop: 5, width: 510, list: [
+                { type: "template", offsetTop: 5, offsetLeft: 2, name: "titleform", width: 510, value: "Seleccione un Numero", format: titleformgiro },
+            ]
+        },
+        {
+            type: "block", offsetTop: 10, blockOffset: 40, position: "label-left", list: [
+                {
+                    type: "block", blockOffset: 20, offsetTop: 10, width: 590, list: [
+                        //  { type: "select", name: 'cont_carg_repre', disabled: true, offsetLeft: 0, value: '0', labelWidth: 80, inputWidth: 200, label: 'Cargo Repres.', connector: BASE_URL + 'MA010102/cargo_repre/' },
+                        { type: "select", name: 'selc_operador', disabled: true, labelWidth: 80,disabled: true, inputWidth: 150, label: 'Operador ', connector: BASE_URL + 'MA010102/list_operador/' },
+                        { type: "input", name: 'num_celular', readonly: true, offsetLeft: 0,  labelWidth: 80, inputWidth: 80, label: 'Numero' },
+                        { type: "select", name: "num_stado", value: '', labelWidth: 80, offsetLeft: 0, disabled: true, inputWidth: 200, label: 'Estado :', connector: BASE_URL + 'MA010102/c_list_estado' },
+                    
+                    ]
+                }
+            ]
+        },
+        {
+            type: "block", blockOffset: 5, offsetTop: 20, width: 510, list: [
+                { type: "button", offsetTop: 2, offsetLeft: 5, name: "b_add", value: "NUEVO" }, { type: "newcolumn" },
+                { type: "button", offsetTop: 2, offsetLeft: 5,disabled: true, name: "b_edit", value: "Editar" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_save", value: "Guardar Cambios" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_cancel", value: "NO Guardar Cambios" }, { type: "newcolumn" }
 
@@ -270,8 +340,8 @@
             type: "block", offsetTop: 10, blockOffset: 40, position: "label-left", list: [
                 {
                     type: "block", blockOffset: 20, offsetTop: 10, width: 390, list: [
-                        { type: "select", name: 'cont_carg_repre',   disabled: true, offsetLeft: 0, value: '0', labelWidth: 80, inputWidth: 200, label: 'Cargo Repres.', connector: BASE_URL + 'MA010102/cargo_repre/' },
-                        { type: "input", name: 'cont_co_repres', disabled: true,readonly: true, offsetLeft: 0, labelWidth: 80, inputWidth: 200, label: 'RUC/DNI' },
+                        { type: "select", name: 'cont_carg_repre', disabled: true, offsetLeft: 0, value: '0', labelWidth: 80, inputWidth: 200, label: 'Cargo Repres.', connector: BASE_URL + 'MA010102/cargo_repre/' },
+                        { type: "input", name: 'cont_co_repres', disabled: true, readonly: true, offsetLeft: 0, labelWidth: 80, inputWidth: 200, label: 'RUC/DNI' },
                         { type: "input", name: 'cont_apellido', readonly: true, offsetLeft: 0, maxLength: 30, labelWidth: 80, inputWidth: 200, label: 'Apellidos' },
                         { type: "input", name: 'cont_nombres', readonly: true, offsetLeft: 0, maxLength: 30, labelWidth: 80, inputWidth: 200, label: 'Nombres' },
                         { type: "input", name: 'cont_email', readonly: true, offsetLeft: 0, maxLength: 70, labelWidth: 80, inputWidth: 200, label: 'Email' },
@@ -427,8 +497,8 @@
                 }, { type: "newcolumn" },
                 {
                     type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
-                        { type: "select", disabled: true, name: '_tipoper', offsetLeft: 10, labelWidth: 120, inputWidth: 170, label: 'Tipo Persona', connector: BASE_URL + 'MA010102/list_tipopers/' }, { type: "newcolumn" },
-                        { type: "select", disabled: true, name: '_vigencia', offsetLeft: 85, labelWidth: 80, inputWidth: 100, label: 'Vigencia :', connector: BASE_URL + 'MA010102/list_estadocleinte/' }, { type: "newcolumn" }
+                        { type: "select", disabled: true, name: '_tipoper', offsetLeft: 20, labelWidth: 80, inputWidth: 170, label: 'Tipo Persona', connector: BASE_URL + 'MA010102/list_tipopers/' }, { type: "newcolumn" },
+                        { type: "select", disabled: true, name: '_vigencia', offsetLeft:20, labelWidth: 80, inputWidth: 100, label: 'Vigencia :', connector: BASE_URL + 'MA010102/list_estadocleinte/' }, { type: "newcolumn" }
                     ]
                 }, { type: "newcolumn" },
                 { type: "input", readonly: true, name: '_razsocial', offsetLeft: 10, labelWidth: 120, inputWidth: 550, label: 'Razon Social :', required: true },
@@ -522,24 +592,17 @@
         mainLayout.cells('b').setWidth(350);
         mainLayout.cells('a').setHeight(70);
         mainLayout.setSeparatorSize(0, 0);
-        // mainLayout.cells('b').setText("D I R E C C I O N E S");
         myForm = mainLayout.cells('a').attachForm();
-        myForm.load(st_form_base, doOnload);
+        myForm.load(st_form_base);
         myForm.attachEvent("onButtonClick", onBuscaMaestro);
-
-        /*  myToolBar = mainLayout.cells("b").attachToolbar(base_tollbar);
-         myToolBar.setIconSize(48);
-         myToolBar.attachEvent("onClick", ontollbarclic);*/
-        // f_s_sede(); //inicia por defecto el primer tab-sidebar
-
 
         mySidebar = mainLayout.cells('b').attachSidebar({ parent: document.body, width: 150, single_cell: false, template: "text", icons_path: "/assets/images/icons/iconsjhon/", items: sidebarjson });
         mySidebar.attachEvent("onBeforeSelect", onselect_sidebar);
         f_s_datos();
         valores_defecto();
-
-            // myDataView.attachEvent("onAfterSelect", onAfterSelectDataview);
+        limpiar_files();
     </script>
+
 </body>
 
 </html>
