@@ -35,6 +35,11 @@ const intranetController = {
             case 'BA':
                 subcarpeta = 'finanzas';
                 break;
+            case 'VT':
+                subcarpeta = 'ventas';
+                break;
+            case 'CR':
+                subcarpeta = 'creditos';
             default:
                 '';
         }

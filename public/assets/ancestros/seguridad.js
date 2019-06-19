@@ -22,7 +22,7 @@ const FormularioSeguridadStruct = [
 
 IniciarFormularioSeguridad = (windowId, container) => {
     return new Promise(resolve => {
-        winFormularioSeguridad = container.dhxWins.createWindow('winFormularioSeguridad',0,0,480,320);
+        winFormularioSeguridad = container.dhxWins.createWindow('winFormularioSeguridad',0,0,500,360);
             winFormularioSeguridad.center();
             winFormularioSeguridad.keepInViewport(true);
             winFormularioSeguridad.setModal(true);
@@ -81,30 +81,33 @@ IniciarFormularioSeguridad = (windowId, container) => {
                                         };
                                         if(winFormularioSeguridad) winFormularioSeguridad.progressOff();
                                         winFormularioSeguridad.close();
-                                        resolve(JSON.stringify(pOut));
+                                        resolve(pOut);
                                     }
                                     else {
-                                        alert(response.result);
+                                        winFormularioSeguridad.progressOff();
+                                        dhtmlx.alert({
+                                            type: 'alert-error',
+                                            text: 'La clave ingresada es incorrecta'
+                                        });
                                     }
-                                }, 'json');
-                                //.always(() => {
-                                 //   if(winFormularioSeguridad) winFormularioSeguridad.progressOff();
-                                //});
+                                }, 'json')/*.always(() => {
+                                    if(winFormularioSeguridad) winFormularioSeguridad.progressOff();
+                                })*/;
                                 break;
                             case 'fsCancelar':
                                 FormularioSeguridad.setItemValue('fsUsuario','');
                                 FormularioSeguridad.setItemValue('fsClave','');
                                 winFormularioSeguridad.close();
-                                resolve(null);
+                                resolve({ result: 'N' });
                                 break;
                             default:
-                                resolve(null);
+                                resolve({ result: 'N' });
                                 break;
                         }
                     });
                 }
             }, 'json').fail((error) => {
-                resolve(null);
+                resolve({ result: 'N' });
             });
     });
 }

@@ -131,7 +131,6 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
                     gridBusqueda.setColumnHidden(3, true);
                     gridBusqueda.setColumnHidden(5, true);
                     gridBusqueda.enableSmartRendering(true, 50);
-
                     break;
                 case 6://lista de precios
                     gridBusqueda.setHeader('#,CodListado,Nombre,Moneda,Moneda,SerieListado');
@@ -150,6 +149,16 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
                     gridBusqueda.setColumnIds("ch,codbanco,n_banco,stado,copais,nompais");
                     gridBusqueda.setColumnHidden(4, true);
                     gridBusqueda.enableSmartRendering(true);
+                    break;
+                case 14:
+                    gridBusqueda.setHeader('#,RUC,Razón Social,,Nombre Comercial,');
+                    gridBusqueda.attachHeader('#rspan,#text_filter,#text_filter,#rspan,#text_filter,#rspan');
+                    gridBusqueda.setInitWidthsP('5,15,40,0,40,0');
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,codigo,ncomercial,blank,rsocial,corporativo");
+                    gridBusqueda.setColumnHidden(3, true);
+                    gridBusqueda.setColumnHidden(5, true);
+                    gridBusqueda.enableSmartRendering(true, 50);
                     break;
                 default:
                     break;

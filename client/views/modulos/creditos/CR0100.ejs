@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Cuenta Corriente de Clientes</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+	<link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+	<style type="text/css">
+		html,body{height:100%;margin:0;padding:0;width:100%}
+	</style>
+</head>
+<body>
+	<script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<script type="text/javascript" src="/assets/js/conf.js"></script>
+	<script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+    <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+    <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
+    <script type="text/javascript" src="<%=path%>script.js"></script>
+    <script src="https://code.highcharts.com/highcharts.src.js"></script>
+    <script type="text/javascript">
+        var Layout, Tabbar, WinContainer;
+        // tab - cuenta corriente
+        var ToolbarCtacte, LayoutCtacte, LayoutCtacteSec, GridCtacte, WinCtacte, WinCtacteSec, TabbarLayoutCtacte, SubgridWinCtacteL, SubgridWinCtacteR, ToolbarWinCtacte, CalendarCtacte, InputDesde, InputHasta, SubgridPlanillas, SubgridLetras, SubgridNotas, FormWinCtacte;
+        // tab - transferencias
+        var LayoutTransferenciaDocumentos;
+        // tab - auditoria
+        var LayoutAuditoria, ToolbarAuditoria, GridAuditoria, WinAuditoria;
+        IniciarComponentes();
+	</script>
+</body>
+</html>

@@ -96,7 +96,7 @@ const homeController = {
                     return;
                 }
             });
-            const query2 = "select co_menu_sistema as \"id\",de_nombre as \"text\", case st_tipo when 'm' then 1 else 0 end as \"child\" from v_generar_menu where de_alias = :alias and co_empresa = :empresa and co_antecesor = :codigo order by st_tipo desc";
+            const query2 = "select co_menu_sistema as \"id\",de_nombre as \"text\", case st_tipo when 'm' then 1 else 0 end as \"child\" from v_generar_menu where de_alias = :alias and co_empresa = :empresa and co_antecesor = :codigo order by st_tipo desc, de_nombre asc";
             const params2 = {alias: {val: alias}, empresa: {val: empresa}, codigo: {val: id}};
             conn.execute(query2, params2, responseParams, (error, result) => {
                 if (error) {

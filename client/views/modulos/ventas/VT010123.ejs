@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Bonificaciones por reventa</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+	<link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+	<style type="text/css">
+		html,body{height:100%;margin:0;padding:0;width:100%}
+		#dhxDesktop{height:100%;width:100%;}
+	</style>
+</head>
+<body>
+	<!-- -->
+	<script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<script type="text/javascript" src="/assets/js/conf.js"></script>
+	<script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+    <script type="text/javascript" src="<%=path%>script.js"></script>
+    <script type="text/javascript">
+        var mainLayout,mainTabbar,mainToolbar,gridTipos;
+		IniciarComponentes = () => {
+            mainLayout = new dhtmlXLayoutObject(document.body, '1C');
+            mainTabbar = mainLayout.cells('a').attachTabbar();
+                mainTabbar.addTab('promociones','Tipos promoción',null,null,true);
+                mainTabbar.addTab('detalle','Detalle de la promoción');
+            mainToolbar = mainLayout.cells('a').attachToolbar();
+                mainToolbar.setIconsPath('/assets/images/icons/');
+                mainToolbar.addButton('ntipo',null,'Nuevo tipo bonificación','ic-premio.svg','ic-premio-dis.svg');
+                mainToolbar.addButton('ndetalle',null,'Nueva bonificación','toolbar/ic-add.svg','toolbar/ic-add-dis.svg');
+                mainToolbar.disableItem('ndetalle');
+            gridTipos = mainTabbar.tabs('promociones').attachGrid();
+                gridTipos.setHeader('Codigo,Promoción,F.registro,,Usuario,Vigencia,F.inicio,F.fin');
+                gridTipos.attachHeader('#numeric_filter,#text_filter,#text_filter,#select_filter,#text_filter,#select_filter,#text_filter,#text_filter');
+                gridTipos.setInitWidths('90,240,100,100,320,90,100,100');
+                gridTipos.setColTypes('rotxt,rotxt,rotxt,ron,rotxt,rotxt,rotxt,rotxt');
+                gridTipos.init();
+            CargarDatosGridTipos();
+        }
+        //
+        IniciarComponentes();
+	</script>
+</body>
+</html>

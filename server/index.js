@@ -38,6 +38,9 @@ app.use('/api/ancestros', require('./routes/ancestros.routes'));
 //rutas para modulos
 app.use('/api/AD010102', require('./routes/administracion/AD010102.routes'));
 app.use('/api/AD010201', require('./routes/administracion/AD010201.routes'));
+app.use('/api/BA010304', require('./routes/finanzas/BA010304.routes'));
+app.use('/api/BA010305', require('./routes/finanzas/BA010305.routes'));
+app.use('/api/CR0100', require('./routes/creditos/CR0100.routes'));
 app.use('/api/MA010104', require('./routes/maestros/MA010104.routes'));
 app.use('/api/MA010102', require('./routes/maestros/MA010102.routes'));
 app.use('/api/MA010202', require('./routes/maestros/MA010202.routes'));
@@ -45,8 +48,8 @@ app.use('/api/MA010201', require('./routes/maestros/MA010201.routes'));
 app.use('/api/MA010301', require('./routes/maestros/MA010301.routes'));
 app.use('/api/MA010601', require('./routes/maestros/MA010601.routes'));
 app.use('/api/LO01020201', require('./routes/logistica/LO01020201.routes'));
-app.use('/api/BA010304', require('./routes/finanzas/BA010304.routes'));
-app.use('/api/BA010305', require('./routes/finanzas/BA010305.routes'));
+app.use('/api/VT010101', require('./routes/ventas/VT010101.routes'));
+app.use('/api/VT010123', require('./routes/ventas/VT010123.routes'));
 //ruta del chat
 app.use('/chat', require('./routes/chat.routes'));
 
