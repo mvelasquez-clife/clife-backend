@@ -47,7 +47,8 @@ const intranetController = {
         fs.exists(filePath, (exists) => {
             if (exists) {
                 const data = {
-                    path: '/modulos/' + subcarpeta + '/' + modulo + '/'
+                    path: '/modulos/' + subcarpeta + '/' + modulo + '/',
+                    modulo: modulo
                 };
                 res.render(filePath, data);
             } else {
