@@ -160,6 +160,14 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
                     gridBusqueda.setColumnHidden(5, true);
                     gridBusqueda.enableSmartRendering(true, 50);
                     break;
+                case 15:
+                    gridBusqueda.setHeader('#,Código,Fuerza Venta,Serie,#cspan,Estado');
+                    gridBusqueda.attachHeader('#rspan,#text_filter,#text_filter,#text_filter,#text_filter,#select_filter');
+                    gridBusqueda.setInitWidthsP('5,15,30,20,15,15');
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,codigo,nombre,nserie,cserie,estado");
+                    gridBusqueda.enableSmartRendering(true, 50);
+                    break;
                 default:
                     break;
             }

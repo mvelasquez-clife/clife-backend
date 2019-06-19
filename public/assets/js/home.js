@@ -431,11 +431,12 @@ mainTreeOnDblClick = (id) => {
     if (!mainTree.hasChildren(id)) {
         mainLayout.cells("b").collapse();
         winId = "win-" + id;
+        let replicaId = mainTree.getAttribute(id,'replica');
         if (!dhxWinmain.isWindow(winId)) {
             dhxWinmain.createWindow(winId, 0, 0, 1080, 550);
             dhxWinmain.window(winId).setText(mainTree.getItemText(id));
             dhxWinmain.window(winId).center();
-            dhxWinmain.window(winId).attachURL("modulo/" + id);
+            dhxWinmain.window(winId).attachURL("modulo/" + id + (replicaId ? ('/' + replicaId) : ''));
         }
     }
     return true;

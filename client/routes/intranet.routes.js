@@ -8,6 +8,7 @@ router.get('/inicio', intranetController.inicio);
 router.get('/resetpasword/:token', intranetController.resetpasword);
 //vistas de cada modulo
 router.get('/modulo/:id', intranetController.CargarModulo);
+router.get('/modulo/:id/:ancestro', intranetController.CargarModulo);
 
 
 

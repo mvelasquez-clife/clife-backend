@@ -13,8 +13,10 @@ const intranetController = {
     },
 
     CargarModulo: (req, res) => {
-        const modulo = req.params.id;
+        let modulo = req.params.id;
+        let ancestro = req.params.ancestro;
         var subcarpeta = '';
+        if(ancestro != undefined) modulo = ancestro;
         const prefijo = modulo.substring(0, 2);
         switch (prefijo) {
             case 'MA':
