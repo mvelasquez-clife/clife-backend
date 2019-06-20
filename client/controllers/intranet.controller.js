@@ -14,6 +14,7 @@ const intranetController = {
 
     CargarModulo: (req, res) => {
         let modulo = req.params.id;
+        let moduloOrigen = modulo;
         let ancestro = req.params.ancestro;
         var subcarpeta = '';
         if(ancestro != undefined) modulo = ancestro;
@@ -50,7 +51,7 @@ const intranetController = {
             if (exists) {
                 const data = {
                     path: '/modulos/' + subcarpeta + '/' + modulo + '/',
-                    modulo: modulo
+                    modulo: moduloOrigen
                 };
                 res.render(filePath, data);
             } else {
