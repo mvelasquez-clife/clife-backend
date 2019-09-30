@@ -26,12 +26,81 @@ const structs = {
             { type: 'newcolumn' },
             { type: 'button', name: 'limpiar', value: 'Limpiar' }
         ] }
+    ],
+    FormModificaNc: [
+        { type: 'settings', position: 'label-right' },
+        { type: 'block', blockOffset: 10, list: [
+            { type: 'fieldset', label: '<span style="color:#1565c0;">Documento de venta registrado</span>', inputWidth: 470, offsetLeft: 1, list: [
+                { type: 'settings', position: 'label-left' },
+                { type: 'block', blockOffset: 0, list: [
+                    { type: 'settings', position: 'label-left', offsetLeft: 8 },
+                    { type: 'input', name: 'factura', label: 'Factura ', inputWidth: 75, offsetLeft: 1, labelWidth: 60 },
+                    { type: 'newcolumn' },
+                    { type: 'input', name: 'fecharegistro', label: 'Deuda ', offsetLeft: 12, inputWidth: 90 }
+                ] },
+                { type: 'block', blockOffset: 0, list: [
+                    { type: 'settings', position: 'label-left', offsetLeft: 8 },
+                    { type: 'input', name: 'codigonota', label: 'Nota créd. ', inputWidth: 85, offsetLeft: 1, labelWidth: 60 },
+                    { type: 'newcolumn' },
+                    { type: 'input', name: 'fecharegistro', label: 'Fe. registro ', inputWidth: 60 },
+                    { type: 'newcolumn' },
+                    { type: 'input', name: 'nrovoucher', label: 'Nro. voucher ', inputWidth: 60 }
+                ] },
+                { type: 'block', blockOffset: 0, offsetLeft: 1, list: [
+                    { type: 'input', name: 'ruc', label: 'Cliente ', inputWidth: 75, labelWidth: 60 },
+                    { type: 'newcolumn' },
+                    { type: 'input', name: 'cliente', inputWidth: 280 }
+                ] },
+                { type: 'block', blockOffset: 0, offsetLeft: 1, list: [
+                    { type: 'input', name: 'vcodigo', label: 'Vendedor ', inputWidth: 75, labelWidth: 60 },
+                    { type: 'newcolumn' },
+                    { type: 'input', name: 'vendedor', inputWidth: 280 }
+                ] },
+                { type: 'block', blockOffset: 0, offsetLeft: 1, list: [
+                    { type: 'settings', position: 'label-left', offsetLeft: 12, inputWidth: 90 },
+                    { type: 'input', name: 'importe', label: 'Importe ', offsetLeft: 0, labelWidth: 60 },
+                    { type: 'newcolumn' },
+                    { type: 'input', name: 'igv', label: 'IGV ' },
+                    { type: 'newcolumn' },
+                    { type: 'input', name: 'total', label: 'Total ' }
+                ] }
+            ] },
+            { type: 'newcolumn' },
+            { type: 'fieldset', label: '<span style="color:#009688;">Nuevo documento para amortizar</span>', labelWidth: 160, inputWidth: 470, offsetLeft: 8, list: [
+                { type: 'settings', position: 'label-left', offsetTop: 3 },
+                { type: 'block', blockOffset: 0, offsetLeft: 1, list: [
+                    { type: 'settings' },
+                    { type: 'input', name: 'periodo', label: 'Periodo ', inputWidth: 75, offsetLeft: 1, labelWidth: 60 },
+                    { type: 'newcolumn' },
+                    { type: 'input', name: 'fecha', label: 'Fecha ', offsetLeft: 12, inputWidth: 90 }
+                ] },
+                { type: 'block', blockOffset: 0, offsetLeft: 1, list: [
+                    { type: 'settings' },
+                    { type: 'input', name: 'nuevodoc', label: 'Documento ', inputWidth: 75, offsetLeft: 1, labelWidth: 60 },
+                    { type: 'newcolumn' },
+                    { type: 'input', name: 'nuevadeuda', label: 'Deuda ', offsetLeft: 12, inputWidth: 80 },
+                    { type: 'newcolumn' },
+                    { type: 'input', name: 'importetrs', label: 'Importe ', offsetLeft: 12, inputWidth: 80 }
+                ] },
+                { type: 'block', blockOffset: 0, offsetLeft: 1, list: [
+                    { type: 'input', name: 'rcodigo', label: 'Cobrador ', inputWidth: 75, labelWidth: 60 },
+                    { type: 'newcolumn' },
+                    { type: 'input', name: 'recaudador', inputWidth: 280 }
+                ] },
+                { type: 'block', blockOffset: 0, offsetLeft: 1, offsetTop: 10, list: [
+                    { type: 'button', name: 'transfiere', value: 'Grabar ', inputWidth: 75, labelWidth: 60, offsetLeft: 62 },
+                    { type: 'newcolumn' },
+                    { type: 'button', name: 'cancelar', value: 'Cancelar', inputWidth: 280, offsetLeft: 8 }
+                ] }
+            ] }
+        ] }
     ]
 };
 let ClienteRes, TransferenciaRes, DestinatarioRes, AuditoriaRes;
 let ToolbarTransferenciaOrigen, GridTransferenciaOrigen, ToolbarTransferenciaDestino, GridTransferenciaDestino;
 let LayoutWinCtacte, LayoutWinAuditoria, FormWinAuditoria, GridWinAuditoria, GridMovimientosCompras, GridMovimientosPagos, ToolbarMovimientos, SliderPeriodos;
 let RenderInicialGraficoMovimientos = true, PeriodosMovimientosCliente, DatosMovimientosCliente;
+let WinDocumentoViewer, WinModificaNc, LayoutModificaNc, GridModificaNc;
 
 IniciarComponentes = () => {
     Layout = new dhtmlXLayoutObject(document.body, '1C');
@@ -42,6 +111,7 @@ IniciarComponentes = () => {
     //layout cuenta corriente
     ToolbarCtacte = Tabbar.tabs('ctacte').attachToolbar();
         ToolbarCtacte.setIconsPath('/assets/images/icons/toolbar/');
+        ToolbarCtacte.addButton('alternaPanel', null, null, 'ic-menu.svg', null);
         ToolbarCtacte.addText('clienteLabel', null, 'Cliente');
         ToolbarCtacte.addInput('clienteRuc', null, null, 75);
         ToolbarCtacte.addInput('clienteNombre', null, null, 160);
@@ -182,7 +252,8 @@ EscribirSubgridNotas = (documento) => {
         SubgridNotas.setColAlign('center,left,center,left,right,left,left,left');
         SubgridNotas.setNumberFormat('0,000.00',4);
         SubgridNotas.init();
-    SubgridNotas.load('/api/CR0100/notas-credito-debito/' + usrJson.empresa + '/' + documento);
+    SubgridNotas.load('/api/CR0100/notas-credito-debito/' + usrJson.empresa + '/' + documento, SubgridNotasOnLoad);
+    SubgridNotas.attachEvent('onRowSelect', SubgridNotasOnRowSelect);
 }
 
 //llamadas ws
@@ -194,33 +265,64 @@ CargaCuentaCorriente = async () => {
     LayoutCtacte.cells('a').detachObject();
     GridCtacte = LayoutCtacte.cells('a').attachGrid();
         GridCtacte.setIconsPath('/assets/images/icons/grid/');
-        GridCtacte.setHeader(',Fe.Registro,Nro.Pedido,,Fe.Vcto.,Nro.Documento,,Saldo,Egreso,Ingreso,Tp.Doc.,Vendedor,#cspan,T.C.,TD,Fe.Venc.Fact.,Concepto,Estado,Periodo,Moneda,Fza.Venta,#cspan,Recaudo,');
-        GridCtacte.attachHeader('#rspan,#rspan,#text_filter,#rspan,#rspan,#text_filter,#rspan,#numeric_filter,#numeric_filter,#numeric_filter,#select_filter,#text_filter,#text_filter,#numeric_filter,#select_filter,#rspan,#text_filter,#select_filter,#select_filter,#select_filter,#rspan,#select_filter,#rspan,#rspan');
-        GridCtacte.setInitWidths('20,80,90,20,80,90,20,100,100,100,60,90,240,60,60,80,120,90,80,100,40,160,40,0');
-        GridCtacte.setColTypes('img,rotxt,rotxt,img,rotxt,rotxt,img,ron,ron,ron,rotxt,ron,rotxt,ron,rotxt,rotxt,rotxt,rotxt,ron,rotxt,rotxt,rotxt,rotxt,rotxt');
-        GridCtacte.setColAlign('center,left,left,center,left,left,center,right,right,right,left,right,left,right,left,left,left,center,left,left,right,left,center,left');
+        GridCtacte.setHeader(',Fe.Registro,Nro.Pedido,,Fe.Vcto.,Nro.Documento,,Saldo,Egreso,Ingreso,,,Tp.Doc.,Vendedor,#cspan,T.C.,TD,Fe.Venc.Fact.,Concepto,Estado,Periodo,Moneda,Fza.Venta,#cspan,Recaudo,');
+        GridCtacte.attachHeader('#rspan,#rspan,#text_filter,#rspan,#rspan,#text_filter,#rspan,#numeric_filter,#numeric_filter,#numeric_filter,#rspan,#rspan,#select_filter,#text_filter,#text_filter,#numeric_filter,#select_filter,#rspan,#text_filter,#select_filter,#select_filter,#select_filter,#rspan,#select_filter,#rspan,#rspan');
+        GridCtacte.setInitWidths('20,80,90,20,80,90,20,100,100,100,25,25,60,90,240,60,60,80,120,90,80,100,40,160,40,0');
+        GridCtacte.setColTypes('img,rotxt,rotxt,img,rotxt,rotxt,img,ron,ron,ron,img,img,rotxt,ron,rotxt,ron,rotxt,rotxt,rotxt,rotxt,ron,rotxt,rotxt,rotxt,rotxt,rotxt');
+        GridCtacte.setColAlign('center,left,left,center,left,left,center,right,right,right,center,center,left,right,left,right,left,left,left,center,left,left,right,left,center,left');
         GridCtacte.setNumberFormat('0,000.00',7);
         GridCtacte.setNumberFormat('0,000.00',8);
         GridCtacte.setNumberFormat('0,000.00',9);
-        GridCtacte.setNumberFormat('0.00',13);
+        GridCtacte.setNumberFormat('0.00',15);
         GridCtacte.init();
     GridCtacte.load('/api/CR0100/cuenta-corriente/' + usrJson.empresa + '/' + ClienteRes.codigo + '/' + encodeURIComponent(fInicio) + '/' + encodeURIComponent(fFin), GridCtacteOnLoad);
-    GridCtacte.attachEvent('onRowDblClicked', GridCtacteOnRowDblClicked);
+    //GridCtacte.attachEvent('onRowDblClicked', GridCtacteOnRowDblClicked);
+    GridCtacte.attachEvent('onRowSelect', GridCtacteOnRowSelect);
 }
-GridCtacteOnRowDblClicked = (rowId,colId) => {
-    LayoutCtacte.cells('b').detachObject();
-    LayoutCtacte.cells('b').expand();
-    LayoutCtacte.cells('b').setWidth(480);
-    LayoutCtacteSec = LayoutCtacte.cells('b').attachLayout('3E');
-    LayoutCtacteSec.cells('a').setText('Planillas de cobranza');
-    LayoutCtacteSec.cells('b').setText('Letras/Cheques');
-    LayoutCtacteSec.cells('c').setText('Notas de crédito/débito');
-    //genera las grids
-    let documento = GridCtacte.cells(rowId,5).getValue();
-    let moneda = GridCtacte.cells(rowId,23).getValue();
-    EscribirSubgridPlanillas(documento,moneda);
-    EscribirSubgridLetras(documento);
-    EscribirSubgridNotas(documento);
+GridCtacteOnRowSelect = async (rowId,colId) => {
+    switch(colId) {
+        case 3:
+            break;
+        case 6:
+            let codigo = GridCtacte.cells(rowId,5).getValue();
+            let empresa = usrJson.empresa;
+            WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 0, 0, 640, 640);
+                WinDocumentoViewer.center();
+                WinDocumentoViewer.keepInViewport();
+                WinDocumentoViewer.setText('Mostrando documento ' + codigo);
+                WinDocumentoViewer.attachURL('/viewer/archivo/' + empresa + '/' + codigo);
+            break;
+        case 10:
+            LayoutCtacte.cells('b').detachObject();
+            if(LayoutCtacte.cells('b').isCollapsed()) LayoutCtacte.cells('b').expand();
+            LayoutCtacteSec = LayoutCtacte.cells('b').attachLayout('3E');
+            LayoutCtacteSec.cells('a').setText('Planillas de cobranza');
+            LayoutCtacteSec.cells('b').setText('Letras/Cheques');
+            LayoutCtacteSec.cells('c').setText('Notas de crédito/débito');
+            //genera las grids
+            let documento = GridCtacte.cells(rowId,5).getValue();
+            let moneda = GridCtacte.cells(rowId,23).getValue();
+            EscribirSubgridPlanillas(documento,moneda);
+            EscribirSubgridLetras(documento);
+            EscribirSubgridNotas(documento);
+            break;
+        case 11:
+            let cCliente = ClienteRes.codigo;
+            let cVendedor = GridCtacte.cells(rowId,13).getValue();
+            let nMeses = 6;
+            let FzaVta = GridCtacte.cells(rowId,22).getValue();
+            let nCliente = ClienteRes.rsocial;
+            let lc = await AsignarLineaCreditoCliente(WinContainer,cCliente,cVendedor,nMeses,FzaVta);
+            if(lc && lc.result == 'S') {
+                dhtmlx.alert({
+                    title: 'Asignar línea de crédito',
+                    ok: 'Entendido',
+                    text: 'Se asignó la línea de crédito al cliente <b>' + nCliente + '</b>'
+                });
+            }
+            break;
+        default: break;
+    }
 }
 CargarDatosAuditoriaVendedor = () => {
     let minimo = ToolbarAuditoria.getValue('auditoriaMinimo');
@@ -371,6 +473,15 @@ PreparaGraficoMovimientosCliente = () => {
 //eventos
 ToolbarCtacteOnClick = async (id) => {
     switch(id) {
+        case 'alternaPanel':
+            if(LayoutCtacte.cells('b').isCollapsed()) {
+                LayoutCtacte.cells('b').expand();
+                LayoutCtacte.cells('b').setWidth(480);
+            }
+            else {
+                LayoutCtacte.cells('b').collapse();
+            }
+            break;
         case 'clienteRecarga':
             CargaCuentaCorriente();
             break;
@@ -482,7 +593,7 @@ ToolbarCtacteOnClick = async (id) => {
             ToolbarWinCtacte = TabbarLayoutCtacte.tabs('lineacred').attachToolbar();
                 ToolbarWinCtacte.setIconsPath('/assets/images/icons/toolbar/');
                 ToolbarWinCtacte.addButton('masivo', null,'Asignar crédito masivo', 'ic-credito-masivo.svg', '');
-                ToolbarWinCtacte.addButton('credfzavta', null,'Asignar crédito por cliente y fuerza de venta', 'ic-credito-fzavta.svg', '');
+                //ToolbarWinCtacte.addButton('credfzavta', null,'Asignar crédito por cliente y fuerza de venta', 'ic-credito-fzavta.svg', '');
                 ToolbarWinCtacte.attachEvent('onClick', ToolbarWinCtacteOnClick);
             SubgridWinCtacteR = TabbarLayoutCtacte.tabs('lineacred').attachGrid();
                 SubgridWinCtacteR.setIconsPath('/assets/images/icons/grid/');
@@ -534,6 +645,8 @@ GridCtacteOnLoad = () => {
         }
         GridCtacte.setCellTextStyle(iRowId,3,'cursor:pointer;');
         GridCtacte.setCellTextStyle(iRowId,6,'cursor:pointer;');
+        GridCtacte.setCellTextStyle(iRowId,10,'cursor:pointer;');
+        GridCtacte.setCellTextStyle(iRowId,11,'cursor:pointer;');
     }
     LayoutCtacte.cells('a').progressOff();
 }
@@ -565,6 +678,7 @@ ToolbarWinCtacteOnClick = async (id) => {
                 });
             }
             else console.log('fue p...');
+            break;
         case 'credfzavta':
             WinCtacteSec = WinContainer.createWindow('WinCtacteSec', 0, 0, 480, 480);
                 WinCtacteSec.setText('Asignar línea de crédito al cliente');
@@ -948,4 +1062,44 @@ SliderPeriodosOnChange = (args) => {
     let MaxPeriodo = args[1];
     ToolbarMovimientos.setItemText('movimientosPeriodoDesde', '<span class="span-label-movimiento-periodo span-label-right">' + PeriodosMovimientosCliente[MinPeriodo].periodo + '</span>');
     ToolbarMovimientos.setItemText('movimientosPeriodoHasta', '<span class="span-label-movimiento-periodo span-label-left">' + PeriodosMovimientosCliente[MaxPeriodo].periodo + '</span>');
+}
+SubgridNotasOnLoad = () => {
+    let CantidadNotas = SubgridNotas.getRowsNum();
+    for(let i = 0; i < CantidadNotas; i++) {
+        let iRowId = SubgridNotas.getRowId(i);
+        SubgridNotas.setCellTextStyle(iRowId,2,'cursor:pointer;');
+    }
+}
+SubgridNotasOnRowSelect = (rowId,colId) => {
+    switch(colId) {
+        case 2:
+            if(WinContainer.isWindow('WinModificaNc')) {
+                WinModificaNc.bringToTop();
+            }
+            else {
+                WinModificaNc = WinContainer.createWindow('WinModificaNc',0,0,982,600);
+                    WinModificaNc.keepInViewport();
+                    WinModificaNc.center();
+                    WinModificaNc.setModal(true);
+                    WinModificaNc.setText('Nota de crédito');
+                LayoutModificaNc = WinModificaNc.attachLayout('2E');
+                    LayoutModificaNc.cells('a').hideHeader();
+                    LayoutModificaNc.cells('b').setText('Modificar los importes de la nota de crédito');
+                    LayoutModificaNc.cells('b').setHeight(230);
+                GridModificaNc = LayoutModificaNc.cells('a').attachGrid();
+                    GridModificaNc.setIconsPath('/assets/images/icons/grid/');
+                    GridModificaNc.setHeader('Nota Crédito,Factura,Monto,Cliente,#cspan,Fecha,Importe,Moneda');
+                    GridModificaNc.setInitWidths('80,80,100,90,320,80,100,80');
+                    GridModificaNc.setColTypes('rotxt,rotxt,ron,rotxt,rotxt,rotxt,ron,rotxt');
+                    GridModificaNc.setColAlign('left,left,right,right,left,left,right,left');
+                    GridModificaNc.setNumberFormat('0,000.00',2);
+                    GridModificaNc.setNumberFormat('0,000.00',6);
+                    GridModificaNc.init();
+                FormModificaNc = LayoutModificaNc.cells('b').attachForm();
+                FormModificaNc.loadStruct(structs.FormModificaNc);
+                //oliboli
+            }
+            break;
+        default: break;
+    }
 }

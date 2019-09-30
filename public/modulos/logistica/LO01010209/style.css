@@ -1,0 +1,12 @@
+.dv-combo {
+    height: 24px;
+    position: relative;
+    top: -3px;
+    width: 139px;
+}
+.sp-toolbar {
+    color: #808080;
+}
+.sp-enabled {
+    color: #000000;
+}

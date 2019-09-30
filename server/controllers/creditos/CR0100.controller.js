@@ -32,7 +32,7 @@ const cr0100Controller = {
         let { empresa, cliente, desde, hasta } = req.params;
         try {
             let conn = await oracledb.getConnection(dbParams);
-            let query = "select vencido,to_char(fregistro,'dd/mm/yyyy') fregistro,pedido,ic_pedido,to_char(fvencimiento,'dd/mm/yyyy') fvencimiento,documento,ic_factura,saldo,egreso,ingreso,tpdocadmin,vendedor,nomvendedor,factor_conversion,abreviatura,to_char(fvence,'dd/mm/yyyy') fvence,concepto,vigencia,periodo,moneda,fuerza_venta,nombre,recaudo,comoneda from table(pack_new_cuenta_corriente.f_cuenta_corriente(:p_empresa, :p_cliente, :p_desde, :p_hasta))";
+            let query = "select vencido,to_char(fregistro,'dd/mm/yyyy') fregistro,pedido,ic_pedido,to_char(fvencimiento,'dd/mm/yyyy') fvencimiento,documento,ic_factura,saldo,egreso,ingreso,ic_busca,ic_credito,tpdocadmin,vendedor,nomvendedor,factor_conversion,abreviatura,to_char(fvence,'dd/mm/yyyy') fvence,concepto,vigencia,periodo,moneda,fuerza_venta,nombre,recaudo,comoneda from table(pack_new_cuenta_corriente.f_cuenta_corriente(:p_empresa, :p_cliente, :p_desde, :p_hasta))";
             let params = {
                 p_empresa: { val: empresa },
                 p_cliente: { val: cliente },

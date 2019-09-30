@@ -48,10 +48,17 @@ app.use('/api/MA010201', require('./routes/maestros/MA010201.routes'));
 app.use('/api/MA010301', require('./routes/maestros/MA010301.routes'));
 app.use('/api/MA010601', require('./routes/maestros/MA010601.routes'));
 app.use('/api/LO01020201', require('./routes/logistica/LO01020201.routes'));
+app.use('/api/LO01010209', require('./routes/logistica/LO01010209.routes'));
 app.use('/api/VT010101', require('./routes/ventas/VT010101.routes'));
 app.use('/api/VT010123', require('./routes/ventas/VT010123.routes'));
 //ruta del chat
 app.use('/chat', require('./routes/chat.routes'));
+//visor de documentos electronicos
+app.use('/viewer', require('./routes/viewer.routes'));
+//tablero avance de ventas
+app.use('/avance-ventas', require('./routes/avancevtas.routes'));
+//coordenadas de clientes
+app.use('/coordenadas', require('./routes/coordenadas.routes'));
 
 //configura el chat
 /*io.set('origins', host.address);

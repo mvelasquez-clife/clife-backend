@@ -1,0 +1,41 @@
+<html lang="es">
+    <head>
+        <title>Avance de ventas</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="/assets/timeline/css/timeline.css">
+        <style>
+            html,body{height:100%;margin:0;padding:0;width:100%}
+            #div-polars{padding:10px;}
+            #ch-resumen{padding:12px;}
+            .table-header{margin:8px 0;border-collapse:collapse;border-spacing:0;}
+            .p-header{font-family:'Open Sans';font-size:14px;}
+            .img-header{margin:4px;height:40px;}
+            .dv-chart{height:100%;width:100%;}
+            .ct-visitas{font-size:13px;}
+            #container-visitas{overflow-y:auto;}
+        </style>
+    </head>
+    <body>
+        <!-- -->
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <script src="/assets/highcharts/highcharts.js"></script>
+        <script src="/assets/highcharts/highcharts-more.js"></script>
+        <script src="/assets/highcharts/modules/solid-gauge.src.js"></script>
+        <script src="/assets/ancestros/avance-ventas-2.js"></script>
+        <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9DJig4LM6QfNzzAeB91p71Ki0H6rhpeA"></script>
+        <script>
+            var LayoutContainer, LayoutAvance, LayoutVisitas, GridPedidos, TabbarPrincipal;
+            var map, Markers;
+            var sHoraActual, cHora, cMinuto, cSegundo, UltimaActualizacion;
+            const Colores = ['#d8d8d8','#f44336','#ff9800','#fdd835','#4caf50'];
+            IniciarComponentes();
+        </script>
+    </body>
+</html>

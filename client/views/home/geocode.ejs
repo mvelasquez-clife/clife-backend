@@ -1,0 +1,27 @@
+<html lang="es">
+    <head>
+        <title>Carga masiva de coordenadas</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <style>
+            html,body{height:100%;margin:0;padding:0;width:100%}
+            .cmb-pais{height:24px;width:240px;margin-top:-3px;}
+            .map-canvas{height:100%;width:100%;}
+        </style>
+    </head>
+    <body>
+        <!-- -->
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9DJig4LM6QfNzzAeB91p71Ki0H6rhpeA"></script>
+        <script src="/assets/ancestros/grid-busqueda.js"></script>
+        <script src="/assets/lib/geocode.js"></script>
+        <script>
+            const usrJson = { empresa:11 };
+            var Layout, Toolbar, ToolbarMap, ComboPais, ComboDepartamento, ComboProvincia, ComboDistrito, GridDirecciones;
+            var map, geocoder, Marker, Markers, AuxMarker;
+            $(IniciarComponentes);
+        </script>
+    </body>
+</html>
