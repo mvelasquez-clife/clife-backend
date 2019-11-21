@@ -176,7 +176,10 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
             gridBusqueda.setPagingSkin("toolbar");
             gridBusqueda.enableMultiselect(multiSelect);
             gridBusqueda.init();
-            gridBusqueda.load('/api/ancestros/datos-modal-busqueda/' + tipoEntidad + '/' + usrJson.empresa + '/' + extraParam);
+            winGridBusqueda.progressOn();
+            gridBusqueda.load('/api/ancestros/datos-modal-busqueda/' + tipoEntidad + '/' + usrJson.empresa + '/' + extraParam).then(function (a, b, c) {//console.log(a +'-' +b +'-'+c)
+                      winGridBusqueda.progressOff();
+        });
         }
     });
 };

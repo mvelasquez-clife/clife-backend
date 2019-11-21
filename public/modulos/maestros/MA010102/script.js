@@ -13,53 +13,62 @@ onBuscaMaestro = async (name) => {
     myToolbar.addSeparator(null, null);
     myToolbar.addButton('b_close', null, '<i class="far fa-window-close txtred"></i> CERRAR ', null, null);
     myToolbar.attachEvent("onClick", (id) => {
-        if (id === 'b_close') {
-            Wind_.window("wbusq").close();
-        } else {
-            onbuscacliente(Wind_, myToolbar.getValue('in_busq'));
-        }
+        (id === 'b_close') ? Wind_.window("wbusq").close() : onbuscacliente(Wind_, myToolbar.getValue('in_busq'));
     });
     myToolbar.attachEvent("onEnter", (id) => {
         onbuscacliente(Wind_, myToolbar.getValue('in_busq'));
     });
     myGrid = Winid_.attachGrid();
-    myGrid.setHeader('Codigo,Nombre Comercial,Vigencia,N.Comer,Estado');
-    myGrid.setInitWidthsP('20,60,10,10,10');
-    myGrid.setColTypes('ron,ro,ro,ro,ro');
+    myGrid.setHeader('Codigo,Nombre Comercial,Vigencia,N.Comer,Estado,Nom.Vista');
+    myGrid.setInitWidthsP('20,10,10,10,10,60');
+    myGrid.setColTypes('ro,ro,ro,ro,ro,ro');
     myGrid.setColumnHidden(3, true);
-    myGrid.setColumnIds("codigo,nom_comer,vigencia,nom-comer,asignado")
+    myGrid.setColumnHidden(1, true);
+
+    myGrid.setColumnIds("codigo,raz_social,vigencia,nom_comer,asignado,nom_vista");
     myGrid.init();
     myGrid.attachEvent("onRowSelect", function (id, ind) {
-        mySidebar.cells("s_datos").progressOn();
-        data = myGrid.getRowData(myGrid.getSelectedRowId());
-        Wind_.window("wbusq").close();
-        cocliente = data.codigo; //console.log(cocliente);
-        _async_form(cocliente, _item_sidebar, data);//  _selec_sidevar(cocliente,_item_sidebar);
-        myForm.setItemValue('b_cliente', data.codigo + ' ' + data.nom_comer);
-        myForm.setItemValue('b_estado', data.vigencia);
-        myForm.setItemValue('b_asignado', data.asignado);
+        data = myGrid.getRowData(myGrid.getSelectedRowId()), enti_tipo == 1 ? co_entidad = parseInt(data.codigo) : cocliente = parseInt(data.codigo);
+        cod = enti_tipo == 1 ? co_entidad : cocliente;
+        if (cod > 0) {
+            mySidebar.cells("s_datos").progressOn();
+            Wind_.window("wbusq").close();
+            _async_form(cod, _item_sidebar, data);
+            myForm.setItemValue('b_cliente', data.codigo + ' ' + data.raz_social);
+            myForm.setItemValue('b_estado', data.vigencia);
+            myForm.setItemValue('b_asignado', data.asignado);
+        } else {
+            Swal.fire({ type: 'warning', text: 'No puede seleccionar este item!!...', showConfirmButton: false, timer: 1500 });
+        }
+    });
+    myGrid.attachEvent("onDataReady", function () {
+        var ids = myGrid.getAllRowIds();
+        var parte = ids.split(",");
+        for (var i = 0; i < parte.length; i++) {
+            myGrid.cells(parte[i], 4).getValue() === 'Asignado' ? myGrid.setRowTextStyle(parte[i], "color:green; font-weight:800;") : myGrid.setRowTextStyle(parte[i], "color:#FF9033; font-weight:800;");
+        }
     });
 };
-async function _async_form(cliente, item, data) {
-    await _selec_sidevar(cliente, item);
-    beforechange(data);
+async function _async_form(cod, item, data) {
+    await _selec_sidevar(cod, item);
+    beforechange(cod, data);
 }
 
-function limpiar_files() { console.log('limpiar_files');
-        $.post(BASE_URL + "MA010102/limpiar_files", {}, function (res) {
-            console.log(res);
-        }, "json");
-      
+function limpiar_files() {
+    $.post(BASE_URL + "MA010102/limpiar_files", {}, function (res) {
+        console.log(res);
+    }, "json");
+
 }
 
-function _selec_sidevar(cliente, item) {
-    if (cliente > 0) {
+function _selec_sidevar(cod, item) {
+    if (cod > 0) {
         return new Promise(resolve => {
             switch (item) {
                 case 's_datos':
-                    f_s_datos();
+                    f_s_datos(cod);
                     break;
-                case 's_direccion': // console.log(cocliente);
+                case 's_direccion':
                     f_s_direcc();
                     break;
                 case 's_giro':
@@ -91,94 +100,105 @@ function _selec_sidevar(cliente, item) {
         });
     }
 }
-function beforechange(data) {
-    p = { emp: usrJson.empresa, codigo: data.codigo };
+function beforechange(cod, data) {
+    p = { emp: usrJson.empresa, codigo: data.codigo, tipo: enti_tipo };
     $.post(BASE_URL + "MA010102/list_datos_cliente", p, function (res) {
-        json_select = res[0], _item_sidebar === 's_datos' ? cargar_datos_clie(json_select) : null;
+        json_select = res[0]; if (_item_sidebar === 's_datos') cargar_datos_clie(json_select, data.asignado), form_edit_ini(true, 'D');
         mySidebar.cells("s_datos").progressOff();
     }, "json");
 }
 
-function cargar_datos_clie(data) {
-    myToolbardatos.enableItem('__edit');
-    if (data.CO_CLIENTE > 0) {
-        myFormdatos.checkItem('st_cliente'), myFormdatos.checkItem('st_personales'), myFormdatos.enableItem('st_cliente'), myFormdatos.enableItem('st_personales'), myFormdatos.setReadonly('st_cliente', true), myFormdatos.setReadonly('st_personales', true);
-    } else {
-        myFormdatos.uncheckItem('st_cliente'), myFormdatos.checkItem('st_personales'), myFormdatos.enableItem('st_cliente'), myFormdatos.enableItem('st_personales'), myFormdatos.setReadonly('st_cliente', true), myFormdatos.setReadonly('st_personales', true);
-    }
-    cocliente = data.CO_CLIENTE, co_cata_entidad = data.CO_CATALOGO_ENTIDAD, permiso_cataedit = data.ST_PERMISO_EDITAR_CATA_ENTI, co_listadopre = data.CO_LISTADO_PRECIOS, co_seri_listado = data.CO_SERIE_LISTADO;
-    let fe_reg = data.FE_REGISTRO === null ? '' : (data.FE_REGISTRO.split("T")[0]).split("-");
-    let fe_regcli = data.FE_REGISTRO_CLIENTE === null ? '' : (data.FE_REGISTRO_CLIENTE.split("T")[0]).split("-");
-    let fe_retiro = data.FE_RETIRO_CLIENTE === null ? '' : (data.FE_RETIRO_CLIENTE.split("T")[0]).split("-");
+function cargar_datos_clie(data, stasigna) {
+    switch (enti_tipo) {
+        case 1:
+            if (Object.keys(data).length > 0) {
+                if (stasigna == 'Asignado') { myFormdatos.checkItem('st_provedor'), myFormdatos.enableItem('st_provedor') } else { myFormdatos.uncheckItem('st_provedor'), myFormdatos.disableItem('st_provedor') }
+                co_entidad = data.ST_PROVEEDOR == 'S' ? data.CO_PROVEE : data.CO_CATALOGO, oculta_item(parseInt(data.CO_TIPO_DOC_IDE)), myFormdatos.checkItem('st_personales'), myFormdatos.setItemValue('_nudocumento', data.NU_DOCUMENTO), myFormdatos.setItemValue('_procedencia', data.DE_PROCEDENCIA), myFormdatos.setItemValue('_nomcomer', data.DE_NOMBRE_COMERCIAL), myFormdatos.setItemValue('_razsocial', data.DE_RAZON_SOCIAL), myFormdatos.setItemValue('_fredcata', data.FE_REGISTRO),
+                    myFormdatos.setItemValue('_apepat', data.DE_APE_PATERNO), myFormdatos.setItemValue('_apemat', data.DE_APE_MATERNO), myFormdatos.setItemValue('_nombres', data.DE_NOMBRE),
+                    myFormdatos.setItemValue('_vigencia', data.ES_VIGENCIA_CATA), myFormdatos.setItemValue('_origen', data.DE_ORIGEN), myFormdatos.setItemValue('_tipoper', data.CO_TIPO_PERSONA), myFormdatos.setItemValue('_tipodoc', data.CO_TIPO_DOC_IDE), myForm.setItemValue('b_estado', data.ES_VIGENCIA), myFormdatos.setItemValue('_provstado', data.ES_VIGENCIA), myFormdatos.setItemValue('_provfretiro', data.FE_RETIRO), myFormdatos.setItemValue('_provemail', data.DE_EMAIL), myFormdatos.setItemValue('_proformpago', data.CO_FORMA_PAGO), myFormdatos.setItemValue('_procondpago', data.CO_CONDICION_PAGO), myFormdatos.setItemValue('_provfsys', data.FE_SYS),
+                    data.ST_FIJO === 'S' ? myFormdatos.checkItem('_provchperm') : myFormdatos.uncheckItem('_provchperm'), myForm.setItemValue('b_registro', data.FE_SYS), data.ST_AFECTO_DETRACCION === 'S' ? myFormdatos.checkItem('_provshdetrec') : myFormdatos.uncheckItem('_provshdetrec'), data.ST_PERCEPCION === 'S' ? myFormdatos.checkItem('_provshpercep') : myFormdatos.uncheckItem('_provshpercep'), data.ST_RETENCION === 'S' ? myFormdatos.checkItem('_provsharetenc') : myFormdatos.uncheckItem('_provsharetenc');
+                if (data.ST_PROVEEDOR != 'S') {
+                    dhtmlx.confirm("La entidad seleccionada no se encuentra como PROVEEDOR. ¿ Desea Asignarlo como PROVEEDOR ? :", function (result) {
+                        if (result === Boolean(true)) {
+                            myFormdatos.checkItem('st_provedor'), myFormdatos.enableItem('st_provedor'), myFormdatos.disableItem('_apemat'), myFormdatos.disableItem('_apepat'), myFormdatos.disableItem('_nudocumento'),
+                                myFormdatos.disableItem('_nombres'), myFormdatos.disableItem('_nomcomer'), myFormdatos.disableItem('_razsocial');
+                            (['_provtipo', '_provstado', '_proformpago', '_procondpago']).forEach((elm) => { myFormdatos.enableItem(elm) }), (['_provchperm', '_provemail', '_provsharetenc', '_provshpercep', '_provshdetrec']).forEach((elm) => { myFormdatos.setReadonly(elm, false) }), permiso_cataedit = 'N', myToolbardatos.enableItem('__cancel'), myToolbardatos.enableItem('__edit'), myToolbardatos.enableItem('__save');
+                        }
+                    });
 
-    myForm.setItemValue('b_registro', fe_reg[2] + '/' + fe_reg[1] + '/' + fe_reg[0]);
-    myFormdatos.setItemValue('_tipobanco', data.CO_BANCO);
-    myFormdatos.setItemValue('_nudocumento', data.NU_DOCUMENTO);
-    myFormdatos.setItemValue('_tipodoc', data.CO_TIPO_DOC_IDE);
-    myFormdatos.setItemValue('_tipoper', data.CO_TIPO_PERSONA);
-    myFormdatos.setItemValue('_apepat', data.DE_APE_PATERNO);
-    myFormdatos.setItemValue('_apemat', data.DE_APE_MATERNO);
-    myFormdatos.setItemValue('_nombres', data.DE_NOMBRE);
-    myFormdatos.setItemValue('_origen', data.DE_ORIGEN);
-    myFormdatos.setItemValue('_procedencia', data.DE_PROCEDENCIA);
-    myFormdatos.setItemValue('_razsocial', data.DE_RAZON_SOCIAL);
-    myFormdatos.setItemValue('_vigencia', data.ES_VIGENCIA);
-    myFormdatos.setItemValue('_clvigencia', data.ES_VIGENCIA_CLIENTE);
-    myFormdatos.setItemValue('_nomcomer', data.DE_NOMBRE_COMERCIAL);
-    myFormdatos.setItemValue('_tipocliente', data.CO_TIPO_CLIENTE);
-    myFormdatos.setItemValue('_tipo_negoc', data.CO_TIPO_NEGOCIO);
-    myFormdatos.setItemValue('_creditototal', data.IM_CREDITO_TOTAL);
-    myFormdatos.setItemValue('_deudatotal', data.IM_DEUDA_TOTAL);
-    myFormdatos.setItemValue('_ingreso', data.CO_PERIODO_CLIEN_NVO);
-    myFormdatos.setItemValue('_email', data.DE_EMAIL);
-    myFormdatos.setItemValue('_webpage', data.DE_WEBPAGE);
-    myFormdatos.setItemValue('_fredcata', fe_reg[2] + '/' + fe_reg[1] + '/' + fe_reg[0]);
-    myFormdatos.setItemValue('_fregcliente', fe_regcli[0] ? fe_regcli[2] + '/' + fe_regcli[1] + '/' + fe_regcli[0] : '');
-    myFormdatos.setItemValue('_fretiro', fe_retiro[0] ? fe_retiro[2] + '/' + fe_retiro[1] + '/' + fe_retiro[0] : '');
-    data.ST_AGENTE_PERCEPCION === 'S' ? myFormdatos.checkItem('_ch_agentpercep') : myFormdatos.uncheckItem('_ch_agentpercep');
-    data.ST_AGENTE_RETENEDOR === 'S' ? myFormdatos.checkItem('_ch_agenretenedor') : myFormdatos.uncheckItem('_ch_agenretenedor');
-    data.ST_CLIENTE_NVO === 'S' ? myFormdatos.checkItem('_ch_clinuevo') : myFormdatos.uncheckItem('_ch_clinuevo');
-    data.ST_RECAUDO === 'S' ? myFormdatos.checkItem('_ch_recaudo') : myFormdatos.uncheckItem('_ch_recaudo');
-    if (data.ST_CLIENTE_CORPORATIVO === 'S') {
-        cocliente_corpo = data.CO_CLIENTE_CORPORATIVO;
-        myFormdatos.checkItem('_ch_clicorporativo'), myFormdatos.enableItem('_clientecorporativo'), myFormdatos.setItemValue('_clientecorporativo', data.CO_CLIENTE_CORPORATIVO + ' ' + data.DE_CLIENTE_CORPORATIVO), myFormdatos.enableItem('b_clientecorp');//myFormdatos.enableItem('b_creditolinea');
-    } else {
-        myFormdatos.uncheckItem('_ch_clicorporativo'), myFormdatos.disableItem('_clientecorporativo'), myFormdatos.setItemValue('_clientecorporativo', ''), myFormdatos.disableItem('b_clientecorp');//, myFormdatos.disableItem('b_creditolinea');
+                }
+
+
+            } else { oculta_item(1); }
+            break;
+        default: console.log('a222o');
+            if (Object.keys(data).length > 0) {
+                if (stasigna == 'Asignado') {
+                    myFormdatos.checkItem('st_cliente'), myFormdatos.checkItem('st_personales'), myFormdatos.enableItem('st_cliente'), myFormdatos.enableItem('st_personales'), myFormdatos.setReadonly('st_cliente', true), myFormdatos.setReadonly('st_personales', true);
+                } else {
+                    myFormdatos.uncheckItem('st_cliente'), myFormdatos.checkItem('st_personales'), myFormdatos.enableItem('st_cliente'), myFormdatos.enableItem('st_personales'), myFormdatos.setReadonly('st_cliente', true), myFormdatos.setReadonly('st_personales', true);
+                }
+                cocliente = data.ST_CLIENTE == 'S' ? data.CO_CLIENTE : data.CO_CATALOGO,
+                    oculta_item(parseInt(data.CO_TIPO_DOC_IDE)), co_cata_entidad = data.CO_CATALOGO, permiso_cataedit = data.ST_PERMISO_EDITAR_CATA_ENTI, co_listadopre = data.CO_LISTADO_PRECIOS, co_seri_listado = data.CO_SERIE_LISTADO;
+                myForm.setItemValue('b_registro', data.FE_REGISTRO_CLIENTE);
+                myFormdatos.setItemValue('_tipobanco', data.CO_BANCO), myFormdatos.setItemValue('_nudocumento', data.NU_DOCUMENTO), myFormdatos.setItemValue('_tipodoc', data.CO_TIPO_DOC_IDE), myFormdatos.setItemValue('_tipoper', data.CO_TIPO_PERSONA), myFormdatos.setItemValue('_apepat', data.DE_APE_PATERNO), myFormdatos.setItemValue('_apemat', data.DE_APE_MATERNO), myFormdatos.setItemValue('_nombres', data.DE_NOMBRE), myFormdatos.setItemValue('_origen', data.DE_ORIGEN), myFormdatos.setItemValue('_procedencia', data.DE_PROCEDENCIA), myFormdatos.setItemValue('_razsocial', data.DE_RAZON_SOCIAL), myFormdatos.setItemValue('_vigencia', data.ES_VIGENCIA), myFormdatos.setItemValue('_clvigencia', data.ES_VIGENCIA_CLIENTE), myFormdatos.setItemValue('_nomcomer', data.DE_NOMBRE_COMERCIAL), myFormdatos.setItemValue('_tipocliente', data.CO_TIPO_CLIENTE), myFormdatos.setItemValue('_tipo_negoc', data.CO_TIPO_NEGOCIO), myFormdatos.setItemValue('_creditototal', data.IM_CREDITO_TOTAL), myFormdatos.setItemValue('_deudatotal', data.IM_DEUDA_TOTAL), myFormdatos.setItemValue('_ingreso', data.CO_PERIODO_CLIEN_NVO), myFormdatos.setItemValue('_email', data.DE_EMAIL), myFormdatos.setItemValue('_webpage', data.DE_WEBPAGE),
+                    myFormdatos.setItemValue('_fredcata', data.FE_REGISTRO), myFormdatos.setItemValue('_fregcliente', data.FE_REGISTRO_CLIENTE), myFormdatos.setItemValue('_fretiro', data.FE_RETIRO_CLIENTE), data.ST_AGENTE_PERCEPCION === 'S' ? myFormdatos.checkItem('_ch_agentpercep') : myFormdatos.uncheckItem('_ch_agentpercep'), data.ST_AGENTE_RETENEDOR === 'S' ? myFormdatos.checkItem('_ch_agenretenedor') : myFormdatos.uncheckItem('_ch_agenretenedor'), data.ST_CLIENTE_NVO === 'S' ? myFormdatos.checkItem('_ch_clinuevo') : myFormdatos.uncheckItem('_ch_clinuevo'), data.ST_RECAUDO === 'S' ? myFormdatos.checkItem('_ch_recaudo') : myFormdatos.uncheckItem('_ch_recaudo');
+                if (data.ST_CLIENTE_CORPORATIVO === 'S') {
+                    cocliente_corpo = data.CO_CLIENTE_CORPORATIVO, myFormdatos.checkItem('_ch_clicorporativo'), myFormdatos.enableItem('_clientecorporativo'), myFormdatos.setItemValue('_clientecorporativo', data.CO_CLIENTE_CORPORATIVO + ' ' + data.DE_CLIENTE_CORPORATIVO), myFormdatos.enableItem('b_clientecorp');//myFormdatos.enableItem('b_creditolinea');
+                } else {
+                    myFormdatos.uncheckItem('_ch_clicorporativo'), myFormdatos.disableItem('_clientecorporativo'), myFormdatos.setItemValue('_clientecorporativo', ''), myFormdatos.disableItem('b_clientecorp');//, myFormdatos.disableItem('b_creditolinea');
+                }
+                if (data.CO_LISTADO_PRECIOS > 0) {
+                    co_listadopre = data.CO_LISTADO_PRECIOS, co_seri_listado = data.CO_SERIE_LISTADO, myFormdatos.setItemValue('_listaprecios', data.CO_LISTADO_PRECIOS + ' ' + data.DE_LISTA_PRECIO), myFormdatos.checkItem('_ch_listaprecio'), myFormdatos.enableItem('_listaprecios'), myFormdatos.enableItem('b_busprecios');
+                } else {
+                    myFormdatos.setItemValue('_listaprecios', ''), myFormdatos.uncheckItem('_ch_listaprecio'), myFormdatos.disableItem('_listaprecios'), myFormdatos.disableItem('b_busprecios');
+                }
+                if (data.ST_CLIENTE != 'S') {
+                    dhtmlx.confirm("La entidad seleccionada no se encuentra como CLIENTE. ¿ Desea Asignarlo como CLIENTE ? :", function (result) {
+                        if (result === Boolean(true)) {
+                            myFormdatos.checkItem('st_cliente'), myFormdatos.enableItem('st_cliente'), myFormdatos.disableItem('_apemat'), myFormdatos.disableItem('_apepat'), myFormdatos.disableItem('_nudocumento'),
+                                myFormdatos.disableItem('_nombres'), myFormdatos.disableItem('_nomcomer'), myFormdatos.disableItem('_razsocial');
+                            (['_tipocliente', '_tipobanco', '_tipo_negoc', '_ch_listaprecio', '_ch_recaudo', '_ch_agenretenedor', '_ch_agentpercep', '_ch_clinuevo', '_ch_clicorporativo', '_ch_excepcredito']).forEach((elm) => { myFormdatos.enableItem(elm) });
+                            (['_creditototal', '_deudatotal', '_ingreso', '_email', '_webpage']).forEach((elm) => { myFormdatos.setReadonly(elm, false) });
+                            permiso_cataedit = 'N', myToolbardatos.enableItem('__cancel'), myToolbardatos.enableItem('__edit'), myToolbardatos.enableItem('__save');
+                        }
+                    });
+
+                }
+
+
+
+
+            } else { oculta_item(1); }
+            break;
     }
-    if (data.CO_LISTADO_PRECIOS > 0) {
-        co_listadopre = data.CO_LISTADO_PRECIOS, co_seri_listado = data.CO_SERIE_LISTADO;
-        myFormdatos.setItemValue('_listaprecios', data.CO_LISTADO_PRECIOS + ' ' + data.DE_LISTA_PRECIO), myFormdatos.checkItem('_ch_listaprecio'), myFormdatos.enableItem('_listaprecios'), myFormdatos.enableItem('b_busprecios');
-    } else {
-        myFormdatos.setItemValue('_listaprecios', ''), myFormdatos.uncheckItem('_ch_listaprecio'), myFormdatos.disableItem('_listaprecios'), myFormdatos.disableItem('b_busprecios');
-    }
-    form_edit_ini(true, 'D');
 }
 
 onbuscacliente = (win, value) => {
     if (value.length > 0) {
         win.window("wbusq").progressOn();
         myGrid.clearAll();
-        myGrid.load(BASE_URL + 'MA010102/gridcliente/' + usrJson.empresa + '/2/' + value).then(function (text) {
+        myGrid.load(BASE_URL + 'MA010102/gridcliente/' + usrJson.empresa + '/' + enti_tipo + '/' + value).then(function (text) {
             win.window("wbusq").progressOff();
         });
     } else {
-        Swal.fire({ type: 'warning', text: 'Ingrese un texto para que la busqueda sea óptima', showConfirmButton: false, timer: 1500 });
+        Swal.fire({ type: 'warning', text: 'Ingrese correctamente un nombre o documento...', showConfirmButton: false, timer: 1500 });
     }
 };
 
 function style(name, value) {
-    if (name === 'b_cliente')
+    if (name === 'b_cliente' && value.length < 51)
         return "<div class='nomcliente'>" + value + "</div>";
     else
         return "<div class='s_estado'>" + value + "</div>";
 }
 
 onselect_sidebar = (id, lastId) => {
-
     _item_sidebar = id;
     switch (id) {
         case 's_datos':
             if (cocliente != 0) {
+                console.log('aqui');
                 typeof (myFormdatos) === 'undefined' ? _async_form(cocliente, id, data) : null;
             }
             break;
@@ -215,7 +235,8 @@ onselect_sidebar = (id, lastId) => {
 };
 
 f_s_direcc = () => {
-    if (cocliente > 0) {
+    cod = enti_tipo == 1 ? co_entidad : cocliente;
+    if (cod > 0) {
         typeof (myLaouy_Direc) === undefined ? myLaouy_Direc.unload() : null;
         myLaouy_Direc = mySidebar.cells("s_direccion").attachLayout('2U');
         myLaouy_Direc.cells("a").hideHeader();
@@ -227,7 +248,7 @@ f_s_direcc = () => {
         myFormdirecc = myLaouy_Direc.cells("a").attachForm(f_direccion);
         myFormdirecc.attachEvent("onButtonClick", async (name) => {
             switch (name) {
-                case '__buscarubigeo': console.log('hola');
+                case '__buscarubigeo': console.log('sw __buscarubigeo');
                     output = await IniciarGridBusqueda(4, false, mainLayout);
                     if (output !== null) {
                         co_ubigeo = output.seleccion[0].ubigeo;
@@ -273,12 +294,12 @@ f_s_direcc = () => {
                         subgrilla.setColumnHidden(1, true);
                         subgrilla.init();
                         subgrilla.load(BASE_URL + 'MA010102/gridfz_fvta_d/' + co_direccion + '/' + usrJson.empresa + '/' + myGridzco.getRowData(rId).cozona).then(function (a, b, c) {//console.log(a +'-' +b +'-'+c)
-                            myLaouy_fz.cells("a").progressOff();
+                            myLaouy_fz.cells("a").progressOff(); console.log(sel_zc);
                         });
                         _txtgrid(subgrilla, 11);
                         subgrilla.attachEvent("onRowSelect", function (id, ind) {
                             sel_fv = subgrilla.getRowData(id), sel_fvid = id;
-                            var ids = myGridzco.getAllRowIds(); //console.log(sel_fv);
+                            var ids = myGridzco.getAllRowIds(); console.log(sel_fv);
                             var parte = ids.split(",");
                             for (var i = 0; i < parte.length; i++) {
                                 if (parte[i] !== rId) { myGridzco.cells(parte[i], 0).close(); }
@@ -300,14 +321,47 @@ f_s_direcc = () => {
         myLaouy_Direc.setSeparatorSize(1, 0);
         myDataDirecc = new dhtmlXDataView({ container: "data_conten", drag: false, edit: false, select: true, type: { template: "<p style='margin-top: -5px;'  >#DE_PAIS#</p><span class='centrarpdiv'>#DE_DIRECCION#</span>", height: 60 }, autowidth: true });
         myLaouy_Direc.cells("a").progressOn();
-        myDataDirecc.load(BASE_URL + 'MA010102/cargardirecc/' + cocliente, "json");
+        myDataDirecc.load(BASE_URL + 'MA010102/cargardirecc/' + cod, "json");
         myLaouy_Direc.cells("a").progressOff();
         myDataDirecc.attachEvent("onBeforeSelect", (id) => {
-            _selecobject = myDataDirecc.get(id), co_direccion = myDataDirecc.get(id).CO_DIRECCION_ENTIDAD, __onSelectAntes(id, myDataDirecc, myToolbardirecc, estadook);
+            myToolbardirecc.enableItem('__nuevo'), myToolbardirecc.disableItem('__save'), myToolbardirecc.disableItem('__cancel'), _selecobject = myDataDirecc.get(id), co_direccion = myDataDirecc.get(id).CO_DIRECCION_ENTIDAD, __onSelectAntes(id, myDataDirecc, myToolbardirecc, estadook, co_direccion);
             return true;
         });
     } else {
         no_select_client(myLaouy_Direc, 's_direccion');
+    }
+};
+ontollbarclicdirec = async (id) => {
+    switch (id) {
+        case '__edit':
+            if (co_direccion > 0) {
+                (['__nuevo', '__edit']).forEach((elem) => { myToolbardirecc.disableItem(elem) });
+                (['__save', '__cancel']).forEach((elem) => { myToolbardirecc.enableItem(elem) });
+                activa_form_direcc('edit');
+            } else {
+                Swal.fire('Alerta!', 'Debes seleccionar una dirección para poder editarla..', 'error');
+            }
+            break;
+        case '__cancel':
+            __onSelectAntes(_selecobject, myDataDirecc, myToolbardirecc, estadook, codireccion);
+            break;
+        case '__nuevo':
+            cocliente = 0, myToolbardatos.disableItem('__edit'), permiso_cataedit = 'S';
+            myForm.setItemValue('b_cliente', ''), myForm.setItemValue('b_estado', ''), myForm.setItemValue('b_asignado', '');
+            myFormdatos.checkItem('st_personales'), myFormdatos.enableItem('st_personales');
+            myFormdatos.checkItem('st_cliente'), myFormdatos.enableItem('st_cliente'), myToolbardatos.disableItem('__lincredito');
+            myToolbardatos.enableItem('__save'), myToolbardatos.enableItem('__cancel');
+            myFormdatos.enableItem('b_dniservice');
+            myFormdatos.setItemValue('_clvigencia', 'Vigente');
+            form_ini(cocliente);
+            break;
+        case '__save':
+            grabar_direcc();
+            break;
+
+        default:
+            null;
+            break;
     }
 };
 function _txtgrid(grid, column) {
@@ -346,8 +400,7 @@ function __onSelectFZ(id, dataview, form, estadook) {   // console.log(dataview.
     }
 }
 
-function __onSelectAntes(id, dataview, tollbar, estadook) {
-    var cod_direc = dataview.get(id).CO_DIRECCION_ENTIDAD;
+function __onSelectAntes(id, dataview, tollbar, estadook, cod_direc) {
     if (cod_direc > 0) {
         $.get(BASE_URL + "MA010102/datosdirecc/" + cod_direc, null, function (res) {
             myFormdirecc.setItemValue('cod_direc', res[0].CO_DIRECCION_ENTIDAD);
@@ -373,10 +426,6 @@ function __onSelectAntes(id, dataview, tollbar, estadook) {
             var p = { co_direccion: co_direccion, emp: usrJson.empresa };
             activa_form_direcc();
         });
-
-
-
-
         tollbar.enableItem('__edit');
         /*  if ((dataview.get(id).Vigencia).toUpperCase() === estadook.toUpperCase()) {
          tollbar.enableItem('__anula');
@@ -386,48 +435,107 @@ function __onSelectAntes(id, dataview, tollbar, estadook) {
          tollbar.enableItem('__activar');
          }*/
     } else {
-        (['__anula', '__activar', '__edit']).forEach((elem) => {
-            tollbar.disableItem(elem);
-        });
+        (['__anula', '__activar', '__edit']).forEach((elem) => { tollbar.disableItem(elem) });
     }
 }
+function activa_form_direcc(stado) {
+    switch (stado) {
+        case 'edit':
+            (['ch_borrado', 'ch_principal', '_nvia', '_nzona', '_postal', '_numero', '_interior', '_referencias', '_altitud', '_latitud', '_zoom', '_iniaten', '_finaten']).forEach((elm) => {
+                myFormdirecc.setReadonly(elm, false);
+            });
+            (['__buscarubigeo', '_via', '_zona', '__fz_zn', '_estado']).forEach((elm) => {
+                myFormdirecc.enableItem(elm);
+            });
+            break;
+        default:
+            (['ch_borrado', 'ch_principal', '_nvia', '_nzona', '_postal', '_numero', '_interior', '_referencias', '_altitud', '_latitud', '_zoom', '_iniaten', '_finaten']).forEach((elm) => {
+                myFormdirecc.setReadonly(elm, true);
+            });
+            (['__buscarubigeo', '_via', '_zona', '__fz_zn']).forEach((elm) => {
+                myFormdirecc.disableItem(elm);
+            });
+            break;
+    }
+    console.log('409');
 
-f_s_datos = () => {
-    if (cocliente > 0) {
-        carga_form_cliente();
+
+}
+f_s_datos = (cod) => {
+    if (cod > 0) {
+        carga_form_cliente(cod);
     } else {
         no_select_client(myLaouy_Dat, 's_datos');
     }
 };
 
-function carga_form_cliente() {
-    typeof (myLaouy_Dat) === undefined ? null : myLaouy_Dat.unload();
+function carga_form_cliente(cod) {
     myLaouy_Dat = mySidebar.cells("s_datos").attachLayout('1C');
     myLaouy_Dat.cells("a").hideHeader();
     myToolbardatos = myLaouy_Dat.cells("a").attachToolbar(base_tollbar);
     myToolbardatos.setIconSize(48);
     myToolbardatos.attachEvent("onClick", ontollbarclic);
-    myFormdatos = myLaouy_Dat.cells("a").attachForm(f_datos_cliente);
-    form_ini();
-    myToolbardatos.disableItem('__edit');//,myToolbardatos.enableItem('__save'),myToolbardatos.enableItem('__cancel');
+    switch (modulo) {
+        case 'MA010103':
+            myFormdatos = myLaouy_Dat.cells("a").attachForm(f_datos_proveedor);
+            break;
+        case 'MA010105':
+            myFormdatos = myLaouy_Dat.cells("a").attachForm(f_datos_cliente);
+            break;
+        case 'MA010106':
+            myFormdatos = myLaouy_Dat.cells("a").attachForm(f_datos_cliente);
+            break;
+        case 'MA010109':
+            myFormdatos = myLaouy_Dat.cells("a").attachForm(f_datos_cliente);
+            break;
+        default:
+            myFormdatos = myLaouy_Dat.cells("a").attachForm(f_datos_cliente);
+            break;
+    }
+
+    form_ini(cod);
     myFormdatos.attachEvent("onButtonClick", async (name) => {
         var output;
         switch (name) {
-            case 'b_dniservice': //console.log(parseFloat(myFormdatos.getItemValue('_nudocumento')));
+            case 'b_dniservice':
                 if ((myFormdatos.getItemValue('_nudocumento')).replace(/ /g, "").length > 0) {
                     myFormdatos.setItemValue('_nudocumento', (myFormdatos.getItemValue('_nudocumento')).replace(/ /g, ""));
                     mySidebar.cells("s_datos").progressOn(); // Wind_.window("wbusq").progressOn();
-                    var p = { dni: myFormdatos.getItemValue('_nudocumento') };
-                    $.post(BASE_URL + "home/buscadni", p, function (res) {
-                        if (res.state !== 'error') {
-                            var value = res.value.split('|');
-                            if (value[0].length > 0 || value[1].length > 0) {
+                    var p = { dni: myFormdatos.getItemValue('_nudocumento'), tipo: myFormdatos.getItemValue('_tipodoc') };
+                    if (myFormdatos.validate()) {
+                        enti_tipo == 1 ? co_entidad = parseInt(myFormdatos.getItemValue('_nudocumento')) : cocliente = parseInt(myFormdatos.getItemValue('_nudocumento'));
+                        $.post(BASE_URL + "home/buscadni", p, function (res) {
+                            var t = myFormdatos.getSelect("_tipodoc");
+                            if (res.state !== 'error') {
+                                switch (myFormdatos.getItemValue('_tipodoc')) {
+                                    case '1':
+                                        var value = res.value.split('|');
+                                        if (value[0].length > 0 || value[1].length > 0) {
+                                            myFormdatos.setItemValue('_apepat', ''), myFormdatos.setItemValue('_apemat', ''), myFormdatos.setItemValue('_nombres', ''), myFormdatos.setItemValue('_razsocial', ''), myFormdatos.setItemValue('_nomcomer', '');
+                                            myFormdatos.setItemValue('_apepat', value[0]), myFormdatos.setItemValue('_apemat', value[1]), myFormdatos.setItemValue('_nombres', value[2]), myFormdatos.setItemValue('_razsocial', value[0] + ' ' + value[1] + ' ' + value[2]), myFormdatos.setItemValue('_nomcomer', value[0] + ' ' + value[1] + ' ' + value[2]);
+                                        }
+                                        break;
+                                    case '6': //console.log(res.value);
+                                        if (res.value.contribuyente_estado == "ACTIVO") {
+                                            myFormdatos.setItemValue('_razsocial', res.value.razon_social), myFormdatos.setItemValue('_nomcomer', res.value.nombre_comercial);
+                                        } else {
+                                            dhtmlx.message({ type: "error", text: "El RUC se encuentra en estado :" + res.value.contribuyente_condicion, expire: 5000 });
+                                        }
+                                        break;
+                                    default:
+                                        dhtmlx.message({ text: "No se cuentra Información para este tipo de Entidad ", expire: 4000 });
+                                        break;
+                                }
+                            } else {
+                                var t = myFormdatos.getSelect("_tipodoc");
+                                dhtmlx.message({ text: "Ups!.. No se encontraron datos para este " + t.options[t.selectedIndex].text + ", ingreselo manualmente, por favor", expire: 9000 });
                                 myFormdatos.setItemValue('_apepat', ''), myFormdatos.setItemValue('_apemat', ''), myFormdatos.setItemValue('_nombres', ''), myFormdatos.setItemValue('_razsocial', ''), myFormdatos.setItemValue('_nomcomer', '');
-                                myFormdatos.setItemValue('_apepat', value[0]), myFormdatos.setItemValue('_apemat', value[1]), myFormdatos.setItemValue('_nombres', value[2]), myFormdatos.setItemValue('_razsocial', value[0] + ' ' + value[1] + ' ' + value[2]), myFormdatos.setItemValue('_nomcomer', value[0] + ' ' + value[1] + ' ' + value[2]);
                             }
-                        } else { dhtmlx.message({ type: "error", text: "Verifique el DNI/RUC, solo se permite NUMEROS[0-9], por favor", expire: 5000 }); }
-                    }, "json");
-                    mySidebar.cells("s_datos").progressOff(); ///    Wind_.window("wbusq").progressOff();
+                            mySidebar.cells("s_datos").progressOff();
+                        }, "json");
+                    } else {
+                        mySidebar.cells("s_datos").progressOff();
+                    }
                 } else {
                     dhtmlx.message({ type: "error", text: "Tiene q ingresar un Numero de Documento correcto y sin espacios en blanco, por favor", expire: 5000 });
                 }
@@ -440,8 +548,8 @@ function carga_form_cliente() {
                     myFormdatos.setItemValue('_listaprecios', output.seleccion[0].colistado + ' ' + output.seleccion[0].nombre);
                 }
                 break;
-            case 'b_clientecorp':
-                output = await IniciarGridBusqueda(5, false, mainLayout);
+            case 'b_clientecorp': console.log('cocliente : ' + cocliente);
+                output = await IniciarGridBusqueda(5, false, mainLayout, cocliente);
                 if (output !== null) {
                     cocliente_corpo = output.seleccion[0].codigo;
                     nom_clien_corpo = output.seleccion[0].ncomercial;
@@ -455,6 +563,12 @@ function carga_form_cliente() {
     });
     myFormdatos.attachEvent("onChange", function (name, value, state) {
         switch (name) {
+            case '_tipodoc':
+                oculta_item(parseInt(value)); console.log('509');
+                break;
+            case '_proformpago':
+                myFormdatos.reloadOptions('_procondpago', BASE_URL + 'MA010102/list_condpago/' + value);
+                break;
             case '_tipoper':
                 if (value === '02' || value === '04') {
                     myFormdatos.setItemValue('_apepat', ''), myFormdatos.setItemValue('_apemat', ''), myFormdatos.setItemValue('_nombres', ''), myFormdatos.disableItem('_apepat'), myFormdatos.disableItem('_apemat'), myFormdatos.disableItem('_nombres');
@@ -485,6 +599,69 @@ function carga_form_cliente() {
                 break;
         }
     });
+
+}
+
+function form_ini(cod) {
+    permiso_cataedit = 'S', myForm.setItemValue('b_cliente', 'Busque un ' + label_tipo),
+        myToolbardatos.disableItem('__save'), myToolbardatos.disableItem('__cancel'),
+        myFormdatos.setItemValue('_vigencia', 'Vigente'),
+        myFormdatos.enableItem('st_personales'), myFormdatos.checkItem('st_personales');
+    switch (enti_tipo) {
+        case 1: //console.log('activar st_provedor');
+            myFormdatos.checkItem('st_provedor'), myFormdatos.enableItem('st_provedor'),
+                (['_provsharetenc', '_provshpercep', '_provshdetrec', '_provchperm']).forEach((elm) => {
+                    myFormdatos.uncheckItem(elm);
+                });
+            (['_provsharetenc', '_provshpercep', '_provshdetrec', '_provchperm', '_tipodoc', '_tipoper', '_procedencia', '_origen', '_provtipo', '_provstado', '_proformpago', '_procondpago']).forEach((elm) => {
+                myFormdatos.enableItem(elm);
+            });
+            if (cod == 0) {
+                console.log('573');
+                json_select = {}, cargar_datos_clie(json_select, ''), myForm.setItemValue('b_estado', ''), myForm.setItemValue('b_asignado', ''), myForm.setItemValue('b_registro', ''),
+                    myFormdatos.enableItem('b_dniservice'), form_edit_ini(false, 'E'), myToolbardatos.enableItem('__save'), myToolbardatos.disableItem('__edit'), myToolbardatos.enableItem('__cancel');
+            } else {
+
+            };
+            break;
+        default:
+            myFormdatos.checkItem('st_cliente'), myFormdatos.enableItem('st_cliente'),
+                (['_ch_recaudo', '_ch_excepcredito', '_ch_agenretenedor', '_ch_agentpercep', '_ch_clinuevo', '_ch_clicorporativo']).forEach((elm) => {
+                    myFormdatos.uncheckItem(elm);
+                });
+            (['_nudocumento', '_razsocial', '_nomcomer', '_apepat', '_apemat', '_nombres', '_listaprecios', '_ingreso', '_creditototal', '_deudatotal', '_email', '_webpage', '_fvigencia']).forEach((elm) => {
+                myFormdatos.setReadonly(elm, false), myFormdatos.setItemValue(elm, '');
+            });
+            (['_tipodoc', '_tipoper', '_procedencia', '_origen', '_tipocliente', '_tipobanco', '_tipo_negoc', '_ch_listaprecio', '_ch_recaudo', '_ch_excepcredito', '_ch_agenretenedor', '_ch_agentpercep', '_ch_clinuevo', '_ch_clicorporativo', '_clvigencia']).forEach((elm) => {
+                myFormdatos.enableItem(elm);
+            });
+            if (cod == 0) {
+                console.log('591');
+                json_select = {}, cargar_datos_clie(json_select, ''), myForm.setItemValue('b_estado', ''), myForm.setItemValue('b_asignado', ''), myForm.setItemValue('b_registro', ''),
+                    myFormdatos.setItemValue('_ingreso', '0'), myFormdatos.setItemValue('_creditototal', '0.00'), myFormdatos.setItemValue('_deudatotal', '0.00'), myFormdatos.enableItem('b_dniservice'), form_edit_ini(false, 'E'), myToolbardatos.enableItem('__save'), myToolbardatos.disableItem('__edit'), myToolbardatos.enableItem('__cancel');
+            } else {
+
+            };
+
+            break;
+    }
+
+
+
+}
+
+function oculta_item(value) {
+    switch (value) {
+        case 1://dni
+            myFormdatos.hideItem('_nomcomer'), myFormdatos.hideItem('_razsocial'), myFormdatos.showItem('_apemat'), myFormdatos.showItem('_apepat'), myFormdatos.showItem('_nombres');
+            break;
+        case 6:
+            myFormdatos.showItem('_nomcomer'), myFormdatos.showItem('_razsocial'), myFormdatos.hideItem('_apemat'), myFormdatos.hideItem('_apepat'), myFormdatos.hideItem('_nombres');
+            break;
+        default: console.log('nada');
+            break;
+    }
+
 }
 ontollbarclic = async (id) => {
     switch (id) {
@@ -550,53 +727,58 @@ ontollbarclic = async (id) => {
             });
             break;
         case '__cancel':
-            codcliente = 0, permiso_cataedit = 'N';
-            if (codcliente > 0) {
-                cargar_datos_clie(json_select);
+            cod = enti_tipo == 1 ? co_entidad : cocliente;
+            if (cod > 0) {
+                if (enti_tipo == 1) {
+                    let st_sig = json_select.ST_PROVEEDOR == 'S' ? 'Asignado' : 'No Asignado';
+                    cargar_datos_clie(json_select, st_sig);
+                    json_select.ST_PROVEEDOR == 'N' ? myFormdatos.disableItem('st_provedor') : null;
+                } else {
+                    let st_sig = json_select.ST_CLIENTE == 'S' ? 'Asignado' : 'No Asignado';
+                    cargar_datos_clie(json_select, st_sig);
+                    json_select.ST_CLIENTE == 'N' ? myFormdatos.disableItem('st_cliente') : null;
+                }
+                console.log('693');
+                form_edit_ini(true, 'E'), myToolbardatos.enableItem('__nuevo'), myToolbardatos.enableItem('__edit'), myToolbardatos.disableItem('__save'), myToolbardatos.disableItem('__cancel');
+                (['_provtipo', '_provstado', '_proformpago', '_procondpago', '_tipo_negoc', '_tipobanco', '_tipocliente', '_tipodoc', '_tipoper', '_procedencia', '_origen', '_clvigencia', '_vigencia']).forEach((elm) => {
+                    myFormdatos.disableItem(elm);
+                });
             } else {
-                form_ini();//   form_edit_ini(false, 'D');
-                myFormdatos.disableItem('st_personales'), myFormdatos.disableItem('st_cliente');
-                myFormdatos.uncheckItem('st_personales'), myFormdatos.uncheckItem('st_cliente'), myToolbardatos.disableItem('__save'), myToolbardatos.disableItem('__cancel');
+                cocliente = 0, permiso_cataedit = 'N', json_select = {}, no_select_client(myLaouy_Dat, 's_datos');
             }
             break;
-        case '__nuevo':// console.log('nuevo');
-            codcliente = 0, myToolbardatos.disableItem('__edit'), permiso_cataedit = 'S';
-            myForm.setItemValue('b_estado', ''), myForm.setItemValue('b_asignado', ''), myForm.setItemValue('b_registro', '');
-            myFormdatos.checkItem('st_personales'), myFormdatos.enableItem('st_personales'), myFormdatos.enableItem('_vigencia'),
-                myFormdatos.checkItem('st_cliente'), myFormdatos.enableItem('st_cliente'),
-                //   myToolbardatos.disableItem('__lincredito');
-                myFormdatos.enableItem('st_cliente'), myFormdatos.uncheckItem('st_cliente');
-            myToolbardatos.enableItem('__save'), myToolbardatos.enableItem('__cancel');
-            myFormdatos.enableItem('b_dniservice');
-            myFormdatos.setItemValue('_clvigencia', 'Vigente');
-            form_ini();//// form_edit_ini(false, 'E');
-            break;
-        case '__save':
-            let data = myFormdatos.getItemValue('_tipodoc');
-            console.log(data);
-            switch (data) {
-                case '1':
-                    myFormdatos.getItemValue('_nudocumento').length !== 8 ? Swal.fire({ type: 'error', title: 'Dni Incorrecto...', text: 'Debe tener 8 digitos' }) : grabar_datos();
-                    break;
-                case '6':
-                    myFormdatos.getItemValue('_nudocumento').length !== 11 ? Swal.fire({ type: 'error', title: 'RUC Incorrecto...', text: 'Debe tener 11 digitos' }) : grabar_datos();
+        case '__nuevo':
+            switch (enti_tipo) {
+                case 1: console.log('__nuevo');
+                    co_entidad = 0, cod = co_entidad,
+                        myFormdatos.setItemValue('_provstado', 'Vigente');
                     break;
                 default:
-                    null;
+                    cocliente = 0, cod = cocliente,
+                        // myFormdatos.checkItem('st_cliente'), myFormdatos.enableItem('st_cliente'), 
+                        myFormdatos.setItemValue('_clvigencia', 'Vigente');
                     break;
             }
+            form_ini(cod);
             break;
-        case '__edit': //console.log('111');
+        case '__save': console.log('co-entidad 3 ' + co_entidad);
+            let tipodoc__ = myFormdatos.getItemValue('_tipodoc'); console.log(permiso_cataedit);
+            verifica_codig(tipodoc__, myFormdatos.getItemValue('_nudocumento'));
+            break;
+        case '__edit': console.log('co-entidad 3 1' + co_entidad);
             var output = await IniciarFormularioSeguridad(58, mainLayout);
-            if (JSON.parse(output).result === 'S') {
-                permiso_cataedit = 'S',
-                    form_edit_ini(false, 'E'),
-                    myToolbardatos.enableItem('__cancel');
-                myToolbardatos.enableItem('__save'), myFormdatos.enableItem('b_dniservice');  // console.log('cocliente : '+ cocliente);
-                if (cocliente === 0 || cocliente === null || cocliente === undefined) {
-                    myFormdatos.setReadonly('st_cliente', false);
+            if (output.result === 'S') {
+                console.log('722');
+                form_edit_ini(false, 'E'), myToolbardatos.enableItem('__cancel'), myToolbardatos.disableItem('__edit'), myToolbardatos.enableItem('__save'), myFormdatos.disableItem('b_dniservice'), myToolbardatos.disableItem('__nuevo');
+                switch (enti_tipo) {
+                    case 1://provee
+                        permiso_cataedit = 'S'; json_select.ST_PROVEEDOR == 'S' ? myFormdatos.setReadonly('st_provedor', true) : myFormdatos.setReadonly('st_provedor', false), myFormdatos.enableItem('st_provedor');
+                        break;
+                    default: //cliente 
+                        permiso_cataedit = 'S'; json_select.ST_CLIENTE == 'S' ? myFormdatos.setReadonly('st_cliente', true) : myFormdatos.setReadonly('st_cliente', false), myFormdatos.enableItem('st_cliente');
+                        break;
                 }
-            } else { console.log(JSON.parse(output).result) }
+            } else { console.log(output) }
             break;
         default:
             null;
@@ -604,14 +786,102 @@ ontollbarclic = async (id) => {
     }
 };
 
+function verifica_codig(tipo, cod) {
+    switch (tipo) {
+        case '1':
+            cod.length !== 8 ? Swal.fire({ type: 'error', title: 'Dni Incorrecto...', text: 'Debe tener 8 digitos' }) : grabar_datos();
+            break;
+        case '6':
+            cod.length !== 11 ? Swal.fire({ type: 'error', title: 'RUC Incorrecto...', text: 'Debe tener 11 digitos' }) : grabar_datos();
+            break;
+        default:
+            grabar_datos();
+            break;
+    }
+}
+grabar_datos = () => {
+    let p;
+    switch (enti_tipo) {
+        case 1: myLaouy_Dat.cells("a").progressOn();
+            p = {
+                st_permiso_editar_cata_enti: permiso_cataedit, x_empresa: usrJson.empresa, x_alias: usrJson.alias, xco_catalogo_entidad: co_entidad, x_nu_documento: myFormdatos.getItemValue('_nudocumento'), x_de_razon_social: myFormdatos.getItemValue('_razsocial'), x_co_tipo_persona: myFormdatos.getItemValue('_tipoper'), x_co_tipo_doc_ide: myFormdatos.getItemValue('_tipodoc'),
+                x_de_procedencia: myFormdatos.getItemValue('_procedencia'), x_de_nombre_comercial: myFormdatos.getItemValue('_nomcomer'), x_de_origen: myFormdatos.getItemValue('_origen'), x_st_asignaprovee: myFormdatos.isItemChecked('st_provedor') ? 'S' : 'N', x_co_tipo_prov: myFormdatos.getItemValue('_provtipo'), x_estad_prov: myFormdatos.getItemValue('_provstado'), x_form_pago: myFormdatos.getItemValue('_proformpago'), x_cond_pago: myFormdatos.getItemValue('_procondpago'), st_permanente: myFormdatos.isItemChecked('_provchperm') ? 'S' : 'N', x_email: myFormdatos.getItemValue('_provemail'),
+                st_agent_reten: myFormdatos.isItemChecked('_provsharetenc') ? 'S' : 'N', st_agent_percep: myFormdatos.isItemChecked('_provshpercep') ? 'S' : 'N', st_agent_detrac: myFormdatos.isItemChecked('_provshdetrec') ? 'S' : 'N'
+            };
+            $.post(BASE_URL + "MA010102/saveproveed", p, function (res) {
+                if (parseFloat(res.codigo) > 0) {
+                    form_edit_ini(true, 'D'), actu_jselec(p), myForm.setItemValue('b_asignado', 'Asignado'), myForm.setItemValue('b_registro', res.fechaprov), myFormdatos.setItemValue('_provfsys', res.fechaprov), myFormdatos.setItemValue('_provfretiro', res.feretiro), myToolbardatos.disableItem('__save'), myToolbardatos.enableItem('__nuevo'), myToolbardatos.enableItem('__edit'), myToolbardatos.disableItem('__cancel'), myForm.setItemValue('b_estado', res.estado), myForm.setItemValue('b_cliente', res.nombre), myFormdatos.setItemValue('_fredcata', res.fechacata), myFormdatos.disableItem('b_dniservice');
+                    Swal.fire('Bien!', res.message, 'success'), myLaouy_Dat.cells("a").progressOff();
+                } else {
+                    Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'No se guardó sus cambios  :' + res.message }), myLaouy_Dat.cells("a").progressOff();
+                }
+            }, "json");
+            break;
+        default:
+            p = {
+                st_permiso_editar_cata_enti: permiso_cataedit, x_empresa: usrJson.empresa, x_alias: usrJson.alias, x_co_catalogo_entidad: co_cata_entidad, x_de_razon_social: myFormdatos.getItemValue('_razsocial'), x_nu_documento: myFormdatos.getItemValue('_nudocumento'),
+                x_co_tipo_persona: myFormdatos.getItemValue('_tipoper'), x_co_tipo_doc_ide: myFormdatos.getItemValue('_tipodoc'), x_de_procedencia: myFormdatos.getItemValue('_procedencia'), x_de_ape_paterno: myFormdatos.getItemValue('_apepat'), x_de_ape_materno: myFormdatos.getItemValue('_apemat'), x_de_nombre: myFormdatos.getItemValue('_nombres'), x_de_nombre_comercial: myFormdatos.getItemValue('_nomcomer'), x_de_origen: myFormdatos.getItemValue('_origen'), x_co_cliente: cocliente, x_co_tipo_cliente: myFormdatos.getItemValue('_tipocliente'), x_st_recaudo: myFormdatos.isItemChecked('_ch_recaudo') ? 'S' : 'N', x_co_banco: myFormdatos.getItemValue('_tipobanco'), x_co_tipo_negocio: myFormdatos.getItemValue('_tipo_negoc'),
+                x_co_listado_precios: co_listadopre, x_co_serie_listado: co_seri_listado, x_st_agente_retenedor: myFormdatos.isItemChecked('_ch_agenretenedor') ? 'S' : 'N', x_st_agente_percepcion: myFormdatos.isItemChecked('_ch_agentpercep') ? 'S' : 'N', x_st_cliente_nvo: myFormdatos.isItemChecked('_ch_clinuevo') ? 'S' : 'N', x_co_periodo_clien_nvo: validation.isNumber(myFormdatos.getItemValue('_ingreso')) ? myFormdatos.getItemValue('_ingreso') : 0, x_st_cliente_corporativo: myFormdatos.isItemChecked('_ch_clicorporativo') ? 'S' : 'N', x_co_cliente_corporativo: cocliente_corpo,
+                x_im_credito_total: myFormdatos.getItemValue('_creditototal'), x_im_deuda_total: myFormdatos.getItemValue('_deudatotal'), x_de_email: myFormdatos.getItemValue('_email'), x_de_webpage: myFormdatos.getItemValue('_webpage'), x_es_vigencia_cliente: myFormdatos.getItemValue('_clvigencia'), x_fe_retiro_cliente: null, x_St_Excep_Cred: myFormdatos.isItemChecked('_ch_excepcredito') ? 'S' : 'N'
+            };
+            $.post(BASE_URL + "MA010102/savecliente", p, function (res) {
+                if (parseFloat(res.codigo) > 0) {
+                    permiso_cataedit = 'N', actu_jselec(p), form_edit_ini(true, 'D'), myFormdatos.setItemValue('_razsocial', myFormdatos.getItemValue('_apepat') + ' ' + myFormdatos.getItemValue('_apemat') + ' ' + myFormdatos.getItemValue('_nombres')), myToolbardatos.disableItem('__save'), myToolbardatos.enableItem('__edit'), myToolbardatos.disableItem('__cancel'), myForm.setItemValue('b_estado', res.estado), myForm.setItemValue('b_cliente', res.nombre), myFormdatos.setItemValue('_fretiro', res.fechareti), myFormdatos.setItemValue('_fregcliente', res.fechacli), myFormdatos.setItemValue('_fredcata', res.fechacata), myFormdatos.disableItem('b_dniservice');
+                    Swal.fire('Bien!', res.message, 'success'), myLaouy_Dat.cells("a").progressOff();
+                } else {
+                    Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'No se guardó sus cambios  :' + res.message }), myLaouy_Dat.cells("a").progressOff();
+                }
+            }, "json");
+            break;
+    }
+};
+function ValidaRUCDNI(data) {
+    if (validation.isNumber(data)) {
+        if (myFormdatos.getItemValue('_tipodoc') == '1') {
+            if (data.length == 8) {
+                return true;
+            } else {
+                dhtmlx.message({ type: "error", text: "Para DNI , debe ingresar [8 DIGITOS] ", expire: 5000 });
+                return false;
+            }
+        } else {
+            if (data.length == 11) {
+                return true;
+            } else {
+                dhtmlx.message({ type: "error", text: "Para RUC , debe ingresar [11 DIGITOS] ", expire: 5000 });
+                return false;
+            }
+        }
+    } else {
+        dhtmlx.message({ type: "error", text: "Debe ingresar sólo NUMEROS [ 0 - 9 ]", expire: 5000 });
+        return false;
+    }
+}
+var validation = {
+    isEmailAddress: function (str) {
+        var pattern = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        return pattern.test(str);  // returns a boolean
+    },
+    isNotEmpty: function (str) {
+        var pattern = /\S+/;
+        return pattern.test(str);  // returns a boolean
+    },
+    isNumber: function (str) {
+        var pattern = /^\d+$/;
+        return pattern.test(str);  // returns a boolean
+    },
+    isSame: function (str1, str2) {
+        return str1 === str2;
+    }
+};
 ontollbarfz = async (id) => {
     switch (id) {
         case '__exitfz':
-            sel_zc = undefined, sel_fv = undefined, sel_zcid = undefined, sel_fvid = undefined;
+            //sel_zc = undefined, sel_fv = undefined, sel_zcid = undefined, sel_fvid = undefined;
             Wind_fz.window("wfzvta").close();
             break;
         case '__edit':
-            cargar_windo_editfz('edit');
+            cargar_windo_editfz('edit', sel_zc, sel_fv); console.log(sel_zc);
             if (sel_zc !== undefined) {
                 myFormzc.disableItem('_zncomer');
                 myFormzc.setItemValue('_zncomer', sel_zc.cozona);
@@ -639,10 +909,10 @@ ontollbarfz = async (id) => {
             }
             break;
         case '__cancel':
-            __onSelectAntes(_selecobject, myDataDirecc, myToolbardirecc, estadook);
+            __onSelectAntes(_selecobject, myDataDirecc, myToolbardirecc, estadook, co_direccion);
             break;
         case '__nuevo':
-            sel_fv = {}, sel_zc = {}, sel_fvid = 0, sel_zcid = 0, cargar_windo_editfz('nuevo');
+            cargar_windo_editfz('nuevo', { id_: 0 }, {});
 
 
             break;
@@ -656,7 +926,7 @@ ontollbarfz = async (id) => {
     }
 };
 
-cargar_windo_editfz = (stado) => { //console.log(sel_fv);
+cargar_windo_editfz = (stado, sel_zc, sel_fv) => {
     Windedit_fz = new dhtmlXWindows();
     Winidedi_fz = Windedit_fz.createWindow("wfzvta_ed", 0, 0, 920, 380);
     Windedit_fz.window("wfzvta_ed").hideHeader();
@@ -667,20 +937,31 @@ cargar_windo_editfz = (stado) => { //console.log(sel_fv);
     myLayouedit_fz.cells("a").hideHeader();
     myLayouedit_fz.cells("a").setWidth(440);
     myLayouedit_fz.cells("b").hideHeader();
-    if (sel_zc !== undefined) {
+
+    if (stado === 'nuevo') {
         myFormzc = myLayouedit_fz.cells("a").attachForm(f_zcomer);
-        botones_ventana(myFormzc);
-    }
-    if (sel_fv !== undefined) { //console.log(sel_fv);
         myFormfz = myLayouedit_fz.cells("b").attachForm(f_frzvta);
-        botones_ventana(myFormfz);
+        myFormzc.enableItem('_zncomer');
+        botones_ventana(stado, myFormzc, sel_zc, { id_: 0 });
+        botones_ventana(stado, myFormfz, {}, sel_fv);
+    } else {
+        if (sel_zc !== undefined) {
+            console.log(sel_zc);
+            myFormzc = myLayouedit_fz.cells("a").attachForm(f_zcomer);
+            botones_ventana(stado, myFormzc, sel_zc, { id_: 0 });
+        }
+        if (sel_fv !== undefined) {
+            console.log(sel_fv);
+            myFormfz = myLayouedit_fz.cells("b").attachForm(f_frzvta);
+            botones_ventana(stado, myFormfz, {}, sel_fv);
+        }
     }
-    if (stado === 'nuevo') { myFormzc.enableItem('_zncomer'); }
 }
-botones_ventana = (form) => {
+botones_ventana = (stado, form, sel_zc, sel_fv) => {
     form.attachEvent("onButtonClick", async (name) => {
         switch (name) {
-            case 'b_savefv':
+            case 'b_savefv': console.log(sel_fv);
+                if (stado == 'nuevo') { sel_fv = { id_: 0 }, sel_zc = {}, sel_fvid = 0, sel_zcid = 0; }
                 let st_direc = myFormfz.isItemChecked('ch_direntrega') === true ? 'S' : 'N';
                 let st_fac = myFormfz.isItemChecked('ch_dirfactura') === true ? 'S' : 'N';
                 let st_estado = myFormfz.isItemChecked('ch_vigencia') === true ? 'Vigente' : 'Retirado';
@@ -701,7 +982,7 @@ botones_ventana = (form) => {
                         var t = myFormfz.getSelect('_fzvta');
                         subgrilla.cells(sel_fvid, 0).setValue(t.options[t.selectedIndex].text);
                         subgrilla.cells(sel_fvid, 1).setValue(myFormfz.getItemValue('_fzvta'));
-                        console.log(myFormfz.getItemValue('_fzvta') + '-' + t.options[t.selectedIndex].text);
+                        //console.log(myFormfz.getItemValue('_fzvta') + '-' + t.options[t.selectedIndex].text);
                         if (myFormfz.isItemChecked('ch_vigencia') === true) {
                             subgrilla.cells(sel_fvid, 11).setValue("Vigente"), subgrilla.setRowTextStyle(sel_fvid, "text-decoration: none;"); //sel_fv.estado = 'Vigente';
                         } else {
@@ -715,16 +996,27 @@ botones_ventana = (form) => {
                 }, "json");
                 break;
             case 'b_savezn': //console.log('hola');
-                let zoncomold = myFormzc.getItemValue('_zncomer') === sel_zc.cozona ? sel_zc.cozona : myFormzc.getItemValue('_zncomer');
+                let zoncomold;
+                if (stado == 'nuevo') { sel_fv = { id_: 0 }, sel_zc = {}, sel_fvid = 0, sel_zcid = 0, zoncomold = 0; } else {
+                    zoncomold = myFormzc.getItemValue('_zncomer') === sel_zc.cozona ? sel_zc.cozona : myFormzc.getItemValue('_zncomer');
+                }
                 let p = {
                     x_empresa: usrJson.empresa, x_usuario: usrJson.codigo, x_co_direccion_entidad: co_direccion, x_cadena_zona: myFormzc.getItemValue('_zncomer') + '@@@' + zoncomold + '@@@' + myFormzc.getItemValue('_estado') + "|||", x_cant_filas: 1
                 };
                 $.post(BASE_URL + "MA010102/updatezon_comer", p, function (res) {
                     if (parseFloat(res.codigo) > 0) {
-                        if ((myFormzc.getItemValue('_estado')).toUpperCase() === 'VIGENTE') {
-                            sel_zc.vigencia = 'Vigente', myGridzco.cells(sel_zcid, 3).setValue("Vigente"), myGridzco.setRowTextStyle(sel_zcid, "text-decoration: none;");
+                        if (stado == 'nuevo') {
+                            let newId = (new Date()).valueOf();
+                            myGridzco.addRow(newId, myForm_giro.getItemValue('_giro') + ',' + t.options[t.selectedIndex].text + ',' + myForm_giro.getItemValue('giro_detalle') + ',' + res.fe_reg + ',' +myForm_giro.getItemValue('giro_stado') + ',,' + cocliente);
+                            //myGridzco.clearAll();
+                           //myGridzco.load(BASE_URL + 'MA010102/gridfz/' + co_direccion + '/' + usrJson.empresa);
+                            _txtgrid(myGridzco, 2);//myGridzco.setRowTextStyle(sel_zcid, "text-decoration: none;");
                         } else {
-                            sel_zc.vigencia = 'Retirado', myGridzco.cells(sel_zcid, 3).setValue("Retirado"), myGridzco.setRowTextStyle(sel_zcid, "text-decoration: line-through;");
+                            if ((myFormzc.getItemValue('_estado')).toUpperCase() === 'VIGENTE') {
+                                sel_zc.vigencia = 'Vigente', myGridzco.cells(sel_zcid, 3).setValue("Vigente"), myGridzco.setRowTextStyle(sel_zcid, "text-decoration: none;");
+                            } else {
+                                sel_zc.vigencia = 'Retirado', myGridzco.cells(sel_zcid, 3).setValue("Retirado"), myGridzco.setRowTextStyle(sel_zcid, "text-decoration: line-through;");
+                            }
                         }
                         Windedit_fz.window("wfzvta_ed").close(), Swal.fire('Bien!', res.message, 'success');
                     } else {
@@ -737,47 +1029,13 @@ botones_ventana = (form) => {
                 Windedit_fz.window("wfzvta_ed").close();
                 break;
             case 'b_salir':
+
                 Windedit_fz.window("wfzvta_ed").close();
                 break;
         }
     });
 }
-ontollbarclicdirec = async (id) => {
-    switch (id) {
-        case '__edit': console.log(co_direccion);
-            if (co_direccion > 0) {
-                (['__nuevo', '__edit']).forEach((elem) => {
-                    myToolbardirecc.disableItem(elem);
-                });
-                (['__save', '__cancel']).forEach((elem) => {
-                    myToolbardirecc.enableItem(elem);
-                });
-            } else {
-                Swal.fire('Alerta!', 'Debes seleccionar una dirección para poder editarla..', 'error');
-            }
-            break;
-        case '__cancel':
-            __onSelectAntes(_selecobject, myDataDirecc, myToolbardirecc, estadook);
-            break;
-        case '__nuevo':
-            codcliente = 0, myToolbardatos.disableItem('__edit'), permiso_cataedit = 'S';
-            myForm.setItemValue('b_cliente', ''), myForm.setItemValue('b_estado', ''), myForm.setItemValue('b_asignado', '');
-            myFormdatos.checkItem('st_personales'), myFormdatos.enableItem('st_personales');
-            myFormdatos.checkItem('st_cliente'), myFormdatos.enableItem('st_cliente'), myToolbardatos.disableItem('__lincredito');
-            myToolbardatos.enableItem('__save'), myToolbardatos.enableItem('__cancel');
-            myFormdatos.enableItem('b_dniservice');
-            myFormdatos.setItemValue('_clvigencia', 'Vigente');
-            form_ini();//// form_edit_ini(false, 'E');
-            break;
-        case '__save':
-            grabar_direcc();
-            break;
 
-        default:
-            null;
-            break;
-    }
-};
 grabar_direcc = () => {
     let p = {
         x_alias: usrJson.alias, x_co_usuario: usrJson.codigo, x_co_direccion_entidad: _selecobject.CO_DIRECCION_ENTIDAD, x_co_catalogo_entidad: '0',
@@ -794,90 +1052,57 @@ grabar_direcc = () => {
         x_de_zoom: myFormdirecc.getItemValue('_zoom').length === 0 ? '1' : myFormdirecc.getItemValue('_zoom'),
         x_de_hora_ini_atencion: myFormdirecc.getItemValue('_iniaten').length === 0 ? '00:00' : myFormdirecc.getItemValue('_iniaten'),
         x_de_hora_fin_atencion: myFormdirecc.getItemValue('_finaten').length === 0 ? '00:00' : myFormdirecc.getItemValue('_finaten'),
-        x_st_erased: _selecobject.ST_ERASED, x_cadena: '', x_cant_filas: '0'
+        x_st_erased: myFormdirecc.isItemChecked('ch_borrado') ? '1' : '0', x_cadena: '', x_cant_filas: '0' /*_selecobject.ST_ERASED*/
     };
 
     $.post(BASE_URL + "MA010102/grabadirec", p, function (res) {
-
-        //        if (parseFloat(res.codigo) > 0) {
-        //            permiso_cataedit = 'N';
-        //            form_edit_ini(true, 'D');
-        //            myToolbardatos.disableItem('__save'), myToolbardatos.enableItem('__edit'), myToolbardatos.disableItem('__cancel'), myForm.setItemValue('b_estado', res.estado), myForm.setItemValue('b_cliente', res.nombre), myFormdatos.setItemValue('_fredcata', res.fecha), myFormdatos.disableItem('b_dniservice');
-        //            Swal.fire('Bien!', res.message, 'success');
-        //        }
-
-    }, "json");
-};
-grabar_datos = () => {
-    let p = {
-        st_permiso_editar_cata_enti: permiso_cataedit, x_empresa: usrJson.empresa, x_alias: usrJson.alias, x_co_catalogo_entidad: co_cata_entidad, x_de_razon_social: myFormdatos.getItemValue('_razsocial'), x_nu_documento: myFormdatos.getItemValue('_nudocumento'),
-        x_co_tipo_persona: myFormdatos.getItemValue('_tipoper'), x_co_tipo_doc_ide: myFormdatos.getItemValue('_tipodoc'),
-        x_de_procedencia: myFormdatos.getItemValue('_procedencia'), x_de_ape_paterno: myFormdatos.getItemValue('_apepat'), x_de_ape_materno: myFormdatos.getItemValue('_apemat'), x_de_nombre: myFormdatos.getItemValue('_nombres'),
-        x_de_nombre_comercial: myFormdatos.getItemValue('_nomcomer'), x_de_origen: myFormdatos.getItemValue('_origen'), x_co_cliente: cocliente,
-        x_co_tipo_cliente: myFormdatos.getItemValue('_tipocliente'), x_st_recaudo: myFormdatos.isItemChecked('_ch_recaudo') ? 'S' : 'N', x_co_banco: myFormdatos.getItemValue('_tipobanco'), x_co_tipo_negocio: myFormdatos.getItemValue('_tipo_negoc'),
-        x_co_listado_precios: co_listadopre, x_co_serie_listado: co_seri_listado, x_st_agente_retenedor: myFormdatos.isItemChecked('_ch_agenretenedor') ? 'S' : 'N', x_st_agente_percepcion: myFormdatos.isItemChecked('_ch_agentpercep') ? 'S' : 'N',
-        x_st_cliente_nvo: myFormdatos.isItemChecked('_ch_clinuevo') ? 'S' : 'N', x_co_periodo_clien_nvo: myFormdatos.getItemValue('_ingreso'), x_st_cliente_corporativo: myFormdatos.isItemChecked('_ch_clicorporativo') ? 'S' : 'N', x_co_cliente_corporativo: cocliente_corpo,
-        x_im_credito_total: myFormdatos.getItemValue('_creditototal'), x_im_deuda_total: myFormdatos.getItemValue('_deudatotal'), x_de_email: myFormdatos.getItemValue('_email'), x_de_webpage: myFormdatos.getItemValue('_webpage'),
-        x_es_vigencia_cliente: myFormdatos.getItemValue('_clvigencia'),
-        x_fe_retiro_cliente: myFormdatos.getItemValue('_fretiro'), x_St_Excep_Cred: myFormdatos.isItemChecked('_ch_excepcredito') ? 'S' : 'N'
-    };
-
-    $.post(BASE_URL + "MA010102/update", p, function (res) {
         if (parseFloat(res.codigo) > 0) {
             permiso_cataedit = 'N';
-            form_edit_ini(true, 'D');
-            myFormdatos.setItemValue('_razsocial', myFormdatos.getItemValue('_apepat') + ' ' + myFormdatos.getItemValue('_apemat') + ' ' + myFormdatos.getItemValue('_nombres'));
+            // form_edit_ini(true, 'D');
             myToolbardatos.disableItem('__save'), myToolbardatos.enableItem('__edit'), myToolbardatos.disableItem('__cancel'), myForm.setItemValue('b_estado', res.estado), myForm.setItemValue('b_cliente', res.nombre), myFormdatos.setItemValue('_fredcata', res.fecha), myFormdatos.disableItem('b_dniservice');
             Swal.fire('Bien!', res.message, 'success');
-        } else {
-            Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'No se guardó sus cambios  :' + res.message });
         }
 
     }, "json");
 };
 
-function activa_form_direcc() {
-    (['ch_borrado', 'ch_principal', '_nvia', '_via', '_zona', '_nzona', '_postal', '_numero', '_interior', '_referencias', '_altitud', '_latitud', '_zoom', '_iniaten', '_finaten']).forEach((elm) => {
-        myFormdirecc.setReadonly(elm, false);
-    });
-    (['__buscarubigeo', '_via', '_zona', '__fz_zn']).forEach((elm) => {
-        myFormdirecc.enableItem(elm);
-    });
+
+function actu_jselec(p) {
+    switch (enti_tipo) {
+        case 1:
+            json_select.ST_AFECTO_DETRACCION = p.st_agent_detrac, json_select.ST_PERCEPCION = p.st_agent_percep, json_select.ST_RETENCION = p.st_agent_reten, json_select.ST_FIJO = p.st_permanente, json_select.CO_TIPO_DOC_IDE = p.x_co_tipo_doc_ide, json_select.CO_TIPO_PERSONA = p.x_co_tipo_persona, json_select.DE_TIPO_PROVEEDOR = p.x_co_tipo_prov, json_select.CO_CONDICION_PAGO = p.x_cond_pago, json_select.DE_NOMBRE_COMERCIAL = p.x_de_nombre_comercial, json_select.DE_ORIGEN = p.x_de_origen,
+                json_select.DE_PROCEDENCIA = p.x_de_procedencia, json_select.DE_RAZON_SOCIAL = p.x_de_razon_social, json_select.DE_EMAIL = p.x_email, json_select.ES_VIGENCIA = p.x_estad_prov, json_select.CO_FORMA_PAGO = p.x_form_pago, json_select.NU_DOCUMENTO = p.x_nu_documento, json_select.CO_PROVEE = p.xco_catalogo_entidad;
+            break;
+        default://clientes
+            json_select.ST_PERMISO_EDITAR_CATA_ENTI = p.st_permiso_editar_cata_enti, json_select.ST_EXCEP_CRED = p.x_St_Excep_Cred, json_select.CO_BANCO = p.x_co_banco, json_select.CO_CATALOGO_ENTIDAD = p.x_co_catalogo_entidad, json_select.CO_CLIENTE = p.x_co_cliente, json_select.CO_CLIENTE_CORPORATIVO = p.x_co_cliente_corporativo, json_select.CO_LISTADO_PRECIOS = p.x_co_listado_precios, json_select.CO_PERIODO_CLIEN_NVO = p.x_co_periodo_clien_nvo, json_select.CO_SERIE_LISTADO = p.x_co_serie_listado, json_select.CO_TIPO_CLIENTE = p.x_co_tipo_cliente, json_select.CO_TIPO_DOC_IDE = p.x_co_tipo_doc_ide,
+                json_select.CO_TIPO_NEGOCIO = p.x_co_tipo_negocio, json_select.CO_TIPO_PERSONA = p.x_co_tipo_persona, json_select.DE_APE_MATERNO = p.x_de_ape_materno, json_select.DE_APE_PATERNO = p.x_de_ape_paterno, json_select.DE_EMAIL = p.x_de_email, json_select.DE_NOMBRE = p.x_de_nombre, json_select.DE_NOMBRE_COMERCIAL = p.x_de_nombre_comercial, json_select.DE_ORIGEN = p.x_de_origen, json_select.DE_PROCEDENCIA = p.x_de_procedencia, json_select.DE_RAZON_SOCIAL = p.x_co_tipo_doc_ide == '1' ? p.x_de_nombre_comercial : p.x_de_razon_social,
+                json_select.DE_WEBPAGE = p.x_de_webpage, json_select.ES_VIGENCIA_CLIENTE = p.x_es_vigencia_cliente, json_select.FE_RETIRO_CLIENTE = p.x_fe_retiro_cliente, json_select.IM_CREDITO_TOTAL = p.x_im_credito_total, json_select.IM_DEUDA_TOTAL = p.x_im_deuda_total, json_select.NU_DOCUMENTO = p.x_nu_documento, json_select.ST_AGENTE_PERCEPCION = p.x_st_agente_percepcion,
+                json_select.ST_AGENTE_RETENEDOR = p.x_st_agente_retenedor, json_select.ST_CLIENTE_CORPORATIVO = p.x_st_cliente_corporativo, json_select.ST_CLIENTE_NVO = p.x_st_cliente_nvo, json_select.ST_RECAUDO = p.x_st_recaudo;
+
+            break;
+    }
 }
+
 
 function form_edit_ini(bollean, stado) {
-    (['_nudocumento', '_razsocial', '_nomcomer', '_apepat', '_apemat', '_nombres']).forEach((elm) => {
-        (stado === 'E' && elm === '_razsocial' && bollean === false) ? myFormdatos.setReadonly(elm, true) : myFormdatos.setReadonly(elm, bollean);
-    });
-    (['_tipodoc', '_tipoper', '_procedencia', '_origen', '_clvigencia']).forEach((elm) => {
-        stado === 'E' ? myFormdatos.enableItem(elm) : myFormdatos.disableItem(elm);
-    });
-    //   if (cocliente > 0) {
-    (['_tipocliente', '_tipobanco', '_tipo_negoc', '_ch_listaprecio', '_ch_recaudo', '_ch_agenretenedor', '_ch_agentpercep', '_ch_clinuevo', '_ch_clicorporativo', '_ch_excepcredito']).forEach((elm) => {
-        stado === 'E' ? myFormdatos.enableItem(elm) : myFormdatos.disableItem(elm);
-    });
-    (['_creditototal', '_deudatotal', '_ingreso', '_email', '_webpage', '_fregcliente', '_fretiro']).forEach((elm) => {
-        myFormdatos.setReadonly(elm, bollean);
-    });
+    //myFormdatos.enableItem('b_dniservice');
+    (['_tipodoc', '_tipoper', '_procedencia', '_origen', '_clvigencia']).forEach((elm) => { (stado === 'E') ? myFormdatos.enableItem(elm) : myFormdatos.disableItem(elm) });
+    (['_nudocumento', '_razsocial', '_nomcomer', '_apepat', '_apemat', '_nombres']).forEach((elm) => { (stado === 'E' && elm === '_razsocial' && enti_tipo === 2 && bollean === false) ? myFormdatos.setReadonly(elm, true) : myFormdatos.setReadonly(elm, bollean) });
+    switch (enti_tipo) {
+        case 1:
+            (['_provtipo', '_provstado', '_proformpago', '_procondpago']).forEach((elm) => { stado === 'E' ? myFormdatos.enableItem(elm) : myFormdatos.disableItem(elm) }), (['_provchperm', '_provemail', '_provsharetenc', '_provshpercep', '_provshdetrec']).forEach((elm) => { myFormdatos.setReadonly(elm, bollean) });
+            break;
+        default:
+            (['_tipocliente', '_tipobanco', '_tipo_negoc', '_ch_listaprecio', '_ch_recaudo', '_ch_agenretenedor', '_ch_agentpercep', '_ch_clinuevo', '_ch_clicorporativo', '_ch_excepcredito']).forEach((elm) => { stado === 'E' ? myFormdatos.enableItem(elm) : myFormdatos.disableItem(elm) }), (['_creditototal', '_deudatotal', '_ingreso', '_email', '_webpage']).forEach((elm) => { myFormdatos.setReadonly(elm, bollean) });
+            break;
+    }
 }
 
-function form_ini() {
-    myFormdatos.setItemValue('_vigencia', 'Vigente');
-    (['_ch_recaudo', '_ch_excepcredito', '_ch_agenretenedor', '_ch_agentpercep', '_ch_clinuevo', '_ch_clicorporativo']).forEach((elm) => {
-        myFormdatos.uncheckItem(elm);
-    });
-    (['_nudocumento', '_razsocial', '_nomcomer', '_apepat', '_apemat', '_nombres', '_listaprecios', '_ingreso', '_clientecorporativo', '_creditototal', '_deudatotal', '_email', '_webpage', '_fregcliente', '_fvigencia', '_fretiro']).forEach((elm) => {
-        myFormdatos.setReadonly(elm, false), myFormdatos.setItemValue(elm, '');
-    });
-    (['_tipodoc', '_tipoper', '_procedencia', '_origen', '_tipocliente', '_tipobanco', '_tipo_negoc', '_ch_listaprecio', '_ch_recaudo', '_ch_excepcredito', '_ch_agenretenedor', '_ch_agentpercep', '_ch_clinuevo', '_ch_clicorporativo', '_clvigencia']).forEach((elm) => {
-        myFormdatos.enableItem(elm);
-    });
-    myFormdatos.setItemValue('_ingreso', '0'), myFormdatos.setItemValue('_creditototal', '0.00'), myFormdatos.setItemValue('_deudatotal', '0.00')
-}
+
 
 
 function valores_defecto() {
-    if (codcliente > 0) {
+    if (cocliente > 0) {
         myFormdatos.setItemValue('_tipobanco', 0);
         myFormdatos.setItemValue('_vigencia', 'Vigente');
     }
@@ -1218,7 +1443,6 @@ f_act_form_cont = (stado) => {
 }
 
 f_s_ctaban = () => {
-    //myLayou_cbanc = mySidebar.cells("s_cuentas").attachLayout('1C');
     if (cocliente > 0) {
         myLayou_cbanc = mySidebar.cells("s_cuentas").attachLayout('2U');
         myLayou_cbanc.cells("a").hideHeader();
@@ -1599,7 +1823,7 @@ f_s_comunica = () => {
 
                             if (_option === 'nuevo') {
                                 myGridcom.addRow(newId, myForm_comu.getItemValue('selc_operador') + ',' + res.codigo + ',' + myForm_comu.getItemValue('num_celular')
-                                    + ',' + myForm_comu.getItemValue('num_stado') + ',' +'1' + ',' + t.options[t.selectedIndex].text);
+                                    + ',' + myForm_comu.getItemValue('num_stado') + ',' + '1' + ',' + t.options[t.selectedIndex].text);
                             } else {
                                 myGridcom.cells(sel_comid, 5).setValue(t.options[t.selectedIndex].text);
                                 myGridcom.cells(sel_comid, 2).setValue(myForm_comu.getItemValue('num_celular'));
@@ -1676,15 +1900,15 @@ f_cleam_comunica = (sel_com, op) => {
 no_select_client = (Layout, sidetab) => {
     Layout = mySidebar.cells(sidetab).attachLayout('1C');
     if (sidetab == 's_datos') {
-        Layout.cells("a").attachHTMLString('<div class="nomcliente" style="text-align: center;  text-align:center; padding-bottom: 3%;"> BUSQUE UN CLIENTE, POR FAVOR...</div><div id="b_nuewclie">Genere uno nuevo Aquí </div><div  id="imgcargue"    style="position: absolute;     top: 20; right: 10; bottom: 10; left: 10;              background: url(/assets/images/otros/icono-buscar-datos-nuevo.jpg)        no-repeat     center;         -webkit-background-size: cover;        -moz-background-size: cover;        -o-background-size: cover;         background-size: auto;"></div>');
+        Layout.cells("a").attachHTMLString('<div class="nomcliente" style="text-align: center;  text-align:center; padding-bottom: 3%;"> BUSQUE UN ' + label_tipo.toUpperCase() + ', POR FAVOR...</div><div id="b_nuewclie">Genere uno nuevo Aquí </div><div  id="imgcargue"    style="position: absolute;     top: 20; right: 10; bottom: 10; left: 10;              background: url(/assets/images/otros/icono-buscar-datos-nuevo.jpg)        no-repeat     center;         -webkit-background-size: cover;        -moz-background-size: cover;        -o-background-size: cover;         background-size: auto;"></div>');
         $("#b_nuewclie").click(function () {
             if (sidetab == 's_datos') {
                 myLaouy_Dat = mySidebar.cells("s_datos").attachLayout('1C');
-                myForm.setItemValue('b_cliente', 'Nuevo Registro'), carga_form_cliente();
+                myForm.setItemValue('b_cliente', 'Nuevo Registro'), carga_form_cliente(0);
             }
         });
     } else {
-        Layout.cells("a").attachHTMLString('<div class="nomcliente" style="text-align: center;  text-align:center; padding-bottom: 3%;"> BUSQUE UN CLIENTE, POR FAVOR...</div><div  id="imgcargue"    style="position: absolute;     top: 20; right: 10; bottom: 10; left: 10;              background: url(/assets/images/otros/icono-buscar-datos-nuevo.jpg)        no-repeat     center;         -webkit-background-size: cover;        -moz-background-size: cover;        -o-background-size: cover;         background-size: auto;"></div>');
+        Layout.cells("a").attachHTMLString('<div class="nomcliente" style="text-align: center;  text-align:center; padding-bottom: 3%;"> BUSQUE UN ' + label_tipo.toUpperCase() + ', POR FAVOR...</div><div  id="imgcargue"    style="position: absolute;     top: 20; right: 10; bottom: 10; left: 10;              background: url(/assets/images/otros/icono-buscar-datos-nuevo.jpg)        no-repeat     center;         -webkit-background-size: cover;        -moz-background-size: cover;        -o-background-size: cover;         background-size: auto;"></div>');
     }
     Layout.cells("a").hideHeader();
 }

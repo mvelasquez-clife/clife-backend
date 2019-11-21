@@ -13,11 +13,17 @@ router.get('/list_procedencia', ma010102Controller.list_procedencia);
 
 router.get('/list_origen', ma010102Controller.list_origen);
 
+router.get('/list_tiprove', ma010102Controller.list_tiprove);
+
 router.get('/list_tipocliente', ma010102Controller.list_tipocliente);
 
 router.get('/grid_linea/:emp/:cliente', ma010102Controller.grid_linea);
 
 router.get('/list_banco', ma010102Controller.list_banco);
+
+router.get('/list_formpago', ma010102Controller.list_formpago);
+
+router.get('/list_condpago/:co_formp', ma010102Controller.list_condpago);
 
 router.get('/cargo_repre', ma010102Controller.cargo_repre); 
 
@@ -95,7 +101,9 @@ router.post('/docu_clear/:cliente/:emp/:file', ma010102Controller.docu_clear);
 
 router.post('/updatezon_comer', ma010102Controller.updatezon_comer);
 
-router.post('/update', ma010102Controller.update_data);
+router.post('/savecliente', ma010102Controller.savecliente);
+
+router.post('/saveproveed', ma010102Controller.saveproveed);
 
 router.post('/grabadirec', ma010102Controller.grabadirec);
 
@@ -106,20 +114,5 @@ router.post('/savelinea', ma010102Controller.savelinea);
 router.post('/add_filebbdd', ma010102Controller.add_filebbdd);
 
 router.post('/limpiar_files', ma010102Controller.limpiar_files);
-
-//------------------------------------------
-//router.get('/cargardata/:emp', ma010104Controller.cargardata);
-//
-//router.get('/c_list_estado/:emp',ma010104Controller.c_list_estado);
-//
-
-//
-//router.post('/file_exist',ma010104Controller.file_exist);
-//
-//router.post('/upload',ma010104Controller.upload);
-//
-//router.post('/datos_empresa',ma010104Controller.datos_empresa);
-//
-//router.post('/c_estado', ma010104Controller.cambiaestado);
 
 module.exports = router;

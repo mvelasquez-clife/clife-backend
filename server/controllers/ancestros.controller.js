@@ -61,6 +61,7 @@ const ancestroController = {
                 p_empresa: { val: empresa },
                 p_extra: { val: param }
             };
+           
             conn.execute(query, params, responseParams, (error, result) => {
                 if(error) {
                     conn.close();

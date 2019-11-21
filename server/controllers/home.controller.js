@@ -1,27 +1,20 @@
-//const express = require('express');
 const oracledb = require('oracledb');
-//const app = express();
 const dbParams = require('../database');
 const o2x = require('object-to-xml');
 const xmlparse = require('../xml-parser');
 const formidable = require('formidable');
-//const fs = require('fs');
 var fs = require('fs-extra');
-//var path = require('path');
 const desiredMode = 0o2775;
 const request = require('request');
-
-const util = require('util');
 const responseParams = {
     outFormat: oracledb.OBJECT
 };
 const homeController = {
     buscadni: (req, res) => {
-        const {dni} = req.body;
-        var url = "https://aplicaciones007.jne.gob.pe/srop_publico/Consulta/Afiliado/GetNombresCiudadano?DNI=" + dni;
+        const {dni,tipo} = req.body;
+        var url = tipo == 1 ? "https://aplicaciones007.jne.gob.pe/srop_publico/Consulta/Afiliado/GetNombresCiudadano?DNI=" + dni : "https://api.sunat.cloud/ruc/"+ dni;
         request({method: 'get',
             url: url,
-
             json: true
         }, function (error, response, body) {
             if (!error && response.statusCode === 200) {
@@ -96,7 +89,7 @@ const homeController = {
                     return;
                 }
             });
-            const query2 = "select co_menu_sistema as \"id\",de_nombre as \"text\",co_menu_replica \"replica\", case st_tipo when 'm' then 1 else 0 end as \"child\" from v_generar_menu_v2 where de_alias = :alias and co_empresa = :empresa and co_antecesor = :codigo order by st_tipo desc, de_nombre asc";
+            const query2 = "SELECT co_menu_sistema as \"id\",de_nombre as \"text\",co_menu_replica \"replica\", case st_tipo when 'm' then 1 else 0 end as \"child\" from v_generar_menu_v2 where de_alias = :alias and co_empresa = :empresa and co_antecesor = :codigo order by st_tipo desc, de_nombre asc";
             const params2 = {alias: {val: alias}, empresa: {val: empresa}, codigo: {val: id}};
             conn.execute(query2, params2, responseParams, (error, result) => {
                 if (error) {
@@ -153,7 +146,6 @@ const homeController = {
                 for (var i in result.rows) {
                     l_items.push(result.rows[i]);
                 }
-                //comprobar si obtuve resultado
                 if (l_items.length > 0) {
                     res.json({
                         state: 'success',
@@ -175,7 +167,6 @@ const homeController = {
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({'error_conexion': err.stack});
-
                 return;
             }
             const query = "select co_tipo_doc_ide as value ,de_abrevia as label from table(pack_new_pers.f_list_tipodoc)";
@@ -186,11 +177,8 @@ const homeController = {
                     conn.close();
                     return;
                 }
-
                 res.set('Content-Type', 'text/xml');
                 res.send(xmlparse.renderSelect(result.rows, '1'));
-
-
             });
         });
     },
