@@ -61,13 +61,13 @@ crear_ventana = (form, width, height, stado) => {
     mySidebar.attachEvent("onSelect", function (id, lastId) {
         switch (id) {
             case 'side_infperso':
-                f_side_infperso(form, stado);
+                f_side_infperso('', stado);
                 break;
             case 'side_segu':
-                f_side_segu(form_seguridad, stado);
+                f_side_segu('', stado);
                 break;
-            case 'side_person':
-                f_side_personaliza(form_personal, stado);
+            case 'side_person': console.log('form_personal');
+                f_side_personaliza('', stado);
                 break;
             default:
                 null;
@@ -184,6 +184,9 @@ f_side_personaliza = (form, st) => {
             }, 'json');
         });
     });
+    form.attachEvent("onButtonClick", (name) => {
+        onclicFormInfo(name, form)
+    });
 };
 /********************* VERIFICA ST EDICION TOTAL ************/
 st_edicion = (form,st) => { // console.log(JSON.parse(localStorage.getItem('usrjson')).st_editotal);
@@ -203,7 +206,7 @@ onclicFormInfo = async (name, form, st) => {
         case 'b_salirc':
             logout();
             break;
-        case 'fsalirw':
+        case 'fsalirw': 
             myWinsPerfil.window('w_cuenta').close();
             break;
         case 'b_edits' :
@@ -443,14 +446,15 @@ mainTreeOnDblClick = (id) => {
 };
 
 /***************** Function  abre una ventana del modulo filtrado en el input del Toolbar myPop2.attachEvent("onClick") => Ddhtmlx Ppoup (myPop2 ) se muestra cuando se ingrasa mas de 5 letras en el input search */
-pop_inclic2 = (id) => {
+pop_inclic2 = (id) => {    
+    var selecmenu = myPop2.getItemData(id);
     mainLayout.cells("b").collapse();
-    var winId = "win-" + id;
+    var winId = "win-" + selecmenu.id;
     if (!dhxWinmain.isWindow(winId)) {
         dhxWinmain.createWindow(winId, 0, 0, 1080, 550);
-        dhxWinmain.window(winId).setText(mainTree.getItemText(id));
+        dhxWinmain.window(winId).setText(selecmenu.name);
         dhxWinmain.window(winId).center();
-        dhxWinmain.window(winId).attachURL("modulo/" + id);
+        dhxWinmain.window(winId).attachURL("modulo/" + selecmenu.id);
     }
 };
 

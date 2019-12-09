@@ -601,11 +601,11 @@ const ma010102Controller = {
             }
             switch (tipo) {
                 case '1':
-                    query = ' SELECT * FROM TABLE(PACK_NEW_MAESTROS.F_LISTAR_PROVEEDOR(:x_empresa,:x_cod)) ';
+                    query = 'SELECT * FROM TABLE(PACK_NEW_MAESTROS.F_LISTAR_PROVEEDOR(:x_empresa,:x_cod)) ';
                     params = { x_empresa: parseInt(emp), x_cod: parseInt(codigo) };
                     break;
                 default:
-                    query = ' SELECT * FROM TABLE(PACK_NEW_MAESTROS.F_LISTAR_CLIENTE_WEB(:x_empresa,:x_cod)) ';
+                    query = 'SELECT * FROM TABLE(PACK_NEW_MAESTROS.F_Listar_Cata_Enti_Cliente(:x_empresa,:x_cod)) ';
                     params = { x_empresa: parseInt(emp), x_cod: parseInt(codigo) };
                     break;
             }            //console.log(emp, codigo, tipo);
