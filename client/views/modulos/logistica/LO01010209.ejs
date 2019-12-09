@@ -22,13 +22,24 @@
         <script type="text/javascript" src="<%=path%>script.js"></script>
         <!-- ancestro de busquedas -->
         <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
-        <!-- scripts de la carga de la vista -->
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
         <script>
             const URL_MODULO = '<%=path%>'.split('/')[3];
-            var LayoutPrincipal, ToolbarOrdenes, ToolbarReporte;
+            var LayoutPrincipal, ToolbarOrdenes, ToolbarReporte, LayoutPrincipalFooter, FooterOrdenes;
             var InputDesde, InputHasta, ipCalDesde, calDesde, CalendarRango, ComboAlmacen, ComboPeriodo;
-            var GridOrdenes, GridGlobales;
-            //
+            var GridOrdenes, GridGlobales, GridDocumentos;
+            var UsuarioFraccionamiento;
+            const DataFraccionamiento = {
+                empresa: usrJson.empresa,
+                periodo: '',
+                usuario: usrJson.codigo,
+                almacen: 0,
+                tinte: '',
+                cantidad: 0,
+                documentos: [],
+                tipos: [],
+                picker: ''
+            };
         </script>
     </body>
 </html>

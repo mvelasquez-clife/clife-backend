@@ -166,7 +166,7 @@ const cr0100Controller = {
         let { empresa, cliente, desde, hasta } = req.params;
         try {
             let conn = await oracledb.getConnection(dbParams);
-            let query = "select co_cliente,de_razon_social,de_fzavta,de_moneda,im_solicitado,im_aprobado,to_char(fe_solicitud,'dd/mm/yyyy') fe_solicitud,es_vigencia,de_alias,to_char(fe_vigencia_credito,'dd/mm/yyyy') fe_vigencia_credito,de_observaciones_vendedor,de_observaciones_propias,co_usuario_autorizador,co_fuerza_venta,to_char(fe_autorizacion_credito,'dd/mm/yyyy') fe_autorizacion_credito,co_moneda,co_empresa,co_centro_costo from table(pack_new_cuenta_corriente.f_solicitudes_credito(:p_empresa, :p_cliente, :p_desde, :p_hasta))";
+            let query = "select co_cliente,de_razon_social,de_fzavta,de_moneda,im_solicitado,im_aprobado,to_char(fe_solicitud,'dd/mm/yyyy') fe_solicitud,es_vigencia,de_alias,to_char(fe_vigencia_credito,'dd/mm/yyyy') fe_vigencia_credito,de_observaciones_vendedor,de_observaciones_propias,co_usuario_autorizador,co_fuerza_venta,to_char(fe_autorizacion_credito,'dd/mm/yyyy') fe_autorizacion_credito,co_moneda,co_empresa,co_centro_costo,co_solicitud_credito from table(pack_new_cuenta_corriente.f_solicitudes_credito(:p_empresa, :p_cliente, :p_desde, :p_hasta))";
             let params = {
                 p_empresa: { val: empresa },
                 p_cliente: { val: cliente },
@@ -514,6 +514,188 @@ const cr0100Controller = {
         catch(err) {
             console.log(err);
             res.json({
+                state: 'error',
+                message: err
+            });
+        }
+    },
+    InformacionSolicitud: async (request, response) => {
+        let { solicitud, empresa } = request.body;
+        let result;
+        try {
+            let conn = await oracledb.getConnection(dbParams);
+            let querySolicitud = "select sl.im_solicitado \"slc\",sl.im_semanal \"sem\",to_char(sl.fe_solicitud,'dd/mm/yyyy hh24:mi') \"fsl\",sl.de_observaciones_vendedor \"obs\",cp.de_nombre \"rsc\",initcap(ce.de_razon_social) \"vnd\",mo.de_nombre \"mon\",sl.co_cliente \"ccl\",initcap(cc.de_razon_social) \"cli\",sl.co_condicion_pago \"cpg\",sl.im_aprobado \"iap\",sl.im_semanal_aprobado \"sap\",sl.es_vigencia \"vig\",nvl(sl.de_observaciones_propias,'') \"obp\",sgum.de_alias \"alias\" from ba_soli_cred_m sl join ma_cata_enti_m ce on sl.co_vendedor = ce.co_catalogo_entidad join ma_cata_enti_m cc on sl.co_cliente = cc.co_catalogo_entidad join ma_cond_pago_m cp on sl.co_condicion_pago = cp.co_condicion_pago join ma_mone_m mo on sl.co_moneda = mo.co_moneda join sg_usua_m sgum on sl.co_vendedor = sgum.co_usuario and sl.co_empresa = sgum.co_empresa_usuario where sl.co_solicitud_credito = :p_solicitud and sl.co_empresa = :p_empresa";
+            let paramsSolicitud = {
+                p_empresa: { val: empresa },
+                p_solicitud: { val: solicitud }
+            };
+            result = await conn.execute(querySolicitud, paramsSolicitud, responseParams);
+            let info = result.rows[0];
+            // carga las observaciones
+            let queryObservaciones = "select co_documento doc, fe_fecha_act_audit fdc, de_obser obs from ba_cuen_corr_admi_clie_d where fe_fecha_act_audit is not null and co_empresa = :p_empresa and co_cliente = :p_cliente order by fe_fecha_act_audit asc";
+            let paramsObservaciones = {
+                p_empresa: { val: empresa },
+                p_cliente: { val: info.ccl }
+            };
+            result = await conn.execute(queryObservaciones, paramsObservaciones, responseParams);
+            let observaciones = result.rows;
+            // carga el credito del cliente
+            let xdata = [info.alias, info.ccl, 34, 1].join('@');
+            let queryStatus = "call pack_new_cuenta_corriente.sp_validar_status_cliente2(:p_data,:o_out)";
+            let paramsStatus = {
+                p_data: { val: xdata },
+                o_out: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            result = await conn.execute(queryStatus, paramsStatus, responseParams);
+            let { o_out } = result.outBinds;
+            o_out = o_out.split('@');
+            let lcredito = {
+                disponible: parseFloat(o_out[1]),
+                deuda: parseFloat(o_out[3])
+            };
+            response.json({
+                state: 'success',
+                data: {
+                    solicitud: info,
+                    observaciones: observaciones,
+                    lcredito: lcredito
+                }
+            });
+        }
+        catch(err) {
+            console.error(err);
+            response.json({
+                state: 'error',
+                message: err
+            });
+        }
+    },
+    ComboResultado: async (request, response) => {
+        let result;
+        try {
+            let conn = await oracledb.getConnection(dbParams);
+            let query = "select co_condicion_pago \"value\", de_nombre \"text\" from ma_cond_pago_m where es_vigencia= 'Vigente' order by nu_orden asc";
+            let params = {};
+            result = await conn.execute(query, params, responseParams);
+            response.json({
+                options: result.rows
+            });
+        }
+        catch (err) {
+            console.error(err);
+            response.json({
+                state: 'error',
+                message: err
+            });
+        }
+    },
+    ComboCpago: (request, response) => {
+        response.json({
+            options: [
+                { value: 'Pendiente', text: 'Pendiente' },
+                { value: 'Anulado', text: 'Anulado' },
+                { value: 'Aprobado', text: 'Aprobado' },
+                { value: 'Desaprobado', text: 'Desaprobado' }
+            ]
+        });
+    },
+    ProcesarSolicitud: async (request, response) => {
+        let { csl,cpg,vig,apr,sap,obs,emp,aut } = request.body;
+        try {
+            let conn = await oracledb.getConnection(dbParams);
+            let query = "call pack_new_cuenta_corriente.sp_actualiza_solicitud(:p_cpago,:p_vigencia,:p_autoriza,:p_abrobado,:p_inicial,:p_observaciones,:p_solicitud,:p_empresa)";
+            let params = {
+                p_cpago: { val: cpg },
+                p_vigencia: { val: vig },
+                p_autoriza: { val: aut },
+                p_abrobado: { val: apr },
+                p_inicial: { val: sap },
+                p_observaciones: { val: obs },
+                p_solicitud: { val: csl },
+                p_empresa: { val: emp }
+            };
+            await conn.execute(query, params, responseParams);
+            // carga el fcm
+            const fcmLib = require('fcm-node');
+            const fcmParams = require('../../fcm');
+            const fcm = new fcmLib(fcmParams.api_key);
+            // carga datos de la solicitud
+            let querySolicitud = "select co_cliente \"cliente\", co_vendedor \"vendedor\" from ba_soli_cred_m where co_solicitud_credito = :p_solicitud and co_empresa = :p_empresa";
+            let paramsSolicitud = {
+                p_solicitud: { val: csl },
+                p_empresa: { val: emp }
+            };
+            result = await conn.execute(querySolicitud, paramsSolicitud, responseParams);
+            let dsolicitud = result.rows[0];
+            // carga los datos del cliente
+            let queryCliente = "select co_catalogo_entidad \"rucdni\",de_razon_social \"rsoc\",de_nombre_comercial \"ncom\" from ma_cata_enti_m where co_catalogo_entidad = :p_cliente";
+            let paramsCliente = {
+                p_cliente: { val: dsolicitud.cliente }
+            };
+            result = await conn.execute(queryCliente, paramsCliente, responseParams);
+            let dcliente = result.rows[0];
+            //
+            let notificar = false;
+            let mensaje = 'Ocurrió un error';
+            switch (vig) {
+                case 'Aprobado':
+                    notificar = true;
+                    mensaje = 'La solicitud de crédito del cliente ' + dcliente.rucdni + ': ' + dcliente.rsoc + ' - ' + dcliente.ncom + ', fue aprobada por un importe de S/ ' + parseFloat(apr).toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2});
+                    break;
+                case 'Anulado':
+                    notificar = true;
+                    mensaje = 'La solicitud de crédito del cliente ' + dcliente.rucdni + ': ' + dcliente.rsoc + ' - ' + dcliente.ncom + ', fue anulada';
+                    break;
+                case 'Desaprobado':
+                    mensaje = 'La solicitud de crédito del cliente ' + dcliente.rucdni + ': ' + dcliente.rsoc + ' - ' + dcliente.ncom + ', fue rechazada. Motivo: ' + obs;
+                    notificar = true;
+                    break;
+                default: break;
+            }
+            if (notificar) {
+                // carga token del vendedor
+                let queryVendedor = "select de_fcm_token \"token\" from sg_usua_m where co_empresa_usuario = :p_empresa and co_usuario = :p_vendedor";
+                let paramsVendedor = {
+                    p_empresa: { val: emp },
+                    p_vendedor: { val: dsolicitud.vendedor }
+                };
+                result = await conn.execute(queryVendedor, paramsVendedor, responseParams);
+                let dvendedor = result.rows[0];
+                if (dvendedor.token && dvendedor.token != '') {
+                    // arma la notificacion
+                    let message = {
+                        to: dvendedor.token,
+                        notification: {
+                            title: 'Solicitud de crédito',
+                            body: mensaje
+                        }
+                    };
+                    fcm.send(message, function(err, res){
+                        if (err) {
+                            console.error(err);
+                            response.json({
+                                state: 'error',
+                                message: err
+                            });
+                        }
+                        else {
+                            console.log('envío exitoso:',res);
+                            response.json({
+                                state: 'success'
+                            });
+                        }
+                    });
+                }
+            }
+            else {
+                response.json({
+                    state: 'success'
+                });
+            }
+        }
+        catch (err) {
+            console.error(err);
+            response.json({
                 state: 'error',
                 message: err
             });

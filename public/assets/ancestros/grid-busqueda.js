@@ -168,6 +168,14 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
                     gridBusqueda.setColumnIds("ch,codigo,nombre,nserie,cserie,estado");
                     gridBusqueda.enableSmartRendering(true, 50);
                     break;
+                //miguel
+                case 1001:
+                    gridBusqueda.setHeader('#,Codigo,Operario,Tipo,Vigencia,');
+                    gridBusqueda.attachHeader('#rspan,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter');
+                    gridBusqueda.setInitWidthsP('5,15,50,15,15,0');
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,codigo,operario,tipo,vigencia,ex");
+                    break;
                 default:
                     break;
             }

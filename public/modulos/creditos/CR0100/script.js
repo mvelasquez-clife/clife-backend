@@ -94,13 +94,29 @@ const structs = {
                 ] }
             ] }
         ] }
+    ],
+    FormAprobarSolcred: [
+        { type: 'settings', position: 'label-left', offsetLeft: 20, labelWidth: 80, offsetTop: 8 },
+        { type: 'hidden', name: 'codigo' },
+        { type: 'container', name: 'solcred', label: '<b style="color:#1565c0;margin-bottom:4px;display:inline-block;">Solicitud de crédito</b>', labelWidth: 240, inputWidth: 480, inputHeight: 189, position: 'label-top' },
+        { type: 'label', label: '<b style="color:#43a047;">Resultado de la solicitud</b>', offsetTop: 16, labelWidth: 240 },
+        { type: 'combo', label: 'Resultado', name: 'resultado', inputWidth: 140, connector: '/api/CR0100/combo-cpago' },
+        { type: 'combo', label: 'Cond.Pago', name: 'cpago', inputWidth: 200, offsetTop: 16, connector: '/api/CR0100/combo-resultado' },
+        { type: 'label', offsetLeft: 0, offsetTop: 1, list: [
+            { type: 'settings', offsetTop: 1, inputWidth: 120, labelWidth: 80 },
+            { type: 'input', label: 'Im.Aprob.', name: 'aprobado', offsetLeft: 0 },
+            { type: 'newcolumn' },
+            { type: 'input', label: 'Inic.Aprob.', name: 'inicial' }
+        ] },
+        { type: 'input', label: 'Observaciones', name: 'observaciones', inputWidth: 360, rows: 2, offsetTop: 16 },
+        { type: 'button', name: 'guardar', value: 'Confirmar', offsetLeft: 100 }
     ]
 };
 let ClienteRes, TransferenciaRes, DestinatarioRes, AuditoriaRes;
 let ToolbarTransferenciaOrigen, GridTransferenciaOrigen, ToolbarTransferenciaDestino, GridTransferenciaDestino;
-let LayoutWinCtacte, LayoutWinAuditoria, FormWinAuditoria, GridWinAuditoria, GridMovimientosCompras, GridMovimientosPagos, ToolbarMovimientos, SliderPeriodos;
+let LayoutWinCtacte, LayoutWinAuditoria, FormWinAuditoria, GridWinAuditoria, GridMovimientosCompras, GridMovimientosPagos, ToolbarMovimientos, SliderPeriodos, LayoutApruebaSolcred, FormApruebaSolicitud;
 let RenderInicialGraficoMovimientos = true, PeriodosMovimientosCliente, DatosMovimientosCliente;
-let WinDocumentoViewer, WinModificaNc, LayoutModificaNc, GridModificaNc;
+let WinDocumentoViewer, WinModificaNc, LayoutModificaNc, GridModificaNc, GridSolicitud;
 
 IniciarComponentes = () => {
     Layout = new dhtmlXLayoutObject(document.body, '1C');
@@ -577,23 +593,29 @@ ToolbarCtacteOnClick = async (id) => {
             TabbarLayoutCtacte = WinCtacte.attachTabbar();
                 TabbarLayoutCtacte.addTab('solcred', 'Solicitudes de crédito', null, null, true);
                 TabbarLayoutCtacte.addTab('lineacred', 'Línea de crédito');
+                TabbarLayoutCtacte.addTab('aprobacion', '<span style="color:#d32f2f;">Aprobar solicitud</span>');
+                TabbarLayoutCtacte.addTab('historial', '<span style="color:#d32f2f;">Histórico de pagos</span>');
+            TabbarLayoutCtacte.tabs('aprobacion').disable(true);
+            TabbarLayoutCtacte.tabs('historial').disable(true);
             //tabbar solicitudes de credito
             SubgridWinCtacteL = TabbarLayoutCtacte.tabs('solcred').attachGrid();
                 SubgridWinCtacteL.setIconsPath('/assets/images/icons/grid/');
-                SubgridWinCtacteL.setHeader('Cliente,#cspan,Fuerza Venta,Moneda,Importe solicitado,Importe aprobado,Fecha solicitud,Vigencia,Usuario,Fecha vigencia crédito,Observaciones vendedor,Observaciones propias,Usuario autoriza,Código fuerza de venta,Fecha autoriza crédito,Código moneda,Código empresa,Código centro costo');
-                SubgridWinCtacteL.attachHeader('#select_filter,#select_filter,#select_filter,#select_filter,#numeric_filter,#numeric_filter,#text_filter,#select_filter,#select_filter,#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter,#select_filter,#select_filter,#select_filter');
-                SubgridWinCtacteL.setInitWidths('80,240,120,100,100,100,90,80,100,90,240,240,90,60,90,60,60,60');
-                SubgridWinCtacteL.setColTypes('rotxt,rotxt,rotxt,rotxt,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt');
-                SubgridWinCtacteL.setColAlign('left,left,left,left,right,right,left,left,left,left,left,left,left,left,left,left,left,left');
+                SubgridWinCtacteL.setHeader('Cliente,#cspan,Fuerza Venta,Moneda,Importe solicitado,Importe aprobado,Fecha solicitud,Vigencia,Usuario,Fecha vigencia crédito,Observaciones vendedor,Observaciones propias,Usuario autoriza,Código fuerza de venta,Fecha autoriza crédito,Código moneda,Código empresa,Código centro costo,');
+                SubgridWinCtacteL.attachHeader('#select_filter,#select_filter,#select_filter,#select_filter,#numeric_filter,#numeric_filter,#text_filter,#select_filter,#select_filter,#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter,#select_filter,#select_filter,#select_filter,#rspan');
+                SubgridWinCtacteL.setInitWidths('80,240,120,100,100,100,90,80,100,90,240,240,90,60,90,60,60,60,0');
+                SubgridWinCtacteL.setColTypes('rotxt,rotxt,rotxt,rotxt,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,ron');
+                SubgridWinCtacteL.setColAlign('left,left,left,left,right,right,left,left,left,left,left,left,left,left,left,left,left,left,left');
                 SubgridWinCtacteL.setNumberFormat('0,000.00',4);
                 SubgridWinCtacteL.setNumberFormat('0,000.00',5);
                 SubgridWinCtacteL.init();
-            SubgridWinCtacteL.load('/api/CR0100/lista-solicitudes-credito/' + usrJson.empresa + '/' + ClienteRes.codigo + '/' + encodeURIComponent(fcInicio) + '/' + encodeURIComponent(fcFin));
+            TabbarLayoutCtacte.tabs('solcred').progressOn();
+            SubgridWinCtacteL.load('/api/CR0100/lista-solicitudes-credito/' + usrJson.empresa + '/' + ClienteRes.codigo + '/' + encodeURIComponent(fcInicio) + '/' + encodeURIComponent(fcFin), SubgridWinCtacteLOnLoad);
+            SubgridWinCtacteL.attachEvent('onRowDblClicked', SubgridWinCtacteLOnRowDblClicked);
             //tabbar linea de credito
             ToolbarWinCtacte = TabbarLayoutCtacte.tabs('lineacred').attachToolbar();
                 ToolbarWinCtacte.setIconsPath('/assets/images/icons/toolbar/');
                 ToolbarWinCtacte.addButton('masivo', null,'Asignar crédito masivo', 'ic-credito-masivo.svg', '');
-                //ToolbarWinCtacte.addButton('credfzavta', null,'Asignar crédito por cliente y fuerza de venta', 'ic-credito-fzavta.svg', '');
+//                ToolbarWinCtacte.addButton('credfzavta', null,'Asignar crédito por cliente y fuerza de venta', 'ic-credito-fzavta.svg', '');
                 ToolbarWinCtacte.attachEvent('onClick', ToolbarWinCtacteOnClick);
             SubgridWinCtacteR = TabbarLayoutCtacte.tabs('lineacred').attachGrid();
                 SubgridWinCtacteR.setIconsPath('/assets/images/icons/grid/');
@@ -631,6 +653,164 @@ ToolbarCtacteOnClick = async (id) => {
             GeneraGraficoPeriodos();
             break;
         default: break;
+    }
+}
+SubgridWinCtacteLOnLoad = () => {
+    let numFilas = SubgridWinCtacteL.getRowsNum();
+    let HayPendientes = false;
+    let SolicitudPendiente;
+    for (let i = 0; i < numFilas; i++) {
+        let iRowId = SubgridWinCtacteL.getRowId(i);
+        let iEstado = SubgridWinCtacteL.cells(iRowId,7).getValue();
+        switch (iEstado) {
+            case 'Pendiente':
+                let numColumnas = SubgridWinCtacteL.getColumnsNum();
+                for (let j = 0; j < numColumnas; j++) {
+                    SubgridWinCtacteL.setCellTextStyle(iRowId,j,'color:#1e88e5;');
+                }
+                SubgridWinCtacteL.setCellTextStyle(iRowId,7,'color:#ff8f00;');
+                HayPendientes = true;
+                SolicitudPendiente = SubgridWinCtacteL.cells(iRowId,18).getValue();
+                break;
+            case 'Aprobado':
+                SubgridWinCtacteL.setCellTextStyle(iRowId,7,'color:#43a047;');
+                break;
+            case 'Desaprobado':
+                SubgridWinCtacteL.setCellTextStyle(iRowId,7,'color:#f44336;');
+                break;
+            default:
+                SubgridWinCtacteL.setCellTextStyle(iRowId,7,'color:#0d47a1;');
+                break;
+        }
+    }
+    if (HayPendientes) {
+        TabbarLayoutCtacte.tabs('aprobacion').setText('Aprobar solicitud');
+        TabbarLayoutCtacte.tabs('aprobacion').enable();
+        TabbarLayoutCtacte.tabs('historial').setText('Histórico de pagos');
+        TabbarLayoutCtacte.tabs('historial').enable();
+        // armar form para aprobacion de solicitud
+        PreparaFormulario(SolicitudPendiente);
+    }
+    else {
+        TabbarLayoutCtacte.tabs('aprobacion').setText('<span style="color:#d32f2f;">Aprobar solicitud</span>');
+        TabbarLayoutCtacte.tabs('aprobacion').disable();
+        TabbarLayoutCtacte.tabs('historial').setText('<span style="color:#d32f2f;">Histórico de pagos</span>');
+        TabbarLayoutCtacte.tabs('historial').disable();
+    }
+    TabbarLayoutCtacte.tabs('solcred').progressOff();
+}
+PreparaFormulario = async (solicitud) => {
+    LayoutApruebaSolcred = TabbarLayoutCtacte.tabs('aprobacion').attachLayout('2U');
+        LayoutApruebaSolcred.cells('a').hideHeader();
+        LayoutApruebaSolcred.cells('b').hideHeader();
+    FormApruebaSolicitud = LayoutApruebaSolcred.cells('a').attachForm();
+    FormApruebaSolicitud.loadStruct(structs.FormAprobarSolcred);
+    GridSolicitud = new dhtmlXGridObject(FormApruebaSolicitud.getContainer('solcred'));
+        GridSolicitud.setHeader('Datos de la solicitud,#cspan,#cspan,#cspan');
+        GridSolicitud.setInitWidths('100,140,100,140');
+        GridSolicitud.init();
+    GridSolicitud.addRow(1,'Cliente,,,');
+    GridSolicitud.addRow(2,'Vendedor,,,');
+    GridSolicitud.addRow(3,'Fecha,,Moneda,');
+    GridSolicitud.addRow(4,'Imp. Solicitud,,Imp. Inicial,');
+    GridSolicitud.addRow(5,'Observaciones,,,');
+    GridSolicitud.addRow(6,'Disponible,,Deuda,');
+    GridSolicitud.setCellTextStyle(1,0,'background:#1565c0;color:#ffffff;');
+    GridSolicitud.setCellTextStyle(2,0,'background:#1565c0;color:#ffffff;');
+    GridSolicitud.setCellTextStyle(3,0,'background:#1565c0;color:#ffffff;');
+    GridSolicitud.setCellTextStyle(3,2,'background:#1565c0;color:#ffffff;');
+    GridSolicitud.setCellTextStyle(4,0,'background:#1565c0;color:#ffffff;');
+    GridSolicitud.setCellTextStyle(4,2,'background:#1565c0;color:#ffffff;');
+    GridSolicitud.setCellTextStyle(5,0,'background:#1565c0;color:#ffffff;');
+    GridSolicitud.setCellTextStyle(6,0,'background:#1565c0;color:#ffffff;');
+    GridSolicitud.setCellTextStyle(6,2,'background:#1565c0;color:#ffffff;');
+    GridSolicitud.setCellExcellType(1,0,'rotxt');
+    GridSolicitud.setCellExcellType(1,1,'rotxt');
+    GridSolicitud.setCellExcellType(2,0,'rotxt');
+    GridSolicitud.setCellExcellType(2,1,'rotxt');
+    GridSolicitud.setCellExcellType(3,0,'rotxt');
+    GridSolicitud.setCellExcellType(3,1,'rotxt');
+    GridSolicitud.setCellExcellType(3,2,'rotxt');
+    GridSolicitud.setCellExcellType(3,3,'rotxt');
+    GridSolicitud.setCellExcellType(4,0,'rotxt');
+    GridSolicitud.setCellExcellType(4,1,'ron');
+    GridSolicitud.setCellExcellType(4,2,'rotxt');
+    GridSolicitud.setCellExcellType(4,3,'ron');
+    GridSolicitud.setCellExcellType(5,0,'rotxt');
+    GridSolicitud.setCellExcellType(5,1,'rotxt');
+    GridSolicitud.setCellExcellType(6,0,'rotxt');
+    GridSolicitud.setCellExcellType(6,1,'ron');
+    GridSolicitud.setCellExcellType(6,2,'rotxt');
+    GridSolicitud.setCellExcellType(6,3,'ron');
+    GridSolicitud.enableColSpan(true);
+    GridSolicitud.setColspan(1,1,3);
+    GridSolicitud.setColspan(2,1,3);
+    GridSolicitud.setColspan(5,1,3);
+    let result = await $.ajax({
+        url: '/api/CR0100/info-solicitud',
+        method: 'post',
+        data: { solicitud: solicitud, empresa: usrJson.empresa },
+        dataType: 'json'
+    });
+    if (result.error) {
+        alert(result.error);
+        return;
+    }
+    let JsSolicitud = result.data.solicitud;
+    let JsObservaciones = result.data.observaciones;
+    let JsLcredito = result.data.lcredito;
+    GridSolicitud.cells(1,1).setValue(JsSolicitud.cli);
+    GridSolicitud.cells(2,1).setValue(JsSolicitud.vnd);
+    GridSolicitud.cells(3,1).setValue(JsSolicitud.fsl);
+    GridSolicitud.cells(3,3).setValue(JsSolicitud.mon);
+    GridSolicitud.cells(4,1).setValue(JsSolicitud.slc.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}));
+    GridSolicitud.cells(4,3).setValue(JsSolicitud.sem.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}));
+    GridSolicitud.cells(5,1).setValue(JsSolicitud.obs);
+    GridSolicitud.cells(6,1).setValue(JsLcredito.disponible.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}));
+    GridSolicitud.cells(6,3).setValue(JsLcredito.deuda.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}));
+    FormApruebaSolicitud.setItemValue('codigo', solicitud);
+    FormApruebaSolicitud.setItemValue('aprobado', JsSolicitud.slc);
+    FormApruebaSolicitud.setItemValue('inicial', JsSolicitud.sem);
+    FormApruebaSolicitud.attachEvent('onButtonClick', FormApruebaSolicitudOnButtonClick);
+}
+FormApruebaSolicitudOnButtonClick = async (button) => {
+    switch (button) {
+        case 'guardar':
+            let params = {
+                csl: FormApruebaSolicitud.getItemValue('codigo'),
+                cpg: FormApruebaSolicitud.getItemValue('cpago'),
+                vig: FormApruebaSolicitud.getItemValue('resultado'),
+                apr: FormApruebaSolicitud.getItemValue('aprobado'),
+                sap: FormApruebaSolicitud.getItemValue('inicial'),
+                obs: FormApruebaSolicitud.getItemValue('observaciones'),
+                emp: usrJson.empresa,
+                aut: usrJson.codigo
+            };
+            let result = await $.ajax({
+                url: '/api/CR0100/procesar-solicitud',
+                method: 'post',
+                data: params,
+                dataType: 'json'
+            });
+            if (result.error) {
+                alert(result.error);
+                return;
+            }
+            alert('Se procesó la solicitud');
+            // cargar todo otra vez
+            let fcInicio = ToolbarCtacte.getValue('fechaDesde');
+            let fcFin = ToolbarCtacte.getValue('fechaHasta');
+            SubgridWinCtacteL.clearAll();
+            SubgridWinCtacteL.load('/api/CR0100/lista-solicitudes-credito/' + usrJson.empresa + '/' + ClienteRes.codigo + '/' + encodeURIComponent(fcInicio) + '/' + encodeURIComponent(fcFin), SubgridWinCtacteLOnLoad);
+            TabbarLayoutCtacte.tabs('solcred').setActive();
+            break;
+        default: break;
+    }
+}
+SubgridWinCtacteLOnRowDblClicked = (rowId, colId) => {
+    let iEstado = SubgridWinCtacteL.cells(rowId,7).getValue();
+    if (iEstado == 'Pendiente') {
+        TabbarLayoutCtacte.tabs('aprobacion').setActive();
     }
 }
 ToolbarCtacteOnBeforeStateChange = (id) => {
