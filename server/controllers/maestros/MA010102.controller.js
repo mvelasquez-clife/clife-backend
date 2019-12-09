@@ -1,9 +1,7 @@
 const oracledb = require('oracledb');
 const dbParams = require('../../database');
 const xmlParser = require('../../xml-parser');
-const formidable = require('formidable');
 const moment = require('moment');
-const o2x = require('object-to-xml');
 var fs = require('fs-extra');
 const Busboy = require('busboy');
 const readChunk = require('read-chunk');
@@ -11,7 +9,6 @@ const fileType = require('file-type');
 var Client = require('ftp');
 var path = require('path');
 const utf8 = require('utf8');
-const desiredMode = 0o2775;
 const responseParams = {
     outFormat: oracledb.OBJECT
 };
@@ -27,7 +24,7 @@ const config = {
 
 const ma010102Controller = {
     add_filebbdd: (req, res) => {
-        const { xoption, xemp, xcliente,  xusuareg, xfile, xfilext } = req.body;
+        const { xoption, xemp, xcliente, xusuareg, xfile, xfilext } = req.body;
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error_conec', message: err.stack });
@@ -35,7 +32,7 @@ const ma010102Controller = {
             }
 
             const params = {
-                xoption: xoption, xemp: parseInt(xemp), xcliente: xcliente, xruta: path.join('x:',xemp,'CLIENTES',xcliente+'/'), xusuareg: parseInt(xusuareg), xfile: xfile, xfilext: xfilext,
+                xoption: xoption, xemp: parseInt(xemp), xcliente: xcliente, xruta: path.join('x:', xemp, 'CLIENTES', xcliente + '/'), xusuareg: parseInt(xusuareg), xfile: xfile, xfilext: xfilext,
                 o_codresult: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }, o_deresultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
             };
             var query = 'call PW_MA010102.ADD_FILE_BBDD(:xoption,:xemp,:xcliente,:xruta,:xusuareg,:xfile,:xfilext,:o_codresult, :o_deresultado)';
@@ -85,7 +82,7 @@ const ma010102Controller = {
         }
 
         c.on('ready', function () {
-            var results = remove();             
+            var results = remove();
             results.then(data => {
                 res.set('Content-Type', 'application/json');
                 res.send(JSON.stringify({ 'codigo': data }));
@@ -94,16 +91,16 @@ const ma010102Controller = {
         c.connect(config);
     },
     limpiar_files: (req, res) => {
-        const directory = 'public/assets/images/ma010102/' ;
+        const directory = 'public/assets/images/ma010102/';
         fs.readdir(directory, (err, files) => {
             if (err) console.log(err);
-          
+
             for (const file of files) {
-              fs.unlink(path.join(directory, file), err => {
-                if (err) console.log(err);
-              });
+                fs.unlink(path.join(directory, file), err => {
+                    if (err) console.log(err);
+                });
             }
-          });
+        });
     },
     documentosup: (req, res) => {
         const { cliente, emp } = req.params;
@@ -134,7 +131,7 @@ const ma010102Controller = {
         });
         busboy.on('finish', function () {
             var searchserver = '/publico/document/' + emp + '/CLIENTES/' + cliente + '/' + filenm;
-            results = upserver(searchserver);          
+            results = upserver(searchserver);
             results.then(data => {
                 res.set('Content-Type', 'application/json');
                 res.send({ "state": data, "steup": data });
@@ -155,12 +152,12 @@ const ma010102Controller = {
         function filesasync(elem) {
             return new Promise((resolve, reject) => {
                 var sarchPath = path.join(pathfs + '/' + utf8.decode(elem.name));
-                var searchserver =  pathserver + '/' +  utf8.decode(elem.name);
+                var searchserver = pathserver + '/' + utf8.decode(elem.name);
                 fs.exists(sarchPath, (exists) => {
                     if (!exists) {
                         var c1 = new Client();
                         c1.get(searchserver, false, function (err, stream) {//console.log('elem.name ' +utf8.decode(elem.name));
-                            let saveTo =  path.join(pathfs + '/',  utf8.decode(elem.name));
+                            let saveTo = path.join(pathfs + '/', utf8.decode(elem.name));
                             if (err) { resolve(err); } else {
                                 stream.once('close', function () {
                                     //console.log('close : '+ saveTo);
@@ -168,7 +165,7 @@ const ma010102Controller = {
                                     c1.end();
                                 });
                                 stream.pipe(fs.createWriteStream(saveTo), function () {
-                                   console.log('saveTo : '+ saveTo);
+                                    console.log('saveTo : ' + saveTo);
                                 });
                             }
                         });
@@ -231,7 +228,7 @@ const ma010102Controller = {
             c.list(pathserver, false, function (err, list) {
                 if (err) console.log(' c.get :' + err);
                 if (list.length === 0) {
-                    var results = server_folfer(pathserver_p);          
+                    var results = server_folfer(pathserver_p);
                     results.then(data => {
                         res.set('Content-Type', 'application/json');
                         res.send(JSON.stringify({ 'path_server': data, 'files': [] }));
@@ -241,7 +238,8 @@ const ma010102Controller = {
                         return filesasync(obj);
                     });
                     var results = Promise.all(actions);
-                    results.then(data => { console.log(data);
+                    results.then(data => {
+                        console.log(data);
                         var files_ = [];
                         fs.readdirSync(pathfs).forEach(file => { //console.log('file : ' + file);
                             var stats = fs.statSync(pathfs + '/' + file);
@@ -274,7 +272,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = "SELECT CO_MONEDA  as value, DE_NOMBRE AS label    from MA_MONE_M    ";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
@@ -293,7 +291,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = "SELECT CO_TIPO_COMUNICACION  as value, DE_NOMBRE AS label    from MA_TIPO_COMU_M    ";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
@@ -381,7 +379,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = "    SELECT VT_ZONA_COME_C.CO_ZONA_COMERCIAL, VT_ZONA_COME_C.DE_NOMBRE ,VT_ZONA_COME_C.ES_VIGENCIA FROM VT_ZONA_COME_C where VT_ZONA_COME_C.CO_EMPRESA =:xemp   ORDER BY VT_ZONA_COME_C.DE_NOMBRE ASC   ";
             const params = { xemp: empre };
             conn.execute(query, params, responseParams, (error, result) => {
@@ -400,7 +398,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            } 
+            }
             const query = "   SELECT MA_VIAS_M.CO_VIA AS value,            MA_VIAS_M.DE_NOMBRE  || '('|| MA_VIAS_M.DE_ABREVIATURA||')' AS label      FROM MA_VIAS_M     ";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
@@ -420,7 +418,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            } 
+            }
             const query = "SELECT VT_ZONA_COME_C.CO_ZONA_COMERCIAL AS value,VT_ZONA_COME_C.DE_NOMBRE AS label  ,VT_ZONA_COME_C.ES_VIGENCIA FROM VT_ZONA_COME_C WHERE VT_ZONA_COME_C.CO_EMPRESA =:x_empresa             ORDER BY VT_ZONA_COME_C.DE_NOMBRE ASC ";
             const params = { x_empresa: emp };
             conn.execute(query, params, responseParams, (error, result) => {
@@ -441,14 +439,14 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = " SELECT VT_FUER_VENT_M.CO_FUERZA_VENTA  AS value,    VT_FUER_VENT_M.DE_NOMBRE AS label  , VT_FUER_VENT_M.ES_FUERZA    FROM VT_FUER_VENT_M WHERE  VT_FUER_VENT_M.CO_EMPRESA = :xemp  ORDER BY VT_FUER_VENT_M.DE_NOMBRE   ";
             const params = { xemp: emp };
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
                     res.send({ 'error_query': error.stack });
                     return;
-                }                 
+                }
                 res.set('Content-Type', 'text/xml');
                 res.send(xmlParser.renderSelect(result.rows, '1'));
                 conn.close();
@@ -474,7 +472,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = "    SELECT DE_NOMBRE  AS label,  CO_MODO_GARANTIA AS value      FROM MA_MODO_GTIA_M     ";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
@@ -493,7 +491,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = "    SELECT MA_ZONA_M.DE_NOMBRE || '('|| MA_ZONA_M.DE_ABREVIATURA ||')' AS label,             MA_ZONA_M.CO_ZONA AS value      FROM MA_ZONA_M     ";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
@@ -513,7 +511,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = "  SELECT VT_FUER_VENT_M.CO_FUERZA_VENTA as value,             VT_FUER_VENT_M.DE_NOMBRE AS label     FROM VT_FUER_VENT_M     WHERE ( VT_FUER_VENT_M.CO_EMPRESA =:empresa ) and           ( ( VT_FUER_VENT_M.ES_FUERZA = 'Vigente' ) )   ";
             const params = { empresa: emp };
             conn.execute(query, params, responseParams, (error, result) => {
@@ -533,7 +531,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ state: 'error', message: err.stack });
                 return;
-            } 
+            }
             const query = ' SELECT * FROM TABLE(PACK_NEW_MAESTROS.F_LISTAR_CATA_ENTI_DIRE_GRID(:xcodigo)) ';
             const params = { xcodigo: xcodigo };
             conn.execute(query, params, responseParams, (error, result) => {
@@ -542,7 +540,13 @@ const ma010102Controller = {
                     return;
                 }
                 res.set('Content-Type', 'application/json');
-                res.send(result.rows);
+                res.send(result.rows.length > 0 ? result.rows : [{
+                    DE_PAIS: '', DE_DIRECCION: 'No se encontraron datos', NU_LOCAL_PRINCIPAL: ' ',
+                    DE_REFERENCIAS: ' ', FE_SYS: ' ', ES_REGISTRO: ' ', DE_ALTITUD: ' ', DE_LATITUD: ' ', CO_DIRECCION_ENTIDAD: -1, ST_MARCAR: ' ', ST_ERASED: ''
+                }]);
+                //res.send(result.rows);
+
+
                 conn.close();
             });
         });
@@ -553,7 +557,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ state: 'error', message: err.stack });
                 return;
-            } 
+            }
             const query = ' SELECT * FROM TABLE(PACK_NEW_MAESTROS.F_LISTAR_CATA_ENTI_DIRE_FORM(:xdirecc)) ';
             const params = { xdirecc: xdirecc };
             conn.execute(query, params, responseParams, (error, result) => {
@@ -573,7 +577,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ state: 'error', message: err.stack });
                 return;
-            } 
+            }
             const query = ' SELECT * FROM TABLE(PACK_NEW_MAESTROS.F_LISTAR_DIRE_ZC_FV_VIEW_GRID(:xco_direccion,:x_empresa))';
             const params = { x_empresa: emp, xco_direccion: co_direccion };
             conn.execute(query, params, responseParams, (error, result) => {
@@ -588,17 +592,26 @@ const ma010102Controller = {
         });
     },
     list_datos_cliente: (req, res) => {
-        const { emp, codigo } = req.body;
+        const { emp, codigo, tipo } = req.body;
+        var query, params;
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', message: err.stack });
                 return;
-            } 
-            const query = ' SELECT * FROM TABLE(PACK_NEW_MAESTROS.F_LISTAR_CATA_ENTI_CLIENTE(:x_empresa,:x_cliente)) ';
-            const params = { x_empresa: emp, x_cliente: codigo };
+            }
+            switch (tipo) {
+                case '1':
+                    query = 'SELECT * FROM TABLE(PACK_NEW_MAESTROS.F_LISTAR_PROVEEDOR(:x_empresa,:x_cod)) ';
+                    params = { x_empresa: parseInt(emp), x_cod: parseInt(codigo) };
+                    break;
+                default:
+                    query = 'SELECT * FROM TABLE(PACK_NEW_MAESTROS.F_Listar_Cata_Enti_Cliente(:x_empresa,:x_cod)) ';
+                    params = { x_empresa: parseInt(emp), x_cod: parseInt(codigo) };
+                    break;
+            }            //console.log(emp, codigo, tipo);
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
-                    res.send({ state: 'error', 'message': error.stack });
+                    res.send({ state: 'error', 'message': error.stack, 'query': query });
                     return;
                 }
                 res.set('Content-Type', 'application/json');
@@ -789,7 +802,7 @@ const ma010102Controller = {
                     return;
                 }
                 res.set('Content-Type', 'text/xml');
-                res.send(xmlParser.renderXml(result.rows));
+                res.send(result.rows.length > 0 ? xmlParser.renderXml(result.rows) : xmlParser.renderXml([{ CO_CATALOGO_ENTIDAD: '', DE_RAZON_SOCIAL: 'No se encontraron coincidencias', ES_VIGENCIA: '', DE_NOMBRE_COMERCIAL: 'No se encontraron coincidencias', SITUACION_ENTIDAD: '', NOM_VISTA: 'No se encontraron coincidencias' }]));
             });
         });
     },
@@ -798,7 +811,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = "  SELECT CO_TIPO_CUENTA AS value,  DE_NOMBRE AS label  FROM MA_TIPO_CUEN_M   ";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
@@ -817,7 +830,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            } 
+            }
             const query = "  SELECT MA_RUBR_M.CO_RUBRO AS value,  MA_RUBR_M.DE_NOMBRE AS label  FROM MA_RUBR_M   ";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
@@ -836,7 +849,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = "  SELECT MA_TIPO_PERS_M.CO_TIPO_PERSONA AS value,            MA_TIPO_PERS_M.DE_NOMBRE AS label,            MA_TIPO_PERS_M.DE_CLASE     FROM MA_TIPO_PERS_M   ";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
@@ -855,8 +868,8 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
-            const query = " SELECT MA_ESTA_M.DE_NOMBRE  as LABEL,   MA_ESTA_M.DE_NOMBRE AS VALUE   FROM MA_ESTA_M     WHERE MA_ESTA_M.DE_TIPO_ESTADO = 'Clientes'            ";
+            }
+            const query = " SELECT MA_ESTA_M.DE_NOMBRE  as LABEL,   MA_ESTA_M.DE_NOMBRE AS VALUE   FROM MA_ESTA_M     WHERE MA_ESTA_M.DE_TIPO_ESTADO = 'Clientes'    ";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
@@ -865,7 +878,7 @@ const ma010102Controller = {
                     return;
                 }
                 res.set('Content-Type', 'text/xml');
-                res.send(xmlParser.renderSelect(result.rows, '1'));
+                res.send(xmlParser.renderSelect(result.rows, 'Vigente'));
             });
         });
     },
@@ -874,7 +887,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = " SELECT DE_NOMBRE   as LABEL,CO_CARGO_REPRESENTANTE  AS VALUE   FROM MA_CARG_REPR_M ";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
@@ -893,8 +906,48 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = "      SELECT VT_TIPO_NEGO_M.CO_TIPO_NEGOCIO as VALUE,            VT_TIPO_NEGO_M.DE_NOMBRE AS LABEL,            VT_TIPO_NEGO_M.ES_TIPO_NEGOCIO,            VT_TIPO_NEGO_M.DE_DESCRIPCION,            VT_TIPO_NEGO_M.FE_REGISTRO      FROM VT_TIPO_NEGO_M  ORDER BY VT_TIPO_NEGO_M.DE_NOMBRE ASC         ";
+            const params = {};
+            conn.execute(query, params, responseParams, (error, result) => {
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderSelect(result.rows, '1'));
+            });
+        });
+    },
+    list_condpago: (req, res) => {
+        const { co_formp } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ 'error_conexion': err.stack });
+                return;
+            }
+            const query = co_formp != 0 ?  "SELECT MA_COND_PAGO_M.CO_CONDICION_PAGO AS VALUE ,MA_COND_PAGO_M.DE_NOMBRE AS LABEL,MA_COND_PAGO_M.NU_DIAS_FIJOS FROM MA_COND_PAGO_M WHERE CO_FORMA_PAGO ="+co_formp :
+            "SELECT MA_COND_PAGO_M.CO_CONDICION_PAGO AS VALUE ,MA_COND_PAGO_M.DE_NOMBRE AS LABEL,MA_COND_PAGO_M.NU_DIAS_FIJOS FROM MA_COND_PAGO_M";
+            const params = {};
+            conn.execute(query, params, responseParams, (error, result) => {
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderSelect(result.rows, '1'));
+            });
+        });
+    },
+    list_formpago: (req, res) => {
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ 'error_conexion': err.stack });
+                return;
+            }
+            const query = "SELECT MA_FORM_PAGO_M.CO_FORMA_PAGO AS VALUE, MA_FORM_PAGO_M.DE_NOMBRE  AS LABEL FROM MA_FORM_PAGO_M";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
@@ -912,7 +965,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = "    SELECT BA_BANC_M.CO_BANCO as VALUE,            BA_BANC_M.DE_NOMBRE AS LABEL,            BA_BANC_M.DE_ABREVIATURA      FROM BA_BANC_M     WHERE BA_BANC_M.ES_VIGENCIA = 'Vigente'         ";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
@@ -931,7 +984,7 @@ const ma010102Controller = {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
                 return;
-            }  
+            }
             const query = "    SELECT MA_TIPO_CLIE_M.CO_TIPO_CLIENTE as VALUE,            MA_TIPO_CLIE_M.DE_NOMBRE AS LABEL,            MA_TIPO_CLIE_M.DE_OBSERVACIONES      FROM MA_TIPO_CLIE_M      ";
             const params = {};
             conn.execute(query, params, responseParams, (error, result) => {
@@ -955,6 +1008,12 @@ const ma010102Controller = {
         rs = [{ VALUE: 'Nacional', LABEL: 'Nacional' }, { VALUE: 'Extranjero', LABEL: 'Extranjero' }];
         return res.send(xmlParser.renderSelect(rs, '1'));
     },
+    list_tiprove: (req, res) => {
+        res.set('Content-Type', 'text/xml');
+        rs = [{ VALUE: 'Normal', LABEL: 'Normal' }, { VALUE: 'Financiero', LABEL: 'Financiero' }];
+        return res.send(xmlParser.renderSelect(rs, '1'));
+    },
+
     update_fv: (req, res) => {
         const { x_empresa, x_usuario, x_co_direccion_entidad, x_zona_comercial, x_cadena_zona_fv, x_cant_filas } = req.body;
         oracledb.getConnection(dbParams, (err, conn) => {
@@ -1167,8 +1226,41 @@ const ma010102Controller = {
             });
         });
     },
-
-    update_data: (req, res) => {
+    saveproveed: (req, res) => {
+        const { st_permiso_editar_cata_enti, x_empresa, x_alias,xco_catalogo_entidad, x_nu_documento, x_de_razon_social, x_co_tipo_persona, x_co_tipo_doc_ide, x_de_procedencia,
+            x_de_nombre_comercial, x_de_origen, x_st_asignaprovee, x_co_tipo_prov, x_estad_prov, x_form_pago, x_cond_pago, st_permanente, x_email,
+            st_agent_reten, st_agent_percep, st_agent_detrac } = req.body;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error_conec', message: err.stack });
+                return;
+            }
+            const params = {
+                st_permiso_editar_cata_enti: st_permiso_editar_cata_enti, x_empresa: parseInt(x_empresa), x_alias: x_alias, xco_catalogo_entidad : parseInt(xco_catalogo_entidad),
+                x_nu_documento: x_nu_documento, x_de_razon_social: x_de_razon_social, x_co_tipo_persona: x_co_tipo_persona,
+                x_co_tipo_doc_ide: x_co_tipo_doc_ide, x_de_procedencia: x_de_procedencia, x_de_nombre_comercial: x_de_nombre_comercial, x_de_origen: x_de_origen,
+                x_st_asignaprovee: x_st_asignaprovee, x_co_tipo_prov: x_co_tipo_prov, x_estad_prov: x_estad_prov, x_form_pago: x_form_pago,
+                x_cond_pago: x_cond_pago, st_permanente: st_permanente, x_email: x_email,st_agent_reten: st_agent_reten, st_agent_percep: st_agent_percep, st_agent_detrac: st_agent_detrac,
+                o_xresultado: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }, o_deresultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            console.log(params);
+            var query = 'call PACK_NEW_MAESTROS.sp_prov_grabar(:st_permiso_editar_cata_enti, :x_empresa, :x_alias,:xco_catalogo_entidad, :x_nu_documento, :x_de_razon_social, :x_co_tipo_persona, :x_co_tipo_doc_ide, :x_de_procedencia,:x_de_nombre_comercial, :x_de_origen, :x_st_asignaprovee, :x_co_tipo_prov, :x_estad_prov, :x_form_pago, :x_cond_pago, :st_permanente, :x_email,:st_agent_reten, :st_agent_percep, :st_agent_detrac,:o_xresultado,:o_deresultado)';
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ state: 'error_query', message: error.stack });
+                    return;
+                } else {
+                    const { o_xresultado, o_deresultado } = result.outBinds;
+                    //diaActual = new Date();
+                    objtype = o_deresultado.split("@");
+                    res.json({ state: 'success', codigo: o_xresultado, message: objtype[0], nombre: x_nu_documento + ' ' + x_de_razon_social, estado: x_estad_prov, asignado: 'Asignado', 
+                    fechaprov: objtype[1], fechacata :objtype[2],feretiro : objtype[3]}); //diaActual.getDate() + '/' + (parseInt(diaActual.getMonth()) + parseInt(1)) + '/' + diaActual.getFullYear() });
+                }
+            });
+        });
+    },
+    savecliente: (req, res) => {
         const { st_permiso_editar_cata_enti, x_empresa, x_alias, x_co_catalogo_entidad, x_de_razon_social, x_nu_documento, x_co_tipo_persona,
             x_co_tipo_doc_ide, x_de_procedencia, x_de_ape_paterno, x_de_ape_materno, x_de_nombre, x_de_nombre_comercial, x_de_origen,
             x_co_cliente, x_co_tipo_cliente, x_st_recaudo, x_co_banco, x_co_tipo_negocio, x_co_listado_precios, x_co_serie_listado,
@@ -1182,15 +1274,17 @@ const ma010102Controller = {
             }
 
             const params = {
-                st_permiso_editar_cata_enti: st_permiso_editar_cata_enti, x_empresa: parseInt(x_empresa), x_alias: x_alias, x_co_catalogo_entidad: parseInt(x_co_catalogo_entidad) === 0 ? null : parseInt(x_co_catalogo_entidad), x_de_razon_social: x_de_razon_social, x_nu_documento: x_nu_documento, x_co_tipo_persona: x_co_tipo_persona,
+                st_permiso_editar_cata_enti: st_permiso_editar_cata_enti, x_empresa: parseInt(x_empresa), x_alias: x_alias, x_co_catalogo_entidad:  parseInt(x_co_catalogo_entidad), x_de_razon_social: x_de_razon_social, x_nu_documento: x_nu_documento, x_co_tipo_persona: x_co_tipo_persona,
                 x_co_tipo_doc_ide: x_co_tipo_doc_ide, x_de_procedencia: x_de_procedencia, x_de_ape_paterno: x_de_ape_paterno, x_de_ape_materno: x_de_ape_materno, x_de_nombre: x_de_nombre, x_de_nombre_comercial: x_de_nombre_comercial, x_de_origen: x_de_origen,
-                x_co_cliente: parseInt(x_co_cliente) === 0 ? null : parseInt(x_co_cliente), x_co_tipo_cliente: parseInt(x_co_tipo_cliente) === 0 ? null : parseInt(x_co_tipo_cliente), x_st_recaudo: x_st_recaudo, x_co_banco: x_co_banco, x_co_tipo_negocio: x_co_tipo_negocio, x_co_listado_precios: parseInt(x_co_listado_precios) === 0 ? null : parseInt(x_co_listado_precios), x_co_serie_listado: parseInt(x_co_serie_listado) === 0 ? null : parseInt(x_co_serie_listado),
-                x_st_agente_retenedor: x_st_agente_retenedor, x_st_agente_percepcion: x_st_agente_percepcion, x_st_cliente_nvo: x_st_cliente_nvo, x_co_periodo_clien_nvo: parseInt(x_co_periodo_clien_nvo), x_st_cliente_corporativo: x_st_cliente_corporativo,
-                x_co_cliente_corporativo: parseInt(x_co_cliente_corporativo) === 0 ? null : parseInt(x_co_cliente_corporativo), x_im_credito_total: parseFloat(x_im_credito_total), x_im_deuda_total: parseFloat(x_im_deuda_total), x_de_email: x_de_email, x_de_webpage: x_de_webpage, x_es_vigencia_cliente: x_es_vigencia_cliente, x_fe_retiro_cliente: x_fe_retiro_cliente.length === 0 ? null : x_fe_retiro_cliente,
+                x_co_cliente:   parseInt(x_co_cliente), x_co_tipo_cliente:  parseInt(x_co_tipo_cliente), x_st_recaudo: x_st_recaudo, x_co_banco: x_co_banco, x_co_tipo_negocio: x_co_tipo_negocio, x_co_listado_precios:  parseInt(x_co_listado_precios) == 0 ? null :  parseInt(x_co_listado_precios), x_co_serie_listado:   parseInt(x_co_serie_listado) == 0 ? null :  parseInt(x_co_serie_listado),
+                x_st_agente_retenedor: x_st_agente_retenedor, x_st_agente_percepcion: x_st_agente_percepcion, x_st_cliente_nvo: x_st_cliente_nvo, x_co_periodo_clien_nvo:   parseInt(x_co_periodo_clien_nvo), x_st_cliente_corporativo: x_st_cliente_corporativo,
+                x_co_cliente_corporativo:   parseInt(x_co_cliente_corporativo), x_im_credito_total: parseFloat(x_im_credito_total), x_im_deuda_total: parseFloat(x_im_deuda_total), x_de_email: x_de_email, x_de_webpage: x_de_webpage, x_es_vigencia_cliente: x_es_vigencia_cliente, x_fe_retiro_cliente: x_fe_retiro_cliente.length === 0 ? null : x_fe_retiro_cliente,
                 x_St_Excep_Cred: x_St_Excep_Cred, o_xresultado: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }, o_deresultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
             };
             console.log(params);
             var query = 'call PACK_NEW_MAESTROS.sp_cata_enti_cliente_grabar(:st_permiso_editar_cata_enti,:x_empresa,:x_alias,:x_co_catalogo_entidad,:x_de_razon_social,:x_nu_documento,:x_co_tipo_persona,:x_co_tipo_doc_ide,:x_de_procedencia,:x_de_ape_paterno,:x_de_ape_materno,:x_de_nombre,:x_de_nombre_comercial,:x_de_origen,:x_co_cliente,:x_co_tipo_cliente,:x_st_recaudo,:x_co_banco,:x_co_tipo_negocio,:x_co_listado_precios,:x_co_serie_listado,:x_st_agente_retenedor,:x_st_agente_percepcion,:x_st_cliente_nvo,:x_co_periodo_clien_nvo,:x_st_cliente_corporativo,:x_co_cliente_corporativo,:x_im_credito_total,:x_im_deuda_total,:x_de_email,:x_de_webpage,:x_es_vigencia_cliente,:x_fe_retiro_cliente,:x_St_Excep_Cred,:o_xresultado,:o_deresultado)';
+
+
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
                 if (error) {
@@ -1198,8 +1292,9 @@ const ma010102Controller = {
                     return;
                 } else {
                     const { o_xresultado, o_deresultado } = result.outBinds;
-                    diaActual = new Date();
-                    res.json({ state: 'success', codigo: o_xresultado, message: o_deresultado, nombre: x_co_catalogo_entidad + ' ' + x_de_razon_social, estado: x_es_vigencia_cliente, asignado: 'Asignado', fecha: diaActual.getDate() + '/' + (parseInt(diaActual.getMonth()) + parseInt(1)) + '/' + diaActual.getFullYear() });
+                    objtype = o_deresultado.split("@");
+                    ///    diaActual = new Date();
+                    res.json({ state: 'success', codigo: o_xresultado, message:  objtype[0], nombre: x_co_catalogo_entidad + ' ' + x_de_razon_social, estado: x_es_vigencia_cliente, asignado: 'Asignado', fechacata:  objtype[1] ,fechacli:  objtype[2],fechareti:  objtype[3] });
                 }
             });
         });
@@ -1245,7 +1340,7 @@ const ma010102Controller = {
         res.send('<?xml version="1.0" encoding="utf-8"?><data><item value="Vigente" label="Vigente" /><item value="Retirado" label="Retirado" /></data>');
     }
     ////////////////////////////////////////////////////////////////////////--------------------------------------------------------------------------------
-    
-   
+
+
 };
 module.exports = ma010102Controller;

@@ -2,7 +2,8 @@
 <html>
 
 <head>
-    <title>Cliente</title>
+    
+    <title><%=modulo%></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
     <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css"> -->
@@ -44,24 +45,42 @@
     <!-- scripts de la carga de la vista -->
     <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
     <script type="text/javascript">
-        var myGridfz,myLayou_gara,myLayou_giro, myCarouselFile, myCombo,myLaouy_Dat ,myLayou_doc,myLayou_contac,myLayou_cbanc, myLayou_doc,myLayou_antec ,myLayou_comu, co_seq, sel_giroid,sel_antid,cobanco_s, copais_s, subgrid, sel_giro, mainLayout, myFormdatos, mySidebar, myLaouy_Direc, myGridLineaC, cod_direc, myToolbardirecc, base_tollbar, myForm, estadook = 'VIGENTE', codcliente, Wind_, json_select, permiso_cataedit = 'S', _item_sidebar = 's_datos',
+        var modulo = '<%=modulo%>';
+        switch (modulo) {
+            case 'MA010103':
+                enti_tipo = 1, label_tipo = 'Proveedor';
+                break;
+            case 'MA010105':
+                enti_tipo = 5, label_tipo = 'Supervisor';
+                break;
+            case 'MA010106':
+                enti_tipo = 13, label_tipo = 'Alumno';
+                break;
+            case 'MA010109':
+                enti_tipo = 9, label_tipo = 'Personal';
+                break;
+            default:
+                enti_tipo = 2, label_tipo = 'Cliente';
+                break;
+        }
+
+        var myDataDirecc, cod = 0, myToolbardatos, co_entidad = 0, myGridfz, myLayou_gara, myLayou_giro, myCarouselFile, myCombo, myLaouy_Dat, myLayou_doc, myLayou_contac, myLayou_cbanc, myLayou_doc, myLayou_antec, myLayou_comu, co_seq, sel_giroid, sel_antid, cobanco_s, copais_s, subgrid, sel_giro, mainLayout, myFormdatos, mySidebar, myLaouy_Direc, myGridLineaC, cod_direc, myToolbardirecc, base_tollbar, myForm, estadook = 'VIGENTE', codcliente, Wind_, json_select, permiso_cataedit = 'S', _item_sidebar = 's_datos',
             sel_zc, sel_zcid, subgrilla, sel_fv, sel_fvid, data, co_cata_entidad = 0, cocliente = 0, co_listadopre = 0, co_seri_listado = 0, cocliente_corpo = 0, nom_clien_corpo = '';
         var __id = 0, Nombrenew, Codigo, myFormdirecc, Nombreold, Estado, lc_frzvta, lc_comneda, lc_stperman, lc_obs, lc_monto;
         var myFormfz, myFormzc, myFormdirecc, estadook = 'VIGENTE', mySidebar, co_ubigeo, co_direccion = 0, _selecobject, zncomer = 0;
-        /* var struc_dataview = {container: "data_conten", drag: false, edit: true, select: true, type: {template: "<p  >#DE_PAIS#</p><br><span class='centrarpdiv'>#DE_DIRECCION#</span>", height: 60}, autowidth: true};*/
         var st_form_base = [{ type: "settings", labelWidth: 100 },
-        { type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
-                { type: "template", offsetTop: 2, offsetLeft: 2, labelWidth: 60, name: "b_cliente", label: "Cliente :", value: "Busque un cliente", format: style }, { type: "newcolumn" },
-                { type: "button", width: 60, value: '<i class="fas fa-search padt-5-f1-8"></i>', offsetTop: 0, offsetLeft: 7, name: "b_buscar", tooltip: "BUSCAR UN CLIENTE", hidden: false }, { type: "newcolumn" },
-         ]}, {
-                    type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
-                        { type: "template", offsetTop: 5, offsetLeft: 2, name: "b_estado", labelWidth: 50, width: 150, label: "Estado :", value: "", format: style }, { type: "newcolumn" },
-                        { type: "template", offsetTop: 5, offsetLeft: 100, name: "b_asignado", labelWidth: 60, width: 150, label: "Asignado :", value: "", format: style }, { type: "newcolumn" },
-                        { type: "template", offsetTop: 5, offsetLeft: 100, name: "b_registro", labelWidth: 60, width: 150, label: "Registro :", value: "", format: style }, { type: "newcolumn" }
-                    ]
-                }
-          
-       
+        {
+            type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                { type: "template", offsetTop: 2,  offsetLeft: 2, labelWidth: 70, name: "b_cliente", label: label_tipo + " :", value: "Busque un " + label_tipo, format: style }, { type: "newcolumn" },
+                { type: "button", width: 60, value: '<i class="fas fa-search padt-5-f1-8"></i>', offsetTop: 0, offsetLeft: 7, name: "b_buscar", tooltip: "BUSCAR UN " + label_tipo.toUpperCase(), hidden: false }, { type: "newcolumn" },
+            ]
+        }, {
+            type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                { type: "template", offsetTop: 5, offsetLeft: 2, name: "b_estado", labelWidth: 50, width: 150, label: "Estado :", value: "", format: style }, { type: "newcolumn" },
+                { type: "template", offsetTop: 5, offsetLeft: 100, name: "b_asignado", labelWidth: 62, width: 150, label: "Asignado :", value: "", format: style }, { type: "newcolumn" },
+                { type: "template", offsetTop: 5, offsetLeft: 100, name: "b_registro", labelWidth: 60, width: 150, label: "Registro :", value: "", format: style }, { type: "newcolumn" }
+            ]
+        }
         ];
         var st_form_lcredito = [{ type: "settings", labelWidth: 100 },
         {
@@ -118,22 +137,12 @@
             iconset: "awesome", items: [
                 { id: "__nuevo", type: "button", disabled: false, text: "Nuevo", img: "fas fa-plus txtrgreen", imgdis: "fas fa-plus disable txtrgreen" },
                 { type: "separator" },
-                { id: "__edit", type: "button", text: "Editar", disabled: false, img: "fas fa-edit txtred", imgdis: "fas fa-user-edit disable txtred" },
+                { id: "__edit", type: "button", text: "Editar", disabled: false, img: "fas fa-edit txtred", imgdis: "fas fa-edit disable txtred" },
                 { type: "separator" },
-                /*   {id: "__asignar", type: "button", text: "Asignar", disabled: false, img: "fas fa-user-check txtrblue", imgdis: "fas fa-user-check disable txtrblue"},
-                 {type: "separator"},*/
                 { id: "__save", type: "button", text: "Guardar", disabled: true, img: "fas fa-save txtoran", imgdis: "fas fa-save disable txtoran" },
                 { type: "separator" },
-
                 { id: "__cancel", type: "button", text: "Cancelar", disabled: true, img: "fas fa-edit txtrblue", imgdis: "fas fa-edit disable" },
                 { type: "separator" }
-
-                /*      {id: "__anula", type: "button", text: "Anular", disabled: true, img: "fas fa-ban txtred", imgdis: "fas fa-ban disable"},
-                 {type: "separator"},
-                 {id: "__activar", type: "button", text: "Activar", disabled: true, img: "fas fa-check-circle txtrgreen", imgdis: "fas fa-check-circle disable"},
-                 {type: "separator"},
-                 {id: "__principal", type: "button", text: "Marcar Principal", disabled: true, img: "fas fa-map-marker-alt txtrgreen", imgdis: "fas fa-map-marker-alt disable"},
-                 {type: "separator"}*/
             ]
         };
         var f_frzvta = [{ type: "settings", labelWidth: 100 },
@@ -172,7 +181,6 @@
                     type: "block", blockOffset: 20, offsetTop: 10, width: 390, list: [
                         { type: "select", name: '_zncomer', offsetLeft: 0, labelWidth: 80, inputWidth: 250, label: 'Zona Comercial', connector: BASE_URL + 'MA010102/zncomercial/' + usrJson.empresa },
                         { type: "select", name: '_estado', offsetLeft: 0, labelWidth: 80, inputWidth: 200, label: 'Estado', connector: BASE_URL + 'MA010102/c_list_estado' },
-
                         { type: "input", value: '', readonly: true, labelWidth: 80, offsetLeft: 0, inputWidth: 200, name: "u_regis", label: 'Registrador :' },
                         { type: "input", value: '', readonly: true, labelWidth: 80, offsetLeft: 0, inputWidth: 200, name: "f_REGzcom", label: 'F. Registro :' },
                         { type: "input", value: '', readonly: true, labelWidth: 80, offsetLeft: 0, inputWidth: 200, name: "u_actu", label: 'Actualizado :' },
@@ -221,7 +229,6 @@
                 { type: "button", offsetTop: 2, offsetLeft: 5, name: "b_edit", value: "Editar" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_save", value: "Guardar Cambios" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_cancel", value: "NO Guardar Cambios" }, { type: "newcolumn" }
-
             ]
         }];
         var f_cuentas = [{ type: "settings", labelWidth: 100 },
@@ -243,17 +250,12 @@
                 {
                     type: "block", blockOffset: 0, offsetTop: 10, width: 390, list: [
                         { type: "select", name: 'n_tipocta', offsetLeft: 0, value: '0', labelWidth: 80, inputWidth: 200, label: 'Tipo Cuenta', connector: BASE_URL + 'MA010102/tipocta' }, { type: "newcolumn" },
-                        //  { type: "button", name: '_b_cta', disabled: true, offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }
                     ]
                 },
-
                 { type: "input", name: 'nro_cta', readonly: true, offsetLeft: 0, labelWidth: 80, inputWidth: 200, label: 'Nro Cta' },
-
                 { type: "input", name: 'cta_freg', disabled: true, readonly: true, offsetLeft: 0, maxLength: 15, labelWidth: 80, inputWidth: 200, label: 'Fe.Regis' },
                 { type: "select", name: "cta_stado", value: '', labelWidth: 80, offsetLeft: 0, disabled: true, inputWidth: 200, label: 'Estado :', connector: BASE_URL + 'MA010102/c_list_estado' },
-
             ]
-
         },
         {
             type: "block", blockOffset: 5, offsetTop: 20, width: 510, list: [
@@ -274,21 +276,17 @@
             type: "block", offsetTop: 10, blockOffset: 40, position: "label-left", list: [
                 {
                     type: "block", blockOffset: 20, offsetTop: 10, width: 590, list: [
-                        //  { type: "select", name: 'cont_carg_repre', disabled: true, offsetLeft: 0, value: '0', labelWidth: 80, inputWidth: 200, label: 'Cargo Repres.', connector: BASE_URL + 'MA010102/cargo_repre/' },
-                        { type: "input", name: 'ant_detalle', readonly: true, offsetLeft: 0,rows:2,maxLength: 70, labelWidth: 80, inputWidth: 200, label: 'Detalle' },
-                        { type: "input", name: 'ant_satisfa', readonly: true, offsetLeft: 0,  labelWidth: 80, inputWidth: 80, label: 'Rng Satisfaccion' },
-                        { type: "input", name: 'ant_referencia', readonly: true, offsetLeft: 0,  labelWidth: 80, inputWidth: 80, label: 'Referencia' },
+                        { type: "input", name: 'ant_detalle', readonly: true, offsetLeft: 0, rows: 2, maxLength: 70, labelWidth: 80, inputWidth: 200, label: 'Detalle' },
+                        { type: "input", name: 'ant_satisfa', readonly: true, offsetLeft: 0, labelWidth: 80, inputWidth: 80, label: 'Rng Satisfaccion' },
+                        { type: "input", name: 'ant_referencia', readonly: true, offsetLeft: 0, labelWidth: 80, inputWidth: 80, label: 'Referencia' },
                         {
                             type: "block", blockOffset: 0, offsetTop: 5, list: [
-                                { type: "input", name: 'ant_ccosto', labelWidth: 80,hidden:true,readonly: true, label: 'Centro Costos', offsetLeft: 0, inputWidth: 260 }, { type: "newcolumn" },
-                                { type: "button", name: '__buscacosto', disabled: true,hidden:true, offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },
-                                
+                                { type: "input", name: 'ant_ccosto', labelWidth: 80, hidden: true, readonly: true, label: 'Centro Costos', offsetLeft: 0, inputWidth: 260 }, { type: "newcolumn" },
+                                { type: "button", name: '__buscacosto', disabled: true, hidden: true, offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },
                             ]
                         },
-                        { type: "input", name: 'ant_usua', readonly: true, disabled:true, offsetLeft: 0, maxLength: 70, labelWidth: 80, inputWidth: 200, label: 'Usuario' },
-                        { type: "input", name: 'ant_fesys',  readonly: true,disabled:true, offsetLeft: 0, labelWidth: 80, inputWidth: 200, label: 'Fe.Registro' }
-                        //{ type: "input", name: 'ant_empre', disabled: true, readonly: true, offsetLeft: 0, maxLength: 15, labelWidth: 80, inputWidth: 200, label: 'Empresa' }
-                       
+                        { type: "input", name: 'ant_usua', readonly: true, disabled: true, offsetLeft: 0, maxLength: 70, labelWidth: 80, inputWidth: 200, label: 'Usuario' },
+                        { type: "input", name: 'ant_fesys', readonly: true, disabled: true, offsetLeft: 0, labelWidth: 80, inputWidth: 200, label: 'Fe.Registro' }
                     ]
                 }
             ]
@@ -296,10 +294,9 @@
         {
             type: "block", blockOffset: 5, offsetTop: 20, width: 510, list: [
                 { type: "button", offsetTop: 2, offsetLeft: 5, name: "b_add", value: "NUEVO" }, { type: "newcolumn" },
-                { type: "button", offsetTop: 2, offsetLeft: 5,disabled: true, name: "b_edit", value: "Editar" }, { type: "newcolumn" },
+                { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_edit", value: "Editar" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_save", value: "Guardar Cambios" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_cancel", value: "NO Guardar Cambios" }, { type: "newcolumn" }
-
             ]
         }];
         var f_comunicacion = [{ type: "settings", labelWidth: 100 },
@@ -312,11 +309,10 @@
             type: "block", offsetTop: 10, blockOffset: 40, position: "label-left", list: [
                 {
                     type: "block", blockOffset: 20, offsetTop: 10, width: 590, list: [
-                        //  { type: "select", name: 'cont_carg_repre', disabled: true, offsetLeft: 0, value: '0', labelWidth: 80, inputWidth: 200, label: 'Cargo Repres.', connector: BASE_URL + 'MA010102/cargo_repre/' },
-                        { type: "select", name: 'selc_operador', disabled: true, labelWidth: 80,disabled: true, inputWidth: 150, label: 'Operador ', connector: BASE_URL + 'MA010102/list_operador/' },
-                        { type: "input", name: 'num_celular', readonly: true, offsetLeft: 0,  labelWidth: 80, inputWidth: 80, label: 'Numero' },
+                        { type: "select", name: 'selc_operador', disabled: true, labelWidth: 80, disabled: true, inputWidth: 150, label: 'Operador ', connector: BASE_URL + 'MA010102/list_operador/' },
+                        { type: "input", name: 'num_celular', readonly: true, offsetLeft: 0, labelWidth: 80, inputWidth: 80, label: 'Numero' },
                         { type: "select", name: "num_stado", value: '', labelWidth: 80, offsetLeft: 0, disabled: true, inputWidth: 200, label: 'Estado :', connector: BASE_URL + 'MA010102/c_list_estado' },
-                    
+
                     ]
                 }
             ]
@@ -324,7 +320,7 @@
         {
             type: "block", blockOffset: 5, offsetTop: 20, width: 510, list: [
                 { type: "button", offsetTop: 2, offsetLeft: 5, name: "b_add", value: "NUEVO" }, { type: "newcolumn" },
-                { type: "button", offsetTop: 2, offsetLeft: 5,disabled: true, name: "b_edit", value: "Editar" }, { type: "newcolumn" },
+                { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_edit", value: "Editar" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_save", value: "Guardar Cambios" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_cancel", value: "NO Guardar Cambios" }, { type: "newcolumn" }
 
@@ -359,7 +355,6 @@
                 { type: "button", offsetTop: 2, offsetLeft: 5, name: "b_edit", value: "Editar" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_save", value: "Guardar Cambios" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 2, offsetLeft: 5, disabled: true, name: "b_cancel", value: "NO Guardar Cambios" }, { type: "newcolumn" }
-
             ]
         }];
         var f_giro = [{ type: "settings", labelWidth: 100 },
@@ -387,7 +382,6 @@
                 { type: "button", offsetTop: 25, offsetLeft: 5, name: "b_edit", value: "Editar" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 25, offsetLeft: 5, disabled: true, name: "b_save", value: "Guardar Cambios" }, { type: "newcolumn" },
                 { type: "button", offsetTop: 25, offsetLeft: 5, disabled: true, name: "b_cancel", value: "NO Guardar Cambios" }, { type: "newcolumn" }
-
             ]
         }];
         var f_direccion = [{ type: "settings", labelWidth: 100 },
@@ -458,7 +452,6 @@
                 {
                     type: "fieldset", offsetLeft: 10, label: "Más Datos", inputWidth: 150, list: [
                         { type: "button", name: '__fz_zn', disabled: true, offsetLeft: 1, offsetTop: 0, value: 'Z.COMER/F.VTA <i class="fas fa-map-marked-alt"></i>' },
-                        // {type: "button", name: '__zncomer', disabled: true, offsetLeft: 1, offsetTop: 0, value: 'Z.COMERCIAL <i class="fas fa-search"></i>'}
                     ]
                 }
             ]
@@ -467,14 +460,14 @@
             type: "block", blockOffset: 5, offsetTop: 5, width: 650, list: [
                 { type: "input", offsetLeft: 0, labelWidth: 80, readonly: true, name: "_usureg", width: 150, label: "Usu. Reg. :", value: "0" }, { type: "newcolumn" },
                 { type: "input", offsetLeft: 10, labelWidth: 70, readonly: true, name: "_fsys", width: 100, label: "F. Sys :", value: "0" }, { type: "newcolumn" },
-                { type: "input", offsetLeft: 10, labelWidth: 70, readonly: true, name: "_estado", width: 100, label: "Estado :", value: "0" }, { type: "newcolumn" }
+                { type: "select", offsetLeft: 10, labelWidth: 70,  disabled: true,  name: "_estado", width: 100, label: "Estado :", value: "0", connector: BASE_URL + 'MA010102/c_list_estado' }, { type: "newcolumn" }
             ]
         }
         ];
 
 
         var sidebarjson = [
-            { id: "s_datos", text: "DATOS CLIENTE", icon: "32/disk_d.png", selected: true },
+            { id: "s_datos", text: "DATOS " + label_tipo.toUpperCase(), icon: "32/disk_d.png", selected: true },
             { id: "s_direccion", text: "DIRECCIONES", icon: "32/disk_e.png" },
             { id: "s_giro", text: "GIRO DE NEGOCIO", icon: "32/desktop.png" },
             { id: "s_garante", text: "GARANTES", icon: "32/desktop.png" },
@@ -488,26 +481,31 @@
         var f_datos_cliente = [{ type: "settings", labelWidth: 100 },
         {
             type: "checkbox", labelWidth: 145, offsetLeft: 10, checked: false, disabled: true, offsetTop: 10, label: "<b>Datos Personales ?</b>", name: "st_personales", list: [
+
                 {
                     type: "block", blockOffset: 10, position: "label-left", width: 'auto', list: [
                         { type: "select", disabled: true, name: '_tipodoc', labelWidth: 120, inputWidth: 150, label: '<font class="input_font">Tipo Documento</font>', connector: BASE_URL + 'home/list_tipodoc/' }, { type: "newcolumn" },
-                        { type: "input", readonly: true, value: '', offsetLeft: 47, inputWidth: 110, name: "_nudocumento", label: 'Nro Documento :', validate: "ValidInteger" }, { type: "newcolumn" },
-                        { type: "button", width: 20, disabled: true, value: '<i class="fas fa-search"></i>', offsetTop: 0, offsetLeft: 7, name: "b_dniservice", tooltip: "BUSCAR CLIENTE", hidden: false }, { type: "newcolumn" }
+                        { type: "input", readonly: true, value: '', offsetLeft: 47, inputWidth: 110, name: "_nudocumento", label: 'Nro Documento :', validate: "ValidaRUCDNI" }, { type: "newcolumn" },
+                        { type: "button", width: 70, disabled: true, value: '<i class="fas fa-search"></i> BUSCAR', offsetTop: 0, offsetLeft: 0, name: "b_dniservice", tooltip: "BUSCAR " + label_tipo.toUpperCase(), hidden: false }, { type: "newcolumn" }
                     ]
                 }, { type: "newcolumn" },
                 {
                     type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
                         { type: "select", disabled: true, name: '_tipoper', offsetLeft: 20, labelWidth: 80, inputWidth: 170, label: 'Tipo Persona', connector: BASE_URL + 'MA010102/list_tipopers/' }, { type: "newcolumn" },
-                        { type: "select", disabled: true, name: '_vigencia', offsetLeft:20, labelWidth: 80, inputWidth: 100, label: 'Vigencia :', connector: BASE_URL + 'MA010102/list_estadocleinte/' }, { type: "newcolumn" }
+                        { type: "select", disabled: true, name: '_vigencia', offsetLeft: 20, labelWidth: 80, inputWidth: 100, label: 'Vigencia :', connector: BASE_URL + 'MA010102/list_estadocleinte/' }, { type: "newcolumn" }
                     ]
                 }, { type: "newcolumn" },
-                { type: "input", readonly: true, name: '_razsocial', offsetLeft: 10, labelWidth: 120, inputWidth: 550, label: 'Razon Social :', required: true },
-                { type: "input", readonly: true, name: '_nomcomer', offsetLeft: 10, labelWidth: 120, inputWidth: 550, label: 'Nombre Comercial :', required: true },
+
                 {
                     type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
-                        { type: "input", readonly: true, name: '_apepat', offsetLeft: 10, labelWidth: 120, inputWidth: 230, label: 'Ape. Paterno :' }, { type: "newcolumn" },
-                        { type: "input", readonly: true, name: '_apemat', offsetLeft: 10, labelWidth: 120, inputWidth: 230, label: 'Ape. Materno :' }, { type: "newcolumn" },
-                        { type: "input", readonly: true, name: '_nombres', offsetLeft: 10, labelWidth: 120, inputWidth: 230, label: 'Nombres :' }
+                        { type: "input", readonly: true,maxLength: 78,  name: '_razsocial', offsetLeft: 10, labelWidth: 120, inputWidth: 550, label: 'Razon Social :' }, { type: "newcolumn" },
+                        { type: "input", readonly: true,maxLength: 78,  name: '_nomcomer', offsetLeft: 10, labelWidth: 120, inputWidth: 550, label: 'Nombre Comercial :' },
+                    ]
+                }, {
+                    type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                        { type: "input", readonly: true, hidden: true, name: '_apepat', offsetLeft: 10, labelWidth: 120, inputWidth: 230, label: 'Ape. Paterno :' }, { type: "newcolumn" },
+                        { type: "input", readonly: true, hidden: true, name: '_apemat', offsetLeft: 40, labelWidth: 100, inputWidth: 230, label: 'Ape. Materno :' }, { type: "newcolumn" },
+                        { type: "input", readonly: true, hidden: true, name: '_nombres', offsetLeft: 40, labelWidth: 70, inputWidth: 230, label: 'Nombres :' }
                     ]
                 }, { type: "newcolumn" },
                 {
@@ -521,10 +519,10 @@
         }, { type: "newcolumn" },
 
         {
-            type: "checkbox", labelWidth: 145, offsetLeft: 10, checked: false, disabled: true, offsetTop: 20, label: "<b>Agregar como Cliente ?</b>", name: "st_cliente", list: [
+            type: "checkbox", labelWidth: 190, offsetLeft: 10, checked: false, disabled: true, offsetTop: 20, label: "<b>¿ Agregar como " + label_tipo.toUpperCase() + " ?</b>", name: "st_cliente", list: [
                 {
                     type: "block", blockOffset: 0, position: "label-left", offsetTop: 10, width: 'auto', list: [
-                        { type: "select", disabled: true, name: '_tipocliente', offsetLeft: 10, labelWidth: 80, inputWidth: 100, label: 'Tipo cliente :', connector: BASE_URL + 'MA010102/list_tipocliente/' }, { type: "newcolumn" },
+                        { type: "select", disabled: true, name: '_tipocliente', offsetLeft: 10, labelWidth: 80, inputWidth: 100, label: 'Tipo :' + label_tipo.toUpperCase(), connector: BASE_URL + 'MA010102/list_tipocliente/' }, { type: "newcolumn" },
                         { type: "checkbox", disabled: true, name: '_ch_listaprecio', offsetLeft: 10, labelWidth: 80, inputWidth: 5, label: 'Lista precio :' }, { type: "newcolumn" },
                         { type: "input", readonly: true, name: '_listaprecios', offsetLeft: 10, labelWidth: 1, disabled: true, inputWidth: 400, label: '' }, { type: "newcolumn" },
                         { type: "button", width: 60, disabled: true, value: '<i class="fas fa-search padt-5-f1-8"></i>', offsetTop: 0, offsetLeft: 7, name: "b_busprecios", tooltip: "BUSCAR UNA LISTA DE PRECIOS", hidden: false }, { type: "newcolumn" }
@@ -554,7 +552,6 @@
                         { type: "checkbox", disabled: true, name: '_ch_clicorporativo', offsetLeft: 10, labelWidth: 120, inputWidth: 5, label: 'Cliente Corporativo ?' }, { type: "newcolumn" },
                         { type: "input", readonly: true, name: '_clientecorporativo', offsetLeft: 10, labelWidth: 1, inputWidth: 280, label: '', disabled: true }, { type: "newcolumn" },
                         { type: "button", width: 60, value: '<i class="fas fa-search padt-5-f1-8"></i>', offsetTop: 0, offsetLeft: 7, disabled: true, name: "b_clientecorp", tooltip: "BUSCAR CLIENTES CORPORATIVOS", hidden: false }, { type: "newcolumn" }
-                        //{type: "button", width: 60, value: '<i class="far fa-credit-card padt-5-f1-8"></i>', offsetTop: 0, offsetLeft: 7, disabled: false, name: "b_creditolinea", tooltip: "AGREGAR LINEA DE CREDITO", hidden: false}, {type: "newcolumn"}
                     ]
                 }, { type: "newcolumn" },
                 {
@@ -565,27 +562,104 @@
                 }, { type: "newcolumn" },
                 {
                     type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
-                        { type: "input", readonly: true, name: '_email', offsetLeft: 10, labelWidth: 100, inputWidth: 350, label: 'Email : ' }, { type: "newcolumn" },
-                        { type: "input", readonly: true, name: '_webpage', offsetLeft: 10, labelWidth: 100, inputWidth: 350, label: 'Webpage : ' }, { type: "newcolumn" }
+                        { type: "input", readonly: true, name: '_email', offsetLeft: 10, labelWidth: 100,maxLength : 300 , inputWidth: 350, label: 'Email : ' }, { type: "newcolumn" },
+                        { type: "input", readonly: true, name: '_webpage', offsetLeft: 10,maxLength : 30 , labelWidth: 100, inputWidth: 350, label: 'Webpage :' }, { type: "newcolumn" }
                     ]
                 },
                 {
                     type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
-                        { type: "input", readonly: true, name: '_fregcliente', value: '', offsetLeft: 10, labelWidth: 100, inputWidth: 120, label: 'Registro Cliente : ' }, { type: "newcolumn" },
-                        { type: "select", disabled: true, name: '_clvigencia', offsetLeft: 10, labelWidth: 100, inputWidth: 120, label: 'Vigencia Cliente : ', connector: BASE_URL + 'MA010102/list_estadocleinte/' }, { type: "newcolumn" },
-                        { type: "input", readonly: true, name: '_fretiro', offsetLeft: 10, labelWidth: 100, inputWidth: 120, label: 'Retiro : ' }, { type: "newcolumn" }
+                        { type: "input", readonly: true, name: '_fregcliente', value: '', offsetLeft: 10, labelWidth: 100, inputWidth: 140, label: 'Registro Cliente : ' }, { type: "newcolumn" },
+                        { type: "select", disabled: true, name: '_clvigencia', offsetLeft: 30, labelWidth: 120, inputWidth: 120, label: "Vigencia " + label_tipo.toUpperCase() + " : ", connector: BASE_URL + 'MA010102/list_estadocleinte/' }, { type: "newcolumn" },
+                        { type: "input", readonly: true, name: '_fretiro', offsetLeft: 30, labelWidth: 60, inputWidth: 120, label: 'F.Retiro :' }, { type: "newcolumn" }
+                    ]
+                }
+            ]
+        }
+        ];
+
+        var f_datos_proveedor = [{ type: "settings", labelWidth: 100 },
+        {
+            type: "checkbox", labelWidth: 145, offsetLeft: 10, checked: false, disabled: false, readonly: true, offsetTop: 10, label: "<b>Datos Personales ?</b>", name: "st_personales", list: [
+
+                {
+                    type: "block", blockOffset: 10, position: "label-left", width: 'auto', list: [
+                        { type: "select", disabled: true, name: '_tipodoc', labelWidth: 120, inputWidth: 150, label: '<font class="input_font">Tipo Documento</font>', connector: BASE_URL + 'home/list_tipodoc/' }, { type: "newcolumn" },
+                        { type: "input", readonly: true, value: '', offsetLeft: 47, inputWidth: 110, name: "_nudocumento", label: 'Nro Documento :', validate: "ValidaRUCDNI" }, { type: "newcolumn" },
+                        { type: "button", width: 70, disabled: true, value: '<i class="fas fa-search"></i> BUSCAR', offsetTop: 0, offsetLeft: 0, name: "b_dniservice", tooltip: "BUSCAR " + label_tipo.toUpperCase(), hidden: false }, { type: "newcolumn" }
+                    ]
+                }, { type: "newcolumn" },
+                {
+                    type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                        { type: "select", disabled: true, name: '_tipoper', offsetLeft: 20, labelWidth: 80, inputWidth: 170, label: 'Tipo Persona', connector: BASE_URL + 'MA010102/list_tipopers/' }, { type: "newcolumn" },
+                        { type: "select", disabled: true, name: '_vigencia', offsetLeft: 20, labelWidth: 80, inputWidth: 100, label: 'Vigencia :', connector: BASE_URL + 'MA010102/list_estadocleinte/' }, { type: "newcolumn" }
+                    ]
+                }, { type: "newcolumn" },
+
+                {
+                    type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                        { type: "input", readonly: true,maxLength: 78,  name: '_razsocial', offsetLeft: 10, labelWidth: 120, inputWidth: 550, label: 'Razon Social :' }, { type: "newcolumn" },
+                        { type: "input", readonly: true, maxLength: 78, name: '_nomcomer', offsetLeft: 10, labelWidth: 120, inputWidth: 550, label: 'Nombre Comercial :' },
+                    ]
+                }, {
+                    type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                        { type: "input", readonly: true, hidden: true, name: '_apepat', offsetLeft: 10, labelWidth: 120, inputWidth: 230, label: 'Ape. Paterno :' }, { type: "newcolumn" },
+                        { type: "input", readonly: true, hidden: true, name: '_apemat', offsetLeft: 40, labelWidth: 100, inputWidth: 230, label: 'Ape. Materno :' }, { type: "newcolumn" },
+                        { type: "input", readonly: true, hidden: true, name: '_nombres', offsetLeft: 40, labelWidth: 70, inputWidth: 230, label: 'Nombres :' }
+                    ]
+                }, { type: "newcolumn" },
+                {
+                    type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                        { type: "select", disabled: true, name: '_procedencia', offsetLeft: 10, labelWidth: 120, inputWidth: 150, label: 'Procedencia :', connector: BASE_URL + 'MA010102/list_procedencia/' }, { type: "newcolumn" },
+                        { type: "select", disabled: true, name: '_origen', offsetLeft: 20, labelWidth: 60, inputWidth: 150, label: 'Origen :', connector: BASE_URL + 'MA010102/list_origen/' }, { type: "newcolumn" },
+                        { type: "input", readonly: true, name: '_fredcata', offsetLeft: 20, labelWidth: 60, inputWidth: 150, label: 'Registro :' }, { type: "newcolumn" }
+                    ]
+                }
+
+            ]
+        }, { type: "newcolumn" },
+
+        {
+            type: "checkbox", labelWidth: 200, offsetLeft: 10, checked: false, disabled: true, readonly: true, offsetTop: 20, label: "<b>¿ Agregar como " + label_tipo.toUpperCase() + " ?</b>", name: "st_provedor", list: [
+
+                {
+                    type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                        { type: "select", disabled: true, name: '_provtipo', offsetLeft: 20, labelWidth: 100, inputWidth: 150, label: 'Tipo Proveedor :', connector: BASE_URL + 'MA010102/list_tiprove/' }, { type: "newcolumn" },
+                        { type: "select", disabled: true, name: '_provstado', offsetLeft: 40, labelWidth: 50, inputWidth: 120, label: "Estado :", connector: BASE_URL + 'MA010102/list_estadocleinte/' }, { type: "newcolumn" },
+                        { type: "select", disabled: true, name: '_proformpago', offsetLeft: 40, labelWidth: 80, inputWidth: 150, label: 'Forma Pago :', connector: BASE_URL + 'MA010102/list_formpago/' }, { type: "newcolumn" },
+                        { type: "select", disabled: true, name: '_procondpago', offsetLeft: 40, labelWidth: 90, inputWidth: 150, label: 'Condicion Pago :', connector: BASE_URL + 'MA010102/list_condpago/1' }, { type: "newcolumn" },
+                    ]
+                },
+                {
+                    type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                        { type: "checkbox", disabled: false, readonly: true, name: '_provchperm', offsetLeft: 20, labelWidth: 100, inputWidth: 5, label: '¿ Permanente ? :' }, { type: "newcolumn" },
+                        { type: "input", disabled: false, readonly: true, name: '_provemail', value: '', offsetLeft: 90, labelWidth: 50, inputWidth: 220, label: 'Email : ' }
+
+                    ]
+                },
+                {
+                    type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                        {
+                            type: "fieldset", blockOffset: 0, offsetLeft: 5, label: "SUNAT", inputWidth: 650, list: [
+                                { type: "checkbox", disabled: false, readonly: true, name: '_provsharetenc', offsetLeft: 10, labelWidth: 120, inputWidth: 5, label: 'Agente Retención :' }, { type: "newcolumn" },
+                                { type: "checkbox", disabled: false, readonly: true, name: '_provshpercep', offsetLeft: 30, labelWidth: 120, inputWidth: 5, label: 'Agente Percepción :' }, { type: "newcolumn" },
+                                { type: "checkbox", disabled: false, readonly: true, name: '_provshdetrec', offsetLeft: 30, labelWidth: 120, inputWidth: 5, label: 'Aft. Detracción :' }, { type: "newcolumn" },
+                            ]
+                        }
+                    ]
+                },
+                {
+                    type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                        { type: "input", readonly: true, name: '_provfsys', value: '', offsetLeft: 10, labelWidth: 70, inputWidth: 140, label: 'Fecha Sys :' }, { type: "newcolumn" },
+                        { type: "input", readonly: true, name: '_provfretiro', offsetLeft: 40, labelWidth: 70, inputWidth: 140, label: 'F. Retiro :' }, { type: "newcolumn" }
                     ]
                 }
             ]
         }
         ];
         function titleformgiro(name, value) {
-            if (name == "titleform")
-                return "<div class='titleform'>" + value + "</div>";
+            return name == "titleform" ? "<div class='titleform'>" + value + "</div>" : null;
         }
-
-
-
+         
         mainLayout = new dhtmlXLayoutObject(document.body, '2E');
         mainLayout.cells('a').hideHeader();
         mainLayout.cells('b').hideHeader();
@@ -595,12 +669,12 @@
         myForm = mainLayout.cells('a').attachForm();
         myForm.load(st_form_base);
         myForm.attachEvent("onButtonClick", onBuscaMaestro);
-
         mySidebar = mainLayout.cells('b').attachSidebar({ parent: document.body, width: 150, single_cell: false, template: "text", icons_path: "/assets/images/icons/iconsjhon/", items: sidebarjson });
         mySidebar.attachEvent("onBeforeSelect", onselect_sidebar);
         f_s_datos();
         valores_defecto();
-        limpiar_files();
+        // limpiar_files();
+        console.log(modulo);
     </script>
 
 </body>

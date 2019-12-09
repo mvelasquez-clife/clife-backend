@@ -51,6 +51,7 @@ app.use('/api/LO01020201', require('./routes/logistica/LO01020201.routes'));
 app.use('/api/LO01010209', require('./routes/logistica/LO01010209.routes'));
 app.use('/api/LO01010210', require('./routes/logistica/LO01010210.routes'));
 app.use('/api/VT010101', require('./routes/ventas/VT010101.routes'));
+app.use('/api/VT010102', require('./routes/ventas/VT010102.routes'));
 app.use('/api/VT010123', require('./routes/ventas/VT010123.routes'));
 //ruta del chat
 app.use('/chat', require('./routes/chat.routes'));
