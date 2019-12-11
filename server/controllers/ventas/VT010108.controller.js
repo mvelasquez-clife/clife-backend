@@ -6,7 +6,51 @@ const responseParams = {
     outFormat: oracledb.OBJECT
 };
 
-const vt010102Controller = {
+const vt010108Controller = {
+    GridCVenta: (req, res) => {
+    const {  emp  } = req.params; console.log('GridCVenta');
+       oracledb.getConnection(dbParams, (err, conn) => {
+           if (err) {
+               res.send({ state: 'error', error_conexion: err.stack });
+               return;
+           }
+           const query = "    SELECT VT_CANA_VENT_M.CO_CANAL_VENTA, VT_CANA_VENT_M.DE_NOMBRE, VT_CANA_VENT_M.ES_VIGENCIA,CASE ES_VIGENCIA WHEN 'Vigente' THEN '../distribute.png'  ELSE '../none.png' END AS TNEGO,CASE ES_VIGENCIA WHEN 'Vigente' THEN '../ic-edit.png'  ELSE '../none.png' END AS EDIT, CASE ES_VIGENCIA WHEN 'Vigente' THEN '../ic-delete.png'  ELSE '../ic-add.png' END AS DELET    FROM VT_CANA_VENT_M WHERE VT_CANA_VENT_M.CO_EMPRESA = :xempresa ";
+           const params = {xempresa : {val : emp }  };
+           conn.execute(query, params, responseParams, (error, result) => {
+               conn.close();
+               if (error) {
+                   res.send({ 'error_query': error.stack });
+                   return;
+               }
+               res.set('Content-Type', 'text/xml');
+               res.send(xmlParser.renderXml(result.rows));
+             });
+       });
+   },
+   GuardarCVenta: async (req, res) => {
+    let {emp,usuario, codigo, nombre, estado} = req.body;  // console.log(emp,usuario, codigo, nombre, estado);
+        let conn = await oracledb.getConnection(dbParams);
+        let query = "call PW_VT010108.SP_UPDATE_CVENTAS(:xemp,:xusuario,:tn_codigo,:tn_nombre, :tn_estado,:o_codigo,:o_mensaje)";
+        let params = {
+            xemp: { val: emp },
+            xusuario: { val: usuario },
+            tn_codigo: { val: codigo },
+            tn_nombre: { val: nombre },
+            tn_estado: { val: estado },
+            o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+            o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+        }
+        conn.execute(query,params, responseParams, (error, result) => {console.log(error,result);
+            let { o_codigo, o_mensaje } = result.outBinds;
+           if (error) {
+                res.json({ state: 'error', codsend: 0, txtsend: error});
+            }else{
+                res.json({ state: 'success', codsend: o_codigo, txtsend: o_mensaje   });
+            }
+        });
+},
+   ////////////////////////////////////////////////////////////
+
     SaveCoutadata: async (req, res) => {
         let {empresa, usuario, codigo, mvenc, mvencm, mvenc30,mvenc60,mvenc90,mvsttn} = req.body;   //console.log(emp, codigo, nombre, descripcion, monto, estado);
             let conn = await oracledb.getConnection(dbParams);
@@ -53,26 +97,7 @@ const vt010102Controller = {
             });
         });
     },
-    GridTipoNegocio: (req, res) => {
-         const {    } = req.params;
-        oracledb.getConnection(dbParams, (err, conn) => {
-            if (err) {
-                res.send({ state: 'error', error_conexion: err.stack });
-                return;
-            }
-            const query = "  SELECT VT_TIPO_NEGO_M.CO_TIPO_NEGOCIO AS CO_TIPO_NEGOCIO, VT_TIPO_NEGO_M.DE_NOMBRE AS DE_NOMBRE, VT_TIPO_NEGO_M.DE_DESCRIPCION AS DE_DESCRIPCION,VT_TIPO_NEGO_M.IM_TOPE_MINIMO  AS IM_TOPE_MINIMO, VT_TIPO_NEGO_M.ES_TIPO_NEGOCIO AS ES_TIPO_NEGOCIO,case ES_TIPO_NEGOCIO when 'Retirado' then '../none.png' else '../cuota_tn.png' end  AS CUOTA,case ES_TIPO_NEGOCIO when 'Retirado' then '../none.png' else '../ic-edit.png' end AS EDIT,case ES_TIPO_NEGOCIO when 'Retirado' then '../ic-add.png' else '../ic-delete.png' end AS BORRAR  FROM VT_TIPO_NEGO_M  where CO_TIPO_NEGOCIO <> 0  ORDER BY CO_TIPO_NEGOCIO  ";
-            const params = {   };
-            conn.execute(query, params, responseParams, (error, result) => {
-                conn.close();
-                if (error) {
-                    res.send({ 'error_query': error.stack });
-                    return;
-                }
-                res.set('Content-Type', 'text/xml');
-                res.send(xmlParser.renderXml(result.rows));
-              });
-        });
-    },
+    
     Listadoestadotp: (req, res) => {
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
@@ -93,30 +118,8 @@ const vt010102Controller = {
         });
     },
 
-    GuardarTipNego: async (req, res) => {
-        let {usuario, codigo, nombre, descripcion, monto, estado} = req.body;   //console.log(emp, codigo, nombre, descripcion, monto, estado);
-            let conn = await oracledb.getConnection(dbParams);
-            let query = "call PW_VT010102.SP_UPDATE_TNEGO(:xusuario,:tn_codigo,:tn_nombre,:tn_descripcion,:tn_importe,:tn_estado,:o_codigo,:o_mensaje)";
-            let params = {
-                xusuario: { val: usuario },
-                tn_codigo: { val: codigo },
-                tn_nombre: { val: nombre },
-                tn_descripcion: { val: descripcion },
-                tn_importe: { val: monto },
-                tn_estado: { val: estado },
-                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-                o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
-            }
-            conn.execute(query,params, responseParams, (error, result) => {console.log(error,result);
-                let { o_codigo, o_mensaje } = result.outBinds;
-               if (error) {
-                    res.json({ state: 'error', codsend: 0, txtsend: error});
-                }else{
-                    res.json({ state: 'success', codsend: o_codigo, txtsend: o_mensaje   });
-                }
-            });
-    }
+   
 
 };
 
-module.exports = vt010102Controller;
+module.exports = vt010108Controller;

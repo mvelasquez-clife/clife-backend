@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Fuerzas de Venta</title>
+	<title>Tipo de Negocio</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
 	<link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
@@ -14,12 +14,12 @@
 	<script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
 	<script type="text/javascript" src="/assets/js/conf.js"></script>
 	<script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
-    <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
-    <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
-    <script type="text/javascript" src="/assets/ancestros/linea-credito.js"></script>
+  <!--   <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+    <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script> 
+    <script type="text/javascript" src="/assets/ancestros/linea-credito.js"></script>-->
 	<script type="text/javascript" src="<%=path%>script.js"></script>
 	<script type="text/javascript" src="/assets/js/sweetalert.js"></script>
-    <script src="https://code.highcharts.com/highcharts.src.js"></script>
+   <!--  <script src="https://code.highcharts.com/highcharts.src.js"></script> -->
 	<script type="text/javascript">
 	   var Layout,  Formcuotatp,Formedittp, dhxW12,cod_s,  nom_s, des_s ,    imp_s,  est_s ;
 		var formedit = [{type: "settings", labelWidth: 100},
@@ -35,16 +35,16 @@
 		];
 		var formcuota =[{type: "settings", labelWidth: 100},
 			{type: "input", offsetLeft: 5, name: "__cod",  readonly : true,  width: 100, label: "Codigo :", value: "..."},/// {type: "newcolumn"},
-			{type: "input", offsetLeft: 5, name: "__nom",    width: 100, label: "Nombre :", value: "..."}, //{type: "newcolumn"},
-			{type: "input", offsetLeft: 5, name: "__mvenc",    width: 100, label: "Vendidos(%):", value: ""}, //{type: "newcolumn"},
+			{type: "input", offsetLeft: 5, name: "__nom",   readonly : true, width: 100, label: "Nombre :", value: "..."}, //{type: "newcolumn"},
+			{type: "input", offsetLeft: 5, name: "__mvenc",    width: 100, label: "Vendidos(%):", value: "0"}, //{type: "newcolumn"},
 			{type: "input", offsetLeft: 5, name: "__mvencm",    width: 100, label: "VencexMes(%) :", value: "0"},// {type: "newcolumn"},
 			{type: "input", offsetLeft: 5, name: "__mvenc30",    width: 100, label: "Venc30DIAS(%) :", value: "0"},// {type: "newcolumn"},
 			{type: "input", offsetLeft: 5, name: "__mvenc60",    width: 100, label: "Venc60DIAS(%) :", value: "0"},// {type: "newcolumn"},
 			{type: "input", offsetLeft: 5, name: "__mvenc90",    width: 100, label: "Venc90DIAS(%) :", value: "0"},// {type: "newcolumn"},
 			{ type: "select",offsetLeft: 5, name: '__mvsttn',   inputWidth: 100, label: "Estado : ", connector: BASE_URL + 'VT010102/list_estadotp/' }, //{type: "newcolumn"},
 			{type: "block",   width: 240, list: [
-				{type: "button", offsetTop: 25, offsetLeft: 25, name: "b_save", value: "Guardar"}, {type: "newcolumn"},
-				{type: "button", offsetTop: 25, offsetLeft: 15, name: "b_cancel", value: "Cancelar"}
+				{type: "button", offsetTop: 25, offsetLeft: 5, name: "b_save", value: "Guardar"}, {type: "newcolumn"},
+				{type: "button", offsetTop: 25, offsetLeft: 5, name: "b_cancel", value: "Cancelar"}
 			]}
 		];
         IniciarComponentes();

@@ -1,0 +1,13 @@
+.div-empty{
+    background-size: cover;
+    height: 100%;
+    width: 100%;
+}
+.div-ctacte{ background-image: url('/assets/images/otros/cuenta-corriente.png'); }
+.div-auditoria{ background-image: url('/assets/images/otros/auditoria.jpg'); }
+.chart-div{ height:100%;margin:0;padding:0;width:100%; }
+.dv-dhxcombo{ height:25px;margin-top:-3px;width:160px; }
+.dv-slider{ height:25px;margin-top:-3px;width:600px; }
+.span-label-movimiento-periodo{ display:inline-block;font-weight:bold;width:100px; }
+.span-label-right{ text-align:right; }
+.span-label-left{ text-align:left; }

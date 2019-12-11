@@ -112,7 +112,7 @@ const ma010104Controller = {
                 res.send({state: 'error', error_conexion: err.stack});
                 return;
             }
-            const query = '  SELECT        CO_DIRECCION_EMPRESA ,DE_DIRECCION,FE_SYS,CO_UBIGEO,ES_VIGENCIA,ST_PRINCIPAL,ST_PROPIO,DE_DIRECCION_CORTA,NPRINCIPAL,NUBIGEO  FROM TABLE(PW_MA010104.F_DATA_DIRECC(:p_empresa) ) ';
+            const query = '  SELECT CO_DIRECCION_EMPRESA ,DE_DIRECCION,FE_SYS,CO_UBIGEO,ES_VIGENCIA,ST_PRINCIPAL,ST_PROPIO,DE_DIRECCION_CORTA,NPRINCIPAL,NUBIGEO  FROM TABLE(PW_MA010104.F_DATA_DIRECC(:p_empresa) ) ';
             const params = {p_empresa: emp};
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
