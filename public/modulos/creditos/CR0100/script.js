@@ -116,7 +116,7 @@ let ClienteRes, TransferenciaRes, DestinatarioRes, AuditoriaRes;
 let ToolbarTransferenciaOrigen, GridTransferenciaOrigen, ToolbarTransferenciaDestino, GridTransferenciaDestino;
 let LayoutWinCtacte, LayoutWinAuditoria, FormWinAuditoria, GridWinAuditoria, GridMovimientosCompras, GridMovimientosPagos, ToolbarMovimientos, SliderPeriodos, LayoutApruebaSolcred, FormApruebaSolicitud;
 let RenderInicialGraficoMovimientos = true, PeriodosMovimientosCliente, DatosMovimientosCliente;
-let WinDocumentoViewer, WinModificaNc, LayoutModificaNc, GridModificaNc, GridSolicitud;
+let WinDocumentoViewer, WinModificaNc, LayoutModificaNc, GridModificaNc, GridSolicitud, GridObservaciones;
 
 IniciarComponentes = () => {
     Layout = new dhtmlXLayoutObject(document.body, '1C');
@@ -302,25 +302,30 @@ GridCtacteOnRowSelect = async (rowId,colId) => {
         case 6:
             let codigo = GridCtacte.cells(rowId,5).getValue();
             let empresa = usrJson.empresa;
-            WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 0, 0, 640, 640);
-                WinDocumentoViewer.center();
+            WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 640, 640);
+//                WinDocumentoViewer.center();
                 WinDocumentoViewer.keepInViewport();
                 WinDocumentoViewer.setText('Mostrando documento ' + codigo);
                 WinDocumentoViewer.attachURL('/viewer/archivo/' + empresa + '/' + codigo);
             break;
         case 10:
-            LayoutCtacte.cells('b').detachObject();
-            if(LayoutCtacte.cells('b').isCollapsed()) LayoutCtacte.cells('b').expand();
-            LayoutCtacteSec = LayoutCtacte.cells('b').attachLayout('3E');
-            LayoutCtacteSec.cells('a').setText('Planillas de cobranza');
-            LayoutCtacteSec.cells('b').setText('Letras/Cheques');
-            LayoutCtacteSec.cells('c').setText('Notas de crédito/débito');
-            //genera las grids
-            let documento = GridCtacte.cells(rowId,5).getValue();
-            let moneda = GridCtacte.cells(rowId,23).getValue();
-            EscribirSubgridPlanillas(documento,moneda);
-            EscribirSubgridLetras(documento);
-            EscribirSubgridNotas(documento);
+            if (LayoutCtacte.cells('b').isCollapsed()) {
+                LayoutCtacte.cells('b').detachObject();
+                LayoutCtacte.cells('b').expand();
+                LayoutCtacteSec = LayoutCtacte.cells('b').attachLayout('3E');
+                LayoutCtacteSec.cells('a').setText('Planillas de cobranza');
+                LayoutCtacteSec.cells('b').setText('Letras/Cheques');
+                LayoutCtacteSec.cells('c').setText('Notas de crédito/débito');
+                //genera las grids
+                let documento = GridCtacte.cells(rowId,5).getValue();
+                let moneda = GridCtacte.cells(rowId,23).getValue();
+                EscribirSubgridPlanillas(documento,moneda);
+                EscribirSubgridLetras(documento);
+                EscribirSubgridNotas(documento);
+            }
+            else {
+                LayoutCtacte.cells('b').collapse();
+            }
             break;
         case 11:
             let cCliente = ClienteRes.codigo;
@@ -533,9 +538,9 @@ ToolbarCtacteOnClick = async (id) => {
                 WinContainer.detachObject();
             }
             else {
-                WinCtacte = WinContainer.createWindow('WinCtacte', 0, 0, 1080, 640);
+                WinCtacte = WinContainer.createWindow('WinCtacte', 20, 0, 1080, 640);
             }
-            WinCtacte.center();
+//            WinCtacte.center();
             WinCtacte.setModal(true);
             WinCtacte.setText('Letras del cliente');
             SubgridWinCtacteL = WinCtacte.attachGrid();
@@ -559,9 +564,9 @@ ToolbarCtacteOnClick = async (id) => {
                 WinContainer.detachObject();
             }
             else {
-                WinCtacte = WinContainer.createWindow('WinCtacte', 0, 0, 1080, 640);
+                WinCtacte = WinContainer.createWindow('WinCtacte', 20, 0, 1080, 640);
             }
-            WinCtacte.center();
+//            WinCtacte.center();
             WinCtacte.setModal(true);
             WinCtacte.setText('Cheques del cliente');
             SubgridWinCtacteL = WinCtacte.attachGrid();
@@ -585,18 +590,16 @@ ToolbarCtacteOnClick = async (id) => {
                 WinContainer.detachObject();
             }
             else {
-                WinCtacte = WinContainer.createWindow('WinCtacte', 0, 0, 1080, 640);
+                WinCtacte = WinContainer.createWindow('WinCtacte', 20, 20, 1080, 640);
             }
-            WinCtacte.center();
+//            WinCtacte.center();
             WinCtacte.setModal(true);
             WinCtacte.setText('Crédito de clientes');
             TabbarLayoutCtacte = WinCtacte.attachTabbar();
                 TabbarLayoutCtacte.addTab('solcred', 'Solicitudes de crédito', null, null, true);
                 TabbarLayoutCtacte.addTab('lineacred', 'Línea de crédito');
                 TabbarLayoutCtacte.addTab('aprobacion', '<span style="color:#d32f2f;">Aprobar solicitud</span>');
-                TabbarLayoutCtacte.addTab('historial', '<span style="color:#d32f2f;">Histórico de pagos</span>');
             TabbarLayoutCtacte.tabs('aprobacion').disable(true);
-            TabbarLayoutCtacte.tabs('historial').disable(true);
             //tabbar solicitudes de credito
             SubgridWinCtacteL = TabbarLayoutCtacte.tabs('solcred').attachGrid();
                 SubgridWinCtacteL.setIconsPath('/assets/images/icons/grid/');
@@ -634,9 +637,9 @@ ToolbarCtacteOnClick = async (id) => {
                 WinContainer.detachObject();
             }
             else {
-                WinCtacte = WinContainer.createWindow('WinCtacte', 0, 0, 1080, 640);
+                WinCtacte = WinContainer.createWindow('WinCtacte', 20, 0, 1080, 640);
             }
-            WinCtacte.center();
+//            WinCtacte.center();
             WinCtacte.setModal(true);
             WinCtacte.setText('Deuda del cliente por periodos');
             LayoutWinCtacte = WinCtacte.attachLayout('3T');
@@ -686,16 +689,12 @@ SubgridWinCtacteLOnLoad = () => {
     if (HayPendientes) {
         TabbarLayoutCtacte.tabs('aprobacion').setText('Aprobar solicitud');
         TabbarLayoutCtacte.tabs('aprobacion').enable();
-        TabbarLayoutCtacte.tabs('historial').setText('Histórico de pagos');
-        TabbarLayoutCtacte.tabs('historial').enable();
         // armar form para aprobacion de solicitud
         PreparaFormulario(SolicitudPendiente);
     }
     else {
         TabbarLayoutCtacte.tabs('aprobacion').setText('<span style="color:#d32f2f;">Aprobar solicitud</span>');
         TabbarLayoutCtacte.tabs('aprobacion').disable();
-        TabbarLayoutCtacte.tabs('historial').setText('<span style="color:#d32f2f;">Histórico de pagos</span>');
-        TabbarLayoutCtacte.tabs('historial').disable();
     }
     TabbarLayoutCtacte.tabs('solcred').progressOff();
 }
@@ -772,6 +771,24 @@ PreparaFormulario = async (solicitud) => {
     FormApruebaSolicitud.setItemValue('aprobado', JsSolicitud.slc);
     FormApruebaSolicitud.setItemValue('inicial', JsSolicitud.sem);
     FormApruebaSolicitud.attachEvent('onButtonClick', FormApruebaSolicitudOnButtonClick);
+    // grid de observaciones
+    GridObservaciones = LayoutApruebaSolcred.cells('b').attachGrid();
+        GridObservaciones.setHeader('Documento,Fecha,Observación');
+        GridObservaciones.attachHeader('#text_filter,#text_filter,#text_filter');
+        GridObservaciones.setInitWidths('100,80,320');
+        GridObservaciones.setColTypes('rotxt,rotxt,rotxt');
+        GridObservaciones.setColAlign('left,left,left');
+        GridObservaciones.init();
+    let tam = JsObservaciones.length;
+    if (tam > 0) {
+        for (let i = 0; i < tam; i++) {
+            let index = parseInt(i + '') + 1;
+            GridObservaciones.addRow(index, [JsObservaciones.doc,JsObservaciones.fdc,JsObservaciones.obs].join(','));
+        }
+    }
+    else {
+        GridObservaciones.addRow(1, '-,-,No hay observaciones');
+    }
 }
 FormApruebaSolicitudOnButtonClick = async (button) => {
     switch (button) {
@@ -1257,9 +1274,9 @@ SubgridNotasOnRowSelect = (rowId,colId) => {
                 WinModificaNc.bringToTop();
             }
             else {
-                WinModificaNc = WinContainer.createWindow('WinModificaNc',0,0,982,600);
+                WinModificaNc = WinContainer.createWindow('WinModificaNc',160,0,982,600);
                     WinModificaNc.keepInViewport();
-                    WinModificaNc.center();
+//                    WinModificaNc.center();
                     WinModificaNc.setModal(true);
                     WinModificaNc.setText('Nota de crédito');
                 LayoutModificaNc = WinModificaNc.attachLayout('2E');

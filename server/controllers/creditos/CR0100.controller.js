@@ -532,7 +532,7 @@ const cr0100Controller = {
             result = await conn.execute(querySolicitud, paramsSolicitud, responseParams);
             let info = result.rows[0];
             // carga las observaciones
-            let queryObservaciones = "select co_documento doc, fe_fecha_act_audit fdc, de_obser obs from ba_cuen_corr_admi_clie_d where fe_fecha_act_audit is not null and co_empresa = :p_empresa and co_cliente = :p_cliente order by fe_fecha_act_audit asc";
+            let queryObservaciones = "select co_documento doc, to_char(fe_fecha_act_audit,'dd/mm/yyyy') fdc, de_obser obs from ba_cuen_corr_admi_clie_d where fe_fecha_act_audit is not null and co_empresa = :p_empresa and co_cliente = :p_cliente order by fe_fecha_act_audit asc";
             let paramsObservaciones = {
                 p_empresa: { val: empresa },
                 p_cliente: { val: info.ccl }
