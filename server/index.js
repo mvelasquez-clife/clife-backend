@@ -50,6 +50,7 @@ app.use('/api/MA010301', require('./routes/maestros/MA010301.routes'));
 app.use('/api/MA010601', require('./routes/maestros/MA010601.routes'));
 app.use('/api/LO01020201', require('./routes/logistica/LO01020201.routes'));
 app.use('/api/LO01010209', require('./routes/logistica/LO01010209.routes'));
+app.use('/api/LO01010210', require('./routes/logistica/LO01010210.routes'));
 app.use('/api/VT010101', require('./routes/ventas/VT010101.routes'));
 app.use('/api/VT010102', require('./routes/ventas/VT010102.routes'));
 app.use('/api/VT010108', require('./routes/ventas/VT010108.routes'));

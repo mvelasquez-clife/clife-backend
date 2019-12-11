@@ -48,6 +48,8 @@ const ancestroController = {
     getGridPruebaData: (req, res) => {
         oracledb.getConnection(dbParams, (err, conn) => {
             const { id, empresa, param } = req.params;
+            let iparam = parseInt(id);
+console.log(req.params);
             if(err) {
                 res.json({
                     state: 'error',
@@ -55,13 +57,23 @@ const ancestroController = {
                 });
                 return;
             }
-            const query = "select * from table (pack_new_sources.f_list_lupa_general(:p_id, :p_empresa, :p_extra)) order by de_descripcion asc";
-            const params = {
+            let query = "select * from table (pack_new_sources.f_list_lupa_general(:p_id, :p_empresa, :p_extra)) order by de_descripcion asc";
+            let params = {
                 p_id: { val: id },
                 p_empresa: { val: empresa },
                 p_extra: { val: param }
             };
-           
+            if (iparam > 1000) {
+console.log('aca papu: iparam = ', iparam)
+                switch (iparam) {
+                    case 1001:
+                        query = "select 0,co_operario,de_operario,de_tipo_operario,es_vigencia from table(pack_new_frac_prod.f_lis_frac_oper_picking(:p_empresa))";
+                        params = {
+                            p_empresa: { val: empresa }
+                        };
+                        break;
+                }
+            }
             conn.execute(query, params, responseParams, (error, result) => {
                 if(error) {
                     conn.close();

@@ -26,5 +26,9 @@ const cr0100Controller = require('../../controllers/creditos/CR0100.controller')
     router.post('/cerrar-auditoria', cr0100Controller.CierraAuditoria);
     router.post('/movimientos-periodo', cr0100Controller.CargarMovimientosPeriodo);
     //router.post('/lista-periodos', cr0100Controller.CargaListaPeriodos);
+    router.post('/info-solicitud', cr0100Controller.InformacionSolicitud);
+    router.get('/combo-resultado', cr0100Controller.ComboResultado);
+    router.get('/combo-cpago', cr0100Controller.ComboCpago);
+    router.post('/procesar-solicitud', cr0100Controller.ProcesarSolicitud);
 
 module.exports = router;
