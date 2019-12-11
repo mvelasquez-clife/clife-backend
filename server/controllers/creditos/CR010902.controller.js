@@ -87,7 +87,8 @@ const cr010902Controller = {
                 return;
             }
           //  console.log(emp,per,tipo,venc,doc);
-          let qtipo =  tipo === 'gtipnego' ? ' T1.CO_TIPO_NEGOCIO , T1.DE_TIPO_NEGOCIO AS DE_TIPO ' : ' T1.CO_VENDEDOR, T1.DE_VENDEDOR AS DE_TIPO';
+          let qtipocolum  =  tipo === 'gtipnego' ? ' T1.CO_TIPO_NEGOCIO , T1.DE_TIPO_NEGOCIO AS DE_TIPO ' : ' T1.CO_VENDEDOR, T1.DE_VENDEDOR AS DE_TIPO';
+          let qtipogroup =  tipo === 'gtipnego' ? ' T1.CO_TIPO_NEGOCIO , T1.DE_TIPO_NEGOCIO   ' : ' T1.CO_VENDEDOR, T1.DE_VENDEDOR ';
           let titl_tip=  tipo === 'gtipnego' ? ' TIPO DE NEGOCIO  : <br/>' : ' VENDEDOR  :<br/>';
 
           let title_ = venc === 'dnvenc'   ? ' DEUDA NO VENCIDA  POR '+titl_tip : 
@@ -105,8 +106,8 @@ const cr010902Controller = {
                ;
           
           
-          const query = "SELECT " + qtipo+ " ,"+ qvec_filtro + " FROM  TABLE( Clientes_Deuda_1.F_Deuda_Tnegocio(:emp,:per)) T1  group by " + qtipo;
-            //console.log(query);
+          const query = "SELECT " + qtipocolum+ " ,"+ qvec_filtro + " FROM  TABLE( Clientes_Deuda_1.F_Deuda_Tnegocio(:emp,:per)) T1  group by " + qtipogroup;
+          console.log(query);
             const params = {emp: emp, per:per};
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
