@@ -38,6 +38,7 @@ app.use('/api/ancestros', require('./routes/ancestros.routes'));
 //rutas para modulos
 app.use('/api/AD010102', require('./routes/administracion/AD010102.routes'));
 app.use('/api/AD010201', require('./routes/administracion/AD010201.routes'));
+app.use('/api/BA010302', require('./routes/finanzas/BA010302.routes'));
 app.use('/api/BA010304', require('./routes/finanzas/BA010304.routes'));
 app.use('/api/BA010305', require('./routes/finanzas/BA010305.routes'));
 app.use('/api/CR0100', require('./routes/creditos/CR0100.routes'));
