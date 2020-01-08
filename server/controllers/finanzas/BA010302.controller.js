@@ -82,7 +82,7 @@ const ba010302Controller = {
                 console.error(err);
                 return;
             }
-            const query = "select * from table(pack_new_finanzas_no_tocar.f_list_fondo_movimiento(:p_empresa,:p_fondo,:p_numero))";
+            const query = "select '',case st_conta_aprob when 'S' then 'ic-checked.gif^Aprobado' else 'ic-unchecked.gif^Desaprobado' end,to_char(fe_movimiento,'dd/mm/yyyy'),co_documento,'ic-pedido.svg^Ver archivos',de_razon_social,im_ingreso,im_egreso,de_moneda,nu_tipo_cambio,im_original,de_concepto,co_cuenta_gasto,de_descripcion,st_contabi,st_imagen,co_periodo,co_empresa,co_libro_contable,st_tran_conta,co_prin_voucher,co_cuenta_documento,de_observaciones,co_categ_ingreso_gasto,co_ingreso_gasto,de_gasto,co_fondo_fijo,im_saldo,nu_fondo_fijo,co_clasificacion_entidad,co_tipo_entidad,co_catalogo_entidad,co_tipo_doc_administr,st_ingreso_egreso,co_catal_prespuesto,co_centro_costo_soli,co_usuario_soli,control,de_tipo,nu_documento,de_serie,co_form_documento,0 cero from table(pack_new_finanzas_no_tocar.f_list_fondo_movimiento(:p_empresa,:p_fondo,:p_numero))";
             const params = {
                 p_empresa: { val: empresa },
                 p_fondo: { val: fondo },

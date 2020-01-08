@@ -17,7 +17,7 @@ app.set('port', process.env.port || 3000);
 //app.use(morgan('dev'));
 app.use(express.json());
 app.use(cors({origin: host.address}));
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
 app.set('view engine', 'ejs');
 //app.use(jwt());
 //servicio de archivos estáticos
