@@ -1,6 +1,18 @@
 const ba010302Structs = {
     formEditar: [
-        { type: 'settings' }
+        { type: 'settings', labelWidth: 80, offsetLeft: 16, inputWidth: 80 },
+        { type: 'calendar', label: 'Fecha emisión', name: 'fmovimiento', offsetTop: 12, dateFormat: '%d/%m/%Y' },
+        { type: 'combo', label: 'Moneda', name: 'moneda', inputWidth: 120 },
+        { type: 'input', label: 'Importe', name: 'importe', inputWidth: 100 },
+        { type: 'input', label: 'Tipo cambio', name: 'tcambio' },
+        { type: 'combo', label: 'Categoría', name: 'categoria', inputWidth: 240 },
+        { type: 'container', label: 'Descr. gasto', name: 'ctgasto', inputHeight: 200, inputWidth: 800 },
+        { type: 'container', label: 'Cuenta', name: 'ctcuenta', inputHeight: 160, inputWidth: 570, offsetTop: 8 },
+        { type: 'block', blockOffset: 64, inputWidth: 400, list: [
+            { type: 'button', name: 'actualizar', value: 'Actualizar' },
+            { type: 'newcolumn' },
+            { type: 'button', name: 'cancelar', value: 'Cancelar' }
+        ] }
     ]
 };
 
@@ -60,6 +72,113 @@ SeleccionarFondo = () => {
         gridFondoFijo.init();
         gridFondoFijo.load(BASE_URL + 'BA010302/lista-fondos/' + usrJson.empresa + '/' + Caja.caja);
         gridFondoFijo.attachEvent('onRowDblClicked', gridFondoFijoOnRowDblClicked);
+}
+
+MostrarVentanaEdicion = async (params) => {
+    winEditar = mainLayout.dhxWins.createWindow('winEditar', 0, 0, 960, 540);
+        winEditar.setText('Editar movimiento');
+        winEditar.center();
+        winEditar.keepInViewport(true);
+        winEditar.setModal(true);
+    formEditar = winEditar.attachForm();
+        formEditar.loadStruct(ba010302Structs.formEditar);
+        formEditar.setItemValue('fmovimiento', params.fecha);
+        formEditar.setItemValue('importe', params.importe);
+        formEditar.setItemValue('tcambio', params.tpcambio);
+/*
+let params = {
+    fecha: movimiento.fecha,
+    moneda: movimiento.comoneda,
+    importe: movimiento.egreso,
+    tpcambio: movimiento.tpcambio,
+    cuenta: movimiento.cuentadoc,
+    categig: movimiento.categig,
+    codigoig: movimiento.codigoig
+};
+*/
+    formEditar.attachEvent('onChange', (name, value) => {
+        switch (name) {
+            case 'moneda':
+                console.log(name, 'cambió a', value);
+                break;
+            case 'categoria':
+                gridIngasto.clearAll();
+                gridIngasto.load(BASE_URL + 'BA010302/lista-ingreso-gasto/' + usrJson.empresa + '/' + value, () => {
+                    let numFilas = gridIngasto.getRowsNum();
+                    for (let i = 0; i < numFilas; i++) {
+                        let iRowId = gridIngasto.getRowId(i);
+                        let iRowData = gridIngasto.getRowData(iRowId);
+                        if (iRowData.coingasto == params.codigoig && iRowData.categig == params.categig) {
+                            gridIngasto.cells(iRowId, 0).setValue(1);
+                            gridIngasto.setRowTextStyle(iRowId, 'color:#1976d2;background-color:#fff9c4;');
+                            gridIngasto.showRow(iRowId);
+                            ultimoIg = iRowId;
+                            i = numFilas;
+                        }
+                    }
+                });
+                break;
+            default: break;
+        }
+    });
+    gridIngasto = new dhtmlXGridObject(formEditar.getContainer('ctgasto'));
+        gridIngasto.setImagePath('/assets/vendor/dhtmlx/codebase/imgs/dhxgrid_skyblue/');
+        gridIngasto.setIconsPath('/assets/images/icons/grid/');
+        gridIngasto.setHeader(',Ingreso/gasto,C.costo,Cta.Gasto,Catal.Pspto.,Nombre Presupuesto,Cta.Contable,Cod.Ing.Gasto,Categ.Ing.Gasto,Driver');
+    gridIngasto.attachHeader('#rspan,#text_filter,#select_filter,#select_filter,#select_filter,#text_filter,#select_filter,#select_filter,#select_filter,#select_filter');
+        gridIngasto.setColumnIds('selected,ingasto,ccosto,ctagasto,catalpres,nompres,cuenta,coingasto,categig,driver');
+        gridIngasto.setInitWidths('30,180,30,60,40,180,180,40,40,40');
+        gridIngasto.setColTypes('ra,rotxt,img,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt');
+        gridIngasto.setStyle(null,'color:#808080;',null,null);
+        gridIngasto.init();
+        gridIngasto.attachEvent('onCheck', gridIngastoOnCheck);
+    gridCuenta = new dhtmlXGridObject(formEditar.getContainer('ctcuenta'));
+        gridCuenta.setImagePath('/assets/vendor/dhtmlx/codebase/imgs/dhxgrid_skyblue/');
+        gridCuenta.setIconsPath('/assets/images/icons/grid/');
+        gridCuenta.setHeader(',Cuenta,Descripción,Moneda,Libro');
+        gridCuenta.attachHeader('#rspan,#text_filter,#text_filter,#select_filter,#select_filter');
+        gridCuenta.setColumnIds('selected,cuenta,descripcion,moneda,libro');
+        gridCuenta.setInitWidths('30,120,240,80,80');
+        gridCuenta.setColTypes('ra,rotxt,rotxt,rotxt,rotxt');
+        gridCuenta.setStyle(null,'color:#808080;',null,null);
+        gridCuenta.init();
+        gridCuenta.attachEvent('onCheck', gridCuentaOnCheck);
+        gridCuenta.load(BASE_URL + 'BA010302/lista-cuentas/' + usrJson.empresa + '/' + params.moneda, () => {
+            let numFilas = gridCuenta.getRowsNum();
+            for (let i = 0; i < numFilas; i++) {
+                let iRowId = gridCuenta.getRowId(i);
+                let iRowData = gridCuenta.getRowData(iRowId);
+                if (iRowData.cuenta == params.cuenta) {
+                    gridCuenta.cells(iRowId, 0).setValue(1);
+                    gridCuenta.setRowTextStyle(iRowId, 'color:#1976d2;background-color:#fff9c4;');
+                    gridCuenta.showRow(iRowId);
+                    ultimoCuenta = iRowId;
+                    i = numFilas;
+                }
+            }
+        });
+    // carga los componentes del formulario´
+    let result;
+    try {
+        result = await $.ajax({
+            url: '/api/BA010302/datos-form-edicion',
+            method: 'post',
+            dataType: 'json'
+        });
+        if (result.error) {
+            console.error(result.error);
+            alert(result.error);
+            return;
+        }
+        //
+        formEditar.reloadOptions('moneda', result.data.monedas);
+        formEditar.reloadOptions('categoria', result.data.categig);
+        formEditar.getCombo('moneda').selectOption(formEditar.getCombo('moneda').getOption(params.moneda).index);
+        formEditar.getCombo('categoria').selectOption(formEditar.getCombo('categoria').getOption(params.categig).index);
+    }
+    catch (err) {
+        console.error(err);
+    }
 }
 
 // eventos
@@ -167,12 +286,12 @@ gridDetalleOnRowDblClicked = (rowId, colId) => {
     layoutFondoFijo.cells('b').expand();
     gridMovimientos = layoutFondoFijo.cells('b').attachGrid();
         gridMovimientos.setIconsPath('/assets/images/icons/grid/');
-        gridMovimientos.setHeader(',Aprob. Conta,Fecha,Documento,,Razón Social,Imp. ingreso,Imp. egreso,Moneda,Tipo cambio,Imp. original,Concepto,Cuenta gasto,Cuenta contable,Contabilidad,Imagen,Periodo,Empresa,Libro contable,Transfiere,Prin voucher,Cta. Dcto.,Formato utilizado,Categ. Ing. Gasto,Co Ing. Gasto,Definicion del gasto,Co F. Fijo,Imp. saldo,N° F. Fijo,N° clas.,Tipo entidad,N° RUC,Tipo Doc Adm,St Ing. Egr.,Catal Pspto,Centro soli,Usuario soli,N° control,De tipo,N°,Serie,,');
-        gridMovimientos.attachHeader('#rspan,#rspan,#text_filter,#text_filter,#rspan,#text_filter,#numeric_filter,#numeric_filter,#select_filter,#numeric_filter,#numeric_filter,#text_filter,#select_filter,#text_filter,#rspan,#rspan,#select_filter,#select_filter,#select_filter,#rspan,#text_filter,#select_filter,#text_filter,#select_filter,#select_filter,#text_filter,#text_filter,#numeric_filter,#text_filter,#select_filter,#select_filter,#text_filter,#select_filter,#rspan,#select_filter,#select_filter,#select_filter,#numeric_filter,#text_filter,#numeric_filter,#text_filter,#rspan,#rspan');
-        gridMovimientos.setColumnIds('edicion,ctaprob,fecha,documento,boton,rsocial,ingreso,egreso,moneda,tpcambio,original,concepto,cuentagasto,descripcion,scontabilidad,simagen,periodo,empresa,libro,stransaccion,cvoucher,cuentadoc,observaciones,categig,codigoig,gasto,fondo,saldo,numero,clasenti,tpenti,catalenti,tpdocumento,singegr,catalpres,ccostosoli,usuariosoli,control,tipo,numdoc,seriedoc,coformdoc,editable');
-        gridMovimientos.setInitWidths('30,30,80,80,30,240,100,100,80,60,100,320,60,160,30,30,80,60,80,30,80,80,160,80,80,160,60,100,60,80,80,80,60,30,80,80,80,60,120,100,80,0,0');
-        gridMovimientos.setColTypes('img,img,rotxt,rotxt,img,rotxt,ron,ron,rotxt,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,ron,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,ron,rotxt,ron,ron');
-        gridMovimientos.setColAlign('left,left,left,left,center,left,right,right,left,left,right,left,left,left,center,center,left,left,left,center,left,left,left,left,left,left,left,right,left,left,left,left,left,center,left,left,left,left,left,left,left,left,left');
+        gridMovimientos.setHeader(',Aprob. Conta,Fecha,Documento,,Razón Social,Imp. ingreso,Imp. egreso,Moneda,Tipo cambio,Imp. original,Concepto,Cuenta gasto,Cuenta contable,Contabilidad,Imagen,Periodo,Empresa,Libro contable,Transfiere,Prin voucher,Cta. Dcto.,Formato utilizado,Categ. Ing. Gasto,Co Ing. Gasto,Definicion del gasto,Co F. Fijo,Imp. saldo,N° F. Fijo,N° clas.,Tipo entidad,N° RUC,Tipo Doc Adm,St Ing. Egr.,Catal Pspto,Centro soli,Usuario soli,N° control,De tipo,N°,Serie,,,');
+    gridMovimientos.attachHeader('#rspan,#rspan,#text_filter,#text_filter,#rspan,#text_filter,#numeric_filter,#numeric_filter,#select_filter,#numeric_filter,#numeric_filter,#text_filter,#select_filter,#text_filter,#rspan,#rspan,#select_filter,#select_filter,#select_filter,#rspan,#text_filter,#select_filter,#text_filter,#select_filter,#select_filter,#text_filter,#text_filter,#numeric_filter,#text_filter,#select_filter,#select_filter,#text_filter,#select_filter,#rspan,#select_filter,#select_filter,#select_filter,#numeric_filter,#text_filter,#numeric_filter,#text_filter,#rspan,#rspan,#rspan');
+        gridMovimientos.setColumnIds('edicion,ctaprob,fecha,documento,boton,rsocial,ingreso,egreso,moneda,tpcambio,original,concepto,cuentagasto,descripcion,scontabilidad,simagen,periodo,empresa,libro,stransaccion,cvoucher,cuentadoc,observaciones,categig,codigoig,gasto,fondo,saldo,numero,clasenti,tpenti,catalenti,tpdocumento,singegr,catalpres,ccostosoli,usuariosoli,control,tipo,numdoc,seriedoc,coformdoc,editable,comoneda');
+        gridMovimientos.setInitWidths('30,30,80,80,30,240,100,100,40,60,100,320,60,160,30,30,80,60,80,30,80,80,160,80,80,160,60,100,60,80,80,80,60,30,80,80,80,60,120,100,80,0,0,0');
+    gridMovimientos.setColTypes('img,img,rotxt,rotxt,img,rotxt,ron,ron,rotxt,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,ron,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,ron,rotxt,ron,ron,ron');
+    gridMovimientos.setColAlign('left,left,left,left,center,left,right,right,left,left,right,left,left,left,center,center,left,left,left,center,left,left,left,left,left,left,left,right,left,left,left,left,left,center,left,left,left,left,left,left,left,left,left,left');
         gridMovimientos.setNumberFormat('0,000.00', 6);
         gridMovimientos.setNumberFormat('0,000.00', 7);
         gridMovimientos.setNumberFormat('0,000.00', 9);
@@ -184,8 +303,6 @@ gridDetalleOnRowDblClicked = (rowId, colId) => {
     gridMovimientos.attachEvent('onRowSelect', gridMovimientosOnRowSelect);
     $('#span-detalle').text('Fondo Fijo ' + detalle.codigo + ' - ' + detalle.numero);
 }
-
-toolbarMovimientosOnClick
 
 layoutFondoFijoOnLoad = () => {
     let numFilas = gridMovimientos.getRowsNum();
@@ -208,6 +325,20 @@ layoutFondoFijoOnLoad = () => {
 gridMovimientosOnRowSelect = async (rowId, colId) => {
     let movimiento = gridMovimientos.getRowData(rowId);
     switch (colId) {
+        case 0:
+            if (movimiento.editable == 1) {
+                let params = {
+                    fecha: movimiento.fecha,
+                    moneda: movimiento.comoneda,
+                    importe: movimiento.egreso,
+                    tpcambio: movimiento.tpcambio,
+                    cuenta: movimiento.cuentadoc,
+                    categig: movimiento.categig,
+                    codigoig: movimiento.codigoig
+                };
+                MostrarVentanaEdicion(params);
+            }
+            break;
         case 4:
             const params = {
                 filtro: movimiento.documento,
@@ -231,16 +362,29 @@ gridMovimientosOnRowSelect = async (rowId, colId) => {
             }
             AbrirVisor(params, mainLayout.dhxWins);
             break;
-        case 0:
-            if (movimiento.editable == 1) {
-                winEditar = mainLayout.dhxWins.createWindow('winEditar', 0, 0, 400, 540);
-                    winEditar.setText('Editar movimiento');
-                    winEditar.center();
-                    winEditar.keepInViewport(true);
-                    winEditar.setModal(true);
-                formEditar = winEditar.attachForm();
-            }
-            break;
         default: break;
     }
+}
+
+formEditarOnChange = (name, value) => {
+    // oliboli
+}
+
+gridIngastoOnCheck = (rowId, colId, state) => {
+    if (ultimoIg) {
+        gridIngasto.setRowTextStyle(ultimoIg, 'color:#808080;background-color:inherit;');
+    }
+    if (state) {
+        gridIngasto.setRowTextStyle(rowId, 'color:#1976d2;background-color:#fff9c4;');
+    }
+    ultimoIg = rowId;
+}
+gridCuentaOnCheck = (rowId, colId, state) => {
+    if (ultimoCuenta) {
+        gridCuenta.setRowTextStyle(ultimoCuenta, 'color:#808080;background-color:inherit;');
+    }
+    if (state) {
+        gridCuenta.setRowTextStyle(rowId, 'color:#1976d2;background-color:#fff9c4;');
+    }
+    ultimoCuenta = rowId;
 }
