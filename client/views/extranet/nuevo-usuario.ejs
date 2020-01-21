@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html >
+    <head>
+        <meta charset="UTF-8">
+        <title>Extranet Corporacion Life</title>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+
+        <link rel='stylesheet prefetch' href='http://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700,900|RobotoDraft:400,100,300,500,700,900'>
+        <link rel='stylesheet prefetch' href='http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'>
+
+        <link rel="stylesheet" href="../assets/extranet/login.css">
+
+
+    </head>
+
+    <body>
+
+        <!-- Form Mixin-->
+        <!-- Input Mixin-->
+        <!-- Button Mixin-->
+        <!-- Pen Title-->
+        <div class="pen-title">
+            <h1 id="sign-in-header">Sign in</h1>
+            <span><!--Pen <i class='fa fa-paint-brush'></i> + <i class='fa fa-code'></i> by <a href='http://andytran.me'>Andy Tran</a>-->&nbsp;</span>
+        </div>
+        <!-- Form Module-->
+        <div class="module form-module">
+            <div>
+                <!--i class="fa fa-times fa-pencil"></i>
+                <div class="tooltip">Nuevo usuario</div-->
+            </div>
+            <div class="form">
+                <h2 id="form-sign-in-title">Enter your information</h2>
+                <form id="form-sign-in" action="/extranet/auth-sign-in" method="post" >
+                    <input type="text" id="idnumber" name="idnumber" placeholder="Identity number" />
+                    <input type="text" id="email" name="email" placeholder="Your e-mail" />
+                    <input type="password" id="pswd" name="pswd" placeholder="Password" />
+                    <input type="password" id="rpswd" name="rpswd" placeholder="Repeat password" />
+                    <button id="btn-sign-in">Sign in</button>
+                </form>
+            </div>
+            <div class="cta"><a id="btn-to-login" href="/extranet">Go to login</a></div>
+        </div>
+        <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+
+        <script src="../assets/extranet/login.js"></script>
+        <script src="../assets/extranet/langs.js"></script>
+        <script type="text/javascript">
+            function submitForm(event) {
+                var idnumber = document.getElementById("idnumber").value;
+                var email = document.getElementById("email").value;
+                var pswd = document.getElementById("pswd").value;
+                var rpswd = document.getElementById("rpswd").value;
+                if(idnumber == "" || email == "" || pswd == "" || rpswd == "") {
+                    alert("Identity number, e-mail and passwords can't be empty");
+                    event.preventDefault();
+                    return;
+                }
+            }
+            function setLanguage(lang) {
+                const labels = langs[lang];
+                document.getElementById('sign-in-header').innerHTML = labels.SignInHeader;
+                document.getElementById('form-sign-in-title').innerHTML = labels.FormSignInTitle;
+                document.getElementById('btn-sign-in').innerHTML = labels.SignIn;
+                document.getElementById('idnumber').setAttribute('placeholder', labels.FormDocId);
+                document.getElementById('email').setAttribute('placeholder', labels.FormEmail);
+                document.getElementById('pswd').setAttribute('placeholder', labels.FormPsw);
+                document.getElementById('rpswd').setAttribute('placeholder', labels.FormRePsw);
+                document.getElementById('btn-to-login').innerHTML = labels.ToLogin;
+            }
+            function init() {
+                setLanguage('es');
+                $("#form-sign-in").on("submit", submitForm);
+                document.getElementById("user").value = typeof usr !== 'undefined' ? usr : '';
+                document.getElementById("pswd").value = typeof psw !== 'undefined' ? psw : '';
+            }
+            $(init);
+        </script>
+
+    </body>
+</html>

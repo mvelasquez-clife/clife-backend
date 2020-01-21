@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html >
+    <head>
+        <meta charset="UTF-8">
+        <title>Extranet Corporacion Life</title>
+        <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.css">
+        <link rel='stylesheet prefetch' href='http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'>
+    </head>
+
+    <body class="bg-cprimary">
+        <div class="container bg-light">
+            <div class="row">
+                <div class="col">
+                    <img src="/assets/images/extranet/clife-logo.svg" alt="Corporación Life SAC" class="w-20 mt-2 mb-5 mx-5">
+                    <h2 class="text-cprimary text-center mb-4" id="confirm-title">You've been registered</h2>
+                    <h5 class="text-dark mx-5" id="confirm-tx-1">We have sent a message to your email address:</h5>
+                    <h5 class="text-dark my-4 mx-5">
+                        <a href="#"><%= email %></a>
+                    </h5>
+                    <h5 class="text-dark mx-5" id="confirm-tx-2">with an activation link. Please click on the link to complete the registration</h5>
+                    <h5 class="text-dark mt-5 mx-5" id="confirm-tx-3">Regards</h5>
+                    <h5 class="text-dark mb-5 mt-2 mx-5 text-right" id="confirm-tx-4">Corporacion Life Team</h5>
+                </div>
+            </div>
+        </div>
+        <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script src="/assets/bootstrap/js/popper.min.js"></script>
+        <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+        <script src="../assets/extranet/langs.js"></script>
+        <script type="text/javascript">
+            function setLanguage(lang) {
+                const labels = langs[lang];
+                document.getElementById('confirm-title').innerHTML = labels.UserRegistered;
+                document.getElementById('confirm-tx-1').innerHTML = labels.ConfirmText1;
+                document.getElementById('confirm-tx-2').innerHTML = labels.ConfirmText2;
+                document.getElementById('confirm-tx-3').innerHTML = labels.ConfirmText3;
+                document.getElementById('confirm-tx-4').innerHTML = labels.ConfirmText4;
+            }
+            function init() {
+                setLanguage('es');
+            }
+            $(init);
+        </script>
+
+    </body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html >
+    <head>
+        <meta charset="UTF-8">
+        <title>Extranet Corporacion Life</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+        <link rel='stylesheet prefetch' href='http://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700,900|RobotoDraft:400,100,300,500,700,900'>
+        <link rel='stylesheet prefetch' href='http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'>
+        <link rel="stylesheet" href="../assets/extranet/login.css">
+    </head>
+
+    <body>
+        <!-- Form Mixin-->
+        <!-- Input Mixin-->
+        <!-- Button Mixin-->
+        <!-- Pen Title-->
+        <div class="pen-title">
+            <h1 id="login-header">Welcome to Corporacion Life</h1>
+            <span></span>
+        </div>
+        <!-- Form Module-->
+        <div class="module form-module">
+            <div>
+                <!--i class="fa fa-times fa-pencil"></i>
+                <div class="tooltip">Nuevo usuario</div-->
+            </div>
+            <div class="form">
+                <h2 id="form-login-title">Sign In</h2>
+                <form id="form-login" action="/extranet/auth-login" method="post" >
+                    <input type="text" id="user" name="email" placeholder="Your e-mail" />
+                    <input type="password" id="pswd" name="pswd" placeholder="Password" />
+                    <%if (typeof errmsg !== 'undefined') { %>
+                    <p class="p-err"><%=errmsg %></p>
+                    <% } %>
+                    <button id="btn-login">Login</button>
+                </form>
+            </div>
+            <div class="cta">
+                <a id="btn-registro" href="/extranet/nuevo-usuario">Sign in</a> | <a id="btn-rempsw" href="http://andytran.me">Forgot my password</a>
+            </div>
+        </div>
+        <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+        <script src="../assets/extranet/login.js"></script>
+        <script src="../assets/extranet/langs.js"></script>
+        <script type="text/javascript">
+            function submitForm(event) {
+                var user = document.getElementById("user").value;
+                var pswd = document.getElementById("pswd").value;
+                if(user == "" || pswd == "") {
+                    event.preventDefault();
+                    alert("Enter a valid e-mail and password");
+                }
+            }
+            function init() {
+                // labels
+                setLanguage('es');
+                // go!
+                $("#form-login").on("submit", submitForm);
+                document.getElementById("user").value = typeof usr !== 'undefined' ? usr : '';
+                document.getElementById("pswd").value = typeof psw !== 'undefined' ? psw : '';
+            }
+            function setLanguage(lang) {
+                const labels = langs[lang];
+                document.getElementById('login-header').innerHTML = labels.LoginHeader;
+                document.getElementById('form-login-title').innerHTML = labels.FormLoginTitle;
+                document.getElementById('btn-registro').innerHTML = labels.SignIn;
+                document.getElementById('user').setAttribute('placeholder', labels.HintUser);
+                document.getElementById('pswd').setAttribute('placeholder', labels.HintPassword);
+                document.getElementById('btn-rempsw').innerHTML = labels.RememberPassword;
+            }
+            $(init);
+        </script>
+
+    </body>
+</html>

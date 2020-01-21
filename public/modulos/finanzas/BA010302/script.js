@@ -1,15 +1,21 @@
 const ba010302Structs = {
     formEditar: [
         { type: 'settings', labelWidth: 80, offsetLeft: 16, inputWidth: 80 },
-        { type: 'calendar', label: 'Fecha emisión', name: 'fmovimiento', offsetTop: 12, dateFormat: '%d/%m/%Y' },
-        { type: 'combo', label: 'Moneda', name: 'moneda', inputWidth: 120 },
-        { type: 'input', label: 'Importe', name: 'importe', inputWidth: 100 },
-        { type: 'input', label: 'Tipo cambio', name: 'tcambio' },
+        { type: 'block', blockOffset: 0, offsetLeft: 16, offsetTop: 10, inputWidth: 800, labelWidth:0, list: [
+            { type: 'calendar', label: 'Fecha emisión', name: 'fmovimiento', offsetLeft:0, dateFormat: '%d/%m/%Y' },
+            { type: 'newcolumn' },
+            { type: 'input', label: 'Importe', name: 'importe', labelWidth: 48, offsetLeft: 12, inputWidth: 100 },
+            { type: 'newcolumn' },
+            { type: 'input', label: 'Tipo cambio', name: 'tcambio', labelWidth: 70, offsetLeft: 12 },
+            { type: 'newcolumn' },
+            { type: 'checkbox', label: '<span style="color:#1565c0;font-weight:bold;">Aprobar fondo fijo</span>', name: 'aprobado', labelWidth: 120, offsetLeft: 24, position: 'label-left' }
+        ] },
         { type: 'combo', label: 'Categoría', name: 'categoria', inputWidth: 240 },
-        { type: 'container', label: 'Descr. gasto', name: 'ctgasto', inputHeight: 200, inputWidth: 800 },
-        { type: 'container', label: 'Cuenta', name: 'ctcuenta', inputHeight: 160, inputWidth: 570, offsetTop: 8 },
+        { type: 'container', label: 'Descr. gasto', name: 'ctgasto', inputHeight: 200, inputWidth: 720 },
+        { type: 'combo', label: 'Moneda', name: 'moneda', inputWidth: 120 },
+        { type: 'container', label: 'Cuenta', name: 'ctcuenta', inputHeight: 160, inputWidth: 640, offsetTop: 8 },
         { type: 'block', blockOffset: 64, inputWidth: 400, list: [
-            { type: 'button', name: 'actualizar', value: 'Actualizar' },
+            { type: 'button', name: 'actualizar', value: 'Confirmar cambios' },
             { type: 'newcolumn' },
             { type: 'button', name: 'cancelar', value: 'Cancelar' }
         ] }
@@ -75,7 +81,7 @@ SeleccionarFondo = () => {
 }
 
 MostrarVentanaEdicion = async (params) => {
-    winEditar = mainLayout.dhxWins.createWindow('winEditar', 0, 0, 960, 540);
+    winEditar = mainLayout.dhxWins.createWindow('winEditar', 0, 0, 880, 565);
         winEditar.setText('Editar movimiento');
         winEditar.center();
         winEditar.keepInViewport(true);
@@ -85,21 +91,25 @@ MostrarVentanaEdicion = async (params) => {
         formEditar.setItemValue('fmovimiento', params.fecha);
         formEditar.setItemValue('importe', params.importe);
         formEditar.setItemValue('tcambio', params.tpcambio);
-/*
-let params = {
-    fecha: movimiento.fecha,
-    moneda: movimiento.comoneda,
-    importe: movimiento.egreso,
-    tpcambio: movimiento.tpcambio,
-    cuenta: movimiento.cuentadoc,
-    categig: movimiento.categig,
-    codigoig: movimiento.codigoig
-};
-*/
+    formEditar.attachEvent('onButtonClick', formEditarOnButtonClick);
     formEditar.attachEvent('onChange', (name, value) => {
         switch (name) {
             case 'moneda':
-                console.log(name, 'cambió a', value);
+                gridCuenta.clearAll();
+                gridCuenta.load(BASE_URL + 'BA010302/lista-cuentas/' + usrJson.empresa + '/' + value, () => {
+                    let numFilas = gridCuenta.getRowsNum();
+                    for (let i = 0; i < numFilas; i++) {
+                        let iRowId = gridCuenta.getRowId(i);
+                        let iRowData = gridCuenta.getRowData(iRowId);
+                        if (iRowData.codigo == params.cuenta) {
+                            gridCuenta.cells(iRowId, 0).setValue(1);
+                            gridCuenta.setRowTextStyle(iRowId, 'color:#1976d2;background-color:#fff9c4;');
+                            gridCuenta.showRow(iRowId);
+                            ultimoCuenta = iRowId;
+                            i = numFilas;
+                        }
+                    }
+                });
                 break;
             case 'categoria':
                 gridIngasto.clearAll();
@@ -135,28 +145,14 @@ let params = {
     gridCuenta = new dhtmlXGridObject(formEditar.getContainer('ctcuenta'));
         gridCuenta.setImagePath('/assets/vendor/dhtmlx/codebase/imgs/dhxgrid_skyblue/');
         gridCuenta.setIconsPath('/assets/images/icons/grid/');
-        gridCuenta.setHeader(',Cuenta,Descripción,Moneda,Libro');
-        gridCuenta.attachHeader('#rspan,#text_filter,#text_filter,#select_filter,#select_filter');
-        gridCuenta.setColumnIds('selected,cuenta,descripcion,moneda,libro');
-        gridCuenta.setInitWidths('30,120,240,80,80');
-        gridCuenta.setColTypes('ra,rotxt,rotxt,rotxt,rotxt');
+        gridCuenta.setHeader(',Codigo,Detalle,Documento,TipoDoc.,Prefijo,Moneda,Libro');
+        gridCuenta.attachHeader('#rspan,#text_filter,#text_filter,#text_filter,#select_filter,#select_filter,#select_filter,#text_filter');
+        gridCuenta.setColumnIds('selected,codigo,detalle,documento,tipodoc,prefijo,moneda,libro');
+        gridCuenta.setInitWidths('30,40,210,180,40,40,40,40');
+        gridCuenta.setColTypes('ra,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt');
         gridCuenta.setStyle(null,'color:#808080;',null,null);
         gridCuenta.init();
         gridCuenta.attachEvent('onCheck', gridCuentaOnCheck);
-        gridCuenta.load(BASE_URL + 'BA010302/lista-cuentas/' + usrJson.empresa + '/' + params.moneda, () => {
-            let numFilas = gridCuenta.getRowsNum();
-            for (let i = 0; i < numFilas; i++) {
-                let iRowId = gridCuenta.getRowId(i);
-                let iRowData = gridCuenta.getRowData(iRowId);
-                if (iRowData.cuenta == params.cuenta) {
-                    gridCuenta.cells(iRowId, 0).setValue(1);
-                    gridCuenta.setRowTextStyle(iRowId, 'color:#1976d2;background-color:#fff9c4;');
-                    gridCuenta.showRow(iRowId);
-                    ultimoCuenta = iRowId;
-                    i = numFilas;
-                }
-            }
-        });
     // carga los componentes del formulario´
     let result;
     try {
@@ -287,7 +283,7 @@ gridDetalleOnRowDblClicked = (rowId, colId) => {
     gridMovimientos = layoutFondoFijo.cells('b').attachGrid();
         gridMovimientos.setIconsPath('/assets/images/icons/grid/');
         gridMovimientos.setHeader(',Aprob. Conta,Fecha,Documento,,Razón Social,Imp. ingreso,Imp. egreso,Moneda,Tipo cambio,Imp. original,Concepto,Cuenta gasto,Cuenta contable,Contabilidad,Imagen,Periodo,Empresa,Libro contable,Transfiere,Prin voucher,Cta. Dcto.,Formato utilizado,Categ. Ing. Gasto,Co Ing. Gasto,Definicion del gasto,Co F. Fijo,Imp. saldo,N° F. Fijo,N° clas.,Tipo entidad,N° RUC,Tipo Doc Adm,St Ing. Egr.,Catal Pspto,Centro soli,Usuario soli,N° control,De tipo,N°,Serie,,,');
-    gridMovimientos.attachHeader('#rspan,#rspan,#text_filter,#text_filter,#rspan,#text_filter,#numeric_filter,#numeric_filter,#select_filter,#numeric_filter,#numeric_filter,#text_filter,#select_filter,#text_filter,#rspan,#rspan,#select_filter,#select_filter,#select_filter,#rspan,#text_filter,#select_filter,#text_filter,#select_filter,#select_filter,#text_filter,#text_filter,#numeric_filter,#text_filter,#select_filter,#select_filter,#text_filter,#select_filter,#rspan,#select_filter,#select_filter,#select_filter,#numeric_filter,#text_filter,#numeric_filter,#text_filter,#rspan,#rspan,#rspan');
+        gridMovimientos.attachHeader('#rspan,#rspan,#text_filter,#text_filter,#rspan,#text_filter,#numeric_filter,#numeric_filter,#select_filter,#numeric_filter,#numeric_filter,#text_filter,#select_filter,#text_filter,#rspan,#rspan,#select_filter,#select_filter,#select_filter,#rspan,#text_filter,#select_filter,#text_filter,#select_filter,#select_filter,#text_filter,#text_filter,#numeric_filter,#text_filter,#select_filter,#select_filter,#text_filter,#select_filter,#rspan,#select_filter,#select_filter,#select_filter,#numeric_filter,#text_filter,#numeric_filter,#text_filter,#rspan,#rspan,#rspan');
         gridMovimientos.setColumnIds('edicion,ctaprob,fecha,documento,boton,rsocial,ingreso,egreso,moneda,tpcambio,original,concepto,cuentagasto,descripcion,scontabilidad,simagen,periodo,empresa,libro,stransaccion,cvoucher,cuentadoc,observaciones,categig,codigoig,gasto,fondo,saldo,numero,clasenti,tpenti,catalenti,tpdocumento,singegr,catalpres,ccostosoli,usuariosoli,control,tipo,numdoc,seriedoc,coformdoc,editable,comoneda');
         gridMovimientos.setInitWidths('30,30,80,80,30,240,100,100,40,60,100,320,60,160,30,30,80,60,80,30,80,80,160,80,80,160,60,100,60,80,80,80,60,30,80,80,80,60,120,100,80,0,0,0');
     gridMovimientos.setColTypes('img,img,rotxt,rotxt,img,rotxt,ron,ron,rotxt,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,ron,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,rotxt,ron,rotxt,ron,ron,ron');
@@ -366,8 +362,60 @@ gridMovimientosOnRowSelect = async (rowId, colId) => {
     }
 }
 
-formEditarOnChange = (name, value) => {
-    // oliboli
+formEditarOnButtonClick = async (name) => {
+    switch (name) {
+        case 'actualizar':
+            let mvData = gridMovimientos.getRowData(gridMovimientos.getSelectedRowId());
+            let igData = gridIngasto.getRowData(ultimoIg);
+            let ctData = gridCuenta.getRowData(ultimoCuenta);
+            let data = {
+                // campos para validacion
+                empresa: usrJson.empresa,
+                alias: usrJson.alias,
+                cofondo: mvData.fondo,
+                nufondo: mvData.numero,
+                periodo: mvData.periodo,
+                documento: mvData.documento,
+                catalenti: mvData.catalenti,
+                // campos a actualizar
+                aprobado: formEditar.isItemChecked('aprobado') ? 'S' : 'N',
+                cuentadoc: ctData.codigo,
+                importe: formEditar.getItemValue('importe'),
+                moneda: formEditar.getItemValue('moneda'),
+                tpcambio: formEditar.getItemValue('tcambio'),
+                fecha: formEditar.getCalendar('fmovimiento').getFormatedDate('%d/%m/%Y'),
+                categig: igData.categig,
+                coingasto: igData.coingasto,
+                catalpres: igData.catalpres,
+                // concepto: xxx,
+                usvalida: usrJson.codigo
+            };
+            let result;
+            try {
+                result = await $.ajax({
+                    url: '/api/BA010302/actualiza-fondo-fijo',
+                    method: 'post',
+                    data: data,
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                gridMovimientos.clearAll();
+                layoutFondoFijo.cells('b').progressOn();
+                gridMovimientos.load(BASE_URL + 'BA010302/movimientos-fondo/' + usrJson.empresa + '/' + mvData.fondo + '/' + mvData.numero, layoutFondoFijoOnLoad);
+                alert('Se grabó el movimiento');
+                winEditar.close();
+            }
+            catch (err) {
+                alert(err);
+            }
+            break;
+        case 'cancelar':
+            break;
+        default: break;
+    }
 }
 
 gridIngastoOnCheck = (rowId, colId, state) => {

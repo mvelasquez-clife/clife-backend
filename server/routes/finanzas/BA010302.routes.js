@@ -11,5 +11,6 @@ const ba010302Controller = require('../../controllers/finanzas/BA010302.controll
     router.post('/datos-form-edicion', ba010302Controller.datosFormEdicion);
     router.get('/lista-ingreso-gasto/:empresa/:categig', ba010302Controller.listaIngresoGasto);
     router.get('/lista-cuentas/:empresa/:moneda', ba010302Controller.listaCuentas);
+    router.post('/actualiza-fondo-fijo', ba010302Controller.actualizaMovimiento);
 
 module.exports = router;

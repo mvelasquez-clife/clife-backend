@@ -147,7 +147,7 @@ const ba010302Controller = {
         let conn;
         try {
             conn = await oracledb.getConnection(dbParams);
-            const query = "select 0 seleccion,t1.co_cuenta_documento,t1.de_descripcion,t1.co_moneda,t1.co_libro_contable from co_cuen_docu_c t1 where t1.co_empresa = :p_empresa and t1.co_moneda = :p_moneda";
+            const query = "select 0 selected,ta.co_form_documento, ta.de_observaciones, tb.de_nombre, ta.co_tipo_doc_administr, tb.de_abreviatura, ta.co_moneda, ta.co_libro_contable from co_form_docu_c ta join ma_tipo_docu_admi_m tb on tb.co_tipo_doc_administr = ta.co_tipo_doc_administr where ta.co_empresa = :p_empresa and ta.co_moneda = :p_moneda and ta.es_vigencia = 'Vigente' order by ta.co_tipo_doc_administr, ta.de_observaciones";
             const params = {
                 p_empresa: { val: empresa },
                 p_moneda: { val: moneda }
@@ -157,6 +157,41 @@ const ba010302Controller = {
             response.send(xmlParser.renderXml(result.rows));
         }
         catch (err) {
+            console.error(err);
+        }
+    },
+    actualizaMovimiento: async (request, response) => {
+        const { empresa, alias, cofondo, nufondo, periodo, documento, catalenti, aprobado, cuentadoc, importe, moneda, tpcambio, fecha, categig, coingasto, catalpres, usvalida } = request.body;
+        let conn;
+        try {
+            conn = await oracledb.getConnection(dbParams);
+            const query = "call pack_new_finanzas_no_tocar.sp_actualiza_movimiento(:p_empresa,:p_alias,:p_cofondo,:p_nufondo,:p_periodo,:p_documento,:p_catalenti,:p_aprobado,:p_cuentadoc,:p_importe,:p_moneda,:p_tpcambio,:p_fecha,:p_categig,:p_coingasto,:p_catalpres,:p_usvalida)";
+            const params = {
+                p_empresa: { val: empresa },
+                p_alias: { val: alias },
+                p_cofondo: { val: cofondo },
+                p_nufondo: { val: nufondo },
+                p_periodo: { val: periodo },
+                p_documento: { val: documento },
+                p_catalenti: { val: catalenti },
+                p_aprobado: { val: aprobado },
+                p_cuentadoc: { val: cuentadoc },
+                p_importe: { val: importe },
+                p_moneda: { val: moneda },
+                p_tpcambio: { val: tpcambio },
+                p_fecha: { val: fecha },
+                p_categig: { val: categig },
+                p_coingasto: { val: coingasto },
+                p_catalpres: { val: catalpres },
+                p_usvalida: { val: usvalida }
+            };
+            const result = await conn.execute(query, params, responseParams);
+            response.json({
+                data: 'ok'
+            });
+        }
+        catch (err) {
+            response.json(err);
             console.error(err);
         }
     }

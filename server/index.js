@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const cookie = require('cookie-parser');
 const app = express();
 const bodyParser = require('body-parser');
 const http = require('http').Server(app);
@@ -22,7 +23,7 @@ app.set('view engine', 'ejs');
 //app.use(jwt());
 //servicio de archivos estáticos
 app.use(express.static('public'));
-
+app.use(cookie());
 //rutas cliente
 app.use('/', require('../client/routes/intranet.routes'));
 //rutas para el manejador de archivos
@@ -64,6 +65,8 @@ app.use('/viewer', require('./routes/viewer.routes'));
 app.use('/avance-ventas', require('./routes/avancevtas.routes'));
 //coordenadas de clientes
 app.use('/coordenadas', require('./routes/coordenadas.routes'));
+// extranet
+app.use('/extranet', require('../client/routes/extranet.routes'));
 
 //configura el chat
 /*io.set('origins', host.address);
