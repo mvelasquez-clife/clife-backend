@@ -9,11 +9,17 @@ const responseParams = {
 
 const saltRounds = 4;
 const CookieId = 'sess-cookie';
+const UserExpo = {
+    alias: 'VILLARAN',
+    codigo: 7865928,
+    empresa: 11
+};
 
 const extranetController = {
     home: (request, response) => {
         if (request.cookies[CookieId]) {
-            response.render(path.resolve('client/views/extranet/home.ejs'));
+            let sesion = request.cookies[CookieId];
+            response.render(path.resolve('client/views/extranet/home.ejs'), { sesion: JSON.stringify(JSON.parse(sesion)) });
         }
         else response.redirect('/extranet/login');
     },
@@ -21,8 +27,8 @@ const extranetController = {
         response.render(path.resolve('client/views/extranet/login.ejs'), {});
     },
     logout: (request, response) => {
-        response.clearCookie('rgmail', { httpOnly: true });
-        response.redirect('/extranet');
+        response.clearCookie(CookieId, { httpOnly: true });
+        response.redirect('/extranet/login');
     },
     NuevoUsuario: (request, response) => {
         response.render(path.resolve('client/views/extranet/nuevo-usuario.ejs'));
@@ -36,6 +42,13 @@ const extranetController = {
     PruebaRegistro: (request, response) => {
         response.cookie('rgmail','mvelasquez@corporacionlife.com.pe',{ httpOnly: true });
         response.redirect('/extranet/confirmar-usuario');
+    },
+    DetallePedido: (request, response) => {
+        if (request.cookies[CookieId]) {
+            let sesion = request.cookies[CookieId];
+            response.render(path.resolve('client/views/extranet/detalle-pedido.ejs'), { sesion: JSON.stringify(JSON.parse(sesion)) });
+        }
+        else response.redirect('/extranet/login');
     },
     //
     AuthLogin: async (request, response) => {
@@ -122,6 +135,62 @@ const extranetController = {
         catch (err) {
             console.error(err);
         }
+    },
+    BuscarClientes: async (request, response) => {
+        let { texto } = request.body;
+        if (request.cookies[CookieId]) {
+            let result;
+            texto = texto.toUpperCase();
+            try {
+                let conn = await oracledb.getConnection(dbParams);
+                let query = "select codigo \"codigo\", nombre \"nombre\" from table(pack_new_web_expo.f_buscar_clientes(:p_codigo,:p_empresa,:p_texto))";
+                let params = {
+                    p_codigo: { val: UserExpo.codigo },
+                    p_empresa: { val: UserExpo.empresa },
+                    p_texto: { val: texto }
+                };
+                result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        clientes: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else response.json({
+            error: 'Su sesión expiró'
+        });
+    },
+    DatosCliente: async (request, response) => {
+        response.json({
+            data: {
+                cliente: {
+                    codigo: 191383,
+                    nombre: 'Hogarama SA',
+                    disponible: 50000,
+                    solicitud: 0,
+                    deuda: 100
+                },
+                pedido: {
+                    // codigo: 'O119-14368',
+                    codigo: 'x',
+                    moneda: 'US$',
+                    importe: 24265.21,
+                    fecha: '2019-12-30',
+                    items: 96
+                },
+                ctacte: [
+                    { documento: 'F010-1000', moneda: 'US$', deuda: 10000, vence: '2020-01-20', nunico: 857142 },
+                    { documento: 'F015-1425', moneda: 'US$', deuda: 25000, vence: '2020-02-03', nunico: 142857 }
+                ]
+            }
+        });
     }
 };
 
