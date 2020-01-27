@@ -178,8 +178,8 @@ const extranetController = {
                     deuda: 100
                 },
                 pedido: {
-                    // codigo: 'O119-14368',
-                    codigo: 'x',
+                    codigo: 'O119-14368',
+                    // codigo: 'x',
                     moneda: 'US$',
                     importe: 24265.21,
                     fecha: '2019-12-30',

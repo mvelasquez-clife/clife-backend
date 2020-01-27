@@ -51,6 +51,9 @@
                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-logout">Cerrar sesión</a>
                     </div>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-light" href="/extranet">Volver</a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -140,7 +143,7 @@
                             <input type="file" class="form-control-file" id="fl-plantilla" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
                         </div>
                         <div class="form-group">
-                            <p class="text-dark">Puede descargar una plantilla de muestra haciendo clic en el <a href="#">siguiente enlace</a>.</p>
+                            <p class="text-dark">Puede descargar una plantilla de muestra haciendo clic en el <a href="/files/formato.xlsx" download="formato.xlsx">siguiente enlace</a>.</p>
                         </div>
                     </form>
                 </div>
@@ -220,16 +223,16 @@
             pallets: 0,
             importe: 0
         };
-        let DetallePedido = Pedido.productos;
-        /*let DetallePedido = [
-            { codigo: '00001000201087', ean: '7756719002905', nombre: 'Tinte para cabello For Men PACK x 35 ml .03 de 6 und. Cast.Oscuro', cantidad: 96, cajas: 8, pallets: 0.14, importe: 202.0896 , difer: 1, tipo: 'L' },
-            { codigo: '01020005000022', ean: '7756719004527', nombre: 'Shock Anticaida Radiant x 15ml Caj.x 12 und. V2', cantidad: 120, cajas: 10, pallets: 0.2, importe: 100.68 , difer: 1, tipo: 'L' },
-            { codigo: '01020005100059', ean: '7756719004534', nombre: 'Shock Reparacion Intensa Radiant x 15ml Caj.x 12 und. V2', cantidad: 24, cajas: 2, pallets: 0.08, importe: 201.36 , difer: 1, tipo: 'C' },
-            { codigo: '03023013000006', ean: '7756719007573', nombre: 'Laca Ultrafix PLife Saloon Fco x 175 ml', cantidad: 36, cajas: 3, pallets: 0.13, importe: 38.37 , difer: 1, tipo: 'L' },
-            { codigo: '03023013100019', ean: '7756719002745', nombre: 'Gel Efec. Mojado P.Life Saloon tubo x 200 gr.', cantidad: 72, cajas: 6, pallets: 0.12, importe: 34.86 , difer: 1, tipo: 'P' },
-            { codigo: '03024015100010', ean: '7756719007580', nombre: 'Crema para peinar PLife Saloon Fco x 250 ml', cantidad: 60, cajas: 5, pallets: 0.02, importe: 83.28 , difer: 1, tipo: 'N' },
-            { codigo: '03024015200003', ean: '7756719002684', nombre: 'Cera Moldeadora P.Life Saloon x Pote 50gr.7756719002684', cantidad: 84, cajas: 7, pallets: 0.18, importe: 58.95 , difer: 1, tipo: 'L' }
-        ];*/
+        let DetallePedido = [
+            { codigo: '00001000201087', ean: '7756719002905', nombre: 'Tinte para cabello For Men PACK x 35 ml .03 de 6 und. Cast.Oscuro', cantidad: 96, capacidad: 12, cajas: 8, pallets: 0.14, importe: 202.0896 , difer: 1, tipo: 'L' },
+            { codigo: '01020005000022', ean: '7756719004527', nombre: 'Shock Anticaida Radiant x 15ml Caj.x 12 und. V2', cantidad: 120, capacidad: 12, cajas: 10, pallets: 0.2, importe: 100.68 , difer: 1, tipo: 'L' },
+            { codigo: '01020005100059', ean: '7756719004534', nombre: 'Shock Reparacion Intensa Radiant x 15ml Caj.x 12 und. V2', cantidad: 24, capacidad: 10, cajas: 2, pallets: 0.08, importe: 201.36 , difer: 1, tipo: 'C' },
+            { codigo: '03023013000006', ean: '7756719007573', nombre: 'Laca Ultrafix PLife Saloon Fco x 175 ml', cantidad: 36, capacidad: 12, cajas: 3, pallets: 0.13, importe: 38.37 , difer: 1, tipo: 'L' },
+            { codigo: '03023013100019', ean: '7756719002745', nombre: 'Gel Efec. Mojado P.Life Saloon tubo x 200 gr.', cantidad: 72, capacidad: 12, cajas: 6, pallets: 0.12, importe: 34.86 , difer: 1, tipo: 'P' },
+            { codigo: '03024015100010', ean: '7756719007580', nombre: 'Crema para peinar PLife Saloon Fco x 250 ml', cantidad: 60, capacidad: 10, cajas: 5, pallets: 0.02, importe: 83.28 , difer: 1, tipo: 'N' },
+            { codigo: '03024015200003', ean: '7756719002684', nombre: 'Cera Moldeadora P.Life Saloon x Pote 50gr.7756719002684', cantidad: 84, capacidad: 10, cajas: 7, pallets: 0.18, importe: 58.95 , difer: 1, tipo: 'L' }
+        ];
+        // DetallePedido = Pedido.productos;
         // funciones
         AdjuntarPlantilla = (event) => {
             event.preventDefault();
@@ -242,13 +245,13 @@
                 $('#modal-plantilla').modal('hide');
                 alert('Los productos fueron cargados con éxito');
                 // agrega los productos y recarga la grilla
-                DetallePedido.push({ codigo: '03025015400014', ean: '7756719003377', nombre: 'Silicona Plife Saloon Fco. 80ml.', cantidad: 3, cajas: 1, pallets: 0.12, importe: 49.0863, difer: 1, tipo: 'L' });
-                DetallePedido.push({ codigo: '04026016000008', ean: '7756719004299', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 350ml', cantidad: 3, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
-                DetallePedido.push({ codigo: '04026016000009', ean: '7756719004367', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 1L', cantidad: 3, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'L' });
-                DetallePedido.push({ codigo: '04026016200020', ean: '7756719004282', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 350ml', cantidad: 3, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
-                DetallePedido.push({ codigo: '04026016200021', ean: '7756719004350', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 1L', cantidad: 3, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'C' });
-                DetallePedido.push({ codigo: '04026016200023', ean: '7756719004374', nombre: 'Shampoo Placenta Life Lisso Keratina Fco x 1l', cantidad: 3, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'P' });
-                DetallePedido.push({ codigo: '04026016200024', ean: '7756719004305', nombre: 'Shampoo Placenta Life Hydra Macadamia Fco x 350ml', cantidad: 3, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '03025015400014', ean: '7756719003377', nombre: 'Silicona Plife Saloon Fco. 80ml.', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 49.0863, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '04026016000008', ean: '7756719004299', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '04026016000009', ean: '7756719004367', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 1L', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '04026016200020', ean: '7756719004282', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '04026016200021', ean: '7756719004350', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 1L', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'C' });
+                DetallePedido.push({ codigo: '04026016200023', ean: '7756719004374', nombre: 'Shampoo Placenta Life Lisso Keratina Fco x 1l', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'P' });
+                DetallePedido.push({ codigo: '04026016200024', ean: '7756719004305', nombre: 'Shampoo Placenta Life Hydra Macadamia Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
                 EscribirListaProductos();
             }, 3000);
         }
@@ -293,11 +296,35 @@
                         ).append(
                             $('<td>').html(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
                         ).append(
+                            $('<td>').html(producto.capacidad).addClass('text-right')
+                        ).append(
                             $('<td>').html(producto.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
                         ).append(
                             $('<td>').html(producto.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                         ).append(
                             $('<td>').html(producto.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                        ).append(
+                            $('<td>').append(
+                                $('<a>').append(
+                                    $('<i>').addClass('fa fa-edit')
+                                ).addClass('btn btn-sm btn-warning').attr({
+                                    'href': '#',
+                                    'data-toggle': 'modal',
+                                    'data-target': '#modal-edicion',
+                                    'data-cantidad': producto.cantidad
+                                }).on('click', function(evt) {
+                                    evt.preventDefault();
+                                    let a = $(this);
+                                    a.parent().prev().prev().prev().prev().prev().empty().append(
+                                        $('<input>').on('keyup', function(evt) {
+                                            if (evt.originalEvent.keyCode == 13 || evt.originalEvent.keyCode == 27) {
+                                                let ncantidad = $(this).val();
+                                                $(this).parent().empty().html(ncantidad);
+                                            }
+                                        }).addClass('form-control form-control-sm').css('width', 60).val(a.data('cantidad'))
+                                    );
+                                })
+                            )
                         )
                     );
                     totales.cantidad += producto.cantidad;
@@ -319,11 +346,15 @@
                             ).append(
                                 $('<th>').html('Cantidad')
                             ).append(
+                                $('<th>').html('Unids/ Caja')
+                            ).append(
                                 $('<th>').html('Cajas')
                             ).append(
                                 $('<th>').html('Pallets')
                             ).append(
                                 $('<th>').html('Importe')
+                            ).append(
+                                $('<th>').html('')
                             )
                         )
                     ).append(tbody).append(
@@ -339,11 +370,15 @@
                             ).append(
                                 $('<th>').html(totales.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
                             ).append(
+                                $('<th>').html('')
+                            ).append(
                                 $('<th>').html(totales.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
                             ).append(
                                 $('<th>').html(totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                             ).append(
                                 $('<th>').html(Pedido.moneda + ' ' + totales.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                            ).append(
+                                $('<th>').html('')
                             )
                         )
                     ).addClass('table table-hover table-striped table-responsive')
@@ -443,7 +478,8 @@
                                 'data-pventa': item.pventa,
                                 'data-caja': item.caja,
                                 'data-pcaja': item.pcaja,
-                                'data-stock': item.stock
+                                'data-stock': item.stock,
+                                'data-capacidad': item.caja
                             }).addClass('form-control form-control-sm ip-cant').on('keyup', IngresarCantidad)
                         ).append(
                             $('<small>').attr('id', 'alert-' + j).addClass('text-danger')
@@ -509,6 +545,7 @@
                         ean: item.ean,
                         nombre: item.nombre,
                         cantidad: item.cantidad,
+                        capacidad: item.capacidad,
                         cajas: item.cajas,
                         pallets: item.pallets,
                         importe: item.subtotal,
