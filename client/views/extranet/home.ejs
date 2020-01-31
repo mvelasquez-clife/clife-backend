@@ -124,9 +124,9 @@
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label for="np-fentrega" class="col-sm-3 col-form-label">Fecha entrega</label>
+                                        <label for="np-fentrega" class="col-sm-3 col-form-label">Fecha pedido</label>
                                         <div class="col-sm-3">
-                                            <input type="text" class="form-control form-control-sm" id="np-fentrega" placeholder="yyyy-mm-dd">
+                                            <input type="text" class="form-control form-control-sm text-dark" id="np-fentrega" placeholder="yyyy-mm-dd">
                                         </div>
                                     </div>
                                 </form>
@@ -210,7 +210,7 @@ console.log(sesdata);
                     result = await $.ajax({
                         url: '/extranet/datos-cliente',
                         method: 'post',
-                        params: { codigo: codigo },
+                        data: { cliente: codigo },
                         dataType: 'json'
                     });
                     if (result.error) {
@@ -218,6 +218,19 @@ console.log(sesdata);
                         return;
                     }
                     Cliente = result.data.cliente;
+                    let sDisponible = Cliente.disponible.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    let sSolicita = Cliente.solicitud.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    let sDeuda = Cliente.deuda.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    let sNegativo = Cliente.disponible <= 0;
+                    if (sNegativo) {
+                        sDisponible = '0.00';
+                        $('#modal-nuevo .modal-footer .btn-primary').prop('disabled', true).empty().append('No dispone de crédito');
+                        $('#np-disponible').addClass('text-danger');
+                    }
+                    else {
+                        $('#np-disponible').addClass('text-success');
+                    }
+                    document.getElementById('np-disponible').value = Cliente.moneda + ' ' + sDisponible;
                     $('#container').append(
                         $('<h2>').html(Cliente.nombre).addClass('text-primary mb-1')
                     ).append(
@@ -226,8 +239,8 @@ console.log(sesdata);
                         $('<div>').append(
                             $('<div>').append(
                                 $('<div>').append(
-                                    $('<p>').html('Saldo disponible: S/ 10,000 - Solicitud de Crédito: S/ 0.00 - Deuda: S/ 5,000.00').addClass('mb-0')
-                                ).addClass('alert bg-primary text-light')
+                                    $('<p>').html('Saldo disponible: ' + Cliente.moneda + ' ' + sDisponible + ' - Solicitud de Crédito: ' + Cliente.moneda + ' ' + sSolicita + ' - Deuda: ' + Cliente.moneda + ' ' + sDeuda).addClass('mb-0')
+                                ).addClass('alert ' + (sNegativo ? 'bg-danger' : 'bg-primary') + ' text-light')
                             ).addClass('col-auto')
                         ).addClass('row justify-content-center')
                     ).append(
@@ -259,7 +272,7 @@ console.log(sesdata);
                         ).append(
                             $('<a>').append(
                                 $('<i>').addClass('fa fa-pencil')
-                            ).attr('href', '#').append(' Editar pedido').addClass('btn btn-success')
+                            ).attr('href', '/extranet/detalle-pedido/' + pedido.codigo).append(' Editar pedido').addClass('btn btn-success')
                         );
                     }
                     else {
@@ -282,9 +295,9 @@ console.log(sesdata);
                         for (let fila of ctacte) {
                             tbody.append(
                                 $('<tr>').append(
-                                    $('<td>').html(fila.documento)
+                                    $('<th>').html(fila.documento).addClass('text-primary')
                                 ).append(
-                                    $('<td>').html(fila.moneda + ' ' + fila.deuda.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+                                    $('<td>').html(fila.moneda + ' ' + fila.deuda.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                                 ).append(
                                     $('<td>').append(
                                         $('<a>').attr({
@@ -296,7 +309,9 @@ console.log(sesdata);
                                 ).append(
                                     $('<td>').html(fila.vence)
                                 ).append(
-                                    $('<td>').html(fila.nunico)
+                                    $('<td>').html(fila.cpago)
+                                ).append(
+                                    $('<td>').html(fila.vendedor)
                                 ).append(
                                     $('<td>').append(
                                         $('<a>').attr('href', '#').append(
@@ -319,7 +334,9 @@ console.log(sesdata);
                                 ).append(
                                     $('<th>').html('Vence')
                                 ).append(
-                                    $('<th>').html('N.Unico')
+                                    $('<th>').html('Cond.Pago')
+                                ).append(
+                                    $('<th>').html('Vendedor')
                                 ).append(
                                     $('<th>').html('Detalles')
                                 )
@@ -333,14 +350,41 @@ console.log(sesdata);
                 }
             }
 
-            ProcesarPedido = (event) => {
+            ProcesarPedido = async (event) => {
                 event.preventDefault();
-                alert('Su pedido ha sido registrado. A continuación, podrá ingresar los productos');
-                location.href = '/extranet/detalle-pedido';
+                /*alert('Su pedido ha sido registrado. A continuación, podrá ingresar los productos');
+                location.href = '/extranet/detalle-pedido';*/
+                try {
+                    let result;
+                    if (sesdata.tipo == 'E') {
+                        result = $.ajax({
+                            url: '/extranet/pre-pedido',
+                            method: 'post',
+                            data: {
+                                cliente: Cliente.codigo,
+                                fecha: document.getElementById('np-fentrega').value
+                            },
+                            dataType: 'json'
+                        });
+                    }
+                    else {
+                        //
+                    }
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    alert('Se creó el pedido ' + result.pedido + '. A continuación, podrá agregar los productos.');
+                    location.href = '/extranet/detalle-pedido/' + result.pedido;
+                }
+                catch (err) {
+                    alert(err);
+                }
             }
 
             $('#form-busca').on('submit', BuscarClientes);
             $('#modal-nuevo .modal-footer .btn-primary').on('click', ProcesarPedido);
+            document.getElementById('np-fentrega').value = (new Date()).toLocaleDateString('en-GB');
         </script>
     </body>
 </html>

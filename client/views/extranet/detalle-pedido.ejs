@@ -30,7 +30,7 @@
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-cprimary">
-        <a class="navbar-brand" href="#">Corporacion Life</a>
+        <a class="navbar-brand" href="/extranet">Corporacion Life</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -38,7 +38,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <h5 class="text-light font-weight-light mb-0">Pedido <span class="font-weight-normal sp-pedido">O119-123123</span></h5>
+                    <h5 class="text-light font-weight-light mb-0">Pedido <span class="font-weight-normal sp-pedido">Espere...</span></h5>
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto">
@@ -57,13 +57,13 @@
     <div class="container">
         <div class="row d-lg-none">
             <div class="col">
-                <h3 class="mb-3">Pedido N° <span class="font-italic text-primary sp-pedido">O119-12559</span></h3>
+                <h3 class="mb-3">Pedido N° <span class="font-italic text-primary sp-pedido">Espere...</span></h3>
             </div>
         </div>
         <div class="row justify-content-center">
             <div class="col-auto">
                 <div class="alert bg-light">
-                    <h5 class="font-weight-light mb-2">Cliente: <span class="font-weight-normal" id="nombre-cliente"></span></h5>
+                    <h5 class="font-weight-light mb-2">Cliente: <span class="font-weight-normal" id="nombre-cliente">Cargando datos...</span></h5>
                     <!-- -->
                     <a href="#" class="btn btn-primary m-1 dropdown-toggle" id="btn-agregar" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-plus"></i> Agregar productos</a>
                     <div class="dropdown-menu" aria-labelledby="btn-agregar">
@@ -71,6 +71,7 @@
                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-plantilla"><i class="fa fa-upload"></i> Utilizando una plantilla</a>
                     </div>
                     <a href="#" class="btn btn-danger m-1" id="btn-eliminar"><i class="fa fa-remove"></i> Quitar productos</a>
+                    <a href="#" class="btn btn-info m-1" id="btn-itsfree"><i class="fa fa-remove"></i> Título gratuito</a>
                     <a href="#" class="btn btn-success ml-5 mr-1" data-toggle="modal" data-target="#modal-cierre"><i class="fa fa-check"></i> Cerrar pedido</a>
                 </div>
             </div>
@@ -203,16 +204,8 @@
     <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
     <script>
         let sesdata = JSON.parse('<%-sesion %>');
-        let Pedido = {
-            codigo: 'O119-12559',
-            moneda: 'US$',
-            subtotal: 16588.12,
-            productos: []
-        };
-        let Cliente = {
-            rucdni: 10305760066,
-            nombre: 'Hogarama SA'
-        };
+        let CodigoPedido = '<%=pedido %>';
+        let Pedido, Cliente, DetallePedido;
         let catalogo = [];
         let totales = {
             cantidad: 0,
@@ -220,16 +213,67 @@
             pallets: 0,
             importe: 0
         };
-        let DetallePedido = Pedido.productos;
-        /*let DetallePedido = [
-            { codigo: '00001000201087', ean: '7756719002905', nombre: 'Tinte para cabello For Men PACK x 35 ml .03 de 6 und. Cast.Oscuro', cantidad: 96, cajas: 8, pallets: 0.14, importe: 202.0896 , difer: 1, tipo: 'L' },
-            { codigo: '01020005000022', ean: '7756719004527', nombre: 'Shock Anticaida Radiant x 15ml Caj.x 12 und. V2', cantidad: 120, cajas: 10, pallets: 0.2, importe: 100.68 , difer: 1, tipo: 'L' },
-            { codigo: '01020005100059', ean: '7756719004534', nombre: 'Shock Reparacion Intensa Radiant x 15ml Caj.x 12 und. V2', cantidad: 24, cajas: 2, pallets: 0.08, importe: 201.36 , difer: 1, tipo: 'C' },
-            { codigo: '03023013000006', ean: '7756719007573', nombre: 'Laca Ultrafix PLife Saloon Fco x 175 ml', cantidad: 36, cajas: 3, pallets: 0.13, importe: 38.37 , difer: 1, tipo: 'L' },
-            { codigo: '03023013100019', ean: '7756719002745', nombre: 'Gel Efec. Mojado P.Life Saloon tubo x 200 gr.', cantidad: 72, cajas: 6, pallets: 0.12, importe: 34.86 , difer: 1, tipo: 'P' },
-            { codigo: '03024015100010', ean: '7756719007580', nombre: 'Crema para peinar PLife Saloon Fco x 250 ml', cantidad: 60, cajas: 5, pallets: 0.02, importe: 83.28 , difer: 1, tipo: 'N' },
-            { codigo: '03024015200003', ean: '7756719002684', nombre: 'Cera Moldeadora P.Life Saloon x Pote 50gr.7756719002684', cantidad: 84, cajas: 7, pallets: 0.18, importe: 58.95 , difer: 1, tipo: 'L' }
-        ];*/
+
+        CargarDatosPedido = async () => {
+            let result;
+            try {
+                result = await $.ajax({
+                    url: '/extranet/datos-pedido',
+                    method: 'post',
+                    data: { pedido: CodigoPedido },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    location.href = '/extranet';
+                    return;
+                }
+                Pedido = result.pedido;
+                $('.sp-pedido').html(Pedido.codigo);
+                Cliente = result.cliente;
+                document.getElementById('nombre-cliente').innerHTML = Cliente.nombre;
+                DetallePedido = Pedido.productos;
+                if (Pedido.vigencia != 'Vigente' && Pedido.vigencia != 'Pendiente') {
+                    $('#btn-agregar').prop('disabled', true);
+                }
+                EscribirListaProductos();
+            }
+            catch (err) {
+                alert(err);
+            }
+        }
+        async function EditarProducto(event) {
+            event.preventDefault();
+            let a = $(this);
+            let cantidad = window.prompt('¿Cuántas unidades?');
+            let params = {
+                pedido: Pedido.codigo,
+                codigo: a.data('codigo'),
+                tipo: a.data('tipo'),
+                difer: a.data('difer'),
+                cantidad: parseInt(cantidad)
+            }
+            // actualizar cantidad
+            let result;
+            try {
+                result = await $.ajax({
+                    url: '/extranet/actualizar-cantidad-producto',
+                    method: 'post',
+                    data: params,
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                DetallePedido = result.detalle;
+                EscribirListaProductos();
+            }
+            catch (err) {
+                console.error(err);
+                alert(err);
+            }
+        }
         // funciones
         AdjuntarPlantilla = (event) => {
             event.preventDefault();
@@ -278,26 +322,41 @@
                                 $('<input>').attr({
                                     type: 'checkbox',
                                     name: 'productos[]',
-                                    value: producto.codigo,
+                                    value: producto.tipo + '@' + producto.codigo + '@' + producto.difer,
                                     'data-key': i
                                 }).prop('checked', false).addClass('ch-producto')
                             )
+                        ).append(
+                            $('<td>').append(btnTipo)
                         ).append(
                             $('<td>').append(
                                 $('<a>').attr('href', 'javascript:void(0)').addClass('btn btn-primary btn-sm').html(producto.ean)
                             )
                         ).append(
-                            $('<td>').append(btnTipo)
-                        ).append(
                             $('<td>').html(producto.nombre)
                         ).append(
+                            $('<td>').html(producto.pventa.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                        ).append(
+                            $('<td>').html(producto.unidcaja.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                        ).append(
                             $('<td>').html(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                        ).append(
+                            $('<td>').html(producto.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                         ).append(
                             $('<td>').html(producto.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
                         ).append(
                             $('<td>').html(producto.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                         ).append(
-                            $('<td>').html(producto.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                            $('<td>').append(
+                                $('<a>').append(
+                                    $('<i>').addClass('fa fa-edit')
+                                ).attr({
+                                    'href': '#',
+                                    'data-tipo': producto.tipo,
+                                    'data-codigo': producto.codigo,
+                                    'data-difer': producto.difer
+                                }).on('click', EditarProducto).addClass('btn btn-sm btn-warning')
+                            )
                         )
                     );
                     totales.cantidad += producto.cantidad;
@@ -311,19 +370,25 @@
                             $('<tr>').append(
                                 $('<th>').html('')
                             ).append(
-                                $('<th>').html('Cod. EAN')
-                            ).append(
                                 $('<th>').html('Tipo')
                             ).append(
-                                $('<th>').html('Nombre')
+                                $('<th>').html('Cod. EAN')
+                            ).append(
+                                $('<th>').html('Producto')
+                            ).append(
+                                $('<th>').html('Pr.Venta')
+                            ).append(
+                                $('<th>').html('Unid./Caja')
                             ).append(
                                 $('<th>').html('Cantidad')
+                            ).append(
+                                $('<th>').html('Subtotal')
                             ).append(
                                 $('<th>').html('Cajas')
                             ).append(
                                 $('<th>').html('Pallets')
                             ).append(
-                                $('<th>').html('Importe')
+                                $('<th>').html('')
                             )
                         )
                     ).append(tbody).append(
@@ -333,17 +398,23 @@
                             ).append(
                                 $('<th>').html('')
                             ).append(
-                                $('<th>').html('')
-                            ).append(
                                 $('<th>').html('TOTALES')
                             ).append(
+                                $('<th>').html('')
+                            ).append(
+                                $('<th>').html('')
+                            ).append(
+                                $('<th>').html('')
+                            ).append(
                                 $('<th>').html(totales.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                            ).append(
+                                $('<th>').html(Pedido.moneda + ' ' + totales.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                             ).append(
                                 $('<th>').html(totales.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
                             ).append(
                                 $('<th>').html(totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                             ).append(
-                                $('<th>').html(Pedido.moneda + ' ' + totales.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                                $('<th>').html('')
                             )
                         )
                     ).addClass('table table-hover table-striped table-responsive')
@@ -392,33 +463,24 @@
             document.getElementById('subtotal-' + idx).innerHTML = subtotal.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             document.getElementById('pallets-' + idx).innerHTML = pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });;
         }
-        CargarCatalogoProductos = (event) => {
+        CargarCatalogoProductos = async (event) => {
             $('#lista-container').empty();
-            catalogo = [
-                { codigo: '04026016200030', ean: '7756719007641', nombre: 'Shampoo Extra Hidratante Ls Plife Saloon Fco X 400 Ml', pventa: 11.8588, caja: 12, pcaja: 0.1, stock: 1500, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04026016200035', ean: '7756719007979', nombre: 'Shampoo Reparación Intensa Ls Plife Saloon Fco X 400 Ml', pventa: 11.8588, caja: 10, pcaja: 0.09, stock: 1060, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04026016300043', ean: '7756719007566', nombre: 'Shampoo Brillo Intenso  Plife  Saloon Fco X400 Ml', pventa: 11.8588, caja: 10, pcaja: 0.03, stock: 780, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04026016300050', ean: '7756719012256', nombre: 'Shampoo Efecto Brasilero Con Keratina Tonno Plus X 400 Ml ', pventa: 14.3224, caja: 12, pcaja: 0, stock: 640, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04026016400008', ean: '7756719007962', nombre: 'Shampoo Anticaspa 2 En 1 Plife Saloon Fco X 400 Ml', pventa: 11.8588, caja: 10, pcaja: 0.01, stock: 1540, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04026016500011', ean: '7756719011778', nombre: 'Pl Be Natural Vital Placenta Shampoo X 350Ml', pventa: 15.0806, caja: 12, pcaja: 0.15, stock: 1320, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04026016500012', ean: '7756719011815', nombre: 'Pl Be Natural Blue Berry Silver Shampoo X 350Ml', pventa: 22.5, caja: 10, pcaja: 0.03, stock: 1040, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04027020100026', ean: '7756719004312', nombre: 'Condition Placenta Life Repair Argan Fco X 350Ml', pventa: 15.0806, caja: 10, pcaja: 0.07, stock: 1620, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04027020100027', ean: '7756719004398', nombre: 'Condition Pl Life Be Natural  Repair Argan Fco X 1L', pventa: 34.4496, caja: 12, pcaja: 0.03, stock: 1260, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04027020100029', ean: '7756719004411', nombre: 'Condition Placenta Life Lisso Keratina Fco X 1L', pventa: 34.4496, caja: 10, pcaja: 0.06, stock: 1360, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04027020100030', ean: '7756719004343', nombre: 'Condition Placenta Life Hydra Macadamia  Fco X 350Ml', pventa: 15.0806, caja: 10, pcaja: 0.05, stock: 1220, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04027020100031', ean: '7756719004428', nombre: 'Condition Placenta Life Hydra Macadamia  Fco X 1L', pventa: 34.4496, caja: 12, pcaja: 0.2, stock: 1300, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04027020200008', ean: '7756719012263', nombre: 'Conditioner Efecto Brasilero Con Keratina Tonno Plus X 400 Ml', pventa: 14.3224, caja: 12, pcaja: 0.01, stock: 400, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04027020300008', ean: '7756719004329', nombre: 'Condition Placenta Life Nutri Quinua Fco X 350Ml', pventa: 15.0806, caja: 12, pcaja: 0.02, stock: 260, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04027020300009', ean: '7756719004404', nombre: 'Condition Placenta Life Nutri Quinua Fco X 1L', pventa: 34.4496, caja: 10, pcaja: 0.06, stock: 780, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04027020400012', ean: '7756719011785', nombre: 'Pl Be Natural Vital Placenta Conditioner X 350Ml', pventa: 15.0806, caja: 12, pcaja: 0.01, stock: 480, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '04027020400013', ean: '7756719011822', nombre: 'Pl Be Natural Blueberry Silver Conditioner X 350Ml', pventa: 22.5, caja: 10, pcaja: 0.2, stock: 940, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '08095090000008', ean: '7756719012447', nombre: 'Plife Saloon Shampoo Control Caída Fco X 400Ml', pventa: 11.8633, caja: 12, pcaja: 0.13, stock: 820, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '08095090200010', ean: '7756719012454', nombre: 'Plife Saloon Conditioner Control Caída Fco X 400Ml', pventa: 11.8633, caja: 12, pcaja: 0.2, stock: 1580, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '08095090200011', ean: '7756719012461', nombre: 'Plife Saloon Conditioner Brillo Intenso Fco X 400Ml', pventa: 11.8633, caja: 12, pcaja: 0.14, stock: 560, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '08095090200012', ean: '7756719012478', nombre: 'Plife Saloon Conditioner Reparación Intensa Fco X 400Ml', pventa: 11.8633, caja: 10, pcaja: 0.1, stock: 1800, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '08095090300358', ean: '7756719017411', nombre: 'Plife Saloon Decoloración Ultra Pote 500G', pventa: 40.6897, caja: 12, pcaja: 0.11, stock: 1480, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 },
-                { codigo: '11098009900001', ean: '7756719011839', nombre: 'Pl Keratimask Kit Alisado Brasileño', pventa: 38.814, caja: 10, pcaja: 0.02, stock: 300, cantidad: 0, subtotal: 0, cajas: 0, pallets: 0 }
-            ];
+            try {
+                let result = await $.ajax({
+                    url: '/extranet/catalogo-productos',
+                    method: 'post',
+                    data: { pedido: Pedido.codigo },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                catalogo = result.productos;
+            }
+            catch (err) {
+                console.error(err);
+            }
             //
             let tbody = $('<tbody>');
             for (let j in catalogo) {
@@ -429,7 +491,7 @@
                     ).append(
                         $('<td>').html(item.nombre)
                     ).append(
-                        $('<td>').html(item.pventa).addClass('text-right')
+                        $('<td>').html(item.pventa.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                     ).append(
                         $('<td>').html(item.stock).addClass('text-right')
                     ).append(
@@ -440,11 +502,13 @@
                                 type: 'text',
                                 id: 'cnt-' + j,
                                 'data-idx': j,
+                                'data-codigo': item.codigo,
                                 'data-pventa': item.pventa,
                                 'data-caja': item.caja,
                                 'data-pcaja': item.pcaja,
-                                'data-stock': item.stock
-                            }).addClass('form-control form-control-sm ip-cant').on('keyup', IngresarCantidad)
+                                'data-stock': item.stock + 50,
+                                'data-grupo': item.cogrupo
+                            }).addClass('form-control form-control-sm ip-cant').on('keyup', IngresarCantidad).prop('disabled', item.stock != 0)
                         ).append(
                             $('<small>').attr('id', 'alert-' + j).addClass('text-danger')
                         )
@@ -483,48 +547,90 @@
                 ).append(tbody).addClass('table table-hover table-striped')
             );
         }
-        EliminarProductos = (event) => {
+        EliminarProductos = async (event) => {
             event.preventDefault();
             let eliminar = [];
             if (window.confirm('¿Eliminar los productos seleccionados?')) {
                 let productos = $('.ch-producto:checked');
-                $.each(productos, function() {
-                    let chbox = $(this);
-                    eliminar.push(parseInt(chbox.data('key')));
+                $.each(productos, function () {
+                    let chbox = $(this).val().split('@');
+                    eliminar.push({
+                        tipo: chbox[0],
+                        codigo: chbox[1],
+                        difer: parseInt(chbox[2])
+                    });
                 });
-                eliminar.sort();
-                eliminar.reverse();
-                for (let i of eliminar) DetallePedido.splice(i, 1);
-                EscribirListaProductos();
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/extranet/eliminar-productos',
+                        method: 'post',
+                        data: { pedido: Pedido.codigo, productos: eliminar },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    let mensajes = result.mensajes;
+                    for (let mensaje of mensajes) {
+                        if (mensaje.error) alert(mensaje.error);
+                    }
+                    DetallePedido = result.detalle;
+                    $('#modal-lista').modal('hide');
+                    EscribirListaProductos();
+                }
+                catch (err) {
+                    alert(err);
+                }
             }
         }
-        AgregarProductos = (event) => {
+        AgregarProductos = async (event) => {
             event.preventDefault();
             const boton = $('#modal-lista .modal-footer .btn-primary');
             boton.prop('disabled', true).empty().html('Procesando su pedido...');
-            for (let item of catalogo) {
-                if (item.cantidad > 0) {
-                    DetallePedido.push({
-                        codigo: item.codigo,
-                        ean: item.ean,
-                        nombre: item.nombre,
-                        cantidad: item.cantidad,
-                        cajas: item.cajas,
-                        pallets: item.pallets,
-                        importe: item.subtotal,
-                        difer: 1,
-                        tipo: 'L'
+            let cantidades = $('.ip-cant');
+            let productos = [];
+            $.each(cantidades, function() {
+                let input = $(this);
+                if (input.val() != '' && input.val() != '0') {
+                    productos.push({
+                        grupo: input.data('grupo'),
+                        codigo: input.data('codigo'),
+                        cantidad: parseInt(input.val()),
+                        tpventa: 'L'
                     });
                 }
-            }
-            setTimeout(() => {
+            });
+            let result;
+            try {
+                result = await $.ajax({
+                    url: '/extranet/agregar-productos-expo',
+                    method: 'post',
+                    data: { productos: productos, pedido: Pedido.codigo },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    console.log(result.data.mensajes);
+                    alert(JSON.stringify(result.error));
+                    return;
+                }
+                let mensajes = result.data.mensajes;
+                for (let mensaje of mensajes) {
+                    if (mensaje.error) alert(mensaje.error);
+                }
+                DetallePedido = result.data.detalle;
                 $('#modal-lista').modal('hide');
                 EscribirListaProductos();
                 alert('Se agregaron los productos');
                 boton.prop('disabled', false).empty().append(
                     $('<i>').addClass('fa fa-plus')
                 ).append(' Agregar los productos');
-            }, 3000);
+            }
+            catch (err) {
+                alert(err);
+                result;
+            }
         }
         ResumenPedido = (event) => {
             document.getElementById('rp-items').value = totales.cantidad.toLocaleString('en-us', { minimumFractionDigits:0, maximumFractionDigits: 0 });
@@ -546,16 +652,58 @@
                 location.href = '/extranet';
             }, 1500);
         }
+        ObsequiarProductos = async () => {
+            event.preventDefault();
+            let gratis = [];
+            if (window.confirm('¿Convertir los productos a título gratuito?')) {
+                let productos = $('.ch-producto:checked');
+                $.each(productos, function () {
+                    let chbox = $(this).val().split('@');
+                    gratis.push({
+                        tipo: chbox[0],
+                        codigo: chbox[1],
+                        difer: parseInt(chbox[2])
+                    });
+                });
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/extranet/obsequiar-productos',
+                        method: 'post',
+                        data: { pedido: Pedido.codigo, productos: gratis },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    let mensajes = result.mensajes;
+                    for (let mensaje of mensajes) {
+                        if (mensaje.error) alert(mensaje.error);
+                    }
+                    DetallePedido = result.detalle;
+                    $('#modal-lista').modal('hide');
+                    EscribirListaProductos();
+                }
+                catch (err) {
+                    alert(err);
+                }
+            }
+        }
         // iniciar la interfaz
-        $('.sp-pedido').html(Pedido.codigo);
-        document.getElementById('nombre-cliente').innerHTML = Cliente.nombre;
-        EscribirListaProductos();
+        if (sesdata.admin != 'S') {
+            $('#btn-itsfree').remove();
+        }
+        else {
+            $('#btn-itsfree').on('click', ObsequiarProductos);
+        }
         $('#btn-eliminar').on('click', EliminarProductos);
         $('#modal-plantilla .modal-footer .btn-success').on('click', AdjuntarPlantilla);
         $('#modal-lista').on('show.bs.modal', CargarCatalogoProductos);
         $('#modal-lista .modal-footer .btn-primary').on('click', AgregarProductos);
         $('#modal-cierre').on('show.bs.modal', ResumenPedido);
         $('#modal-cierre .modal-footer .btn-success').on('click', CerrarPedido);
+        CargarDatosPedido();
     </script>
 </body>
 
