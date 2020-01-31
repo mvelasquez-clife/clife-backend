@@ -51,6 +51,9 @@
                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-logout">Cerrar sesión</a>
                     </div>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-light" href="/extranet">Volver</a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -141,7 +144,7 @@
                             <input type="file" class="form-control-file" id="fl-plantilla" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
                         </div>
                         <div class="form-group">
-                            <p class="text-dark">Puede descargar una plantilla de muestra haciendo clic en el <a href="#">siguiente enlace</a>.</p>
+                            <p class="text-dark">Puede descargar una plantilla de muestra haciendo clic en el <a href="/files/formato.xlsx" download="formato.xlsx">siguiente enlace</a>.</p>
                         </div>
                     </form>
                 </div>
@@ -286,13 +289,13 @@
                 $('#modal-plantilla').modal('hide');
                 alert('Los productos fueron cargados con éxito');
                 // agrega los productos y recarga la grilla
-                DetallePedido.push({ codigo: '03025015400014', ean: '7756719003377', nombre: 'Silicona Plife Saloon Fco. 80ml.', cantidad: 3, cajas: 1, pallets: 0.12, importe: 49.0863, difer: 1, tipo: 'L' });
-                DetallePedido.push({ codigo: '04026016000008', ean: '7756719004299', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 350ml', cantidad: 3, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
-                DetallePedido.push({ codigo: '04026016000009', ean: '7756719004367', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 1L', cantidad: 3, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'L' });
-                DetallePedido.push({ codigo: '04026016200020', ean: '7756719004282', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 350ml', cantidad: 3, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
-                DetallePedido.push({ codigo: '04026016200021', ean: '7756719004350', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 1L', cantidad: 3, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'C' });
-                DetallePedido.push({ codigo: '04026016200023', ean: '7756719004374', nombre: 'Shampoo Placenta Life Lisso Keratina Fco x 1l', cantidad: 3, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'P' });
-                DetallePedido.push({ codigo: '04026016200024', ean: '7756719004305', nombre: 'Shampoo Placenta Life Hydra Macadamia Fco x 350ml', cantidad: 3, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '03025015400014', ean: '7756719003377', nombre: 'Silicona Plife Saloon Fco. 80ml.', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 49.0863, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '04026016000008', ean: '7756719004299', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '04026016000009', ean: '7756719004367', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 1L', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '04026016200020', ean: '7756719004282', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '04026016200021', ean: '7756719004350', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 1L', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'C' });
+                DetallePedido.push({ codigo: '04026016200023', ean: '7756719004374', nombre: 'Shampoo Placenta Life Lisso Keratina Fco x 1l', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'P' });
+                DetallePedido.push({ codigo: '04026016200024', ean: '7756719004305', nombre: 'Shampoo Placenta Life Hydra Macadamia Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
                 EscribirListaProductos();
             }, 3000);
         }
