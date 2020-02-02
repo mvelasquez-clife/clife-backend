@@ -21,5 +21,7 @@ const extranetController = require('../controllers/extranet.controller');
     router.post('/eliminar-productos', extranetController.EliminarProducto);
     router.post('/obsequiar-productos', extranetController.ObsequiarProducto);
     router.post('/actualizar-cantidad-producto', extranetController.ActualizarCantidad);
+    router.post('/carga-xlsx', extranetController.CargarXlsx);
+    router.post('/cerrar-pedido', extranetController.CerrarPedido);
 
 module.exports = router;

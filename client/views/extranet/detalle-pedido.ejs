@@ -138,10 +138,10 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form id="form-carga-masiva" action="/extranet/carga-xlsx" method="post" enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="fl-plantilla">Adjunte una plantilla en formato xls para agregar productos de manera masiva.</label>
-                            <input type="file" class="form-control-file" id="fl-plantilla" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                            <input type="file" class="form-control-file" id="fl-plantilla" name="plantilla" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
                         </div>
                         <div class="form-group">
                             <p class="text-dark">Puede descargar una plantilla de muestra haciendo clic en el <a href="/files/formato.xlsx" download="formato.xlsx">siguiente enlace</a>.</p>
@@ -641,19 +641,37 @@
             document.getElementById('rp-cajas').value = totales.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
             document.getElementById('rp-pallets').value = totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
-        CerrarPedido = (event) => {
+        CerrarPedido = async (event) => {
             event.preventDefault();
             const boton = $('#modal-cierre .modal-footer .btn-success');
             boton.prop('disabled', true);
             boton.empty().html('Procesando. Por favor, espere...');
-            setTimeout(() => {
+            /*setTimeout(() => {
                 boton.prop('disabled', false).empty().append(
                     $('<i>').addClass('fa fa-check')
                 ).append(' Cerrar el pedido');
                 $('#modal-cierre').modal('hide');
                 alert('¡Su pedido ha sido enviado!');
                 location.href = '/extranet';
-            }, 1500);
+            }, 1500);*/
+            try {
+                let result = await $.ajax({
+                    url: '/extranet/cerrar-pedido',
+                    method: 'post',
+                    data: { pedido: CodigoPedido, cliente: Cliente.rucdni },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                alert(result.mensaje);
+                location.href = '/extranet';
+            }
+            catch (err) {
+                alert(err);
+                console.error(err);
+            }
         }
         ObsequiarProductos = async () => {
             event.preventDefault();
@@ -693,6 +711,20 @@
                 }
             }
         }
+        FormCargaMasivaSubmit = (event) => {
+            event.preventDefault();
+            if (document.getElementById('fl-plantilla').files.length == 0) {
+                alert('No ha cargado una plantilla');
+                return;
+            }
+            $('#form-carga-masiva').append(
+                $('<input>').attr({
+                    name: 'pedido',
+                    type: 'hidden'
+                }).val(CodigoPedido)
+            );
+            document.getElementById('form-carga-masiva').submit();
+        }
         // iniciar la interfaz
         if (sesdata.admin != 'S') {
             $('#btn-itsfree').remove();
@@ -701,7 +733,8 @@
             $('#btn-itsfree').on('click', ObsequiarProductos);
         }
         $('#btn-eliminar').on('click', EliminarProductos);
-        $('#modal-plantilla .modal-footer .btn-success').on('click', AdjuntarPlantilla);
+        // $('#modal-plantilla .modal-footer .btn-success').on('click', AdjuntarPlantilla);
+        $('#modal-plantilla .modal-footer .btn-success').on('click', FormCargaMasivaSubmit);
         $('#modal-lista').on('show.bs.modal', CargarCatalogoProductos);
         $('#modal-lista .modal-footer .btn-primary').on('click', AgregarProductos);
         $('#modal-cierre').on('show.bs.modal', ResumenPedido);

@@ -150,6 +150,7 @@
         <script src="/assets/datepicker/locales/bootstrap-datepicker.es.min.js" charset="UTF-8"></script>
         <script>
             let sesdata = JSON.parse('<%-sesion %>');
+            let tmpCliente = '<%-cliente %>';
             let Cliente = null;
 
             BuscarClientes = async (event) => {
@@ -395,6 +396,7 @@
                 language: 'es',
                 startDate: '0'
             });
+            if (tmpCliente != '-') CargarDatosCliente(tmpCliente);
         </script>
     </body>
 </html>

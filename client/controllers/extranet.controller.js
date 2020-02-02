@@ -2,6 +2,10 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const oracledb = require('oracledb');
 const dbParams = require('../../server/database');
+const mv = require('mv');
+const formidable = require('formidable');
+const fupload = require('../../server/fupload');
+const xlsx = require('xlsx');
 
 const responseParams = {
     outFormat: oracledb.OBJECT
@@ -24,7 +28,8 @@ const extranetController = {
     home: (request, response) => {
         if (request.cookies[CookieId]) {
             let sesion = request.cookies[CookieId];
-            response.render(path.resolve('client/views/extranet/home.ejs'), { sesion: JSON.stringify(JSON.parse(sesion)) });
+            let cliente = request.cookies['cliente'] ? request.cookies['cliente'] : '-';
+            response.render(path.resolve('client/views/extranet/home.ejs'), { sesion: JSON.stringify(JSON.parse(sesion)), cliente: cliente });
         }
         else response.redirect('/extranet/login');
     },
@@ -649,6 +654,188 @@ const extranetController = {
                 response.json({
                     detalle: detalle
                 });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+                return;
+            }
+        }
+        else response.json({
+            error: 'Su sesión expiró'
+        });
+    },
+    CargarXlsx: (request, response) => {
+        if (request.cookies[CookieId]) {
+            const sesion = JSON.parse(request.cookies[CookieId]);
+            const cEmpresa = sesion.tipo == 'E' ? UserExpo.empresa : UserNac.empresa;
+            var form = new formidable.IncomingForm();
+            form.parse(request, async function (err, fields, files) {
+                if (err) {
+                    response.json(err);
+                    return;
+                }
+                // cargar el catalogo de productos
+                const pedido = fields.pedido;
+                let catalogo = [];
+                try {
+                    const conn = await oracledb.getConnection(dbParams);
+                    const query = "select codigo \"codigo\", ean \"ean\", cogrupo \"cogrupo\", initcap(nombre) \"nombre\", pvta \"pventa\", uncaja \"caja\", palletcaja \"pcaja\", " +
+                        "stock \"stock\", cantidad \"cantidad\" from table(pack_new_web_expo.f_lista_productos(:p_tipo, :p_empresa, :p_pedido))";
+                    const params = {
+                        p_tipo: { val: sesion.tipo },
+                        p_empresa: { val: cEmpresa },
+                        p_pedido: { val: pedido }
+                    };
+                    result = await conn.execute(query, params, responseParams);
+                    conn.close();
+                    catalogo = result.rows;
+                }
+                catch (err) {
+                    console.error(err);
+                    response.json({
+                        error: err
+                    });
+                    return;
+                }
+                // fin!
+                var oldpath = files.plantilla.path;
+                var newpath = fupload.tmppath + files.plantilla.name;
+                mv(oldpath, newpath, async function (err) {
+                    if (err) throw err;
+                    let productos = new Map();
+                    for (let producto of catalogo) {
+                        productos.set(producto.codigo, producto);
+                    }
+                    // ya tengo el catalogo de productos. ahora, debo leer el xlsx
+                    var workbook = xlsx.readFile(newpath);
+                    var sheet_name_list = workbook.SheetNames;
+                    var xlData = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+                    // ahora verificar stocks e insertar
+                    try {
+                        const conn = await oracledb.getConnection(dbParams);
+                        let query;
+                        if (sesion.tipo == 'E') {
+                            query = "select co_punto_venta \"pventa\", co_serie_listado \"serie\", co_listado_precios \"lista\", co_fuerza_venta \"fventa\" from vt_pre_pedi_c where co_pre_pedido = :p_pedido and co_empresa = :p_empresa";
+                        }
+                        else {
+                            query = "select co_punto_venta \"pventa\", co_serie_listado \"serie\", co_listado_precios \"lista\", co_fuerza_venta \"fventa\" from vt_pedi_t where co_pedido = :p_pedido and co_empresa = :p_empresa";
+                        }
+                        let params = {
+                            p_pedido: pedido,
+                            p_empresa: cEmpresa
+                        };
+                        let result = await conn.execute(query, params, responseParams);
+                        let { pventa, serie, lista, fventa } = result.rows[0];
+                        //
+                        let mensajes = [];
+                        for (let row of xlData) {
+                            let query = "call pack_new_web_expo.sp_agrega_producto_expo(:p_pedido, :p_empresa, :p_producto, :p_cantidad, :p_tpventa, :p_serielista, :p_fventa, :p_listaprec, :p_pventa, :o_codigo, :o_mensaje)";
+                            let producto = productos.get(row.CODE);
+                            // if (producto.stock >= row.QTY) {
+                            if (producto.stock >= 0) {
+                                let params = {
+                                    p_pedido: { val: pedido },
+                                    p_empresa: { val: cEmpresa },
+                                    p_producto: { val: producto.codigo },
+                                    p_cantidad: { val: row.QTY },
+                                    p_tpventa: { val: 'L' },
+                                    p_serielista: { val: serie },
+                                    p_fventa: { val: fventa },
+                                    p_listaprec: { val: lista },
+                                    p_pventa: { val: pventa },
+                                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                                    o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                                };
+                                let result = await conn.execute(query, params, responseParams);
+                                const { o_codigo, o_mensaje } = result.outBinds;
+                                if (o_codigo == 1) {
+                                    mensajes.push({ result: o_mensaje });
+                                }
+                                else {
+                                    mensajes.push({ error: o_mensaje });
+                                }
+                            }
+                            else {
+                                mensajes.push({ error: 'El stock de ' + producto.nombre + ' es insuficiente' });
+                            }
+                        }
+console.log(mensajes);
+                        conn.close();
+                    }
+                    catch (err) {
+                        console.error(err);
+                        response.json({
+                            error: err
+                        });
+                    }
+                    //
+                    response.redirect('/extranet/detalle-pedido/' + pedido);
+                    response.end();
+                });
+            });
+            /*
+            const { pedido } = request.body;
+            console.log(request);
+            const sesion = JSON.parse(request.cookies[CookieId]);
+            const cEmpresa = sesion.tipo == 'E' ? UserExpo.empresa : UserNac.empresa;
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                const query = "select codigo \"codigo\", ean \"ean\", cogrupo \"cogrupo\", initcap(nombre) \"nombre\", pvta \"pventa\", uncaja \"caja\", palletcaja \"pcaja\", " +
+                    "stock \"stock\", cantidad \"cantidad\" from table(pack_new_web_expo.f_lista_productos(:p_tipo, :p_empresa, :p_pedido))";
+                const params = {
+                    p_tipo: { val: sesion.tipo },
+                    p_empresa: { val: cEmpresa },
+                    p_pedido: { val: pedido }
+                };
+                result = await conn.execute(query, params, responseParams);
+                conn.close();
+                response.json({
+                    productos: result.rows
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+                return;
+            }*/
+        }
+        else response.json({
+            error: 'Su sesión expiró'
+        });
+    },
+    CerrarPedido: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            const sesion = JSON.parse(request.cookies[CookieId]);
+            const cEmpresa = sesion.tipo == 'E' ? UserExpo.empresa : UserNac.empresa;
+            const { pedido, cliente } = request.body;
+            try {
+                let conn = await oracledb.getConnection(dbParams);
+                let query = "call pack_new_web_expo.sp_cierra_pedido_expo(:p_pedido, :p_empresa, :o_codigo, :o_mensaje)";
+                let params = {
+                    p_pedido: { val: pedido },
+                    p_empresa: { val: cEmpresa },
+                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                    o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                };
+                const result = await conn.execute(query, params, responseParams);
+                const { o_codigo, o_mensaje } = result.outBinds;
+                conn.close();
+                if (o_codigo == 1) {
+                    response.cookie('cliente', cliente);
+                    response.json({
+                        mensaje: o_mensaje
+                    });
+                }
+                else {
+                    response.json({
+                        error: o_mensaje
+                    });
+                }
             }
             catch (err) {
                 console.error(err);
