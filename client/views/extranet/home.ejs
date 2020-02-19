@@ -364,7 +364,7 @@
                 try {
                     let result;
                     if (sesdata.tipo == 'E') {
-                        result = $.ajax({
+                        result = await $.ajax({
                             url: '/extranet/pre-pedido',
                             method: 'post',
                             data: {

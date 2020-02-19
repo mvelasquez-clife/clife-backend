@@ -307,7 +307,7 @@ console.log(params);
                 const result = await conn.execute(query, params, responseParams);
                 const { o_resultado, o_pedido } = result.outBinds;
                 conn.close();
-                if (o_resultado) {
+                if (o_resultado == 1) {
                     response.json({
                         pedido: o_pedido
                     });
