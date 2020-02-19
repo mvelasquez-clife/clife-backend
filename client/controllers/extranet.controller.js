@@ -34,10 +34,17 @@ const extranetController = {
         else response.redirect('/extranet/login');
     },
     login: (request, response) => {
-        response.render(path.resolve('client/views/extranet/login.ejs'), {});
+        let data = {};
+        if (request.cookies['auth-err']) {
+            data.errmsg = request.cookies['auth-err'];
+        }
+        response.render(path.resolve('client/views/extranet/login.ejs'), data);
     },
     logout: (request, response) => {
         response.clearCookie(CookieId, { httpOnly: true });
+        response.clearCookie('cliente', { httpOnly: true });
+        response.clearCookie('rgmail', { httpOnly: true });
+        response.clearCookie('auth-err', { httpOnly: true });
         response.redirect('/extranet/login');
     },
     NuevoUsuario: (request, response) => {
@@ -69,13 +76,14 @@ const extranetController = {
         let result;
         try {
             let conn = await oracledb.getConnection(dbParams);
-            let query = "select node_password \"hash\", st_cuenta_activada \"stact\", st_verifica_mail \"stmail\", co_cliente \"codigo\", de_nombre_comercial \"ncomercial\", de_razon_social \"rsocial\", fe_suscripcion \"fsuscripcion\", de_email \"email\", de_telefono \"telefono\", st_admin \"admin\", st_tipo_usuario \"tipo\" from cl_usuarios where de_email = :p_email and co_empresa = :p_empresa";
+            let query = "select node_password \"hash\", st_cuenta_activada \"stact\", st_verifica_mail \"stmail\", co_cliente \"codigo\", de_nombre_comercial \"ncomercial\", de_razon_social \"rsocial\", fe_suscripcion \"fsuscripcion\", de_email \"email\", de_telefono \"telefono\", st_admin \"admin\", st_tipo_usuario \"tipo\" from cl_usuarios where de_email = :p_email and co_empresa = :p_empresa and st_tipo_usuario in ('E', 'R')";
             let params = {
                 p_email: { val: email },
                 p_empresa: { val: empresa }
             };
             result = await conn.execute(query, params, responseParams);
             result = result.rows[0];
+console.log(result);
             conn.close();
             if (result.stact == 'N') {
                 response.cookie('auth-err','Su cuenta no está ativada. Utilice el enlace proporcionado en el correo de confirmación enviado al momento de su registro.', { httpOnly: true });
@@ -89,6 +97,8 @@ const extranetController = {
             }
             bcrypt.compare(pswd, result.hash, function(err, res) {
                 if (err) {
+console.error('pswd:', pswd);
+console.error('result.hash:', result.hash);
                     response.cookie('auth-err','La clave ingresada es incorrecta.', { httpOnly: true });
                     response.redirect('/extranet/login');
                     return;
@@ -155,7 +165,7 @@ const extranetController = {
         }
     },
     BuscarClientes: async (request, response) => {
-        let { texto } = request.body;
+        let { texto, tipo } = request.body;
         if (request.cookies[CookieId]) {
             let result;
             texto = texto.toUpperCase();
@@ -167,6 +177,10 @@ const extranetController = {
                     p_empresa: { val: UserExpo.empresa },
                     p_texto: { val: texto }
                 };
+                if (tipo != 'E') {
+                    query = '';
+                    params = {};
+                }
                 result = await conn.execute(query, params, responseParams);
                 conn.close();
                 response.json({
@@ -202,6 +216,8 @@ const extranetController = {
                 params = {
                     p_data: { val: xdata }
                 };
+console.log(query);
+console.log(params);
                 result = await conn.execute(query, params, responseParams);
                 let sCliente = result.rows[0].out.split('@');
 // yrazonsocial||'@'||nvl(ydisponible,0)||'@'||nvl(yimpsolicitud, 0)||'@'||nvl(ydeuda, 0)||'@'||yestado||'@'||ymensaje||'@'||ynumdirecc||'@'||ycodireccion||'@'||ycocliente;

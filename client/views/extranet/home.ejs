@@ -42,7 +42,7 @@
             </div>
         </nav>
         <div class="container">
-            <div class="row justify-content-center mb-3">
+            <div class="row justify-content-center mb-3" id="dv-busca-cliente">
                 <div class="col-8">
                     <form id="form-busca" class="form-inline">
                         <label for="bs-cliente">Cliente</label>
@@ -168,7 +168,10 @@
                     result = await $.ajax({
                         url: '/extranet/buscar-clientes',
                         method: 'post',
-                        data: { texto: txt },
+                        data: {
+                            texto: txt,
+                            tipo: sesdata.tipo
+                        },
                         dataType: 'json'
                     });
                     if (result.error) {
@@ -396,7 +399,13 @@
                 language: 'es',
                 startDate: '0'
             });
-            if (tmpCliente != '-') CargarDatosCliente(tmpCliente);
+            if (sesdata.admin == 'N') {
+                CargarDatosCliente(sesdata.codigo);
+                document.getElementById('dv-busca-cliente').remove();
+            }
+            else {
+                if (tmpCliente != '-') CargarDatosCliente(tmpCliente);
+            }
         </script>
     </body>
 </html>
