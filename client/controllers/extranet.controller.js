@@ -173,14 +173,10 @@ console.error('result.hash:', result.hash);
                 let conn = await oracledb.getConnection(dbParams);
                 let query = "select codigo \"codigo\", nombre \"nombre\" from table(pack_new_web_expo.f_buscar_clientes(:p_codigo,:p_empresa,:p_texto))";
                 let params = {
-                    p_codigo: { val: UserExpo.codigo },
-                    p_empresa: { val: UserExpo.empresa },
+                    p_codigo: { val: tipo == 'E' ? UserExpo.codigo : UserNac.codigo },
+                    p_empresa: { val: tipo == 'E' ? UserExpo.empresa : UserNac.empresa },
                     p_texto: { val: texto }
                 };
-                if (tipo != 'E') {
-                    query = '';
-                    params = {};
-                }
                 result = await conn.execute(query, params, responseParams);
                 conn.close();
                 response.json({
@@ -216,8 +212,6 @@ console.error('result.hash:', result.hash);
                 params = {
                     p_data: { val: xdata }
                 };
-console.log(query);
-console.log(params);
                 result = await conn.execute(query, params, responseParams);
                 let sCliente = result.rows[0].out.split('@');
 // yrazonsocial||'@'||nvl(ydisponible,0)||'@'||nvl(yimpsolicitud, 0)||'@'||nvl(ydeuda, 0)||'@'||yestado||'@'||ymensaje||'@'||ynumdirecc||'@'||ycodireccion||'@'||ycocliente;
@@ -230,31 +224,74 @@ console.log(params);
                     moneda: sCliente[9]
                 };
                 // verifica si hay pedido abierto
-                query = "select codigo,moneda,importe,to_char(fecha,'dd/mm/yyyy') fecha,items from table(pack_new_web_expo.f_info_pedido(:p_tipo, :p_cliente, :p_empresa))";
-                params = {
-                    p_tipo: { val: sesion.tipo },
-                    p_cliente: { val: cliente },
-                    p_empresa: { val: 11 }
-                };
-                result = await conn.execute(query, params, responseParams);
                 let sPedido;
-                if (result.rows.length > 0) {
-                    sPedido = {
-                        codigo: result.rows[0].CODIGO,
-                        moneda: result.rows[0].MONEDA,
-                        importe: result.rows[0].IMPORTE,
-                        fecha: result.rows[0].FECHA,
-                        items: result.rows[0].ITEMS
+                if (sesion.tipo == 'E') {
+                    query = "select codigo,moneda,importe,to_char(fecha,'dd/mm/yyyy') fecha,items from table(pack_new_web_expo.f_info_pedido(:p_tipo, :p_cliente, :p_empresa))";
+                    params = {
+                        p_tipo: { val: sesion.tipo },
+                        p_cliente: { val: cliente },
+                        p_empresa: { val: 11 }
                     };
+                    result = await conn.execute(query, params, responseParams);
+                    if (result.rows.length > 0) {
+                        sPedido = {
+                            codigo: result.rows[0].CODIGO,
+                            moneda: result.rows[0].MONEDA,
+                            importe: result.rows[0].IMPORTE,
+                            fecha: result.rows[0].FECHA,
+                            items: result.rows[0].ITEMS
+                        };
+                    }
+                    else {
+                        sPedido = {
+                            codigo: 'x',
+                            moneda: '-',
+                            importe: 0,
+                            fecha: '1970-01-01 00:00:00',
+                            items: 0
+                        };
+                    }
                 }
                 else {
-                    sPedido = {
-                        codigo: 'x',
-                        moneda: '-',
-                        importe: 0,
-                        fecha: '1970-01-01 00:00:00',
-                        items: 0
+                    query = "select pack_new_web_expo.f_datos_pedido_nac(:p_alias, 0) out from dual";
+                    params = {
+                        p_alias: { val: UserNac.alias }
                     };
+console.log(query);
+console.log(params);
+                    result = await conn.execute(query, params, responseParams);
+                    if (result.rows.length > 0) {
+                        let string = result.rows[0].OUT;
+                        if (string != null) {
+                            let { yserie, ydemoneda, yimpedido, yfecha, yitems, ynomcliente } = string.split;
+                            sPedido = {
+                                codigo: yserie,
+                                moneda: ydemoneda,
+                                importe: parseFloat(yimpedido),
+                                fecha: yfecha,
+                                items: parseInt(yitems),
+                                nomcliente: ynomcliente
+                            };
+                        }
+                        else {
+                            sPedido = {
+                                codigo: 'x',
+                                moneda: '-',
+                                importe: 0,
+                                fecha: '1970-01-01 00:00:00',
+                                items: 0
+                            };
+                        }
+                    }
+                    else {
+                        sPedido = {
+                            codigo: 'x',
+                            moneda: '-',
+                            importe: 0,
+                            fecha: '1970-01-01 00:00:00',
+                            items: 0
+                        };
+                    }
                 }
                 // cuenta corriente
                 query = "select co_documento \"documento\", de_moneda \"moneda\", im_saldo \"deuda\", to_char(fec_venc,'yyyy-mm-dd') \"vence\", nu_dias_vencido \"dias\", " +
