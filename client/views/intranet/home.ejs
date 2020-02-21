@@ -1,103 +1,119 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="utf-8">
-        <title>Intranet Corporacion Life</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
-        <link rel="stylesheet" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
-        <link rel="stylesheet" href="/assets/intranet/css/home.css">
+        <% include _main.head.ejs %>
     </head>
     <body>
         <!-- pinche navbar -->
-        <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-main">
-            <a class="navbar-brand pb-1" href="#">
-                <img src="/assets/intranet/images/clife-banner-light.svg" alt="Corporacion Life" style="height:24px;">
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link active dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fa fa-user"></i> <span id="nom-usuario"></span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="#">Action</a>
-                            <a class="dropdown-item" href="#">Another action</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Cerrar sesión</a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+        <% include _main.navbar.ejs %>
         <!-- sidenav -->
-        <div class="sidenav text-light">
-            <h2>sidenav o ke ase</h2>
-        </div>
+        <% if (admin == 'S') { %>
+            <% include _main.sidenav.admin.ejs %>
+        <% } else { %>
+            <% include _main.sidenav.ejs %>
+        <% } %>
         <!-- body -->
         <div id="main-content">
             <div class="container-fluid">
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>ola ke ase</h1>
-                <h1>muchos ola ke ases</h1>
+                <div class="row mb-2">
+                    <div class="col-12 col-md-8 col-lg-6">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Bienvenido a la Intranet de Corporación Life</p>
+                            </li>
+                            <li class="list-group-item">
+                                <p class="mb-1 text-dark font-weight-bold">Misión Corporación Life</p>
+                                <p class="mb-0 text-dark">"Alegrar a nuestros clientes entregando productos innovadores y de calidad"</p>
+                            </li>
+                            <li class="list-group-item">
+                                <p class="mb-1 text-dark font-weight-bold">Visión Corporación Life</p>
+                                <p class="mb-0 text-dark">"Ser una de las principales empresas latinoamericanas líder e innovadora en la elaboración y comercialización de productos para el Cuidado Capilar y la Belleza"</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row mb-2">
+                    <div class="col">
+                        <div class="alert alert-primary no-rounded mb-2">
+                            <p class="font-weight-bold mb-1">BOLETA DE PAGO EMP Y OBR - LIFE - ENERO 2020 - REMUNERACIONES</p>
+                            <p class="mb-0">Ya está disponible la boleta correspondiente al mes de Enero 2020. Podrás descargarla desde el menú, opción "Mis documentos"</p>
+                        </div>
+                        <div class="alert alert-primary no-rounded mb-2">
+                            <p class="font-weight-bold mb-1">REGLAMENTO INTERNO CORPORACION LIFE</p>
+                            <p class="mb-0">Puedes descargar el reglamento interno de Corporación Life desde <a href="#">este enlace</a></p>
+                        </div>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Anuncios importantes</p>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <div class="icono-aviso my-auto">
+                                        <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
+                                    </div>
+                                    <div class="mr-auto px-2 my-auto">
+                                        <p class="font-weight-bold mb-0">Charla sobre primeros auxilios</p>
+                                        <p class="mb-0">Se realizará el día 24-02-2020, a las 10:00 hrs. en el comedor. Es importante su participación.</p>
+                                    </div>
+                                    <small class="text-primary my-auto">20-02-2020</small>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <div class="icono-aviso my-auto">
+                                        <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
+                                    </div>
+                                    <div class="mr-auto px-2 my-auto">
+                                        <p class="font-weight-bold mb-0">Celebración por el día de la amistad</p>
+                                        <p class="mb-0">Se invita a todo el personal a participar del compartir por el día de la amistad, el día viernes 14 de febrero a las 5.00 pm. ¡No falten!</p>
+                                    </div>
+                                    <small class="text-primary my-auto">12-02-2020</small>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <div class="icono-aviso my-auto">
+                                        <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
+                                    </div>
+                                    <div class="mr-auto px-2 my-auto">
+                                        <p class="font-weight-bold mb-0">Cumpleaños del mes de enero</p>
+                                        <p class="mb-0">El día viernes 31 celebraremos los cumpleaños de nuestros colaboradores del mes de enero. Ven a compartir con nosotros de esta celebración, a las 4.30 pm en en comedor.</p>
+                                    </div>
+                                    <small class="text-primary my-auto">27-01-2020</small>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <div class="icono-aviso my-auto">
+                                        <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
+                                    </div>
+                                    <div class="mr-auto px-2 my-auto">
+                                        <p class="font-weight-bold mb-0">Feliz año nuevo 2020</p>
+                                        <p class="mb-0">Que este nuevo año 2020 sea próspero y podamos crecer juntos, tanto en lo personal como en equipo. ¡Felices fiestas!</p>
+                                    </div>
+                                    <small class="text-primary my-auto">30-01-2019</small>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
         <!-- separador de bajo presupuesto -->
-        <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
-        <script src="/assets/bootstrap/js/popper.min.js"></script>
-        <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+        <% include _main.scripts.ejs %>
         <script>
             const sesion = JSON.parse('<%-sesion %>');
-            
-            IniciarComponentes = _ => {
-                document.getElementById('nom-usuario').innerHTML = sesion.rsocial;
-            }
-
-            $(IniciarComponentes);
+            $(function() {
+                $('#sidenav-inicio').addClass('active');
+            });
         </script>
     </body>
 </html>

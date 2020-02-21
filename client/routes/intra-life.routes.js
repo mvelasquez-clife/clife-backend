@@ -5,8 +5,15 @@ const LifeController = require('../controllers/intra-life.controller');
     router.get('/', LifeController.Home);
     router.get('/login', LifeController.Login);
     router.get('/logout', LifeController.Logout);
+    router.get('/documentos/:tipo', LifeController.Documentos);
     router.get('/activar-cuenta', LifeController.ActivarCuenta);
+    router.get('/datos-personales', LifeController.DatosPersonales);
+    router.get('/personal', LifeController.Personal);
+    router.get('/subir-docs', LifeController.SubirDocumentos);
+    router.get('/enviar-mensajes', LifeController.EnvioMensajes);
     //
     router.post('/auth-login', LifeController.AuthLogin);
+    router.post('/cargar-datos', LifeController.CargarDatosUsuario);
+    router.post('/lista-empresas', LifeController.ListaEmpresas);
 
 module.exports = router;

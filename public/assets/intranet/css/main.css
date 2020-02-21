@@ -1,0 +1,77 @@
+body {
+    background-image: url('/assets/intranet/images/bg-pattern.jpg');
+    background-repeat: repeat;
+    padding-top: 50px;
+}
+.sidenav {
+    background-color: #404040;
+    height: calc(100vh);
+    left: 0;
+    padding: 52px 12px 12px;
+    position: fixed;
+    top: 0;
+    transition: opacity 500ms ease-in;
+    width: 240px;
+}
+.sidenav-link {
+    color: #f8f8f8;
+    font-size: 0.8rem;
+}
+.sidenav-link:hover, .sidenav-link:active, .sidenav-link.active {
+    color: rgb(180, 235, 240);
+    text-decoration: none;
+}
+.sidenav .btn-sm, .list-group-item .btn-sm, form .btn-sm {
+    font-size: 0.75rem;
+}
+#img-profile {
+    border-radius: 50%;
+    height: 128px;
+}
+.modal-body p {
+    font-size: 0.9rem;
+}
+#main-content { padding-top: 12px; }
+.list-group-item { padding:.5rem 1rem; }
+.alert { padding:.5rem .75rem; }
+.alert.no-rounded { border-radius:0px !important; }
+.icono-aviso {
+    background-color: rgb(205, 145, 215);
+    border-radius: 50%;
+    height: 40px;
+    width: 40px;
+}
+.icono-aviso > img {
+    height: 28px;
+    margin: 6px;
+    width: 28px;
+}
+select.form-control-sm {
+    font-size: 0.8rem;
+    padding: 0.1rem 0.25rem;
+}
+.table td, .table th {
+    padding: .4rem .75rem;
+    vertical-align: middle;
+}
+@media (max-width: 991px) {
+    .sidenav {
+        display: none;
+        height: 100%;
+        left: 0;
+        opacity: 0;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 10;
+    }
+    .sidenav-show {
+        display: block;
+        opacity: 1;
+    }
+}
+@media (min-width: 992px) {
+    body { padding-top: 40px; }
+    .sidenav { display: block; }
+    #main-content { padding-left: 240px; }
+}

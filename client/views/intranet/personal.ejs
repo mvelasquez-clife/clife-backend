@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <% include _main.sidenav.admin.ejs %>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Administrar</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Personal</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <div class="alert alert-primary no-rounded mb-2">
+                            <p class="mb-0">Desde aquí podrá gestionar los datos del personal. Utilice la opción <b>Subida masiva</b> para cargar una plantilla con los datos de varias personas a la vez. También puede editar la información del personal mediante el botón de <b>Edición</b>.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Personal registrado en el sistema</p>
+                            </li>
+                            <li class="list-group-item">
+                                <form class="form-inline">
+                                    <label for="combo-empresa">Empresa</label>
+                                    <select id="combo-empresa" class="form-control form-control-sm ml-lg-2 mb-2 mb-lg-0">
+                                        <option value="0">- Seleccione -</option>
+                                    </select>
+                                    <!-- separador -->
+                                    <a id="btn-carga-masiva" href="#" class="btn btn-sm btn-primary ml-lg-5 disabled" data-toggle="modal" data-target="#modal-carga-masiva"><i class="fa fa-users"></i> Carga masiva</a>
+                                    <a id="btn-retirar" href="#" class="btn btn-sm btn-danger ml-1 disabled"><i class="fa fa-remove"></i> Retirar usuarios</a>
+                                </form>
+                            </li>
+                            <li class="list-group-item">
+                                <table id="tabla-personal" class="table table-responsive table-striped table-hover mb-1">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>DNI</th>
+                                            <th>Ape.Paterno</th>
+                                            <th>Ape.Materno</th>
+                                            <th>Nombres</th>
+                                            <th>e-mail</th>
+                                            <th>Telefono</th>
+                                            <th>Área</th>
+                                            <th>Cargo</th>
+                                            <th>Estado</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!--tr>
+                                            <td>46455181</td>
+                                            <td>VELASQUEZ</td>
+                                            <td>PORTUGAL</td>
+                                            <td>MIGUEL ALFONSO</td>
+                                            <td>mvelasquez@corporacionlife.com.pe</td>
+                                            <td>989845561</td>
+                                            <td>SISTEMAS</td>
+                                            <td>ANALISTA PROGRAMADOR</td>
+                                            <td>
+                                                <span class="btn btn-success btn-sm">Vigente</span>
+                                            </td>
+                                            <td>
+                                                <a href="#" class="btn btn-sm btn-primary"><i class="fa fa-pencil"></i><span class="d-none d-lg-inline"> Editar</span></a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>45359169</td>
+                                            <td>ORRILLO</td>
+                                            <td>TIRADO</td>
+                                            <td>GUIDO PEÑAFORT</td>
+                                            <td>analistaplanillas@corporacionlife.com.pe</td>
+                                            <td>966558421</td>
+                                            <td>RECURSOS HUMANOS</td>
+                                            <td>ANALISTA DE PLANILLAS</td>
+                                            <td>
+                                                <span class="btn btn-success btn-sm">Vigente</span>
+                                            </td>
+                                            <td>
+                                                <a href="#" class="btn btn-sm btn-primary"><i class="fa fa-pencil"></i><span class="d-none d-lg-inline"> Editar</span></a>
+                                            </td>
+                                        </tr!-->
+                                        <tr>
+                                            <td colspan="10">Seleccione una empresa para cargar la lista de trabajadores</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot></tfoot>
+                                </table>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <div id="modal-carga-masiva" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Carga masiva</h5>
+                        <button class="close" data-dismiss="modal" aria-label="close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-4">
+                                    <img src="/assets/intranet/images/ic-xls.svg" alt="Cargar XLSX" class="img-fluid">
+                                </div>
+                                <div class="col-8">
+                                    <p class="text-dark" style="font-size:0.8rem;">A continuación, podrá cargar una plantilla para ingresar usuarios al sistema de manera masiva.</p>
+                                    <!-- separador de bajo presupuesto -->
+                                    <form>
+                                        <div class="form-group row mb-2">
+                                            <div class="col">
+                                                <div class="custom-file">
+                                                    <input type="file" class="custom-file-input" id="img-plantilla" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" lang="es">
+                                                    <label class="custom-file-label" for="img-plantilla" data-browse="Buscar">Seleccionar archivo</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mb-1">
+                                            <div class="col">
+                                                <a id="modal-carga-plantilla" href="#" class="btn btn-sm btn-primary disabled"><i class="fa fa-upload"></i> Cargar plantilla</a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-sm btn-danger" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            // funciones
+            CargarListaEmpresas = async _ => {
+                const result = await $.ajax({
+                    url: '/intranet/lista-empresas',
+                    method: 'post',
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert (result.error);
+                    return;
+                }
+                for (let empresa of result.data.empresas) {
+                    $('#combo-empresa').append(
+                        $('<option>').val(empresa.value).text(empresa.text)
+                    );
+                }
+                $('#combo-empresa').on('change', _ => {
+                    if (document.getElementById('combo-empresa').value != 0) {
+                        $('#btn-carga-masiva').removeClass('disabled');
+                    }
+                    else {
+                        $('#btn-carga-masiva').addClass('disabled');
+                    }
+                });
+            }
+            RecibirPlantilla = e => {
+                const file = document.getElementById('img-plantilla').files[0];
+                if (file) {
+                    $('#img-plantilla').next().addClass('text-success').text(file.name);
+                    $('#modal-carga-plantilla').removeClass('disabled');
+                }
+            }
+            OcultarModalCarga = args => {
+                $('#img-plantilla').next().removeClass('text-success').text('Seleccionar archivo');
+                $('#modal-carga-plantilla').addClass('disabled');
+            }
+            // iniciar
+            $(_ => {
+                $('#menu-admin').collapse('show')
+                $('#sidenav-administrar').addClass('active');
+                $('#<%=id%>').addClass('active');
+                CargarListaEmpresas ();
+                $('#img-plantilla').on('change', RecibirPlantilla);
+                $('#modal-carga-masiva').on('hide.bs.modal', OcultarModalCarga);
+            });
+        </script>
+    </body>
+</html>

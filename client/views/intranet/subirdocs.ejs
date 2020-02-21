@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <% include _main.sidenav.admin.ejs %>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Administrar</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Subida de documentos</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <div class="alert alert-primary no-rounded mb-2">
+                            <p class="mb-0">Seleccione un tipo de documento. Luego, utilice la opción de <b>Cargar archivos</b> para comenzar la carga de documentos al sistema. Dependiendo del tamaño de los archivos, este proceso podría tardar algunos minutos. Recuerde que los archivos deben tener como nombre el documento de identidad del destinatario.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Carga de documentos</p>
+                            </li>
+                            <li class="list-group-item">
+                                <form>
+                                    <div class="form-group row mb-2">
+                                        <label for="form-empresa" class="col-sm-2 col-form-label">Empresa</label>
+                                        <div class="col-sm-6">
+                                            <select id="form-empresa" class="form-control form-control-sm">
+                                                <option value="0">- Seleccione -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <label for="form-tipodoc" class="col-sm-2 col-form-label">Tipo de documento</label>
+                                        <div class="col-sm-4">
+                                            <select id="form-tipodoc" class="form-control form-control-sm">
+                                                <option value="0">- Seleccione -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <label for="form-archivos" class="col-sm-2 col-form-label">Archivos</label>
+                                        <div class="col-sm-10">
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input" id="form-archivos">
+                                                <label class="custom-file-label" for="form-archivos" data-browse="Seleccionar">No ha seleccionado archivos para subir</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <div class="col-sm-10 offset-lg-2">
+                                            <a href="#" class="btn btn-sm btn-primary"><i class="fa fa-upload"></i> Iniciar subida de archivos</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            $(function() {
+                $('#menu-admin').collapse('show')
+                $('#sidenav-administrar').addClass('active');
+                $('#<%=id%>').addClass('active');
+            });
+        </script>
+    </body>
+</html>
