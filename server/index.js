@@ -67,6 +67,8 @@ app.use('/avance-ventas', require('./routes/avancevtas.routes'));
 app.use('/coordenadas', require('./routes/coordenadas.routes'));
 // extranet
 app.use('/extranet', require('../client/routes/extranet.routes'));
+// intranet corporacionl life
+app.use('/intranet', require('../client/routes/intra-life.routes'));
 
 //configura el chat
 /*io.set('origins', host.address);

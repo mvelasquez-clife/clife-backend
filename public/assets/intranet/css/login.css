@@ -1,0 +1,28 @@
+* { box-sizing: border-box !important; }
+html, body { background-color: rgb(0,170,155) !important; height: 100%; margin: 0; padding: 0; width: 100%; }
+.btn-main { border-radius: 24px !important; font-size: 0.9rem !important; width: 85%; }
+#form-login {
+    background-color: #ffffff;
+    border-radius: 32px 0 32px 0;
+    margin: 20px 0;
+    padding: 24px;
+    text-align: center;
+    width: 100%;
+}
+.form-input {
+    border-color: #d0d0d0;
+    border-width: 0 0 1px 0;
+    font-size: 0.9rem;
+    margin: 12px 0;
+    transition: border 250ms ease-in;
+    padding: 4px 8px;
+    width: 80%;
+}
+.form-input:focus {
+    border-bottom-width: 1px;
+    border-color: rgb(0,170,155);
+}
+.form-link, .form-link > a {
+    color: #808080;
+    font-size: 12px;
+}
