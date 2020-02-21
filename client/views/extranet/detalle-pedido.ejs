@@ -228,7 +228,7 @@
                 });
                 if (result.error) {
                     alert(result.error);
-                    location.href = '/extranet';
+//                    location.href = '/extranet';
                     return;
                 }
                 Pedido = result.pedido;
@@ -249,32 +249,34 @@
             event.preventDefault();
             let a = $(this);
             let cantidad = window.prompt('¿Cuántas unidades?');
-            let params = {
-                pedido: Pedido.codigo,
-                codigo: a.data('codigo'),
-                tipo: a.data('tipo'),
-                difer: a.data('difer'),
-                cantidad: parseInt(cantidad)
-            }
-            // actualizar cantidad
-            let result;
-            try {
-                result = await $.ajax({
-                    url: '/extranet/actualizar-cantidad-producto',
-                    method: 'post',
-                    data: params,
-                    dataType: 'json'
-                });
-                if (result.error) {
-                    alert(result.error);
-                    return;
+            if (cantidad != null && cantidad != '') {
+                let params = {
+                    pedido: Pedido.codigo,
+                    codigo: a.data('codigo'),
+                    tipo: a.data('tipo'),
+                    difer: a.data('difer'),
+                    cantidad: parseInt(cantidad)
                 }
-                DetallePedido = result.detalle;
-                EscribirListaProductos();
-            }
-            catch (err) {
-                console.error(err);
-                alert(err);
+                // actualizar cantidad
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/extranet/actualizar-cantidad-producto',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    DetallePedido = result.detalle;
+                    EscribirListaProductos();
+                }
+                catch (err) {
+                    console.error(err);
+                    alert(err);
+                }
             }
         }
         // funciones
@@ -430,41 +432,44 @@
             }
         }
         function IngresarCantidad(event) {
-            let ds = event.target.dataset;
-            let idx = parseInt(ds.idx);
-            let pventa = parseFloat(ds.pventa);
-            let caja = parseInt(ds.caja);
-            let pcaja = parseFloat(ds.pcaja);
-            let stock = parseInt(ds.stock);
-            let cantidad = parseInt($(this).val());
-            // validaciones
-            let resto = cantidad % caja;
-            let cajas = Math.floor(cantidad / caja);
-            if (cantidad > stock) {
-                cantidad = stock;
-                $(this).val(stock);
-                document.getElementById('alert-' + idx).innerHTML = 'Stock superado';
-            }
-            else {
-                if (resto > 0) {
-                    cajas += 1;
-                    let faltante = cajas * caja;
-                    document.getElementById('alert-' + idx).innerHTML = faltante + ' para ' + cajas + ' caja(s)';
+            let scantidad = $(this).val();
+            if (scantidad != '') {
+                let ds = event.target.dataset;
+                let idx = parseInt(ds.idx);
+                let pventa = parseFloat(ds.pventa);
+                let caja = parseInt(ds.caja);
+                let pcaja = parseFloat(ds.pcaja);
+                let stock = parseInt(ds.stock);
+                let cantidad = parseInt(scantidad);
+                // validaciones
+                let resto = cantidad % caja;
+                let cajas = Math.floor(cantidad / caja);
+                if (cantidad > stock) {
+                    cantidad = stock;
+                    $(this).val(stock);
+                    document.getElementById('alert-' + idx).innerHTML = 'Stock superado';
                 }
                 else {
-                    document.getElementById('alert-' + idx).innerHTML = '';
+                    if (resto > 0) {
+                        cajas += 1;
+                        let faltante = cajas * caja;
+                        document.getElementById('alert-' + idx).innerHTML = faltante + ' para ' + cajas + ' caja(s)';
+                    }
+                    else {
+                        document.getElementById('alert-' + idx).innerHTML = '';
+                    }
                 }
+                let subtotal = cantidad * pventa;
+                let pallets = cajas * pcaja;
+                // actualiza array
+                catalogo[idx].cantidad = cantidad;
+                catalogo[idx].subtotal = subtotal;
+                catalogo[idx].cajas = cajas;
+                catalogo[idx].pallets = pallets;
+                //
+                document.getElementById('subtotal-' + idx).innerHTML = subtotal.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                document.getElementById('pallets-' + idx).innerHTML = pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });;
             }
-            let subtotal = cantidad * pventa;
-            let pallets = cajas * pcaja;
-            // actualiza array
-            catalogo[idx].cantidad = cantidad;
-            catalogo[idx].subtotal = subtotal;
-            catalogo[idx].cajas = cajas;
-            catalogo[idx].pallets = pallets;
-            //
-            document.getElementById('subtotal-' + idx).innerHTML = subtotal.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            document.getElementById('pallets-' + idx).innerHTML = pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });;
         }
         CargarCatalogoProductos = async (event) => {
             $('#lista-container').empty();
@@ -511,7 +516,7 @@
                                 'data-pcaja': item.pcaja,
                                 'data-stock': item.stock + 50,
                                 'data-grupo': item.cogrupo
-                            }).addClass('form-control form-control-sm ip-cant').on('keyup', IngresarCantidad).prop('disabled', item.stock != 0)
+                            }).addClass('form-control form-control-sm ip-cant').on('keyup', IngresarCantidad).prop('disabled', item.stock == 0)
                         ).append(
                             $('<small>').attr('id', 'alert-' + j).addClass('text-danger')
                         )
