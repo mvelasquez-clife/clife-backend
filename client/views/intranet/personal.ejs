@@ -65,6 +65,9 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <tr>
+                                            <td colspan="10">Seleccione una empresa para cargar su personal</td>
+                                        </tr>
                                         <!--tr>
                                             <td>46455181</td>
                                             <td>VELASQUEZ</td>
@@ -96,10 +99,7 @@
                                             <td>
                                                 <a href="#" class="btn btn-sm btn-primary"><i class="fa fa-pencil"></i><span class="d-none d-lg-inline"> Editar</span></a>
                                             </td>
-                                        </tr!-->
-                                        <tr>
-                                            <td colspan="10">Seleccione una empresa para cargar la lista de trabajadores</td>
-                                        </tr>
+                                        </tr-->
                                     </tbody>
                                     <tfoot></tfoot>
                                 </table>
@@ -129,12 +129,12 @@
                                 <div class="col-8">
                                     <p class="text-dark" style="font-size:0.8rem;">A continuación, podrá cargar una plantilla para ingresar usuarios al sistema de manera masiva.</p>
                                     <!-- separador de bajo presupuesto -->
-                                    <form>
+                                    <form id="form-archivo" method="post" enctype="multipart/form-data">
                                         <div class="form-group row mb-2">
                                             <div class="col">
                                                 <div class="custom-file">
-                                                    <input type="file" class="custom-file-input" id="img-plantilla" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" lang="es">
-                                                    <label class="custom-file-label" for="img-plantilla" data-browse="Buscar">Seleccionar archivo</label>
+                                                    <input type="file" class="custom-file-input" id="xls-plantilla" name="plantilla" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" lang="es">
+                                                    <label class="custom-file-label" for="xls-plantilla" data-browse="Buscar">Seleccionar archivo</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -155,10 +155,98 @@
             </div>
         </div>
         <!-- separador de bajo presupuesto -->
+        <div id="modal-resultados" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Carga completada</h5>
+                        <button class="close" data-dismiss="modal" aria-label="close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">
+                                    <p class="text-dark mb-1">La carga de la lista de usuarios ha finalizado. A continuación, se muestra los resultados.</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div id="resultados-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-sm btn-danger" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- separador de bajo presupuesto -->
         <% include _main.scripts.ejs %>
         <script>
             const sesion = JSON.parse('<%-sesion %>');
             // funciones
+            CargarPersonalEmpresa = async empresa => {
+                MuestraIndicadorCarga();
+                $('#tabla-personal tbody').empty();
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/intranet/lista-personal',
+                        method: 'post',
+                        data: { empresa: empresa },
+                        dataType: 'json'
+                    });
+                }
+                catch (err) {
+                    console.error(err);
+                    alert(JSON.stringify(err));
+                    return;
+                }
+                if (result.error) {
+                    console.error(err);
+                    alert(err);
+                    return;
+                }
+                const personal = result.data.personal;
+                for (let persona of personal) {
+                    $('#tabla-personal tbody').append(
+                        $('<tr>').append(
+                            $('<td>').text(persona.DOCIDEN)
+                        ).append(
+                            $('<td>').text(persona.APEPAT)
+                        ).append(
+                            $('<td>').text(persona.APEMAT)
+                        ).append(
+                            $('<td>').text(persona.NOMBRES)
+                        ).append(
+                            $('<td>').text(persona.EMAIL)
+                        ).append(
+                            $('<td>').text(persona.TELEFONO)
+                        ).append(
+                            $('<td>').text(persona.AREA)
+                        ).append(
+                            $('<td>').text(persona.CARGO)
+                        ).append(
+                            $('<td>').append(
+                                $('<span>').addClass('btn btn-sm btn-' + (persona.VIGENCIA == 'Vigente' ? 'success' : 'danger')).text(persona.VIGENCIA)
+                            )
+                        ).append(
+                            $('<td>').append(
+                                $('<a>').append(
+                                    $('<i>').addClass('fa fa-pencil')
+                                ).append(
+                                    $('<span>').html('&nbsp;Editar').addClass('d-none d-lg-inline')
+                                ).addClass('btn btn-sm btn-primary').attr('href', '#')
+                            )
+                        )
+                    );
+                }
+                OcultaIndicadorCarga();
+            }
             CargarListaEmpresas = async _ => {
                 const result = await $.ajax({
                     url: '/intranet/lista-empresas',
@@ -177,6 +265,7 @@
                 $('#combo-empresa').on('change', _ => {
                     if (document.getElementById('combo-empresa').value != 0) {
                         $('#btn-carga-masiva').removeClass('disabled');
+                        CargarPersonalEmpresa(document.getElementById('combo-empresa').value);
                     }
                     else {
                         $('#btn-carga-masiva').addClass('disabled');
@@ -184,15 +273,64 @@
                 });
             }
             RecibirPlantilla = e => {
-                const file = document.getElementById('img-plantilla').files[0];
+                const file = document.getElementById('xls-plantilla').files[0];
                 if (file) {
-                    $('#img-plantilla').next().addClass('text-success').text(file.name);
+                    $('#xls-plantilla').next().addClass('text-success').text(file.name);
                     $('#modal-carga-plantilla').removeClass('disabled');
                 }
             }
             OcultarModalCarga = args => {
-                $('#img-plantilla').next().removeClass('text-success').text('Seleccionar archivo');
+                $('#xls-plantilla').next().removeClass('text-success').text('Seleccionar archivo');
                 $('#modal-carga-plantilla').addClass('disabled');
+            }
+            EnviarPlantilla = async e => {
+                e.preventDefault();
+                $('#modal-carga-masiva').modal('hide');
+                $('#resultados-container').empty();
+                MuestraIndicadorCarga();
+                const empresa = document.getElementById('combo-empresa').value;
+                if (empresa == '0') {
+                    alert('Primero seleccione una empresa');
+                    return;
+                }
+                var formData = new FormData(document.getElementById('form-archivo'));
+                formData.append('empresa', empresa);
+                // enviar alv
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/intranet/upload-personal',
+                        type: 'post',
+                        dataType: 'json',
+                        data: formData,
+                        cache: false,
+                        contentType: false,
+                        processData: false
+                    });
+                }
+                catch (err) {
+                    console.error(err);
+                    alert(JSON.stringify(err));
+                    return;
+                }
+                if (result.error) {
+                    console.error(result.error);
+                    alert(result.error);
+                    return;
+                }
+                // finish him!
+                let mensajes = result.mensajes;
+                for (let mensaje of mensajes) {
+                    $('#resultados-container').append(
+                        $('<div>').append(
+                            $('<p>').text(mensaje.descripcion).addClass('mb-0')
+                        ).addClass('alert no-rounded mb-2 ' + (mensaje.codigo == 1 ? 'alert-success' : 'alert-danger'))
+                    );
+                }
+                CargarPersonalEmpresa(document.getElementById('combo-empresa').value);
+                $('#modal-resultados').modal('show');
+                // listijirillo
+                OcultaIndicadorCarga();
             }
             // iniciar
             $(_ => {
@@ -200,8 +338,9 @@
                 $('#sidenav-administrar').addClass('active');
                 $('#<%=id%>').addClass('active');
                 CargarListaEmpresas ();
-                $('#img-plantilla').on('change', RecibirPlantilla);
+                $('#xls-plantilla').on('change', RecibirPlantilla);
                 $('#modal-carga-masiva').on('hide.bs.modal', OcultarModalCarga);
+                $('#modal-carga-plantilla').on('click', EnviarPlantilla);
             });
         </script>
     </body>

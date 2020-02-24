@@ -34,21 +34,20 @@ const LifeController = {
         let result;
         try {
             let conn = await oracledb.getConnection(dbParams);
-            let query = "select node_password \"hash\", st_cuenta_activada \"stact\", st_verifica_mail \"stmail\", co_cliente \"codigo\", initcap(de_nombre_comercial) \"ncomercial\", initcap(de_razon_social) \"rsocial\", fe_suscripcion \"fsuscripcion\", de_email \"email\", de_telefono \"telefono\", st_admin \"admin\", st_tipo_usuario \"tipo\" from cl_usuarios where co_cliente = :p_rucdni and co_empresa = :p_empresa";
+            let query = "select node_password \"hash\", st_cuenta_activada \"stact\", st_verifica_mail \"stmail\", co_cliente \"codigo\", initcap(de_nombre_comercial) \"ncomercial\", " +
+                "initcap(de_razon_social) \"rsocial\", fe_suscripcion \"fsuscripcion\", de_email \"email\", de_telefono \"telefono\", st_admin \"admin\", st_tipo_usuario \"tipo\", " +
+                "co_empresa as \"empresa\" from cl_usuarios where co_cliente = :p_rucdni and co_empresa = :p_empresa";
             let params = {
                 p_rucdni: { val: codigo },
                 p_empresa: { val: empresa }
             };
             result = await conn.execute(query, params, responseParams);
             result = result.rows[0];
-console.log(result);
             conn.close();
             // verificar si la cuenta esta activada y el email fue validado
             // compara la clave con el hash
             bcrypt.compare(pswd, result.hash, function (err, res) {
                 if (err) {
-console.error('pswd:', pswd);
-console.error('result.hash:', result.hash);
                     response.cookie(confParams.cookieError, 'La clave ingresada es incorrecta.', { httpOnly: true });
                     response.redirect('/intranet/login');
                     return;
@@ -57,6 +56,7 @@ console.error('result.hash:', result.hash);
                 delete sesion.hash;
                 delete sesion.stact;
                 delete sesion.stmail;
+console.log(sesion);
                 response.cookie(confParams.cookieAdmin, sesion.admin, { httpOnly: true });
                 response.cookie(confParams.cookieIntranet, JSON.stringify(sesion), { httpOnly: true });
                 response.redirect('/intranet');
@@ -143,9 +143,10 @@ console.error('result.hash:', result.hash);
         if (request.cookies[confParams.cookieIntranet]) {
             let sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
             const conn = await oracledb.getConnection(dbParams);
-            const query = "call pack_digitalizacion.sp_datos_usuario(:p_dni, :o_apepat, :o_apemat, :o_nombres, :o_fechanac, :o_sexo, :o_telefono, :o_email, :o_area, :o_cargo)";
+            const query = "call pack_digitalizacion.sp_datos_usuario(:p_dni, :p_empresa, :o_apepat, :o_apemat, :o_nombres, :o_fechanac, :o_sexo, :o_telefono, :o_email, :o_area, :o_cargo)";
             const params = {
                 p_dni: { val: sesion.codigo },
+                p_empresa: { val: sesion.empresa },
                 o_apepat: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
                 o_apemat: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
                 o_nombres: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
@@ -191,6 +192,117 @@ console.error('result.hash:', result.hash);
                     error: JSON.stringify(err)
                 });
             }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    ListaPersonal: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa } = request.body;
+            const conn = await oracledb.getConnection(dbParams);
+            const query = "select * from table(pack_digitalizacion.f_personal_empresa(:p_empresa))";
+            const params = {
+                p_empresa: { val: empresa }
+            };
+            const result = await conn.execute(query, params, responseParams);
+            const personal = result.rows;
+            response.json({
+                data: {
+                    personal: personal
+                }
+            });
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    UploadPersonal: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const mv = require('mv');
+            const formidable = require('formidable');
+            const fupload = require('../../server/fupload');
+            const xlsx = require('xlsx');
+            //
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            var form = new formidable.IncomingForm();
+            form.parse(request, async function (err, fields, files) {
+                if (err) {
+                    response.json(err);
+                    return;
+                }
+                var oldpath = files.plantilla.path;
+                var newpath = fupload.tmppath + files.plantilla.name;
+                mv(oldpath, newpath, async function (err) {
+                    // if (err) throw err;
+                    if (err) {
+                        response.json({
+                            error: err
+                        });
+                    }
+                    // leer el xlsx
+                    var workbook = xlsx.readFile(newpath);
+                    var sheet_name_list = workbook.SheetNames;
+                    var xlData = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]], { raw: false });
+                    // ahora verificar stocks e insertar
+                    try {
+                        const conn = await oracledb.getConnection(dbParams);
+                        let mensajes = [];
+                        for (let row of xlData) {
+                            let arrFila = [];
+                            for (let i in row) arrFila.push(row[i]);
+                            //arregla la mugre fecha alv
+                            let vFecha = arrFila[4].split('/');
+                            let iAnio = parseInt(vFecha[2]);
+                            let sFecha = vFecha[1].padStart(2, '0') + '/' + vFecha[0].padStart(2, '0') + '/' + (iAnio < 30 ? '20' : '19') + vFecha[2];
+                            let params = {
+                                p_dni: arrFila[0],
+                                p_empresa: fields.empresa,
+                                p_usu_reg: sesion.codigo,
+                                p_apepat: arrFila[1],
+                                p_apemat: arrFila[2],
+                                p_nombres: arrFila[3],
+                                p_fechanac: sFecha,
+                                p_sexo: arrFila[5],
+                                p_telefono: arrFila[6],
+                                p_email: arrFila[7],
+                                p_area: arrFila[8],
+                                p_cargo: arrFila[9],
+                                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                                o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                            };
+                            // ejecutar el sp
+                            let query = "call pack_digitalizacion.sp_registra_personal (:p_dni, :p_empresa, :p_usu_reg, :p_apepat, :p_apemat, :p_nombres, :p_fechanac, :p_sexo," +
+                                ":p_telefono, :p_email, :p_area, :p_cargo, :o_codigo, :o_mensaje)";
+                            let result = await conn.execute(query, params, responseParams);
+                            const { o_codigo, o_mensaje } = result.outBinds;
+                            mensajes.push({
+                                codigo: o_codigo,
+                                descripcion: o_mensaje
+                            });
+                        }
+                        conn.close();
+                        response.json({
+                            mensajes: mensajes
+                        });
+                    }
+                    catch (err) {
+                        console.error(err);
+                        response.json({
+                            error: err
+                        });
+                    }
+                });
+            });
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
         }
     }
 };

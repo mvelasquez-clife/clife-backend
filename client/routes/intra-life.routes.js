@@ -15,5 +15,7 @@ const LifeController = require('../controllers/intra-life.controller');
     router.post('/auth-login', LifeController.AuthLogin);
     router.post('/cargar-datos', LifeController.CargarDatosUsuario);
     router.post('/lista-empresas', LifeController.ListaEmpresas);
+    router.post('/lista-personal', LifeController.ListaPersonal);
+    router.post('/upload-personal', LifeController.UploadPersonal);
 
 module.exports = router;

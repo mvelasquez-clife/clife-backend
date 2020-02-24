@@ -54,6 +54,15 @@ select.form-control-sm {
     padding: .4rem .75rem;
     vertical-align: middle;
 }
+#dv-loader {
+    background-color: #00bcd4;
+    box-shadow: 0px 2px 4px #808080;
+    color: #ffffff;
+    padding: 4px 8px;
+    position: fixed;
+    z-index: 50;
+}
+#dv-loader table td { vertical-align: middle; }
 @media (max-width: 991px) {
     .sidenav {
         display: none;
@@ -69,9 +78,21 @@ select.form-control-sm {
         display: block;
         opacity: 1;
     }
+    #dv-loader {
+        bottom: 0;
+        left: 0;
+        margin: 8px;
+        width: calc(100vw - 16px);
+    }
 }
 @media (min-width: 992px) {
     body { padding-top: 40px; }
     .sidenav { display: block; }
     #main-content { padding-left: 240px; }
+    #dv-loader {
+        bottom: 0;
+        margin: 16px;
+        padding-right: 20px;
+        right: 0;
+    }
 }
