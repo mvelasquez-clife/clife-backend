@@ -17,5 +17,10 @@ const LifeController = require('../controllers/intra-life.controller');
     router.post('/lista-empresas', LifeController.ListaEmpresas);
     router.post('/lista-personal', LifeController.ListaPersonal);
     router.post('/upload-personal', LifeController.UploadPersonal);
+    router.post('/lista-tipos-doc', LifeController.ListaTiposDoc);
+    router.post('/lista-envios', LifeController.ListaEnvios);
+    router.post('/registra-cabecera-envio', LifeController.RegistraCabeceraEnvio);
+    router.post('/datos-cliente', LifeController.DatosCliente);
+    router.post('/cargar-pdf', LifeController.CargarPdf);
 
 module.exports = router;

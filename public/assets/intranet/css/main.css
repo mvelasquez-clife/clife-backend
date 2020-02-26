@@ -21,7 +21,7 @@ body {
     color: rgb(180, 235, 240);
     text-decoration: none;
 }
-.sidenav .btn-sm, .list-group-item .btn-sm, form .btn-sm {
+.sidenav .btn-sm, .list-group-item .btn-sm, form .btn-sm, .table .btn-sm {
     font-size: 0.75rem;
 }
 #img-profile {
@@ -63,6 +63,11 @@ select.form-control-sm {
     z-index: 50;
 }
 #dv-loader table td { vertical-align: middle; }
+input.form-control-sm { font-size: 13px; }
+.input-group .form-control-sm {
+    padding: 1rem;
+}
+.form-control-sm.datepicker { padding:1.15rem 1rem; }
 @media (max-width: 991px) {
     .sidenav {
         display: none;

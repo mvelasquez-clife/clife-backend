@@ -1,3 +1,5 @@
 module.exports = {
-    tmppath: 'D:\\nodejs\\nodehtmlx\\tmp\\'
+    tmppath: 'C:\\files\\nodejs\\tmp\\',
+    winseparator: '\\',
+    linuxseparator: '/'
 };

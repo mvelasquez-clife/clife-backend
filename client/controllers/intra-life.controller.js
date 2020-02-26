@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const oracledb = require('oracledb');
 const dbParams = require('../../server/database');
 const confParams = require('../../server/config/intranet');
+const Client = require('ftp');
+const ftpAccess = require('../../server/ftp-access');
 const responseParams = {
     outFormat: oracledb.OBJECT
 };
@@ -232,7 +234,9 @@ console.log(sesion);
             var form = new formidable.IncomingForm();
             form.parse(request, async function (err, fields, files) {
                 if (err) {
-                    response.json(err);
+                    response.json({
+                        error: err
+                    });
                     return;
                 }
                 var oldpath = files.plantilla.path;
@@ -297,6 +301,310 @@ console.log(sesion);
                         });
                     }
                 });
+            });
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    ListaTiposDoc: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                const query = "select * from table(pack_digitalizacion.f_lista_tipos_doc)";
+                const params = {};
+                const result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        tiposdoc: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                response.json({
+                    error: JSON.stringify(err)
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    RegistraCabeceraEnvio: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa, tipodoc, descripcion, finicio, ffin } = request.body;
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                const query = "call pack_digitalizacion.sp_registra_cabecera_envio (:p_empresa, :p_nombre, :p_tipodoc, :p_usureg, :p_inicio, :p_fin, :o_codigo, :o_mensaje)";
+                const params = {
+                    p_empresa: empresa,
+                    p_nombre: descripcion,
+                    p_tipodoc: tipodoc,
+                    p_usureg: sesion.codigo,
+                    p_inicio: finicio,
+                    p_fin: ffin,
+                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                    o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                };
+                const result = await conn.execute(query, params, responseParams);
+                const { o_codigo, o_mensaje } = result.outBinds;
+                if (o_codigo == 0) {
+                    response.json({
+                        error: o_mensaje
+                    });
+                }
+                else {
+                    response.json({
+                        data: {
+                            codigo: o_codigo,
+                            nombre: descripcion
+                        }
+                    });
+                }
+            }
+            catch (err) {
+                response.json({
+                    error: JSON.stringify(err)
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    ListaEnvios: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa, tipodoc } = request.body;
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                const query = "select codigo \"codigo\", descripcion \"descripcion\", to_char(fecha, 'dd/mm/yyyy') \"fecha\", periodo \"periodo\", usuregistra \"usuregistra\", vigencia \"vigencia\" from table(pack_digitalizacion.f_lista_envios(:p_empresa, :p_tipodoc))";
+                const params = {
+                    p_empresa: empresa,
+                    p_tipodoc: tipodoc
+                };
+                const result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        envios: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                response.json({
+                    error: JSON.stringify(err)
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    DatosCliente: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            let { cliente, idx, envio, empresa } = request.body;
+            if (cliente.indexOf('.') > -1) {
+                try {
+                    const scliente = cliente;
+                    cliente = cliente.split('.')[0];
+                    const conn = await oracledb.getConnection(dbParams);
+                    const query = "call pack_digitalizacion.sp_datos_cliente(:p_rucdni, :p_envio, :p_empresa, :o_codigo, :o_mensaje)";
+                    const params = {
+                        p_rucdni: cliente,
+                        p_envio: envio,
+                        p_empresa: empresa,
+                        o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                        o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                    };
+                    const result = await conn.execute(query, params, responseParams);
+                    const { o_codigo, o_mensaje } = result.outBinds;
+                    if (o_codigo == 0) {
+                        response.json({
+                            error: o_mensaje,
+                            data: { pos: idx }
+                        });
+                    }
+                    else {
+                        response.json({
+                            data: {
+                                pos: idx,
+                                nombre: o_mensaje,
+                                fname: scliente
+                            }
+                        });
+                    }
+                }
+                catch (err) {
+                    response.json({
+                        error: JSON.stringify(err),
+                        data: { pos: idx }
+                    });
+                }
+            }
+            else {
+                response.json({
+                    error: cliente + ': Nombre de archivo inválido',
+                    data: { pos: idx }
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    CargarPdf: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const mv = require('mv');
+            const formidable = require('formidable');
+            const fupload = require('../../server/fupload');
+            //
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            var form = new formidable.IncomingForm();
+            form.parse(request, async function (err, fields, files) {
+                if (err) {
+                    response.json({
+                        error: err
+                    });
+                    return;
+                }
+                const sFilename = 'DIGI_' + fields.cenvio + '_' + fields.codigo + '.pdf';
+                var oldpath = files.pdf.path;
+                var newpath = fupload.tmppath + sFilename;
+                mv(oldpath, newpath, async function (err) {
+                    if (err) {
+                        response.json({
+                            error: err
+                        });
+                        return;
+                    }
+                    // genera la ruta del archivo alv
+                    let folders = [fields.empresa, 'CLIENTES', fields.codigo];
+                    const sPath = 'X:' + fupload.winseparator + folders.join(fupload.winseparator) + fupload.winseparator + sFilename;
+                    const remotePath = '/publico/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator) + fupload.linuxseparator + sFilename;
+                    // subir archivo a la 248
+                    const c = new Client();
+                    c.on('ready', function() {
+                        c.mkdir(remotePath, (error) => {
+                            if (error) {
+                                response.json({
+                                    error: 'c.mkdir: ' + JSON.stringify(error)
+                                });
+                                return;
+                            }
+                            c.put(newpath, remotePath, async function(putError) {
+                                if (putError) {
+                                    response.json({
+                                        error: 'c.put: ' + JSON.stringify(putError)
+                                    });
+                                    return;
+                                }
+                                c.end();
+                                // registra en la bd
+                                try {
+                                    const conn = await oracledb.getConnection(dbParams);
+                                    // registra en el legajo de clientes
+                                    let query = "call pack_new_attached.sp_save_adjunto(:o_codigo, :o_resultado, :p_empresa, :p_usuario, :p_tipo_enti, :p_cataenti, :p_archivo, :p_tipoarchivo, " +
+                                        ":p_ruta, :p_fichero, :p_extension, :p_descripcion, :p_tpdocu, :p_tipocarpeta, :p_nuitems)";
+                                    let params = {
+                                        o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                                        o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                        p_empresa: { val: fields.empresa },
+                                        p_usuario: { val: sesion.codigo },
+                                        p_tipo_enti: { val: 2 },
+                                        p_cataenti: { val: fields.codigo },
+                                        p_archivo: { val: fields.codigo },
+                                        p_tipoarchivo: { val: 4 },
+                                        p_ruta: { val: sPath },
+                                        p_fichero: { val: sFilename },
+                                        p_extension: { val: 'pdf' },
+                                        p_descripcion: { val: fields.envio },
+                                        p_tpdocu: { val: 639 },
+                                        p_tipocarpeta: { val: 'CLIENTES' },
+                                        p_nuitems: { val: 1 }
+                                    };
+                                    let result = await conn.execute(query, params, responseParams);
+                                    let { o_codigo, o_resultado } = result.outBinds;
+                                    if (o_codigo == 0) {
+                                        conn.close();
+                                        response.json({
+                                            error: o_resultado
+                                        });
+                                        return;
+                                    }
+                                    // registra el envío del documento
+                                    query = "call pack_digitalizacion.sp_carga_documento (:p_envio,:p_empresa,:p_personal,:p_item,:p_coarchivo,:p_tparchivo,:p_usuenvia,:o_codigo,:o_resultado)";
+                                    params = {
+                                        p_envio: { val: fields.cenvio },
+                                        p_empresa: { val: fields.empresa },
+                                        p_personal: { val: fields.codigo },
+                                        p_item: { val: o_codigo },
+                                        p_coarchivo: { val: fields.codigo },
+                                        p_tparchivo: { val: 4 },
+                                        p_usuenvia: { val: sesion.codigo },
+                                        o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                                        o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                                    };
+                                    result = await conn.execute(query, params, responseParams);
+                                    conn.close();
+                                    // validar
+                                    // result.outBinds
+                                    if (result.outBinds.o_codigo == 0) {
+                                        response.json({
+                                            error: result.outBinds.o_resultado
+                                        });
+                                        return;
+                                    }
+                                    // listijirillo
+                                    response.json({
+                                        result: 'ok'
+                                    });
+                                }
+                                catch (err) {
+                                    console.error(err);
+                                    response.json({
+                                        error: err
+                                    });
+                                }
+                            });
+                        });
+                    });
+                    c.connect(ftpAccess);
+                });
+                /*
+                var oldpath = files.pdf.path;
+                var newpath = fupload.tmppath + files.pdf.name;
+                mv(oldpath, newpath, async function (err) {
+                    if (err) {
+                        response.json({
+                            error: err
+                        });
+                    }
+                    // ahora verificar stocks e insertar
+                    try {
+                        const conn = await oracledb.getConnection(dbParams);
+                        conn.close();
+                        response.json({
+                            mensajes: mensajes
+                        });
+                    }
+                    catch (err) {
+                        console.error(err);
+                        response.json({
+                            error: err
+                        });
+                    }
+                });
+                */
             });
         }
         else {
