@@ -89,3 +89,5 @@ public/assets/vendor
 /public/assets/custom_1
 *.properties
 nbproject/project.properties
+package-lock.json
+package.json
