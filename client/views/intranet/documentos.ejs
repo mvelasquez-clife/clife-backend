@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <% if (admin == 'S') { %>
+            <% include _main.sidenav.admin.ejs %>
+        <% } else { %>
+            <% include _main.sidenav.ejs %>
+        <% } %>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Mis documentos</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page"><%=tipo%></li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">BOLETA DE PAGO EMP Y OBR - LIFE</p>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <div class="my-auto">
+                                        <p class="mb-0">Periodo anterior</p>
+                                        <p class="font-weight-bold mb-0">ENERO 2020</p>
+                                    </div>
+                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
+                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Documentos anteriores</p>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">DICIEMBRE 2019</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
+                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">NOVIEMBRE 2019</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
+                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">OCTUBRE 2019</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
+                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">CTS ABR-SET 2019</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
+                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">SEPTIEMBRE 2019</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
+                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            $(function() {
+                $('#menu-docs').collapse('show')
+                $('#sidenav-documentos').addClass('active');
+                $('#<%=id%>').addClass('active');
+            });
+        </script>
+    </body>
+</html>

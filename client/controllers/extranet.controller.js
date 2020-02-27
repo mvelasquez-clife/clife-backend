@@ -83,7 +83,6 @@ const extranetController = {
             };
             result = await conn.execute(query, params, responseParams);
             result = result.rows[0];
-console.log(result);
             conn.close();
             if (result.stact == 'N') {
                 response.cookie('auth-err','Su cuenta no está ativada. Utilice el enlace proporcionado en el correo de confirmación enviado al momento de su registro.', { httpOnly: true });
@@ -97,8 +96,6 @@ console.log(result);
             }
             bcrypt.compare(pswd, result.hash, function(err, res) {
                 if (err) {
-console.error('pswd:', pswd);
-console.error('result.hash:', result.hash);
                     response.cookie('auth-err','La clave ingresada es incorrecta.', { httpOnly: true });
                     response.redirect('/extranet/login');
                     return;
@@ -493,7 +490,7 @@ console.log(params);
                 const conn = await oracledb.getConnection(dbParams);
                 let query;
                 if (sesion.tipo == 'E') {
-                    query = "select co_punto_venta \"pventa\", co_serie_listado \"serie\", co_listado_precios \"lista\", co_fuerza_venta \"fventa\" from vt_pre_pedi_c where co_pre_pedido = :p_pedido and co_empresa = :p_empresa";
+                    query = "select co_punto_venta \"pventa\", co_serie_listado \"serie\", co_listado_precios \"lista\", co_fuerza_venta \"fventa\" from vt_pre_pedi_t where co_pre_pedido = :p_pedido and co_empresa = :p_empresa";
                 }
                 else {
                     query = "select co_punto_venta \"pventa\", co_serie_listado \"serie\", co_listado_precios \"lista\", co_fuerza_venta \"fventa\" from vt_pedi_t where co_pedido = :p_pedido and co_empresa = :p_empresa";
