@@ -68,6 +68,13 @@ input.form-control-sm { font-size: 13px; }
     padding: 1rem;
 }
 .form-control-sm.datepicker { padding:1.15rem 1rem; }
+.badge-lg {
+    border: 1px solid #c0c0c0;
+    font-size: 0.75rem;
+    font-weight: normal;
+    padding: 0.25rem 0.4rem;
+}
+.badge-lg i { cursor:pointer; }
 @media (max-width: 991px) {
     .sidenav {
         display: none;

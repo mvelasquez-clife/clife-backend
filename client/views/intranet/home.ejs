@@ -34,11 +34,11 @@
                 </div>
                 <!-- separador de bajo presupuesto -->
                 <div class="row mb-2">
-                    <div class="col">
-                        <div class="alert alert-primary no-rounded mb-2">
+                    <div id="alertas-container" class="col">
+                        <!--div class="alert alert-primary no-rounded mb-2">
                             <p class="font-weight-bold mb-1">BOLETA DE PAGO EMP Y OBR - LIFE - ENERO 2020 - REMUNERACIONES</p>
                             <p class="mb-0">Ya está disponible la boleta correspondiente al mes de Enero 2020. Podrás descargarla desde el menú, opción "Mis documentos"</p>
-                        </div>
+                        </div-->
                         <div class="alert alert-primary no-rounded mb-2">
                             <p class="font-weight-bold mb-1">REGLAMENTO INTERNO CORPORACION LIFE</p>
                             <p class="mb-0">Puedes descargar el reglamento interno de Corporación Life desde <a href="#">este enlace</a></p>
@@ -48,11 +48,11 @@
                 <!-- separador de bajo presupuesto -->
                 <div class="row mb-2">
                     <div class="col-12">
-                        <ul class="list-group">
+                        <ul id="mensajes-container" class="list-group">
                             <li class="list-group-item">
                                 <p class="text-main mb-0">Anuncios importantes</p>
                             </li>
-                            <li class="list-group-item">
+                            <!--li class="list-group-item">
                                 <div class="d-flex w-100 justify-content-between">
                                     <div class="icono-aviso my-auto">
                                         <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
@@ -99,7 +99,7 @@
                                     </div>
                                     <small class="text-primary my-auto">30-01-2019</small>
                                 </div>
-                            </li>
+                            </li-->
                         </ul>
                     </div>
                 </div>
@@ -111,8 +111,64 @@
         <% include _main.scripts.ejs %>
         <script>
             const sesion = JSON.parse('<%-sesion %>');
-            $(function() {
+            var ListaMensajes;
+            // funciones
+            EscribirListaMensajes = _ => {
+                const alct = $('#alertas-container');
+                const msct = $('#mensajes-container');
+                for (let mensaje of ListaMensajes) {
+                    if (mensaje.TIPO == 'A') {
+                        alct.prepend(
+                            $('<div>').addClass('alert alert-primary no-rounded mb-2').append(
+                                $('<p>').addClass('font-weight-bold mb-1').text(mensaje.TITULO.toUpperCase())
+                            ).append(
+                                $('<p>').addClass('mb-0').text(mensaje.TEXTO)
+                            )
+                        );
+                    }
+                    else {
+                        msct.append(
+                            $('<li>').append(
+                                $('<div>').append(
+                                    $('<div>').append(
+                                        $('<img>').attr('src', '/assets/intranet/images/ic-aviso.svg')
+                                    ).addClass('icono-aviso my-auto')
+                                ).append(
+                                    $('<div>').append(
+                                        $('<p>').text(mensaje.TITULO).addClass('font-weight-bold mb-0')
+                                    ).append(
+                                        $('<p>').text(mensaje.TEXTO).addClass('mb-0')
+                                    ).addClass('mr-auto px-2 my-auto')
+                                ).append(
+                                    $('<small>').text(mensaje.FECHA).addClass('text-primary my-auto')
+                                ).addClass('d-flex w-100 justify-content-between')
+                            ).addClass('list-group-item')
+                        );
+                    }
+                }
+            }
+            CargarMensajesUsuario = async _ => {
+                MuestraIndicadorCarga();
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/lista-mensajes',
+                        method: 'post',
+                        dataType: 'json'
+                    });
+                    ListaMensajes = result.data.mensajes;
+                    EscribirListaMensajes();
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+                finally {
+                    OcultaIndicadorCarga();
+                }
+            }
+            // go!
+            $(_ => {
                 $('#sidenav-inicio').addClass('active');
+                CargarMensajesUsuario();
             });
         </script>
     </body>

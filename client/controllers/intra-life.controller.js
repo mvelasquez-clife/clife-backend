@@ -612,6 +612,111 @@ console.log(sesion);
                 error: 'No cuenta con permisos para acceder a esta opcion'
             });
         }
+    },
+    GuardarMensaje: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa, titulo, texto, tpenvio, destinatarios } = request.body;
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                // registra en el legajo de clientes
+                let query = "call pack_digitalizacion.sp_crear_mensaje (:o_codigo, :o_mensaje, :p_empresa, :p_titulo, :p_texto, :p_tpenvio, :p_destinatarios, :p_usu_envia)";
+                let params = {
+                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                    o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    p_empresa: { val: empresa },
+                    p_titulo: { val: titulo },
+                    p_texto: { val: texto },
+                    p_tpenvio: { val: tpenvio },
+                    p_destinatarios: { val: destinatarios },
+                    p_usu_envia: { val: sesion.codigo }
+                };
+                let result = await conn.execute(query, params, responseParams);
+                let { o_codigo, o_mensaje } = result.outBinds;
+                if (o_codigo == 0) {
+                    conn.close();
+                    response.json({
+                        error: o_mensaje
+                    });
+                    return;
+                }
+                response.json({
+                    state: 'OK'
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    ListaMensajes: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                let query = "select * from table (pack_digitalizacion.f_lista_mensajes(:p_empresa, :p_usuario))";
+                let params = {
+                    p_empresa: { val: sesion.empresa },
+                    p_usuario: { val: sesion.codigo }
+                };
+                const result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        mensajes: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    ListaDocumentos: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                let query = "select * from table (pack_digitalizacion.f_lista_documentos(:p_empresa, :p_codigo, :p_tipodoc))";
+                let params = {
+                    p_empresa: { val: sesion.empresa },
+                    p_codigo: { val: sesion.codigo },
+                    p_tipodoc: { val: '801' }
+                };
+                const result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        documentos: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
     }
 };
 

@@ -56,28 +56,38 @@
                                         <label for="msj-texto" class="col-sm-2 col-form-label">Mensaje</label>
                                         <div class="col-sm-10">
                                             <textarea id="msj-texto" type="text" class="form-control form-control-sm" rows="3" style="resize: none;"></textarea>
-                                            <small class="form-text text-muted"><span id="sp-caracteres">250</span>/250 caracteres restantes</small>
+                                            <small class="form-text text-muted"><span id="sp-caracteres">500</span>/500 caracteres restantes</small>
                                         </div>
                                     </div>
                                     <div class="form-group row mb-2">
                                         <label class="col-sm-2 col-form-label">Destinatarios</label>
                                         <div class="col-sm-6">
                                             <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-                                                <button type="button" class="btn btn-light btn-sm btn-tpenvio">A usuarios en particular</button>
-                                                <button type="button" class="btn btn-light btn-sm btn-tpenvio">A todo el personal</button>
+                                                <button type="button" class="btn btn-light btn-sm btn-tpenvio" data-tpenvio="1">A usuarios en particular</button>
+                                                <button type="button" class="btn btn-light btn-sm btn-tpenvio" data-tpenvio="2">A todo el personal</button>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="form-group row mb-2">
                                         <div class="col-sm-10 offset-2">
-                                            <div id="destinatarios-container">
-                                                <p class="mb-0">oli</p>
+                                            <div class="input-group mb-0">
+                                                <input type="text" id="msj-canti-dest" class="form-control form-control-sm" placeholder="No ha seleccionado destinatarios" aria-label="Destinatarios" aria-describedby="msj-destinatarios" readonly>
+                                                <div class="input-group-append">
+                                                    <a href="#" class="btn btn-sm btn-main disabled" id="msj-destinatarios" data-toggle="modal" data-target="#modal-destinatarios">
+                                                        <i class="fa fa-list-ul"></i>
+                                                    </a>
+                                                </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-sm-10 offset-2">
+                                            <div id="dv-destinatarios"></div>
                                         </div>
                                     </div>
                                     <div class="form-group row mb-0">
                                         <div class="col-sm-10 offset-2">
-                                            <button class="btn btn-sm btn-main"><i class="fa fa-envelope-o"></i> Enviar mensaje</button>
+                                            <button id="msj-enviar" class="btn btn-sm btn-main"><i class="fa fa-envelope-o"></i> Enviar mensaje</button>
                                         </div>
                                     </div>
                                 </form>
@@ -90,26 +100,243 @@
         </div>
         <!-- modals -->
         <% include _main.logout.ejs %>
+        <!-- modal -->
+        <div id="modal-destinatarios" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="modal-destinatarios-label" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modal-destinatarios-label">Destinatarios</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Doc.Identidad</th>
+                                    <th>Nombre</th>
+                                    <th>Área</th>
+                                    <th>Puesto</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-primary">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- separador de bajo presupuesto -->
         <% include _main.scripts.ejs %>
         <script>
+            const MAX_LENGTH = 500;
             const sesion = JSON.parse('<%-sesion %>');
+            const ListaDestinatarios = new Map();
+            var PersonalEmpresa;
             // funciones
             function BotonEnvioOnClick (e) {
                 e.preventDefault();
                 let a = $(this);
-                $('.btn-tpenvio.btn-main').removeClass('btn-main').addClass('btn-light');
-                a.removeClass('btn-light').addClass('btn-main');
+                $('.btn-tpenvio.btn-primary').removeClass('btn-primary').addClass('btn-light');
+                a.removeClass('btn-light').addClass('btn-primary');
+                ValidarBotonDestinatarios();
             }
+            function MarcarDestinatario (e) {
+                let button = $(this);
+                button.toggleClass('btn-light').toggleClass('btn-success').children('i').toggleClass('fa-minus').toggleClass('fa-check');
+            }
+            //
             ValidarLongitudTexto = e => {
                 const texto = document.getElementById('msj-texto').value;
-                if (texto.length >= 250) {
-                    document.getElementById('msj-texto').value = texto.substring(0, 250);
+                if (texto.length >= MAX_LENGTH) {
+                    document.getElementById('msj-texto').value = texto.substring(0, MAX_LENGTH);
                     $('#sp-caracteres').text('0').parent().addClass('text-danger').removeClass('text-muted');
                 }
                 else {
-                    const resto = 250 - texto.length;
+                    const resto = MAX_LENGTH - texto.length;
                     $('#sp-caracteres').text(resto).parent().removeClass('text-primary').addClass('text-muted');
+                }
+            }
+            CargarEmpresas = async _ => {
+                // combo empresas
+                let result = await $.ajax({
+                    url: '/intranet/lista-empresas',
+                    method: 'post',
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                for (let empresa of result.data.empresas) {
+                    $('#msj-empresa').append(
+                        $('<option>').val(empresa.value).text(empresa.text)
+                    );
+                }
+            }
+            ValidarEmpresa = e => {
+                const empresa = document.getElementById('msj-empresa').value;
+                if (empresa != 0) {
+                    CargarPersonalEmpresa(empresa);
+                }
+                ValidarBotonDestinatarios();
+            }
+            CargarPersonalEmpresa = async empresa => {
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/intranet/lista-personal',
+                        method: 'post',
+                        data: { empresa: empresa },
+                        dataType: 'json'
+                    });
+                }
+                catch (err) {
+                    console.error(err);
+                    alert(JSON.stringify(err));
+                    return;
+                }
+                if (result.error) {
+                    console.error(err);
+                    alert(err);
+                    return;
+                }
+                PersonalEmpresa = result.data.personal;
+            }
+            EscribeListaPersonal = _ => {
+                const tbody = $('#modal-destinatarios .modal-body .table tbody');
+                tbody.empty();
+                for (let persona of PersonalEmpresa) {
+                    let iNombre = persona.APEPAT + ' ' + persona.APEMAT + ', ' + persona.NOMBRES;
+                    tbody.append(
+                        $('<tr>').append(
+                            $('<td>').append(
+                                $('<button>').attr('id', 'ch-' + persona.DOCIDEN).addClass('btn btn-sm btn-light btn-dest').append(
+                                    $('<i>').addClass('fa fa-minus')
+                                ).data('value', persona.DOCIDEN).data('text', iNombre).on('click', MarcarDestinatario)
+                            )
+                        ).append(
+                            $('<td>').text(persona.DOCIDEN)
+                        ).append(
+                            $('<td>').text(iNombre)
+                        ).append(
+                            $('<td>').text(persona.AREA)
+                        ).append(
+                            $('<td>').text(persona.CARGO)
+                        )
+                    );
+                }
+                for (let [codigo, iDestinatario] of ListaDestinatarios) {
+                    $('#ch-' + codigo).toggleClass('btn-light').toggleClass('btn-success').children('i').toggleClass('fa-minus').toggleClass('fa-check');
+                }
+            }
+            ModalDestinatariosOnShow = args => {
+                EscribeListaPersonal();
+            }
+            SeleccionarDestinatarios = e => {
+                e.preventDefault();
+                ListaDestinatarios.clear();
+                let destinatarios = $('.btn-dest.btn-success');
+                $.each(destinatarios, function () {
+                    let button = $(this);
+                    let iDestinatario = {
+                        codigo: button.data('value'),
+                        nombre: button.data('text')
+                    };
+                    ListaDestinatarios.set(iDestinatario.codigo, iDestinatario);
+                    EscribirDestinatarios();
+                });
+                $('#modal-destinatarios').modal('hide');
+            }
+            EscribirDestinatarios = _ => {
+                $('#dv-destinatarios').empty();
+                for (let [codigo, iDestinatario] of ListaDestinatarios) {
+                    $('#dv-destinatarios').append(
+                        $('<span>').addClass('badge badge-light badge-lg mr-1').data('codigo', iDestinatario.codigo).append(iDestinatario.nombre).append(
+                            $('<i>').addClass('fa fa-remove ml-1')
+                        )
+                    );
+                }
+                $('#msj-canti-dest').addClass('text-success').val(ListaDestinatarios.size + ' destinatario(s)');
+            }
+            ValidarBotonDestinatarios = _ => {
+                const empresa = document.getElementById('msj-empresa').value;
+                const tpenvio = $('.btn-tpenvio.btn-primary').data('tpenvio');
+                if (empresa != "0" && tpenvio == "1") {
+                    $('#msj-destinatarios').removeClass('disabled');
+                    EscribirDestinatarios();
+                }
+                else {
+                    $('#msj-destinatarios').addClass('disabled');
+                    $('#dv-destinatarios').empty();
+                    if (tpenvio == "2") {
+                        $('#msj-canti-dest').addClass('text-success').val('Todo el personal de la empresa ' + $('#msj-empresa option:selected').text());
+                    }
+                }
+            }
+            EnviarMensaje = async e => {
+                e.preventDefault();
+                const params = {
+                    empresa: document.getElementById('msj-empresa').value,
+                    titulo: document.getElementById('msj-titulo').value,
+                    texto: document.getElementById('msj-texto').value,
+                    tpenvio: $('.btn-tpenvio.btn-primary').data('tpenvio'),
+                    destinatarios: ''
+                };
+                // validaciones alv
+                if (params.empresa == '0') {
+                    alert('Seleccione una empresa');
+                    return;
+                }
+                if (params.titulo.length == 0) {
+                    alert('Ingrese un título para el mensaje');
+                    return;
+                }
+                if (params.texto.length == 0) {
+                    alert('Debe redactar el mensaje antes de enviarlo');
+                    return;
+                }
+                if (params.tpenvio == undefined) {
+                    alert('Debe elegir si el mensaje se enviará a un grupo de usuarios o a todo el personal de la empresa seleccionada');
+                    return;
+                }
+                if (params.tpenvio == '1') {
+                    if (ListaDestinatarios.size == 0) {
+                        alert('Debe elegir al menos a un destinatario para enviar el mensaje');
+                        return;
+                    }
+                    else {
+                        let ls_destinatarios = [];
+                        for (let [codigo, iDestinatario] of ListaDestinatarios) {
+                            ls_destinatarios.push(codigo);
+                        }
+                        params.destinatarios = ls_destinatarios.join(',');
+                    }
+                }
+                // hacer el pinche post!
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/intranet/enviar-mensaje',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    alert('Se envió el mensaje a los usuarios');
+                    location.reload();
+                }
+                catch (err) {
+                    alert(JSON.stringify(error));
+                    return;
                 }
             }
             // go!
@@ -117,8 +344,15 @@
                 $('#menu-admin').collapse('show')
                 $('#sidenav-administrar').addClass('active');
                 $('#<%=id%>').addClass('active');
+                $('input[type=text]').val('');
+                $('textarea').val('');
                 $('.btn-tpenvio').on('click', BotonEnvioOnClick);
                 $('#msj-texto').on('keyup', ValidarLongitudTexto);
+                $('#msj-empresa').on('change', ValidarEmpresa);
+                $('#modal-destinatarios').on('show.bs.modal', ModalDestinatariosOnShow);
+                $('#modal-destinatarios .modal-footer .btn-primary').on('click', SeleccionarDestinatarios);
+                $('#msj-enviar').on('click', EnviarMensaje);
+                CargarEmpresas();
             });
         </script>
     </body>
