@@ -274,6 +274,10 @@
                                 $('#container-' + response.data.pos).data('valid', 1).data('idx', response.data.pos).data('personal', response.data.fname.split('.')[0]).removeClass('alert-warning').addClass('alert-success').children('p').append(' - ' + response.data.nombre);
                                 totalArchivos++;
                             }
+                        }, 'json').fail(err => {
+                            // $('#container-' + response.data.pos).removeClass('alert-warning').addClass('alert-danger')
+                            console.error(err);
+                        }).always(_ => {
                             totalValidaciones++;
                             if (totalValidaciones == files.length) {
                                 OcultaIndicadorCarga();
@@ -281,10 +285,6 @@
                                     $('#btn-upload').removeClass('disabled');
                                 }
                             }
-                        }, 'json').fail(err => {
-                            // $('#container-' + response.data.pos).removeClass('alert-warning').addClass('alert-danger')
-                            totalValidaciones++;
-                            console.error(err);
                         });
                     }
                 }
@@ -407,6 +407,7 @@
             }
             SubirArchivos = async e => {
                 e.preventDefault();
+                $('#btn-upload').addClass('disabled');
                 let cfiles = $('#doc-container').children('div');
                 const totalArchivos = cfiles.length;
                 MuestraIndicadorCarga();
@@ -449,7 +450,7 @@
                             div.removeClass('bg-light text-secondary').addClass('bg-danger').append(
                                 $('<small>').html(JSON.stringify(err))
                             ).children('p').children('i').removeClass('fa-hourglass-half').addClass('fa-exclamation-triangle');
-                            return;
+                            // return;
                         }
                     }
                     else {
@@ -459,7 +460,7 @@
                     }
                 }
                 $('#form-archivos').val('').next().removeClass('text-success').text('No ha seleccionado archivos para subir');
-                $('#btn-upload').addClass('disabled');
+                // $('#btn-upload').removeClass('disabled');
                 OcultaIndicadorCarga();
             }
             // go!

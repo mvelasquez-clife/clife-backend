@@ -1,10 +1,12 @@
 const path = require('path');
 const bcrypt = require('bcrypt');
 const oracledb = require('oracledb');
+const Client = require('ftp');
+const crypto = require('crypto');
 const dbParams = require('../../server/database');
 const confParams = require('../../server/config/intranet');
-const Client = require('ftp');
 const ftpAccess = require('../../server/ftp-access');
+const encParams = require('../../server/config/encrypt');
 const responseParams = {
     outFormat: oracledb.OBJECT
 };
@@ -490,121 +492,87 @@ console.log(sesion);
                     // genera la ruta del archivo alv
                     let folders = [fields.empresa, 'CLIENTES', fields.codigo];
                     const sPath = 'X:' + fupload.winseparator + folders.join(fupload.winseparator) + fupload.winseparator + sFilename;
-                    const remotePath = '/publico/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator) + fupload.linuxseparator + sFilename;
-                    // subir archivo a la 248
-                    const c = new Client();
-                    c.on('ready', function() {
-                        c.mkdir(remotePath, (error) => {
-                            if (error) {
+                    let remotePath = '/publico/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator);
+                    // subir con curl
+                    const fs = require('fs');
+                    const fileData = fs.readFileSync(newpath);
+                    const base64 = fileData.toString('base64'); //codifica el pdf a base 64
+                    const { Curl } = require('node-libcurl');
+                    const curl = new Curl();
+                    const url = 'http://192.168.0.248/uploader/index.php';
+                    curl.setOpt(Curl.option.URL, url);
+                    curl.setOpt(Curl.option.POSTFIELDS, 'path=' + remotePath + '&filename=' + sFilename + '&b64=' + encodeURIComponent(base64));
+                    curl.setOpt(Curl.option.VERBOSE, true);
+                    curl.on('end', async (statusCode, body) => {
+                        // guardar en la bd
+                        try {
+                            const conn = await oracledb.getConnection(dbParams);
+                            // registra en el legajo de clientes
+                            let query = "call pack_new_attached.sp_save_adjunto(:o_codigo, :o_resultado, :p_empresa, :p_usuario, :p_tipo_enti, :p_cataenti, :p_archivo, " +
+                                ":p_tipoarchivo, :p_ruta, :p_fichero, :p_extension, :p_descripcion, :p_tpdocu, :p_tipocarpeta, :p_nuitems)";
+                            let params = {
+                                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                                o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                p_empresa: { val: fields.empresa },
+                                p_usuario: { val: sesion.codigo },
+                                p_tipo_enti: { val: 2 },
+                                p_cataenti: { val: fields.codigo },
+                                p_archivo: { val: fields.codigo },
+                                p_tipoarchivo: { val: 4 },
+                                p_ruta: { val: sPath },
+                                p_fichero: { val: sFilename },
+                                p_extension: { val: 'pdf' },
+                                p_descripcion: { val: fields.envio },
+                                p_tpdocu: { val: 639 },
+                                p_tipocarpeta: { val: 'CLIENTES' },
+                                p_nuitems: { val: 1 }
+                            };
+                            let result = await conn.execute(query, params, responseParams);
+                            let { o_codigo, o_resultado } = result.outBinds;
+                            if (o_codigo == 0) {
+                                conn.close();
                                 response.json({
-                                    error: 'c.mkdir: ' + JSON.stringify(error)
+                                    error: o_resultado
                                 });
                                 return;
                             }
-                            c.put(newpath, remotePath, async function(putError) {
-                                if (putError) {
-                                    response.json({
-                                        error: 'c.put: ' + JSON.stringify(putError)
-                                    });
-                                    return;
-                                }
-                                c.end();
-                                // registra en la bd
-                                try {
-                                    const conn = await oracledb.getConnection(dbParams);
-                                    // registra en el legajo de clientes
-                                    let query = "call pack_new_attached.sp_save_adjunto(:o_codigo, :o_resultado, :p_empresa, :p_usuario, :p_tipo_enti, :p_cataenti, :p_archivo, :p_tipoarchivo, " +
-                                        ":p_ruta, :p_fichero, :p_extension, :p_descripcion, :p_tpdocu, :p_tipocarpeta, :p_nuitems)";
-                                    let params = {
-                                        o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-                                        o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-                                        p_empresa: { val: fields.empresa },
-                                        p_usuario: { val: sesion.codigo },
-                                        p_tipo_enti: { val: 2 },
-                                        p_cataenti: { val: fields.codigo },
-                                        p_archivo: { val: fields.codigo },
-                                        p_tipoarchivo: { val: 4 },
-                                        p_ruta: { val: sPath },
-                                        p_fichero: { val: sFilename },
-                                        p_extension: { val: 'pdf' },
-                                        p_descripcion: { val: fields.envio },
-                                        p_tpdocu: { val: 639 },
-                                        p_tipocarpeta: { val: 'CLIENTES' },
-                                        p_nuitems: { val: 1 }
-                                    };
-                                    let result = await conn.execute(query, params, responseParams);
-                                    let { o_codigo, o_resultado } = result.outBinds;
-                                    if (o_codigo == 0) {
-                                        conn.close();
-                                        response.json({
-                                            error: o_resultado
-                                        });
-                                        return;
-                                    }
-                                    // registra el envío del documento
-                                    query = "call pack_digitalizacion.sp_carga_documento (:p_envio,:p_empresa,:p_personal,:p_item,:p_coarchivo,:p_tparchivo,:p_usuenvia,:o_codigo,:o_resultado)";
-                                    params = {
-                                        p_envio: { val: fields.cenvio },
-                                        p_empresa: { val: fields.empresa },
-                                        p_personal: { val: fields.codigo },
-                                        p_item: { val: o_codigo },
-                                        p_coarchivo: { val: fields.codigo },
-                                        p_tparchivo: { val: 4 },
-                                        p_usuenvia: { val: sesion.codigo },
-                                        o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-                                        o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
-                                    };
-                                    result = await conn.execute(query, params, responseParams);
-                                    conn.close();
-                                    // validar
-                                    // result.outBinds
-                                    if (result.outBinds.o_codigo == 0) {
-                                        response.json({
-                                            error: result.outBinds.o_resultado
-                                        });
-                                        return;
-                                    }
-                                    // listijirillo
-                                    response.json({
-                                        result: 'ok'
-                                    });
-                                }
-                                catch (err) {
-                                    console.error(err);
-                                    response.json({
-                                        error: err
-                                    });
-                                }
+                            // registra el envío del documento
+                            query = "call pack_digitalizacion.sp_carga_documento (:p_envio,:p_empresa,:p_personal,:p_item,:p_coarchivo,:p_tparchivo,:p_usuenvia,:o_codigo,:o_resultado)";
+                            params = {
+                                p_envio: { val: fields.cenvio },
+                                p_empresa: { val: fields.empresa },
+                                p_personal: { val: fields.codigo },
+                                p_item: { val: o_codigo },
+                                p_coarchivo: { val: fields.codigo },
+                                p_tparchivo: { val: 4 },
+                                p_usuenvia: { val: sesion.codigo },
+                                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                                o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                            };
+                            result = await conn.execute(query, params, responseParams);
+                            conn.close();
+                            // validar
+                            if (result.outBinds.o_codigo == 0) {
+                                response.json({
+                                    error: result.outBinds.o_resultado
+                                });
+                                return;
+                            }
+                            // listijirillo
+                            response.json({
+                                result: 'ok'
                             });
-                        });
+                        }
+                        catch (err) {
+                            console.error(err);
+                            response.json({
+                                error: err
+                            });
+                        }
                     });
-                    c.connect(ftpAccess);
+                    curl.on('error', curl.close.bind(curl));
+                    curl.perform();
                 });
-                /*
-                var oldpath = files.pdf.path;
-                var newpath = fupload.tmppath + files.pdf.name;
-                mv(oldpath, newpath, async function (err) {
-                    if (err) {
-                        response.json({
-                            error: err
-                        });
-                    }
-                    // ahora verificar stocks e insertar
-                    try {
-                        const conn = await oracledb.getConnection(dbParams);
-                        conn.close();
-                        response.json({
-                            mensajes: mensajes
-                        });
-                    }
-                    catch (err) {
-                        console.error(err);
-                        response.json({
-                            error: err
-                        });
-                    }
-                });
-                */
             });
         }
         else {
@@ -612,6 +580,68 @@ console.log(sesion);
                 error: 'No cuenta con permisos para acceder a esta opcion'
             });
         }
+    },
+    DescargaPdf: async (request, response) => {
+        const { hash } = request.params;
+        const decipher = crypto.createDecipher(encParams.algorytm, encParams.password);
+        var decrypted = decipher.update(hash, encParams.param, encParams.charset);
+        decrypted += decipher.final('utf8');
+        const decParams = decrypted.split(encParams.separator);
+            const envio = decParams[0];
+            const empresa = decParams[1];
+            const personal = decParams[2];
+        // response.send(envio + ' - ' + empresa + ' - ' + personal);
+        try {
+            const conn = await oracledb.getConnection(dbParams);
+            // registra en el legajo de clientes
+            let query = "call pack_digitalizacion.sp_info_fichero (:p_envio, :p_empresa, :p_usuario, :o_codigo, :o_mensaje, :o_ruta, :o_nombre, :o_fecha, :o_numero, :o_leido)";
+            let params = {
+                p_envio: { val: envio },
+                p_empresa: { val: empresa },
+                p_usuario: { val: personal },
+                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_ruta: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_nombre: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_fecha: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_numero: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_leido: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            let result = await conn.execute(query, params, responseParams);
+            let { o_codigo, o_mensaje, o_ruta, o_nombre, o_fecha, o_numero, o_leido } = result.outBinds;
+            // verifica si el archivo fue leído o no
+            if (o_leido == 'N') {
+                const infoEquipo = 'IP: ' + request.ip + ' | Browser: ' + request.headers['user-agent'];
+                query = "call pack_digitalizacion.sp_marca_doc_leido (:o_codigo, :o_resultado, :p_envio, :p_empresa, :p_usuario, :p_numero, :p_detalle)";
+                params = {
+                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                    o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    p_envio: { val: envio },
+                    p_empresa: { val: empresa },
+                    p_usuario: { val: personal },
+                    p_numero: { val: o_numero },
+                    p_detalle: { val: infoEquipo }
+                };
+                console.log(query, params);
+            }
+            // out!
+            if (o_codigo == 0) {
+                response.send('error: ' + o_mensaje);
+                return;
+            }
+            response.send(JSON.stringify({
+                ruta: o_ruta, nombre: o_nombre, fecha: o_fecha, numero: o_numero, leido: o_leido
+            }));
+        }
+        catch (err) {
+            console.error(err);
+            response.send(JSON.stringify(err));
+        }
+    },
+    InfoEquipo: (request, response) => {
+console.log('otra ip', request.ip);
+console.log(request.headers['user-agent']);
+        response.send('ola ke ase');
     },
     GuardarMensaje: async (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
@@ -699,9 +729,19 @@ console.log(sesion);
                     p_tipodoc: { val: '801' }
                 };
                 const result = await conn.execute(query, params, responseParams);
+                const documentos = result.rows;
+                const numDocumentos = documentos.length;
+                const cipher = crypto.createCipher(encParams.algorytm, encParams.password);
+                for (let i = 0; i < numDocumentos; i++) {
+                    let iDocumento = documentos[i];
+                    let string = [iDocumento.CODIGO, iDocumento.EMPRESA, sesion.codigo].join(encParams.separator);
+                    var encrypted = cipher.update(string, encParams.charset, encParams.param);
+                    encrypted += cipher.final(encParams.param);
+                    documentos[i].url = encrypted;
+                }
                 response.json({
                     data: {
-                        documentos: result.rows
+                        documentos: documentos
                     }
                 });
             }

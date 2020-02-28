@@ -121,7 +121,10 @@
                             ).append(
                                 $('<a>').append(
                                     $('<i>').addClass('fa fa-download mr-1')
-                                ).append('Descargar').addClass('btn btn-sm btn-danger my-auto').attr('href', '#')
+                                ).append('Descargar').addClass('btn btn-sm btn-danger my-auto').attr({
+                                    href: '/intranet/ver-documento/' + documento.url,
+                                    target: '_blank'
+                                })
                             ).addClass('d-flex w-100 justify-content-between')
                         );
                     }
@@ -136,7 +139,10 @@
                                 ).append(
                                     $('<a>').append(
                                         $('<i>').addClass('fa fa-download mr-1')
-                                    ).append('Descargar').addClass('btn btn-sm btn-danger my-auto')
+                                    ).append('Descargar').addClass('btn btn-sm btn-danger my-auto').attr({
+                                        href: '/intranet/ver-documento/' + documento.url,
+                                        target: '_blank'
+                                    })
                                 ).addClass('d-flex w-100 justify-content-between')
                             ).addClass('list-group-item')
                         );

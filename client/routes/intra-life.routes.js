@@ -11,6 +11,8 @@ const LifeController = require('../controllers/intra-life.controller');
     router.get('/personal', LifeController.Personal);
     router.get('/subir-docs', LifeController.SubirDocumentos);
     router.get('/enviar-mensajes', LifeController.EnvioMensajes);
+    router.get('/ver-documento/:hash', LifeController.DescargaPdf);
+    router.get('/info-equipo', LifeController.InfoEquipo);
     //
     router.post('/auth-login', LifeController.AuthLogin);
     router.post('/cargar-datos', LifeController.CargarDatosUsuario);
