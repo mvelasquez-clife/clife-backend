@@ -142,6 +142,16 @@ console.log(sesion);
         }
         else response.redirect('/intranet/login');
     },
+    ReporteAcuse: (request, response) => {
+        if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {
+            let sess = request.cookies[confParams.cookieIntranet];
+            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let data = { sesion: sess, admin: admin, id: 'sidenav-reportes' };
+            response.render(path.resolve('client/views/intranet/reporte-acuses.ejs'), data);
+        }
+        else response.redirect('/intranet/login');
+    },
+
     // peticiones ajax
     CargarDatosUsuario: async (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
@@ -622,16 +632,47 @@ console.log(sesion);
                     p_numero: { val: o_numero },
                     p_detalle: { val: infoEquipo }
                 };
-                console.log(query, params);
+                result = await conn.execute(query, params, responseParams);
+                if (result.outBinds.o_codigo == 0) {
+                    console.error(result.outBinds.o_mensaje);
+                }
             }
-            // out!
-            if (o_codigo == 0) {
-                response.send('error: ' + o_mensaje);
-                return;
-            }
-            response.send(JSON.stringify({
-                ruta: o_ruta, nombre: o_nombre, fecha: o_fecha, numero: o_numero, leido: o_leido
-            }));
+            // descarga el pdf
+            const { Curl } = require('node-libcurl');
+            const curl = new Curl();
+            const url = 'http://192.168.0.248/uploader/download.php';
+            curl.setOpt(Curl.option.URL, url);
+            curl.setOpt(Curl.option.POSTFIELDS, 'ruta=' + o_ruta);
+            curl.setOpt(Curl.option.VERBOSE, true);
+            curl.on('end', async (statusCode, body) => {
+                const fupload = require('../../server/fupload');
+                const base64 = require('base64topdf');
+                const out = JSON.parse(body);
+                // guardar en local
+                let pdfPath = fupload.downloadpath + o_nombre;
+                try {
+                    base64.base64Decode(out.data.b64, pdfPath);
+                    // out!
+                    if (o_codigo == 0) {
+                        response.send('error: ' + o_mensaje);
+                        return;
+                    }
+                    // muestra el pdf
+                    const fs = require('fs');
+                    var stream = fs.ReadStream(pdfPath);
+                    // Be careful of special characters
+                    filename = encodeURIComponent(o_nombre);
+                    // Ideally this should strip them
+                    response.setHeader('Content-disposition', 'inline; filename="' + filename + '"');
+                    response.setHeader('Content-type', 'application/pdf');
+                    stream.pipe(response);
+                }
+                catch (err) {
+                    response.send('No se encontró el archivo <b>' + o_nombre + '</b>');
+                }
+            });
+            curl.on('error', curl.close.bind(curl));
+            curl.perform();
         }
         catch (err) {
             console.error(err);
@@ -749,6 +790,67 @@ console.log(request.headers['user-agent']);
                 console.error(err);
                 response.json({
                     error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    CargaReporteAcuse: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa, tipodoc, envio, periodo, usuario } = request.body;
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                let query = "select * from table (pack_digitalizacion.f_reporte_acuse(:p_empresa, :p_tipo, :p_envio, :p_periodo, :p_usuario))";
+                let params = {
+                    p_empresa: { val: empresa },
+                    p_tipo: { val: tipodoc },
+                    p_envio: { val: envio },
+                    p_periodo: { val: periodo },
+                    p_usuario: { val: usuario }
+                };
+                const result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        reporte: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    ListaPeriodos: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa } = request.body;
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                const query = "select * from table(pack_digitalizacion.f_lista_periodos(:p_empresa))";
+                const params = {
+                    p_empresa: empresa
+                };
+                const result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        periodos: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                response.json({
+                    error: JSON.stringify(err)
                 });
             }
         }

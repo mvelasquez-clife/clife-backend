@@ -12,6 +12,7 @@ const LifeController = require('../controllers/intra-life.controller');
     router.get('/subir-docs', LifeController.SubirDocumentos);
     router.get('/enviar-mensajes', LifeController.EnvioMensajes);
     router.get('/ver-documento/:hash', LifeController.DescargaPdf);
+    router.get('/reporte-acuse', LifeController.ReporteAcuse);
     router.get('/info-equipo', LifeController.InfoEquipo);
     //
     router.post('/auth-login', LifeController.AuthLogin);
@@ -27,5 +28,7 @@ const LifeController = require('../controllers/intra-life.controller');
     router.post('/enviar-mensaje', LifeController.GuardarMensaje);
     router.post('/lista-mensajes', LifeController.ListaMensajes);
     router.post('/lista-documentos', LifeController.ListaDocumentos);
+    router.post('/carga-reporte-acuse', LifeController.CargaReporteAcuse);
+    router.post('/lista-periodos', LifeController.ListaPeriodos);
 
 module.exports = router;
