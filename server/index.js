@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const cookie = require('cookie-parser');
 const app = express();
 const bodyParser = require('body-parser');
 const http = require('http').Server(app);
@@ -17,12 +18,12 @@ app.set('port', process.env.port || 3000);
 //app.use(morgan('dev'));
 app.use(express.json());
 app.use(cors({origin: host.address}));
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
 app.set('view engine', 'ejs');
 //app.use(jwt());
 //servicio de archivos estáticos
 app.use(express.static('public'));
-
+app.use(cookie());
 //rutas cliente
 app.use('/', require('../client/routes/intranet.routes'));
 //rutas para el manejador de archivos
@@ -38,6 +39,7 @@ app.use('/api/ancestros', require('./routes/ancestros.routes'));
 //rutas para modulos
 app.use('/api/AD010102', require('./routes/administracion/AD010102.routes'));
 app.use('/api/AD010201', require('./routes/administracion/AD010201.routes'));
+app.use('/api/BA010302', require('./routes/finanzas/BA010302.routes'));
 app.use('/api/BA010304', require('./routes/finanzas/BA010304.routes'));
 app.use('/api/BA010305', require('./routes/finanzas/BA010305.routes'));
 app.use('/api/CR0100', require('./routes/creditos/CR0100.routes'));
@@ -68,6 +70,10 @@ app.use('/viewer', require('./routes/viewer.routes'));
 app.use('/avance-ventas', require('./routes/avancevtas.routes'));
 //coordenadas de clientes
 app.use('/coordenadas', require('./routes/coordenadas.routes'));
+// extranet
+app.use('/extranet', require('../client/routes/extranet.routes'));
+// intranet corporacionl life
+app.use('/intranet', require('../client/routes/intra-life.routes'));
 
 //configura el chat
 /*io.set('origins', host.address);

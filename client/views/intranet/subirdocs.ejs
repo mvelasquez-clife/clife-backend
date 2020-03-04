@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <% include _main.sidenav.admin.ejs %>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Administrar</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Subida de documentos</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <div class="alert alert-primary no-rounded mb-2">
+                            <p class="mb-0">Seleccione un tipo de documento. Luego, utilice la opción de <b>Cargar archivos</b> para comenzar la carga de documentos al sistema. Dependiendo del tamaño de los archivos, este proceso podría tardar algunos minutos. Recuerde que los archivos deben tener como nombre el documento de identidad del destinatario.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Carga de documentos</p>
+                            </li>
+                            <li class="list-group-item">
+                                <form>
+                                    <div class="form-group row mb-2">
+                                        <label for="form-empresa" class="col-sm-2 col-form-label">Empresa</label>
+                                        <div class="col-sm-6">
+                                            <select id="form-empresa" class="form-control form-control-sm">
+                                                <option value="0">- Seleccione -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <label for="form-tipodoc" class="col-sm-2 col-form-label">Tipo documento</label>
+                                        <div class="col-sm-4">
+                                            <select id="form-tipodoc" class="form-control form-control-sm">
+                                                <option value="0">- Seleccione -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <label for="form-descripcion" class="col-sm-2 col-form-label">Envío</label>
+                                        <div class="col-sm-10 input-group">
+                                            <input type="text" id="crear-envio" class="form-control form-control-sm" placeholder="Elija un envío para cargar los documentos" aria-describedby="btn-seleccion" readonly>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-primary btn-sm btn-form-selector" type="button" data-toggle="modal" data-target="#modal-crear" disabled><i class="fa fa-plus"></i> Crear</button>
+                                                <button class="btn btn-main btn-sm btn-form-selector" type="button" data-toggle="modal" data-target="#modal-envio" disabled>Seleccionar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <label for="form-archivos" class="col-sm-2 col-form-label">Archivos</label>
+                                        <div class="col-sm-10">
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input" id="form-archivos" accept="application/pdf" multiple>
+                                                <label class="custom-file-label" for="form-archivos" data-browse="Buscar">No ha seleccionado archivos para subir</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-0">
+                                        <div class="col-sm-10 offset-lg-2">
+                                            <div id="doc-container"></div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <div class="col-sm-10 offset-lg-2">
+                                            <a id="btn-upload" href="#" class="btn btn-sm btn-primary disabled"><i class="fa fa-upload"></i> Iniciar subida de archivos</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- modal crear envío -->
+        <div id="modal-crear" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Crear envío de documentos</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <form>
+                                    <div class="form-group">
+                                        <label for="crear-nombre">Asunto del envío</label>
+                                        <input type="text" class="form-control form-control-sm" id="crear-nombre" placeholder="Por ejemplo, BOLETAS DE PAGO DICIEMBRE 2012">
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="crear-desde">Rango de fechas</label>
+                                            <input type="text" class="form-control form-control-sm datepicker" id="crear-desde" placeholder="Desde">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="crear-hasta">&nbsp;</label>
+                                            <input type="text" class="form-control form-control-sm datepicker" id="crear-hasta" placeholder="Hasta">
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-main"><i class="fa fa-floppy-o"></i> Guardar</button>
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal nuevo envío -->
+        <div id="modal-envio" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Seleccionar envío</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Envío</th>
+                                            <th>Fecha</th>
+                                            <th>Periodo</th>
+                                            <th>Usu.Registra</th>
+                                            <th>Vigencia</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            // funciones
+            ValidarEnvios = _ => {
+                const empresa = document.getElementById('form-empresa').value;
+                const tipodoc = document.getElementById('form-tipodoc').value;
+                if (empresa != 0 && tipodoc != 0) {
+                    $('.btn-form-selector').prop('disabled', false);
+                }
+                else {
+                    $('.btn-form-selector').prop('disabled', true);
+                }
+            }
+            CargarCombos = async _ => {
+                // combo empresas
+                let result = await $.ajax({
+                    url: '/intranet/lista-empresas',
+                    method: 'post',
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert (result.error);
+                    return;
+                }
+                for (let empresa of result.data.empresas) {
+                    $('#form-empresa').append(
+                        $('<option>').val(empresa.value).text(empresa.text)
+                    );
+                }
+                $('#form-empresa').on('change', ValidarEnvios);
+                $('#form-tipodoc').on('change', ValidarEnvios);
+                // combo tipos doc
+                result = await $.ajax({
+                    url: '/intranet/lista-tipos-doc',
+                    method: 'post',
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert (result.error);
+                    return;
+                }
+                for (let tipodoc of result.data.tiposdoc) {
+                    $('#form-tipodoc').append(
+                        $('<option>').val(tipodoc.value).text(tipodoc.text)
+                    );
+                }
+                document.getElementById('crear-envio').value = '';
+                ValidarEnvios();
+            }
+            ConfiguraDatePickers = _ => {
+                $('#crear-desde').datepicker({
+                    // locale: 'es-es',
+                    format: 'dd/mm/yyyy',
+                    datepicker: { weekStartDay: 1 },
+                    uiLibrary: 'bootstrap4',
+                    iconsLibrary: 'fontawesome',
+                    maxDate: function () {
+                        return $('#crear-hasta').val();
+                    }
+                });
+                $('#crear-hasta').datepicker({
+                    // locale: 'es-es',
+                    format: 'dd/mm/yyyy',
+                    datepicker: { weekStartDay: 1 },
+                    uiLibrary: 'bootstrap4',
+                    iconsLibrary: 'fontawesome',
+                    minDate: function () {
+                        return $('#crear-desde').val();
+                    }
+                });
+            }
+            SeleccionarArchivos = async e => {
+                MuestraIndicadorCarga();
+                $('#doc-container').empty();
+                const files = document.getElementById('form-archivos').files;
+                $('#form-archivos').next().text(files.length + ' archivo(s) seleccionado(s)').addClass('text-success');
+                let totalArchivos = 0;
+                let totalValidaciones = 0;
+                if (files.length > 0) {
+                    for (let i = 0; i < files.length; i++) {
+                        let file = files[i];
+                        $('#doc-container').append(
+                            $('<div>').append(
+                                $('<p>').append(
+                                    $('<span>').html(file.name).addClass('font-weight-bold')
+                                ).addClass('mb-0')
+                            ).attr('id', 'container-' + i).addClass('alert alert-warning no-rounded py-1 px-2 mb-2')
+                        );
+                        // valida el pdf
+                        let params = {
+                            cliente: file.name,
+                            idx: i,
+                            envio: $('#crear-envio').data('codigo'),
+                            empresa: document.getElementById('form-empresa').value
+                        }
+                        $.post('/intranet/datos-cliente', params, response => {
+                            if (response.error) {
+                                $('#container-' + response.data.pos).data('valid', 0).removeClass('alert-warning').addClass('alert-danger').children('p').append(' - ' + response.error);
+                            }
+                            else {
+                                $('#container-' + response.data.pos).data('valid', 1).data('idx', response.data.pos).data('personal', response.data.fname.split('.')[0]).removeClass('alert-warning').addClass('alert-success').children('p').append(' - ' + response.data.nombre);
+                                totalArchivos++;
+                            }
+                        }, 'json').fail(err => {
+                            // $('#container-' + response.data.pos).removeClass('alert-warning').addClass('alert-danger')
+                            console.error(err);
+                        }).always(_ => {
+                            totalValidaciones++;
+                            if (totalValidaciones == files.length) {
+                                OcultaIndicadorCarga();
+                                if (totalArchivos > 0) {
+                                    $('#btn-upload').removeClass('disabled');
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+            RegistraCabeceraEnvio = async e => {
+                e.preventDefault();
+                MuestraIndicadorCarga();
+                try {
+                    const params = {
+                        empresa: document.getElementById('form-empresa').value,
+                        tipodoc: document.getElementById('form-tipodoc').value,
+                        descripcion: document.getElementById('crear-nombre').value,
+                        finicio: document.getElementById('crear-desde').value,
+                        ffin: document.getElementById('crear-hasta').value
+                    };
+                    if (params.empresa == 0 || params.tipodoc == 0) {
+                        alert('Debe seleccionar una empresa y un tipo de documento');
+                        return;
+                    }
+                    if (params.descripcion == '') {
+                        alert('Ingrese una breve descripción para el envío a registrar');
+                        return;
+                    }
+                    if (params.finicio == '') {
+                        alert('Debe ingresar la fecha del envío');
+                        return;
+                    }
+                    const result = await $.ajax({
+                        url: 'registra-cabecera-envio',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    const data = result.data;
+                    $('#crear-envio').data('codigo', data.codigo).val(data.nombre);
+                    $('#modal-crear').modal('hide');
+                }
+                catch (err) {
+                    console.error(err);
+                    alert(JSON.stringify(err));
+                }
+                finally {
+                    OcultaIndicadorCarga();
+                }
+            }
+            SeleccionarEnvio = async e => {
+                e.preventDefault();
+                let a = e.delegateTarget.dataset;
+                $('#crear-envio').data('codigo', a.codigo).val(a.nombre);
+                $('#modal-envio').modal('hide');
+            }
+            CargarListaEnvios = async e => {
+                const tbody = $('#modal-envio .modal-body table tbody');
+                tbody.empty();
+                try {
+                    const params = {
+                        empresa: document.getElementById('form-empresa').value,
+                        tipodoc: document.getElementById('form-tipodoc').value
+                    };
+                    if (params.empresa == 0) {
+                        alert('Seleccione una empresa');
+                        $('#modal-envio').modal('hide');
+                        return;
+                    }
+                    if (params.tipodoc == 0) {
+                        alert('Seleccione un tipo de documento');
+                        $('#modal-envio').modal('hide');
+                        return;
+                    }
+                    MuestraIndicadorCarga();
+                    const result = await $.ajax({
+                        url: '/intranet/lista-envios',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    const envios = result.data.envios;
+                    for (let envio of envios) {
+                        tbody.append(
+                            $('<tr>').append(
+                                $('<td>').append(
+                                    $('<a>').append(
+                                        $('<i>').addClass('fa fa-check')
+                                    ).addClass('btn btn-sm btn-primary').attr({
+                                        'href': '#',
+                                        'data-codigo': envio.codigo,
+                                        'data-nombre': envio.descripcion
+                                    }).on('click', SeleccionarEnvio)
+                                )
+                            ).append(
+                                $('<td>').html(envio.descripcion)
+                            ).append(
+                                $('<td>').html(envio.fecha)
+                            ).append(
+                                $('<td>').html(envio.periodo)
+                            ).append(
+                                $('<td>').html(envio.usuregistra)
+                            ).append(
+                                $('<td>').append(
+                                    $('<span>').html(envio.vigencia).addClass('btn btn-sm btn-' + (envio.vigencia == 'Vigente' ? 'success' : 'danger'))
+                                )
+                            )
+                        );
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+                finally {
+                    OcultaIndicadorCarga();
+                }
+            }
+            SubirArchivos = async e => {
+                e.preventDefault();
+                $('#btn-upload').addClass('disabled');
+                let cfiles = $('#doc-container').children('div');
+                const totalArchivos = cfiles.length;
+                MuestraIndicadorCarga();
+                for (let i = 0; i < totalArchivos; i++) {
+                    let div = cfiles.eq(i);
+                    if (div.data('valid') == 1) {
+                        div.removeClass('alert-success').addClass('bg-light text-secondary').children('p').prepend(
+                            $('<i>').addClass('fa fa-hourglass-half mr-1')
+                        );
+                        let formData = new FormData();
+                            formData.append('cenvio', $('#crear-envio').data('codigo'));
+                            formData.append('envio', document.getElementById('crear-envio').value);
+                            formData.append('codigo', div.data('personal'));
+                            formData.append('empresa', document.getElementById('form-empresa').value);
+                            formData.append('pdf', document.getElementById('form-archivos').files[div.data('idx')]);
+                        let result;
+                        try {
+                            result = await $.ajax({
+                                url: '/intranet/cargar-pdf',
+                                type: 'post',
+                                dataType: 'json',
+                                data: formData,
+                                cache: false,
+                                contentType: false,
+                                processData: false
+                            });
+                            if (result.error) {
+                                div.removeClass('bg-light text-secondary').addClass('bg-danger').append(
+                                    $('<small>').html(result.error)
+                                ).children('p').children('i').removeClass('fa-hourglass-half').addClass('fa-exclamation-triangle');
+                                return;
+                            }
+                            div.removeClass('bg-light text-secondary').addClass('bg-success text-light').append(
+                                $('<small>').html('Archivo subido con éxito')
+                            ).children('p').children('i').removeClass('fa-hourglass-half').addClass('fa-check');
+                        }
+                        catch (err) {
+                            console.error(err);
+                            alert(JSON.stringify(err));
+                            div.removeClass('bg-light text-secondary').addClass('bg-danger').append(
+                                $('<small>').html(JSON.stringify(err))
+                            ).children('p').children('i').removeClass('fa-hourglass-half').addClass('fa-exclamation-triangle');
+                            // return;
+                        }
+                    }
+                    else {
+                        div.fadeOut(150, _ => {
+                            div.remove();
+                        });
+                    }
+                }
+                $('#form-archivos').val('').next().removeClass('text-success').text('No ha seleccionado archivos para subir');
+                // $('#btn-upload').removeClass('disabled');
+                OcultaIndicadorCarga();
+            }
+            // go!
+            $(_ => {
+                $('#menu-admin').collapse('show')
+                $('#sidenav-administrar').addClass('active');
+                $('#<%=id%>').addClass('active');
+                $('#form-archivos').on('change', SeleccionarArchivos);
+                $('#modal-crear .modal-footer .btn-main').on('click', RegistraCabeceraEnvio);
+                $('#modal-envio').on('show.bs.modal', CargarListaEnvios);
+                $('#btn-upload').on('click', SubirArchivos);
+                CargarCombos();
+                ConfiguraDatePickers();
+            });
+        </script>
+    </body>
+</html>

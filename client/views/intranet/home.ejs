@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <% if (admin == 'S') { %>
+            <% include _main.sidenav.admin.ejs %>
+        <% } else { %>
+            <% include _main.sidenav.ejs %>
+        <% } %>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-12 col-md-8 col-lg-6">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Bienvenido a la Intranet de Corporación Life</p>
+                            </li>
+                            <li class="list-group-item">
+                                <p class="mb-1 text-dark font-weight-bold">Misión Corporación Life</p>
+                                <p class="mb-0 text-dark">"Alegrar a nuestros clientes entregando productos innovadores y de calidad"</p>
+                            </li>
+                            <li class="list-group-item">
+                                <p class="mb-1 text-dark font-weight-bold">Visión Corporación Life</p>
+                                <p class="mb-0 text-dark">"Ser una de las principales empresas latinoamericanas líder e innovadora en la elaboración y comercialización de productos para el Cuidado Capilar y la Belleza"</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row mb-2">
+                    <div id="alertas-container" class="col">
+                        <!--div class="alert alert-primary no-rounded mb-2">
+                            <p class="font-weight-bold mb-1">BOLETA DE PAGO EMP Y OBR - LIFE - ENERO 2020 - REMUNERACIONES</p>
+                            <p class="mb-0">Ya está disponible la boleta correspondiente al mes de Enero 2020. Podrás descargarla desde el menú, opción "Mis documentos"</p>
+                        </div-->
+                        <div class="alert alert-primary no-rounded mb-2">
+                            <p class="font-weight-bold mb-1">REGLAMENTO INTERNO CORPORACION LIFE</p>
+                            <p class="mb-0">Puedes descargar el reglamento interno de Corporación Life desde <a href="#">este enlace</a></p>
+                        </div>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <ul id="mensajes-container" class="list-group">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Anuncios importantes</p>
+                            </li>
+                            <!--li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <div class="icono-aviso my-auto">
+                                        <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
+                                    </div>
+                                    <div class="mr-auto px-2 my-auto">
+                                        <p class="font-weight-bold mb-0">Charla sobre primeros auxilios</p>
+                                        <p class="mb-0">Se realizará el día 24-02-2020, a las 10:00 hrs. en el comedor. Es importante su participación.</p>
+                                    </div>
+                                    <small class="text-primary my-auto">20-02-2020</small>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <div class="icono-aviso my-auto">
+                                        <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
+                                    </div>
+                                    <div class="mr-auto px-2 my-auto">
+                                        <p class="font-weight-bold mb-0">Celebración por el día de la amistad</p>
+                                        <p class="mb-0">Se invita a todo el personal a participar del compartir por el día de la amistad, el día viernes 14 de febrero a las 5.00 pm. ¡No falten!</p>
+                                    </div>
+                                    <small class="text-primary my-auto">12-02-2020</small>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <div class="icono-aviso my-auto">
+                                        <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
+                                    </div>
+                                    <div class="mr-auto px-2 my-auto">
+                                        <p class="font-weight-bold mb-0">Cumpleaños del mes de enero</p>
+                                        <p class="mb-0">El día viernes 31 celebraremos los cumpleaños de nuestros colaboradores del mes de enero. Ven a compartir con nosotros de esta celebración, a las 4.30 pm en en comedor.</p>
+                                    </div>
+                                    <small class="text-primary my-auto">27-01-2020</small>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <div class="icono-aviso my-auto">
+                                        <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
+                                    </div>
+                                    <div class="mr-auto px-2 my-auto">
+                                        <p class="font-weight-bold mb-0">Feliz año nuevo 2020</p>
+                                        <p class="mb-0">Que este nuevo año 2020 sea próspero y podamos crecer juntos, tanto en lo personal como en equipo. ¡Felices fiestas!</p>
+                                    </div>
+                                    <small class="text-primary my-auto">30-01-2019</small>
+                                </div>
+                            </li-->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            var ListaMensajes;
+            // funciones
+            EscribirListaMensajes = _ => {
+                const alct = $('#alertas-container');
+                const msct = $('#mensajes-container');
+                for (let mensaje of ListaMensajes) {
+                    if (mensaje.TIPO == 'A') {
+                        alct.prepend(
+                            $('<div>').addClass('alert alert-primary no-rounded mb-2').append(
+                                $('<p>').addClass('font-weight-bold mb-1').text(mensaje.TITULO.toUpperCase())
+                            ).append(
+                                $('<p>').addClass('mb-0').text(mensaje.TEXTO)
+                            )
+                        );
+                    }
+                    else {
+                        msct.append(
+                            $('<li>').append(
+                                $('<div>').append(
+                                    $('<div>').append(
+                                        $('<img>').attr('src', '/assets/intranet/images/ic-aviso.svg')
+                                    ).addClass('icono-aviso my-auto')
+                                ).append(
+                                    $('<div>').append(
+                                        $('<p>').text(mensaje.TITULO).addClass('font-weight-bold mb-0')
+                                    ).append(
+                                        $('<p>').text(mensaje.TEXTO).addClass('mb-0')
+                                    ).addClass('mr-auto px-2 my-auto')
+                                ).append(
+                                    $('<small>').text(mensaje.FECHA).addClass('text-primary my-auto')
+                                ).addClass('d-flex w-100 justify-content-between')
+                            ).addClass('list-group-item')
+                        );
+                    }
+                }
+            }
+            CargarMensajesUsuario = async _ => {
+                MuestraIndicadorCarga();
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/lista-mensajes',
+                        method: 'post',
+                        dataType: 'json'
+                    });
+                    ListaMensajes = result.data.mensajes;
+                    EscribirListaMensajes();
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+                finally {
+                    OcultaIndicadorCarga();
+                }
+            }
+            // go!
+            $(_ => {
+                $('#sidenav-inicio').addClass('active');
+                CargarMensajesUsuario();
+            });
+        </script>
+    </body>
+</html>

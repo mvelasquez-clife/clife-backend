@@ -1,0 +1,58 @@
+<div id="sidenav" class="sidenav text-light">
+    <img id="img-profile" class="d-block mx-auto mt-3 mb-1">
+    <div class="mb-4">
+        <h5 id="sidenav-nombre" class="text-subtitle text-center mb-1" style="font-size:1rem;"></h5>
+        <p id="sidenav-cargo" class="text-center" style="font-size:.75rem;"></p>
+    </div>
+    <p class="mb-2">
+        <a id="sidenav-inicio" class="btn btn-transparent btn-block btn-sm text-left" href="/intranet"><i class="fa fa-home"></i> Inicio</a>
+    </p>
+    <p class="mb-2">
+        <a id="sidenav-documentos" class="btn btn-transparent btn-block btn-sm text-left" data-toggle="collapse" href="#menu-docs" role="button" aria-expanded="false" aria-controls="collapseExample"><i class="fa fa-file-text-o"></i> Mis documentos</a>
+    </p>
+    <div class="collapse mb-2" id="menu-docs">
+        <div class="card card-body bg-dark p-1 pl-4">
+            <p class="my-2">
+                <a id="sidenav-boletas" href="/intranet/documentos/boletas" class="sidenav-link">Boletas de pago</a>
+            </p>
+            <p class="my-2">
+                <a id="sidenav-contratos" href="/intranet/documentos/contratos" class="sidenav-link">Contratos</a>
+            </p>
+            <p class="my-2">
+                <a id="sidenav-memorandos" href="/intranet/documentos/memorandos" class="sidenav-link">Memorandos</a>
+            </p>
+        </div>
+    </div>
+    <p class="mb-2">
+        <a id="sidenav-datos" class="btn btn-transparent btn-block btn-sm text-left" href="/intranet/datos-personales"><i class="fa fa-user"></i> Datos personales</a>
+    </p>
+    <p class="mb-2">
+        <a id="sidenav-administrar" class="btn btn-transparent btn-block btn-sm text-left" data-toggle="collapse" href="#menu-admin" role="button" aria-expanded="false" aria-controls="collapseExample"><i class="fa fa-cog"></i> Administrar</a>
+    </p>
+    <div class="collapse mb-2" id="menu-admin">
+        <div class="card card-body bg-dark p-1 pl-4">
+            <p class="my-2">
+                <a id="sidenav-personal" href="/intranet/personal" class="sidenav-link">Personal</a>
+            </p>
+            <p class="my-2">
+                <a id="sidenav-subirdocs" href="/intranet/subir-docs" class="sidenav-link">Subida de documentos</a>
+            </p>
+            <p class="my-2">
+                <a id="sidenav-mensajes" href="/intranet/enviar-mensajes" class="sidenav-link">Mensajes</a>
+            </p>
+        </div>
+    </div>
+    <p class="mb-2">
+        <a id="sidenav-reportes" class="btn btn-transparent btn-block btn-sm text-left" data-toggle="collapse" href="#menu-reportes" role="button" aria-expanded="false" aria-controls="collapseExample"><i class="fa fa-list"></i> Reportes</a>
+    </p>
+    <div class="collapse mb-2" id="menu-reportes">
+        <div class="card card-body bg-dark p-1 pl-4">
+            <p class="my-2">
+                <a id="reportes-acuse" href="/intranet/reporte-acuse" class="sidenav-link">Acuse documentos</a>
+            </p>
+        </div>
+    </div>
+    <p class="mb-2">
+        <a class="btn btn-danger btn-block btn-sm text-left" href="#" data-toggle="modal" data-target="#modal-logout"><i class="fa fa-sign-out"></i> Salir</a>
+    </p>
+</div>

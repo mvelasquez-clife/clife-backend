@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <% if (admin == 'S') { %>
+            <% include _main.sidenav.admin.ejs %>
+        <% } else { %>
+            <% include _main.sidenav.ejs %>
+        <% } %>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Datos personales</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-6">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Datos generales</p>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group row mb-1">
+                                    <label for="datos-dociden" class="col-sm-3 col-form-label">DNI</label>
+                                    <div class="col-sm-5">
+                                        <input type="text" class="form-control form-control-sm" id="datos-dociden" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-1">
+                                    <label for="datos-apepat" class="col-sm-3 col-form-label">Ap. paterno</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm" id="datos-apepat" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-1">
+                                    <label for="datos-apemat" class="col-sm-3 col-form-label">Ap. materno</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm" id="datos-apemat" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-1">
+                                    <label for="datos-nombres" class="col-sm-3 col-form-label">Nombres</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm" id="datos-nombres" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-1">
+                                    <label for="datos-fechanac" class="col-sm-3 col-form-label">Fecha Nac.</label>
+                                    <div class="col-sm-6">
+                                        <input type="text" class="form-control form-control-sm" id="datos-fechanac" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-1">
+                                    <label for="datos-sexo" class="col-sm-3 col-form-label">Sexo</label>
+                                    <div class="col-sm-4">
+                                        <input type="text" class="form-control form-control-sm" id="datos-sexo" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-1">
+                                    <label for="datos-telefono" class="col-sm-3 col-form-label">Teléfono</label>
+                                    <div class="col-sm-6">
+                                        <input type="text" class="form-control form-control-sm" id="datos-telefono" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-1">
+                                    <label for="datos-email" class="col-sm-3 col-form-label">e-mail</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm" id="datos-email" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-1">
+                                    <label for="datos-area" class="col-sm-3 col-form-label">Área</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm" id="datos-area" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-1">
+                                    <label for="datos-cargo" class="col-sm-3 col-form-label">Cargo</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm" id="datos-cargo" readonly>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                        <!-- separador de bajo presupuesto -->
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Datos de contacto</p>
+                            </li>
+                            <li class="list-group-item">
+                                <p class="text-dark mb-0">No ha registrado datos de contacto adicionales</p>
+                                <a href="#" class="btn btn-sm btn-success mt-2"><i class="fa fa-plus"></i> Agregar dato de contacto</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Imagen actualizada</p>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="alert alert-primary no-rounded mb-2">
+                                    <p class="mb-0">Desde aquí podrá actualizar su fotografía. Cargue una imagen nítida, en fondo blanco y, de preferencia, utilizando camisa o blusa.</p>
+                                </div>
+                                <div class="alert alert-primary no-rounded mb-2">
+                                    <p class="mb-0">Recuerde que las imágenes enviadas pasan por un proceso de revisión antes de ser aceptadas. Por favor, siga las instrucciones líneas arriba para agilizar este proceso.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group row mb-2">
+                                    <label for="datos-cargo" class="col-sm-2 col-form-label">Foto</label>
+                                    <div class="col-sm-10">
+                                        <div class="custom-file">
+                                            <input type="file" class="custom-file-input" id="img-foto" accept="image/*" lang="es">
+                                            <label class="custom-file-label" for="img-foto" data-browse="Buscar">Seleccionar imagen</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-2">
+                                    <div class="col-sm-10 offset-lg-2">
+                                        <img id="img-preview" src="/assets/intranet/images/ic-choose-imagen.svg" alt="Seleccionar imagen" class="img-fluid">
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-1">
+                                    <div class="col-sm-10 offset-lg-2">
+                                        <a href="#" class="btn btn-sm btn-primary"><i class="fa fa-upload"></i> Subir imagen</a>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            // funciones
+            CargarDatosPersonales = async _ => {
+                const result = await $.ajax({
+                    url: '/intranet/cargar-datos',
+                    method: 'post',
+                    dataType: 'json'
+                });
+                // rellenar los campos
+                document.getElementById('datos-dociden').value = sesion.codigo;
+                document.getElementById('datos-apepat').value = result.data.apepat;
+                document.getElementById('datos-apemat').value = result.data.apemat;
+                document.getElementById('datos-nombres').value = result.data.nombres;
+                document.getElementById('datos-fechanac').value = result.data.fechanac;
+                document.getElementById('datos-sexo').value = result.data.sexo;
+                document.getElementById('datos-telefono').value = result.data.telefono;
+                document.getElementById('datos-email').value = result.data.email;
+                document.getElementById('datos-area').value = result.data.area;
+                document.getElementById('datos-cargo').value = result.data.cargo;
+            }
+            RecibirImagen = async (e) => {
+                const file = document.getElementById('img-foto').files[0];
+                if (file) {
+                    // previsualizar la imagen
+                    var reader = new FileReader();
+                    reader.onload = _ => {
+                        document.getElementById('img-preview').src = reader.result;
+                    }
+                    reader.readAsDataURL(file);
+                    // muestra el nombre de la imagen
+                    $('#img-foto').next().addClass('text-success').html(file.name);
+                }
+            }
+            //
+            $(_ => {
+                $('#sidenav-datos').addClass('active');
+                $('#img-foto').on('change', RecibirImagen);
+                CargarDatosPersonales ();
+            });
+        </script>
+    </body>
+</html>
