@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Usuario</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css"> -->
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">   -->
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+            integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        <!--link rel="stylesheet" href="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.css" -->
+        <style type="text/css">
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                width: 100%
+            }
+
+            #dhxDesktop {
+                height: 100%;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <!-- scripts principales -->
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <script src="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+        <!-- script propio de la ventana -->
+        <!--<script type="text/javascript" src="<%=path%>script.js"></script> -->
+        <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- ancestro de la ventana de seguridad -->
+        <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+        <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script type="text/javascript">
+         var myDataDirecc, cod = 0, myToolbardatos, co_entidad = 0, myGridfz, myLayou_gara, myLayou_giro, myCarouselFile, myCombo, myLaouy_Dat, myLayou_doc, myLayou_contac, myLayou_cbanc, myLayou_doc, myLayou_antec, myLayou_comu, co_seq, sel_giroid, sel_antid, cobanco_s, copais_s, subgrid, sel_giro, mainLayout, myFormdatos, mySidebar, myLaouy_Direc, myGridLineaC, cod_direc, myToolbardirecc, base_tollbar, myForm, estadook = 'VIGENTE', codcliente, Wind_, json_select, permiso_cataedit = 'S', _item_sidebar = 's_datos',
+            sel_zc, sel_zcid, subgrilla, sel_fv, sel_fvid, data, co_cata_entidad = 0, cocliente = 0, co_listadopre = 0, co_seri_listado = 0, cocliente_corpo = 0,myformdata, nom_clien_corpo = '';
+            
+            var st_form_base = [{ type: "settings", labelWidth: 100 },
+            {
+                type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                    { type: "template", offsetTop: 2,  offsetLeft: 2, labelWidth: 70, name: "b_usuario", label: "Usuario: ", value: "Busque un usuario"}, { type: "newcolumn" },
+                    { type: "button", width: 60, value: '<i class="fas fa-search padt-5-f1-8"></i>', offsetTop: 0, offsetLeft: 7, name: "b_buscar", tooltip: "BUSCAR UN USUARIO", hidden: false }, { type: "newcolumn" },
+                ]
+            }, {
+                type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                    { type: "template", offsetTop: 5,  offsetLeft: 2, labelWidth: 70, width: 150, name: "b_codusuario", label: "Código: ", value: ""}, { type: "newcolumn" },
+                    { type: "template", offsetTop: 5, offsetLeft: 2, name: "b_estado", labelWidth: 70, width: 150, label: "Estado :", value: ""}, { type: "newcolumn" },
+                    // { type: "template", offsetTop: 5, offsetLeft: 100, name: "b_asignado", labelWidth: 62, width: 150, label: "Asignado :", value: ""}, { type: "newcolumn" },
+                    { type: "template", offsetTop: 5, offsetLeft: 100, name: "b_registro", labelWidth: 70, width: 150, label: "Registro :", value: ""}, { type: "newcolumn" },
+                    { type: "template", offsetTop: 5, offsetLeft: 100, hidden: true,name: "b_alias", labelWidth: 70, width: 150, label: "Alias :", value: ""}, { type: "newcolumn" }
+                    // { type: "template", offsetTop: 5, offsetLeft: 100, name: "b_empresa", labelWidth: 70, width: 150, label: "Empresa :", value: ""}, { type: "newcolumn" }
+                ]
+            }
+            ];
+
+            var base_tollbar = {
+            iconset: "awesome", items: [
+                { id: "__user", type: "button", disabled: true, text: "Usuario", img: "fas fa-user txtblue", imgdis: "fas fa-user disable txtblue" },
+                { type: "separator" },       
+                { id: "__nuevo", type: "button", disabled: false, text: "Nuevo", img: "fas fa-plus txtrgreen", imgdis: "fas fa-plus disable txtrgreen" },
+                { type: "separator" },
+                { id: "__edit", type: "button", text: "Editar", hideHeader: true, img: "fas fa-edit txtred", imgdis: "fas fa-edit disable txtred" },
+                { type: "separator" },
+                { id: "__save", type: "button", text: "Guardar", disabled: true, img: "fas fa-save txtoran", imgdis: "fas fa-save disable txtoran" },
+                { type: "separator" },
+                // { id: "__cancel", type: "button", text: "Cancelar", disabled: true, img: "fas fa-edit txtrblue", imgdis: "fas fa-edit disable" },
+                // { type: "separator" },
+                { id: "__permisos", type: "button", text: "Permisos", disabled: false, img: "fas fa-address-card txtrorange", imgdis: "fas fa-address-card disable txtrorange" },
+                { type: "separator" },
+                { id: "__clonarusuario", type: "button", text: "Clonar", disabled: false, img: "fas fa-user-friends txtblue", imgdis: "fas fa-user-friends txtblue" },
+                { type: "separator" },
+                { id: "__replicaremp", type: "button", text: "Replicar", disabled: false, img: "fas fa-user-friends txtblue", imgdis: "fas fa-user-friends txtblue" },
+                { type: "separator" }
+            ]
+            };
+            
+            var sidebarjson = [
+                { id: "s_datos", text: "DATOS DE USUARIO" , icon: "32/disk_d.png", selected: true }
+            ];
+            
+            var f_permisos_usuario = [{ type: "settings", labelWidth: 100 },
+            { type: "newcolumn" },
+            {
+                type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                    { type: "input", name: '_codusuario', offsetLeft: 40, labelWidth: 150, inputWidth: 100, hidden:true, label: 'Cód.Usuario :' }, { type: "newcolumn" },
+                 ],
+            }, { type: "newcolumn" },
+            {
+                type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                    { type: "input", name: '_claveacceso', offsetLeft: 40, labelWidth: 150, inputWidth: 100, label: 'Clave Acceso :' }, { type: "newcolumn" },
+                ],
+            },{ type: "newcolumn" },
+            {
+                type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                   { type: "input", name: '_codtabla', offsetLeft: 40, labelWidth: 150, inputWidth: 100, hidden : true, label: 'Cód.Tabla :' } ,{ type: "newcolumn" },
+                ],
+            },{ type: "newcolumn" },
+            { 
+                type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                   { type: "checkbox", checked: false,disabled: false, offsetLeft: 40,labelWidth: 150, inputWidth: 100, name: "_activo", label: 'Activo :'}, { type: "newcolumn" },
+                           
+                ],
+
+            }];
+            var f_clonar_usuario = [{ type: "settings", labelWidth: 100 },
+            {
+                type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                   { type: "checkbox", checked: false,disabled: false, offsetLeft: 40,labelWidth: 150, inputWidth: 100, name: "_p_sobre", label: 'Sobrescribir permisos :'}, { type: "newcolumn" },
+                           
+                ],
+            },{ type: "newcolumn" },
+            { 
+                type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                   { type: "checkbox", checked: false,disabled: false, offsetLeft: 40,labelWidth: 150, inputWidth: 100, name: "_p_adic", label: 'Adicionar permisos :'}, { type: "newcolumn" },
+                           
+                ],
+
+            }];
+            var f_datos_usuario = [{ type: "settings", labelWidth: 100 },
+            {
+                type: "checkbox", labelWidth: 145, offsetLeft: 10, checked: false, disabled: false, offsetTop: 10, label: "<b>Catalogo de Entidades</b>", name: "st_personales", list: [
+
+                    {
+                        type: "block", blockOffset: 10, position: "label-left", width: 'auto', list: [
+                            { type: "select",  disabled: true, name: '_tipodoc', labelWidth: 120, inputWidth: 150, label: '<font class="input_font">Tipo Documento</font>', connector: BASE_URL + 'home/list_tipodoc/' }, { type: "newcolumn" },
+                            { type: "input", disabled: true, value: '', offsetLeft: 47, inputWidth: 110, name: "_nudocumento", label: 'Nro Documento :', validate: "ValidaRUCDNI" }, { type: "newcolumn" },
+                            { type: "button", width: 70, disabled: true, value: '<i class="fas fa-search"></i> BUSCAR', offsetTop: 0, offsetLeft: 0, name: "b_dniservice", tooltip: "BUSCAR USUARIOO", hidden: false }, { type: "newcolumn" }
+                        ]
+                    }, { type: "newcolumn" },
+                    {
+                        type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                            { type: "select", disabled: true, name: '_tipoper', offsetLeft: 10, labelWidth: 80, inputWidth: 170, label: 'Tipo Persona',connector: BASE_URL + 'MA010102/list_tipopers/'}, { type: "newcolumn" },
+                            { type: "select", disabled: true, name: '_vigencia', offsetLeft: 10, labelWidth: 80, inputWidth: 100, label: 'Vigencia :',connector: BASE_URL + 'MA010102/list_estadocleinte/'  }, { type: "newcolumn" }
+                        ]
+                    }, { type: "newcolumn" },
+
+                    {
+                        type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                            { type: "input",maxLength: 78, readonly: true ,name: '_razsocial', offsetLeft: 10, labelWidth: 120, inputWidth: 550, label: 'Razon Social :' }, { type: "newcolumn" },
+                            { type: "input",maxLength: 78,  readonly: true, name: '_nomcomer', offsetLeft: 10, labelWidth: 120, inputWidth: 550, label: 'Nombre Comercial :' },
+                        ]
+                    }, {
+                        type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                            { type: "input", name: '_apepat', offsetLeft: 10, labelWidth: 120, inputWidth: 230, label: 'Ape. Paterno :' }, { type: "newcolumn" },
+                            { type: "input", name: '_apemat', offsetLeft: 40, labelWidth: 100, inputWidth: 230, label: 'Ape. Materno :' }, { type: "newcolumn" },
+                            { type: "input", name: '_nombres', offsetLeft: 40, labelWidth: 70, inputWidth: 230, label: 'Nombres :' }
+                        ]
+                    }, { type: "newcolumn" },
+                    {
+                        type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                            { type: "select", disabled: true, name: '_procedencia', offsetLeft: 10, labelWidth: 120, inputWidth: 150, label: 'Procedencia :', connector: BASE_URL + 'MA010102/list_procedencia/' }, { type: "newcolumn" },
+                            { type: "select", disabled: true, name: '_origen', offsetLeft: 20, labelWidth: 60, inputWidth: 150, label: 'Origen :', connector: BASE_URL + 'MA010102/list_origen/'}, { type: "newcolumn" },
+                            { type: "input", disabled: true, name: '_fredcata', offsetLeft: 20, labelWidth: 60, inputWidth: 150, label: 'Registro :' }, { type: "newcolumn" }
+                        ]
+                    },
+                ]
+            }, 
+            {
+                type: "checkbox", labelWidth: 145, offsetLeft: 10, checked: false, disabled: false, offsetTop: 10, label: "<b>Datos Generales</b>", name: "st_generales_personales", list: [
+
+                    {
+                        type: "block", blockOffset: 10, position: "label-left", width: 'auto', list: [
+                            { type: "input",disabled: true, value: '', offsetLeft: 47, inputWidth: 110, name: "_alias", label: 'Alias :'}, { type: "newcolumn" },
+                            { type: "input",disabled: true, value: '', offsetLeft: 47, inputWidth: 110, name: "_fecregistro", label: 'Fecha Registro :'}, { type: "newcolumn" },
+                            // { type: "input",disabled: true, value: '', offsetLeft: 47, inputWidth: 110, name: "_centrocosto", label: 'Centro Costos :'}, { type: "newcolumn" },
+                            { type: "select", disabled: false, name: '_centrocosto', offsetLeft: 10, labelWidth: 80, inputWidth: 170, label: 'C.Costos :',connector: BASE_URL + 'SG010101/mostrar-costo/'+ usrJson.empresa}, { type: "newcolumn" },
+                        ]
+                    }, { type: "newcolumn" },
+                    {
+                        type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                            { type: "checkbox", checked: false,disabled: true, value: '', offsetLeft: 47, inputWidth: 110, name: "_accesist", label: 'Acceso sistema :'}, { type: "newcolumn" },
+                            { type: "input",disabled: true, value: '', offsetLeft: 47, inputWidth: 110, name: "_clasist", label: 'Clave ERP :'}, { type: "newcolumn" },
+                        ]
+                    },{ type: "newcolumn" },
+                    {
+                        type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                            { type: "checkbox", checked: false,disabled: true, value: '', offsetLeft: 47, inputWidth: 110, name: "_accewap", label: 'Acceso Wap :'}, { type: "newcolumn" },
+                            { type: "input",disabled: true, value: '', offsetLeft: 47, inputWidth: 110, name: "_clawap", label: 'Clave Wap :'}, { type: "newcolumn" },
+                        ]
+                    },{ type: "newcolumn" },
+                    {
+                        type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                            { type: "checkbox", checked: false,disabled: false, value: '', offsetLeft: 47, inputWidth: 110, name: "_admin", label: 'Administrador :'}, { type: "newcolumn" },
+                            { type: "checkbox", checked: false,disabled: false, value: '', offsetLeft: 47, inputWidth: 110, name: "_jfarea", label: 'Jefe Área :'}, { type: "newcolumn" },
+                        ]
+                    },{ type: "newcolumn" },
+                    {
+                        type: "block", blockOffset: 0, position: "label-left", width: 'auto', list: [
+                            { type: "select", disabled: false, name: '_estado', offsetLeft: 10, labelWidth: 80, inputWidth: 100, label: 'Estado :',connector: BASE_URL + 'MA010102/list_estadocleinte/'  }, { type: "newcolumn" },                          
+                            { type: "calendar", disabled: false, value: '', offsetLeft: 47, inputWidth: 230, name: "_fecvig", label: 'Fecha Vigencia :'}, { type: "newcolumn" },                           
+                            { type: "input", disabled: false, value: '', offsetLeft: 47, inputWidth: 230, name: "_correo", label: 'Correo :'}, { type: "newcolumn" },
+                        ]
+                    }
+                ]
+            },  
+        ];
+      
+            mainLayout = new dhtmlXLayoutObject(document.body, '2E'); 
+            mainLayout.cells('a').hideHeader();
+            mainLayout.cells('b').hideHeader();
+            mainLayout.cells('b').setWidth(350);
+            mainLayout.cells('a').setHeight(70);
+            mainLayout.setSeparatorSize(0, 0);
+            myForm = mainLayout.cells('a').attachForm();
+            myForm.load(st_form_base);
+            myForm.attachEvent("onButtonClick", buscarUsuario);
+            mySidebar = mainLayout.cells('b').attachSidebar({ parent: document.body, width: 150, single_cell: false, template: "text", icons_path: "/assets/images/icons/iconsjhon/", items: sidebarjson });
+            //mySidebar.attachEvent("onBeforeSelect", onselect_sidebar);
+        </script>
+       
+    </body>
+</html>
