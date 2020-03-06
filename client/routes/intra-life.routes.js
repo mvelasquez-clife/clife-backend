@@ -41,5 +41,6 @@ const LifeController = require('../controllers/intra-life.controller');
     router.post('/lista-eventos', LifeController.ListaEventos);
     router.post('/carga-reporte-acuse', LifeController.CargaReporteAcuse);
     router.post('/lista-periodos', LifeController.ListaPeriodos);
+    router.post('/eventos-hoy', LifeController.ListaEventosHoy);
 
 module.exports = router;

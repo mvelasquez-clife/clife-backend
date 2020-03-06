@@ -653,14 +653,42 @@ const LifeController = {
                 };
                 console.log(query, params);
             }
-            // out!
-            if (o_codigo == 0) {
-                response.send('error: ' + o_mensaje);
-                return;
-            }
-            response.send(JSON.stringify({
-                ruta: o_ruta, nombre: o_nombre, fecha: o_fecha, numero: o_numero, leido: o_leido
-            }));
+            // descarga el pdf
+            const { Curl } = require('node-libcurl');
+            const curl = new Curl();
+            const url = 'http://192.168.0.248/uploader/download.php';
+            curl.setOpt(Curl.option.URL, url);
+            curl.setOpt(Curl.option.POSTFIELDS, 'ruta=' + o_ruta);
+            curl.setOpt(Curl.option.VERBOSE, true);
+            curl.on('end', async (statusCode, body) => {
+                const fupload = require('../../server/fupload');
+                const base64 = require('base64topdf');
+                const out = JSON.parse(body);
+                // guardar en local
+                let pdfPath = fupload.downloadpath + o_nombre;
+                try {
+                    base64.base64Decode(out.data.b64, pdfPath);
+                    // out!
+                    if (o_codigo == 0) {
+                        response.send('error: ' + o_mensaje);
+                        return;
+                    }
+                    // muestra el pdf
+                    const fs = require('fs');
+                    var stream = fs.ReadStream(pdfPath);
+                    // Be careful of special characters
+                    filename = encodeURIComponent(o_nombre);
+                    // Ideally this should strip them
+                    response.setHeader('Content-disposition', 'inline; filename="' + filename + '"');
+                    response.setHeader('Content-type', 'application/pdf');
+                    stream.pipe(response);
+                }
+                catch (err) {
+                    response.send('No se encontró el archivo <b>' + o_nombre + '</b>');
+                }
+            });
+            curl.on('error', curl.close.bind(curl));
+            curl.perform();
         }
         catch (err) {
             console.error(err);
@@ -1099,7 +1127,7 @@ const LifeController = {
                 };
                 let result = await conn.execute(query, params, responseParams);
                 let { o_codigo, o_resultado } = result.outBinds;
-                if (o_codigo == 1) {
+                if (o_codigo > 0) {
                     response.json({
                         res: 'ok'
                     });
@@ -1165,6 +1193,36 @@ const LifeController = {
                 response.json({
                     data: {
                         periodos: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: JSON.stringify(err)
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    ListaEventosHoy: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                const query = "select * from table (pack_digitalizacion.f_lista_eventos_hoy(:p_empresa, :p_personal))";
+                const params = {
+                    p_empresa: { val: sesion.empresa },
+                    p_personal: { val: sesion.codigo }
+                };
+                const result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        eventos: result.rows
                     }
                 });
             }

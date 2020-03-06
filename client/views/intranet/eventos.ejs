@@ -107,7 +107,7 @@
                 );
                 if (ListaEventos.length > 0) {
                     for (let evento of ListaEventos) {
-                        const iBoton = $('<a>').addClass('btn btn-xs').attr('href', 'javascript:void(0)');
+                        const iBoton = $('<a>').addClass('btn btn-sm').attr('href', 'javascript:void(0)');
                         if (evento.activo == 'S') {
                             iBoton.addClass('btn-success').text('¡Es hoy!')
                         }
@@ -122,8 +122,10 @@
                                         ).append(evento.fecha + (evento.dias > 0 ? (' - Falta ' + evento.dias + ' día(s)') : '')).addClass('mb-0')
                                     ).append(
                                         $('<p>').html('<b>Lugar: </b>' + evento.lugar).addClass('mb-0')
-                                    ).addClass('mb-0 my-auto')
-                                ).append(iBoton).addClass('d-flex w-100 justify-content-between')
+                                    ).addClass('my-auto')
+                                ).append(
+                                    $('<div>').append(iBoton).addClass('my-auto')
+                                ).addClass('d-flex w-100 justify-content-between')
                             ).addClass('list-group-item')
                         );
                     }
@@ -233,6 +235,7 @@
                 $('#menu-admin').collapse('show')
                 $('#sidenav-eventos').addClass('active');
                 $('#nev-form').on('submit', RegistraEvento);
+                LimpiarFormulario();
                 ConfiguraDatePicker();
                 CargarListaEmpresas();
             });

@@ -15,8 +15,8 @@
         <!-- body -->
         <div id="main-content">
             <div class="container-fluid">
-                <div class="row mb-2">
-                    <div class="col-12 col-md-8 col-lg-6">
+                <div id="main-row" class="row mb-2">
+                    <div class="col-12 col-md-6">
                         <ul class="list-group">
                             <li class="list-group-item">
                                 <p class="text-main mb-0">Bienvenido a la Intranet de Corporación Life</p>
@@ -35,10 +35,6 @@
                 <!-- separador de bajo presupuesto -->
                 <div class="row mb-2">
                     <div id="alertas-container" class="col">
-                        <!--div class="alert alert-primary no-rounded mb-2">
-                            <p class="font-weight-bold mb-1">BOLETA DE PAGO EMP Y OBR - LIFE - ENERO 2020 - REMUNERACIONES</p>
-                            <p class="mb-0">Ya está disponible la boleta correspondiente al mes de Enero 2020. Podrás descargarla desde el menú, opción "Mis documentos"</p>
-                        </div-->
                         <div class="alert alert-primary no-rounded mb-2">
                             <p class="font-weight-bold mb-1">REGLAMENTO INTERNO CORPORACION LIFE</p>
                             <p class="mb-0">Puedes descargar el reglamento interno de Corporación Life desde <a href="#">este enlace</a></p>
@@ -52,54 +48,6 @@
                             <li class="list-group-item">
                                 <p class="text-main mb-0">Anuncios importantes</p>
                             </li>
-                            <!--li class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <div class="icono-aviso my-auto">
-                                        <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
-                                    </div>
-                                    <div class="mr-auto px-2 my-auto">
-                                        <p class="font-weight-bold mb-0">Charla sobre primeros auxilios</p>
-                                        <p class="mb-0">Se realizará el día 24-02-2020, a las 10:00 hrs. en el comedor. Es importante su participación.</p>
-                                    </div>
-                                    <small class="text-primary my-auto">20-02-2020</small>
-                                </div>
-                            </li>
-                            <li class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <div class="icono-aviso my-auto">
-                                        <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
-                                    </div>
-                                    <div class="mr-auto px-2 my-auto">
-                                        <p class="font-weight-bold mb-0">Celebración por el día de la amistad</p>
-                                        <p class="mb-0">Se invita a todo el personal a participar del compartir por el día de la amistad, el día viernes 14 de febrero a las 5.00 pm. ¡No falten!</p>
-                                    </div>
-                                    <small class="text-primary my-auto">12-02-2020</small>
-                                </div>
-                            </li>
-                            <li class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <div class="icono-aviso my-auto">
-                                        <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
-                                    </div>
-                                    <div class="mr-auto px-2 my-auto">
-                                        <p class="font-weight-bold mb-0">Cumpleaños del mes de enero</p>
-                                        <p class="mb-0">El día viernes 31 celebraremos los cumpleaños de nuestros colaboradores del mes de enero. Ven a compartir con nosotros de esta celebración, a las 4.30 pm en en comedor.</p>
-                                    </div>
-                                    <small class="text-primary my-auto">27-01-2020</small>
-                                </div>
-                            </li>
-                            <li class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <div class="icono-aviso my-auto">
-                                        <img src="/assets/intranet/images/ic-aviso.svg" alt="Aviso">
-                                    </div>
-                                    <div class="mr-auto px-2 my-auto">
-                                        <p class="font-weight-bold mb-0">Feliz año nuevo 2020</p>
-                                        <p class="mb-0">Que este nuevo año 2020 sea próspero y podamos crecer juntos, tanto en lo personal como en equipo. ¡Felices fiestas!</p>
-                                    </div>
-                                    <small class="text-primary my-auto">30-01-2019</small>
-                                </div>
-                            </li-->
                         </ul>
                     </div>
                 </div>
@@ -107,6 +55,31 @@
         </div>
         <!-- modals -->
         <% include _main.logout.ejs %>
+        <div id="modal-asistencia" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Corte de luz</h5>
+                        <button class="close" data-dismiss="modal" aria-label="close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <img id="asis-qr" class="d-block mx-auto mb-1" style="width:256px;">
+                        <div class="row">
+                            <div class="col">
+                                <div class="alert alert-primary no-rounded mb-2">
+                                    <p class="mb-0">Muestra este código QR al ingreso del evento para validar tu asistencia.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- separador de bajo presupuesto -->
         <% include _main.scripts.ejs %>
         <script>
@@ -165,10 +138,73 @@
                     OcultaIndicadorCarga();
                 }
             }
+            VerificarEventosHOy = async _ => {
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/eventos-hoy',
+                        method: 'post',
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    const ls_hoy = result.data.eventos;
+                    if (ls_hoy.length > 0) {
+                        const ul = $('<ul>').addClass('list-group');
+                        ul.append(
+                            $('<li>').append(
+                                $('<p>').text('Eventos del día').addClass('text-light mb-0')
+                            ).addClass('list-group-item bg-main')
+                        );
+                        for (let evento of ls_hoy) {
+                            const iBoton = $('<a>').addClass('btn btn-sm');
+                            if (evento.activo == 'S') {
+                                iBoton.text('Registrado').addClass('btn-success').attr('href', 'javascript:void(0)')
+                            }
+                            else {
+                                iBoton.text('Asistencia').addClass('btn-primary').attr({
+                                    'href': '#',
+                                    'data-evento': evento.codigo,
+                                    'data-toggle': 'modal',
+                                    'data-target': '#modal-asistencia'
+                                })
+                            }
+                            ul.append(
+                                $('<li>').append(
+                                    $('<div>').append(
+                                        $('<div>').append(
+                                            $('<p>').text(evento.descripcion).addClass('mb-0 text-main font-weight-bold')
+                                        ).append(
+                                            $('<p>').append(
+                                                $('<b>').text('Lugar:').addClass('mr-1')
+                                            ).append(evento.lugar).addClass('mb-0')
+                                        ).append(
+                                            $('<p>').append(
+                                                $('<b>').text('Hora:').addClass('mr-1')
+                                            ).append(evento.fecha).addClass('mb-0')
+                                        ).addClass('mr-auto my-auto')
+                                    ).append(
+                                        $('<div>').append(iBoton).addClass('my-auto')
+                                    ).addClass('d-flex w-100 justify-content-between')
+                                ).addClass('list-group-item list-group-item-action')
+                            );
+                        }
+                        $('#main-row').append(
+                            $('<div>').append(ul).addClass('col-12 col-md-6')
+                        );
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+            }
             // go!
             $(_ => {
                 $('#sidenav-inicio').addClass('active');
                 CargarMensajesUsuario();
+                VerificarEventosHOy();
+                $('#asis-qr').attr('src', '/assets/intranet/pictures/qr-eventos/11/5/' + sesion.codigo + '.png');
             });
         </script>
     </body>
