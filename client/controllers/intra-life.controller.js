@@ -47,6 +47,16 @@ const LifeController = {
             };
             result = await conn.execute(query, params, responseParams);
             result = result.rows[0];
+            // busca el puesto...
+            query = "select nvl(ps.de_nombre, '(no asignado)') \"puesto\" from sg_usua_m us " + 
+                "left join ma_puesto_empr_m ps on us.co_puesto_empr = ps.co_puesto_empr and us.co_empresa_usuario = ps.co_empresa " +
+                "where us.co_usuario = :p_rucdni and us.co_empresa_usuario = :p_empresa";
+            params = {
+                p_rucdni: { val: codigo },
+                p_empresa: { val: empresa }
+            };
+            let puesto = await conn.execute(query, params, responseParams);
+            puesto = puesto.rows[0];
             conn.close();
             // verificar si la cuenta esta activada y el email fue validado
             // compara la clave con el hash
@@ -57,6 +67,7 @@ const LifeController = {
                     return;
                 }
                 let sesion = result;
+                sesion.puesto = puesto.puesto;
                 delete sesion.hash;
                 delete sesion.stact;
                 delete sesion.stmail;
@@ -75,7 +86,7 @@ console.log(sesion);
     Home: (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             let sess = request.cookies[confParams.cookieIntranet];
-            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';console.log(admin);
+            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
             let data = { sesion: sess, admin: admin };
             response.render(path.resolve('client/views/intranet/home.ejs'), data);
         }
@@ -139,6 +150,15 @@ console.log(sesion);
             let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
             let data = { sesion: sess, admin: admin, id: 'sidenav-mensajes' };
             response.render(path.resolve('client/views/intranet/envio-mensajes.ejs'), data);
+        }
+        else response.redirect('/intranet/login');
+    },
+    Eventos: (request, response) => {
+        if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {
+            let sess = request.cookies[confParams.cookieIntranet];
+            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let data = { sesion: sess, admin: admin };
+            response.render(path.resolve('client/views/intranet/eventos.ejs'), data);
         }
         else response.redirect('/intranet/login');
     },
@@ -638,6 +658,24 @@ console.log(sesion);
             response.send(JSON.stringify(err));
         }
     },
+    NuevaPapeleta: (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            let sess = request.cookies[confParams.cookieIntranet];
+            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N'; 
+            let data = { sesion: sess, admin: admin };
+            response.render(path.resolve('client/views/intranet/nueva-papeleta.ejs'), data);
+        }
+        else response.redirect('/intranet/login');
+    },
+    ListaPapeletas: (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            let sess = request.cookies[confParams.cookieIntranet];
+            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let data = { sesion: sess, admin: admin };
+            response.render(path.resolve('client/views/intranet/lista-papeletas.ejs'), data);
+        }
+        else response.redirect('/intranet/login');
+    },
     InfoEquipo: (request, response) => {
 console.log('otra ip', request.ip);
 console.log(request.headers['user-agent']);
@@ -742,6 +780,320 @@ console.log(request.headers['user-agent']);
                 response.json({
                     data: {
                         documentos: documentos
+                    }
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    ResponsableCcosto: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                let query = "call pack_digitalizacion.sp_responsable_ccosto(:o_codigo, :o_resultado, :o_nombre, :p_usuario, :p_empresa)";
+                let params = {
+                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                    o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    o_nombre: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    p_usuario: { val: sesion.codigo },
+                    p_empresa: { val: sesion.empresa }
+                };
+                let result = await conn.execute(query, params, responseParams);
+                let { o_codigo, o_resultado, o_nombre } = result.outBinds;
+                if (o_codigo == 1) {
+                    response.json({
+                        data: {
+                            responsable: o_nombre
+                        }
+                    });
+                }
+                else {
+                    response.json({
+                        error: o_resultado
+                    });
+                }
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    GeneraPapeleta: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            const { desde, hasta, motivo, goce } = request.body;
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                let query = "call pack_digitalizacion.sp_registra_papeleta(:o_codigo, :o_resultado, :p_usuario, :p_empresa, :p_desde, :p_hasta, :p_motivo, :p_goce)";
+                let params = {
+                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                    o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    p_usuario: { val: sesion.codigo },
+                    p_empresa: { val: sesion.empresa },
+                    p_desde: { val: desde },
+                    p_hasta: { val: hasta },
+                    p_motivo: { val: motivo },
+                    p_goce: { val: goce }
+                };
+                let result = await conn.execute(query, params, responseParams);
+                let { o_codigo, o_resultado } = result.outBinds;
+                if (o_codigo == 1) {
+                    response.json({
+                        result: 'ok'
+                    });
+                }
+                else {
+                    response.json({
+                        error: o_resultado
+                    });
+                }
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    CargaPapeletasSolicitadas: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                let query = "select * from table(pack_digitalizacion.f_papeletas_solicitadas(:p_empresa, :p_usuario))";
+                let params = {
+                    p_empresa: { val: sesion.empresa },
+                    p_usuario: { val: sesion.codigo }
+                };
+                let result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        papeletas: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    CargaPapeletasAprobar: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                await conn.execute("alter session set nls_date_format = 'dd/mm/yyyy hh24:mi'", {}, responseParams);
+                //
+                let query = "select * from table(pack_digitalizacion.f_papeletas_aprobar(:p_empresa, :p_usuario))";
+                let params = {
+                    p_empresa: { val: sesion.empresa },
+                    p_usuario: { val: sesion.codigo }
+                };
+                let result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        papeletas: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    DatosPapeleta: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            const { papeleta } = request.body;
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                let query = "call pack_digitalizacion.sp_datos_papeleta(:o_codigo, :o_resultado, :o_solicitante, :o_motivo, :o_fechahora, :o_goce, :o_respuesta, :o_observaciones, :p_papeleta, :p_usuario, :p_empresa)";
+                let params = {
+                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                    o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    o_solicitante: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    o_motivo: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    o_fechahora: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    o_goce: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    o_respuesta: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    o_observaciones: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    p_papeleta: { val: papeleta },
+                    p_usuario: { val: sesion.codigo },
+                    p_empresa: { val: sesion.empresa }
+                };
+                let result = await conn.execute(query, params, responseParams);
+                let { o_codigo, o_resultado, o_solicitante, o_motivo, o_fechahora, o_goce, o_respuesta, o_observaciones } = result.outBinds;
+                if (o_codigo == 1) {
+                    response.json({
+                        data: {
+                            papeleta: {
+                                codigo: papeleta,
+                                solicitante: o_solicitante,
+                                motivo: o_motivo,
+                                fechahora: o_fechahora,
+                                goce: o_goce,
+                                respuesta: o_respuesta,
+                                observaciones: o_observaciones
+                            }
+                        }
+                    });
+                }
+                else {
+                    response.json({
+                        error: o_resultado
+                    });
+                }
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    ResponderPapeleta: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            const { papeleta, respuesta, observaciones } = request.body;
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                let query = "call pack_digitalizacion.sp_responder_papeleta (:o_codigo, :o_resultado, :p_papeleta, :p_empresa, :p_respuesta, :p_observaciones)";
+                let params = {
+                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                    o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    p_papeleta: { val: papeleta },
+                    p_empresa: { val: sesion.empresa },
+                    p_respuesta: { val: respuesta },
+                    p_observaciones: { val: observaciones }
+                };
+                let result = await conn.execute(query, params, responseParams);
+                let { o_codigo, o_resultado } = result.outBinds;
+                if (o_codigo == 1) {
+                    response.json({
+                        res: 'ok'
+                    });
+                }
+                else {
+                    response.json({
+                        error: o_resultado
+                    });
+                }
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    RegistrarEvento: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            const { empresa, descripcion, fechahora, lugar } = request.body;
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                let query = "call pack_digitalizacion.sp_registra_evento(:o_codigo, :o_resultado, :p_empresa, :p_descripcion, :p_fecha, :p_lugar, :p_organiza)";
+                let params = {
+                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                    o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    p_empresa: { val: empresa },
+                    p_descripcion: { val: descripcion },
+                    p_fecha: { val: fechahora },
+                    p_lugar: { val: lugar },
+                    p_organiza: { val: sesion.codigo }
+                };
+                let result = await conn.execute(query, params, responseParams);
+                let { o_codigo, o_resultado } = result.outBinds;
+                if (o_codigo == 1) {
+                    response.json({
+                        res: 'ok'
+                    });
+                }
+                else {
+                    response.json({
+                        error: o_resultado
+                    });
+                }
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    ListaEventos: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa } = request.body;
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                const query = "select * from table (pack_digitalizacion.f_lista_eventos(:p_empresa))";
+                const params = {
+                    p_empresa: { val: empresa }
+                };
+                const result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        eventos: result.rows
                     }
                 });
             }
