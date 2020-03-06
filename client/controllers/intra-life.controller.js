@@ -48,7 +48,7 @@ const LifeController = {
             result = await conn.execute(query, params, responseParams);
             result = result.rows[0];
             // busca el puesto...
-            query = "select nvl(ps.de_nombre, '(no asignado)') \"puesto\" from sg_usua_m us " + 
+            query = "select nvl(ps.de_nombre, '(no asignado)') \"puesto\" from sg_usua_m us " +
                 "left join ma_puesto_empr_m ps on us.co_puesto_empr = ps.co_puesto_empr and us.co_empresa_usuario = ps.co_empresa " +
                 "where us.co_usuario = :p_rucdni and us.co_empresa_usuario = :p_empresa";
             params = {
@@ -71,7 +71,7 @@ const LifeController = {
                 delete sesion.hash;
                 delete sesion.stact;
                 delete sesion.stmail;
-console.log(sesion);
+                console.log(sesion);
                 response.cookie(confParams.cookieAdmin, sesion.admin, { httpOnly: true });
                 response.cookie(confParams.cookieIntranet, JSON.stringify(sesion), { httpOnly: true });
                 response.redirect('/intranet');
@@ -159,6 +159,15 @@ console.log(sesion);
             let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
             let data = { sesion: sess, admin: admin };
             response.render(path.resolve('client/views/intranet/eventos.ejs'), data);
+        }
+        else response.redirect('/intranet/login');
+    },
+    ReporteAcuse: (request, response) => {
+        if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {
+            let sess = request.cookies[confParams.cookieIntranet];
+            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let data = { sesion: sess, admin: admin, id: 'sidenav-reportes' };
+            response.render(path.resolve('client/views/intranet/reporte-acuses.ejs'), data);
         }
         else response.redirect('/intranet/login');
     },
@@ -607,9 +616,9 @@ console.log(sesion);
         var decrypted = decipher.update(hash, encParams.param, encParams.charset);
         decrypted += decipher.final('utf8');
         const decParams = decrypted.split(encParams.separator);
-            const envio = decParams[0];
-            const empresa = decParams[1];
-            const personal = decParams[2];
+        const envio = decParams[0];
+        const empresa = decParams[1];
+        const personal = decParams[2];
         // response.send(envio + ' - ' + empresa + ' - ' + personal);
         try {
             const conn = await oracledb.getConnection(dbParams);
@@ -661,7 +670,7 @@ console.log(sesion);
     NuevaPapeleta: (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             let sess = request.cookies[confParams.cookieIntranet];
-            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N'; 
+            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
             let data = { sesion: sess, admin: admin };
             response.render(path.resolve('client/views/intranet/nueva-papeleta.ejs'), data);
         }
@@ -677,8 +686,8 @@ console.log(sesion);
         else response.redirect('/intranet/login');
     },
     InfoEquipo: (request, response) => {
-console.log('otra ip', request.ip);
-console.log(request.headers['user-agent']);
+        console.log('otra ip', request.ip);
+        console.log(request.headers['user-agent']);
         response.send('ola ke ase');
     },
     GuardarMensaje: async (request, response) => {
@@ -942,6 +951,39 @@ console.log(request.headers['user-agent']);
             });
         }
     },
+    CargaReporteAcuse: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa, tipodoc, envio, periodo, usuario } = request.body;
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                let query = "select * from table (pack_digitalizacion.f_reporte_acuse(:p_empresa, :p_tipo, :p_envio, :p_periodo, :p_usuario))";
+                let params = {
+                    p_empresa: { val: empresa },
+                    p_tipo: { val: tipodoc },
+                    p_envio: { val: envio },
+                    p_periodo: { val: periodo },
+                    p_usuario: { val: usuario }
+                };
+                const result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        reporte: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
     DatosPapeleta: async (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
@@ -1101,6 +1143,35 @@ console.log(request.headers['user-agent']);
                 console.error(err);
                 response.json({
                     error: err
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    ListaPeriodos: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa } = request.body;
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                const query = "select * from table (pack_digitalizacion.f_lista_eventos(:p_empresa))";
+                const params = {
+                    p_empresa: { val: empresa }
+                };
+                const result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        periodos: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: JSON.stringify(err)
                 });
             }
         }

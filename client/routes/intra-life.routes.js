@@ -15,6 +15,8 @@ const LifeController = require('../controllers/intra-life.controller');
     router.get('/papeletas/nueva', LifeController.NuevaPapeleta);
     router.get('/papeletas/lista', LifeController.ListaPapeletas);
     router.get('/eventos', LifeController.Eventos);
+    router.get('/reporte-acuse', LifeController.ReporteAcuse);
+    router.get('/info-equipo', LifeController.InfoEquipo);
     //
     router.post('/auth-login', LifeController.AuthLogin);
     router.post('/cargar-datos', LifeController.CargarDatosUsuario);
@@ -37,5 +39,7 @@ const LifeController = require('../controllers/intra-life.controller');
     router.post('/responder-papeleta', LifeController.ResponderPapeleta);
     router.post('/registra-evento', LifeController.RegistrarEvento);
     router.post('/lista-eventos', LifeController.ListaEventos);
+    router.post('/carga-reporte-acuse', LifeController.CargaReporteAcuse);
+    router.post('/lista-periodos', LifeController.ListaPeriodos);
 
 module.exports = router;

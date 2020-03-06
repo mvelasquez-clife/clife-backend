@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Requerimiento de Materiales</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css"> -->
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">   -->
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+            integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        <!--link rel="stylesheet" href="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.css" -->
+        <link rel="stylesheet" type="text/css" href="codebase/dhtmlxtabbar.css">
+        <style type="text/css">
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                width: 100%
+            }
+
+            #dhxDesktop {
+                height: 100%;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <!-- <script src="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.js"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+        <!-- <script src="/codebase/dhtmlxtabbar.js"></script> -->
+        <!-- script propio de la ventana -->
+        <!--<script type="text/javascript" src="<%=path%>script.js"></script> -->
+        <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- ancestro de la ventana de seguridad -->
+        <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+        <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script>
+            
+            var base_tollbar_nvo = {
+            iconset: "awesome", items: [  
+                { id: "__nuevo", type: "button", disabled: false, text: "Nuevo", img: "fas fa-plus txtrgreen", imgdis: "fas fa-plus disable txtrgreen" },
+                { type: "separator" },
+                { id: "__edit", type: "button", text: "Editar", disabled: true, hideHeader: true, img: "fas fa-edit txtoran", imgdis: "fas fa-edit disable txtoran" },
+                { type: "separator" },
+                { id: "__save", type: "button", text: "Guardar", disabled: true, img: "fas fa-save txtoran", imgdis: "fas fa-save disable txtoran" },
+                { type: "separator" },
+            ]
+            };
+            
+            var base_tollbar_rev = {
+            iconset: "awesome", items: [  
+                { id: "__pass", type: "button", text: "Aprobar", disabled: true, img: "far fa-thumbs-up txtrblue", imgdis: "far fa-thumbs-up" }, //<i class="far fa-thumbs-up"></i> 
+                { type: "separator" },
+                { id: "__fail", type: "button", text: "Rechazar", disabled: true, img: "far fa-thumbs-down txtrblue", imgdis: "far fa-thumbs-down" },//<i class="far fa-thumbs-down"></i>
+                { type: "separator" },
+                { id: "__dele", type: "button", text: "Anular", disabled: true, img: "fas fa-ban txtred", imgdis: "fas fa-ban txtred" },//<i class="fas fa-people-carry"></i>
+                { type: "separator" },
+                { id: "__back", type: "button", text: "Devolver a Almacen", disabled: true, img: "fas fa-people-carry", imgdis: "fas fa-people-carry" },
+                { type: "separator" },
+            ]
+            };
+            
+            var f_nuevo_reque = [
+                { type: "settings", labelWidth: 100 },
+                {type: "block", blockOffset: 0,offsetLeft: 40, position: "label-left", width: 900, list: [                       
+                    { type: "input",readonly: true, style:"background-color:rgb(234, 255, 71);width: 300px;height:30px,font-family: Arial; font-size: 15pt;",position:"input-right", offsetLeft: 0,labelWidth: 200, inputWidth: 200, name: "_r_nroreque"}, { type: "newcolumn" },            
+                    { type: "checkbox",readonly: true,checked: false,disabled: false, offsetLeft: 20,labelWidth: 60, inputWidth: 100, name: "_r_chcuare", label: 'Cuarentena:'}, { type: "newcolumn" },
+                    { type: "checkbox",readonly: true,checked: false,disabled: false, offsetLeft: 20,labelWidth: 50, inputWidth: 100, name: "_r_chubic", label: 'Ubicación:'}, { type: "newcolumn" },                    
+                { type: "newcolumn" },] },            
+                {type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [                 
+                    { type: "select",disabled: true, offsetLeft: 40,labelWidth: 50, inputWidth: 300, name: "_r_almacen", label: 'Almacen:',connector: BASE_URL + 'LO0107/mostrar-almacen/'+ usrJson.empresa}, { type: "newcolumn" },        
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                    { type: "input", name: '_r_solicita', labelWidth: 50, readonly: true, label: 'Solicita:', offsetLeft: 40, inputWidth: 300 }, { type: "newcolumn" },
+                    { type: "button", name: '__buscarsolicita', disabled: true, offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },                                      
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [                       
+                    { type: "input", name: '_r_ccosto', labelWidth: 50, readonly: true, label: 'Centro Costo:', offsetLeft: 40, inputWidth: 300 }, { type: "newcolumn" },
+                    { type: "button", name: '__buscarccosto', disabled: true, offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },                                   
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                    { type: "select",disabled: true, offsetLeft: 40,labelWidth: 50, inputWidth: 300, name: "_r_motivo_1", label: 'Motivo: ',connector: BASE_URL + 'LO0107/mostrar-ingreso/'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40, position: "label-left", width: 1020, list: [
+                    { type: "select",disabled: true, offsetLeft: 50,labelWidth: 50, inputWidth: 300, name: "_r_motivo_2" }, { type: "newcolumn" },         
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40, position: "label-left", width: 1020, list: [
+                    { type: "calendar", readonly: true, offsetLeft: 0,labelWidth: 50, inputWidth: 100, name: "_r_fecreqq_de", label: 'Fecha Req.: '}, { type: "newcolumn" },   
+                    ],},
+                { type: "newcolumn" },
+                    {type: "fieldset", label: "Opcional",offsetLeft: 40,  offsetTop: 10, inputWidth: 120, list:[
+                        {type: "block", blockOffset: 0, position: "label-left", width: 460, list: [                        
+                            { type: "select",disabled: true, offsetLeft: 0,labelWidth: 60, inputWidth: 150, name: "_r_referencia_1", label: 'Referencia:' ,connector: BASE_URL + 'LO0107/mostrar-referencia'}, { type: "newcolumn" }, //mostrar-referencia
+                            { type: "input",disabled: true, offsetLeft: 0,labelWidth: 60, inputWidth: 200, name: "_r_referencia_2"}, { type: "newcolumn" }, 
+                            { type: "input", readonly: true,disabled: true, offsetLeft: 0,labelWidth: 60, inputWidth: 270, name: "_r_entidad", label: 'Entidad:'}, { type: "newcolumn" }, 
+                            { type: "button", name: '__buscarentidad', disabled: true, offsetLeft: 0, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },    
+                            { type: "checkbox",checked: false,disabled: true, offsetLeft: 0,labelWidth: 60, inputWidth: 100, name: "_r_pedido", label: 'Pedido:'}, { type: "newcolumn" },
+                            { type: "button", name: '__buscardirec', disabled: true, offsetLeft: 0, offsetTop: 0, value: '<i class="fas fa-map-marker-alt"></i>' }, { type: "newcolumn" }, //<i class="fas fa-map-marker-alt"></i>
+                            { type: "input", readonly: true,disabled: true, offsetLeft: 0,labelWidth: 60, inputWidth: 300, name: "_r_direccion", label: 'Dirección:'}, { type: "newcolumn" }, 
+                            { type: "input", readonly: true,disabled: true, offsetLeft: 0,labelWidth: 60, inputWidth: 300, name: "_r_vendedor", label: 'Fza. Venta:'}, { type: "newcolumn" },          
+                        ]}
+                ]},
+                { type: "newcolumn" },
+                    { type: "block", blockOffset: 0, position: "label-left", width: 1020, list: [
+                    { type: "input", readonly: true,disabled: false, offsetLeft: 40,labelWidth: 80, inputWidth: 200, name: "_r_observaciones", label: 'Observaciones: '}, { type: "newcolumn" },   
+                    { type: "input", readonly: true,style:"background-color: rgb(50, 115, 220);width: 150px;height:30px,font-family: Arial; font-size: 15pt;",disabled: false, offsetLeft: 40,labelWidth: 70, inputWidth: 100, name: "_r_entrega"}, { type: "newcolumn" },                                             
+                    ],}        
+            ]; 
+                                    
+            var f_rev_reque = [ { type: "newcolumn" },      
+            {
+                type: "block",blockOffset: 10, position: "label-left", width: 1300, list: [                 
+                   { type: "select",disabled: false, offsetLeft: 40, offsetTop: 10,labelWidth: 50, inputWidth: 300, name: "_rev_almacen", label: 'Almacen:',connector: BASE_URL + 'LO0107/mostrar-almacen/'+ usrJson.empresa}, { type: "newcolumn" },                   
+                   { type: "calendar",disabled: false, offsetLeft: 20, offsetTop: 10,labelWidth: 20, inputWidth: 100, name: "_r_fech_ini", label: 'Del: '}, { type: "newcolumn" },                                 
+                   { type: "calendar",disabled: false, offsetLeft: 20, offsetTop: 10,labelWidth: 15, inputWidth: 100, name: "_r_fech_fin", label: 'Al: '}, { type: "newcolumn" },    
+
+                {type: "combo", name: "_estado_rev", label: "Estado",offsetLeft: 20,  offsetTop: 10, inputWidth: 200, comboType: "checkbox", options:[                
+                    {text: 'Pendientes/Aprobados',checked: true, selected: true,disabled: false, offsetLeft: 0,labelWidth: 120, inputWidth: 100, name: "_r_pend_apro"},                   
+                    {text: 'Anulados/Rechazados',checked: false,disabled: false, offsetLeft: 0,labelWidth: 120, inputWidth: 100, name: "_r_anu_rech"},  
+                    {text: 'Atendidos:',checked: false,disabled: false, offsetLeft: 0,labelWidth: 60, inputWidth: 100, name: "_r_aten"},  
+                ]},
+                    { type: "newcolumn" },
+                    { type: "button",html: "<div class='boton_1'></div>",label: 'Revisar',disabled: false, offsetTop: 10, offsetLeft: 20, name: "_r_revisar",labelWidth: "70px", value: '<i class="far fa-check-circle"></i> Revisar'}, { type: "newcolumn" }                              
+            ],                
+            }  
+            ];                     
+            var f_consulta_reque = [ { type: "newcolumn" },      
+            {
+                type: "block",blockOffset: 10, position: "label-left", width: 1300, list: [                 
+                   { type: "select",disabled: false, offsetLeft: 40, offsetTop: 10,labelWidth: 50, inputWidth: 300, name: "_rev_almacen", label: 'Almacen:',connector: BASE_URL + 'LO0107/mostrar-almacen/'+ usrJson.empresa}, { type: "newcolumn" },                   
+                   { type: "calendar",disabled: false, offsetLeft: 20, offsetTop: 10,labelWidth: 20, inputWidth: 100, name: "_r_fech_ini", label: 'Del: '}, { type: "newcolumn" },                                 
+                   { type: "calendar",disabled: false, offsetLeft: 20, offsetTop: 10,labelWidth: 15, inputWidth: 100, name: "_r_fech_fin", label: 'Al: '}, { type: "newcolumn" },    
+
+                {type: "combo", name: "_estado_rev", label: "Estado",offsetLeft: 20,  offsetTop: 10, inputWidth: 200, comboType: "checkbox", options:[                
+                    {text: 'Pendientes/Aprobados',checked: true, selected: true,disabled: false, offsetLeft: 0,labelWidth: 120, inputWidth: 100, name: "_r_pend_apro"},                   
+                    {text: 'Anulados/Rechazados',checked: false,disabled: false, offsetLeft: 0,labelWidth: 120, inputWidth: 100, name: "_r_anu_rech"},  
+                    {text: 'Atendidos:',checked: false,disabled: false, offsetLeft: 0,labelWidth: 60, inputWidth: 100, name: "_r_aten"},  
+                ]},
+                    { type: "newcolumn" },
+                    { type: "button",html: "<div class='boton_1'></div>",label: 'Revisar',disabled: false, offsetTop: 10, offsetLeft: 20, name: "_r_revisar",labelWidth: "70px", value: '<i class="far fa-check-circle"></i> Revisar'}, { type: "newcolumn" }                              
+            ],                
+            }  
+            ];                        
+            var f_rev_devoluciones = [ { type: "newcolumn" },      
+            {
+                type: "block",blockOffset: 10, position: "label-left", width: 1300, list: [                 
+                   { type: "select",disabled: false, offsetLeft: 40, offsetTop: 10,labelWidth: 50, inputWidth: 300, name: "_rev_almacen", label: 'Almacen:',connector: BASE_URL + 'LO0107/mostrar-almacen/'+ usrJson.empresa}, { type: "newcolumn" },                   
+                   { type: "calendar",disabled: false, offsetLeft: 20, offsetTop: 10,labelWidth: 20, inputWidth: 100, name: "_r_fech_ini", label: 'Del: '}, { type: "newcolumn" },                                 
+                   { type: "calendar",disabled: false, offsetLeft: 20, offsetTop: 10,labelWidth: 15, inputWidth: 100, name: "_r_fech_fin", label: 'Al: '}, { type: "newcolumn" },    
+
+                {type: "combo", name: "_estado_rev", label: "Estado",offsetLeft: 20,  offsetTop: 10, inputWidth: 200, comboType: "checkbox", options:[                
+                    {text: 'Pendientes/Aprobados',checked: true, selected: true,disabled: false, offsetLeft: 0,labelWidth: 120, inputWidth: 100, name: "_r_pend_apro"},                   
+                    {text: 'Anulados/Rechazados',checked: false,disabled: false, offsetLeft: 0,labelWidth: 120, inputWidth: 100, name: "_r_anu_rech"},  
+                    {text: 'Atendidos:',checked: false,disabled: false, offsetLeft: 0,labelWidth: 60, inputWidth: 100, name: "_r_aten"},  
+                ]},
+                    { type: "newcolumn" },
+                    { type: "button",html: "<div class='boton_1'></div>",label: 'Revisar',disabled: false, offsetTop: 10, offsetLeft: 20, name: "_r_revisar",labelWidth: "70px", value: '<i class="far fa-check-circle"></i> Revisar'}, { type: "newcolumn" }                              
+            ],                
+            }  
+            ];  
+            mainLayout = new dhtmlXLayoutObject(document.body, '1C'); 
+            mainLayout.cells('a').hideHeader();
+            mainLayout.setSeparatorSize(0, 0);
+            myForm = mainLayout.cells('a').attachForm();
+            var tabbar;
+            tabbar = mainLayout.cells('a').attachTabbar();
+            tabbar.addTab('s_nvoreque', 'NUEVO REQUERIMIENTO', null, null, true);
+            tabbar.addTab('s_revreque', 'REVISAR REQUERIMIENTOS', null, null, false);
+            tabbar.addTab('s_conreque', 'CONSULTA DE REQUERIMIENTOS', null, null, false);
+            tabbar.addTab('s_revdevol', 'REVISAR DEVOLUCIONES', null, null, false);  
+            tabbar. attachEvent ( "onSelect" , doOnSelect ) ; 
+            Inirequerimiento();       
+
+        </script>
+    </body>
+    <h1> Lista de usuarios </h1>
+</html>
