@@ -12,6 +12,9 @@ const LifeController = require('../controllers/intra-life.controller');
     router.get('/subir-docs', LifeController.SubirDocumentos);
     router.get('/enviar-mensajes', LifeController.EnvioMensajes);
     router.get('/ver-documento/:hash', LifeController.DescargaPdf);
+    router.get('/papeletas/nueva', LifeController.NuevaPapeleta);
+    router.get('/papeletas/lista', LifeController.ListaPapeletas);
+    router.get('/eventos', LifeController.Eventos);
     router.get('/reporte-acuse', LifeController.ReporteAcuse);
     router.get('/info-equipo', LifeController.InfoEquipo);
     //
@@ -28,6 +31,14 @@ const LifeController = require('../controllers/intra-life.controller');
     router.post('/enviar-mensaje', LifeController.GuardarMensaje);
     router.post('/lista-mensajes', LifeController.ListaMensajes);
     router.post('/lista-documentos', LifeController.ListaDocumentos);
+    router.post('/responsable-ccosto', LifeController.ResponsableCcosto);
+    router.post('/genera-papeleta', LifeController.GeneraPapeleta);
+    router.post('/papeletas-solicitadas', LifeController.CargaPapeletasSolicitadas);
+    router.post('/papeletas-aprobar', LifeController.CargaPapeletasAprobar);
+    router.post('/datos-papeleta', LifeController.DatosPapeleta);
+    router.post('/responder-papeleta', LifeController.ResponderPapeleta);
+    router.post('/registra-evento', LifeController.RegistrarEvento);
+    router.post('/lista-eventos', LifeController.ListaEventos);
     router.post('/carga-reporte-acuse', LifeController.CargaReporteAcuse);
     router.post('/lista-periodos', LifeController.ListaPeriodos);
 
