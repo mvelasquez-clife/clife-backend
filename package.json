@@ -41,6 +41,7 @@
     "nodemailer-express-handlebars": "^3.0.0",
     "npm": "^6.13.7",
     "object-to-xml": "^2.0.0",
+    "opn": "^6.0.0",
     "oracledb": "^3.1.2",
     "read-chunk": "^3.2.0",
     "request": "^2.88.0",

@@ -89,6 +89,27 @@
             </div>
         </div>
         <!-- modals -->
+        <div id="modal-asistentes" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="evento-title"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div id="asis-container" class="col"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                        <a href="/intranet/logout" type="button" class="btn btn-sm btn-danger"><i class="fa fa-sign-out"></i> Cerrar sesión</a>
+                    </div>
+                </div>
+            </div>
+        </div>
         <% include _main.logout.ejs %>
         <!-- separador de bajo presupuesto -->
         <% include _main.scripts.ejs %>
@@ -97,6 +118,68 @@
             const sesion = JSON.parse('<%-sesion %>');
             let ListaEventos;
             // funciones
+            VerAsistencia = async e => {
+                $('#asis-container').empty();
+                e.preventDefault();
+                const evento = e.delegateTarget.dataset;
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/lista-asistentes',
+                        method: 'post',
+                        data: { evento: evento.evento },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    const asistentes = result.data.asistentes;
+                    if (asistentes.length > 0) {
+                        const tbody = $('<tbody>');
+                        for (let asistente of asistentes) {
+                            tbody.append(
+                                $('<tr>').append(
+                                    $('<td>').text(asistente.codigo).addClass('text-right')
+                                ).append(
+                                    $('<td>').text(asistente.nombre)
+                                ).append(
+                                    $('<td>').text(asistente.area)
+                                ).append(
+                                    $('<td>').text(asistente.cargo)
+                                ).append(
+                                    $('<td>').text(asistente.hora).addClass('text-right')
+                                )
+                            );
+                        }
+                        const table = $('<table>').append(
+                            $('<thead>').append(
+                                $('<tr>').append(
+                                    $('<th>').text("DNI")
+                                ).append(
+                                    $('<th>').text("Nombre")
+                                ).append(
+                                    $('<th>').text("Área")
+                                ).append(
+                                    $('<th>').text("Cargo")
+                                ).append(
+                                    $('<th>').text("Hora")
+                                )
+                            )
+                        ).append(tbody).addClass('table table-striped table-hover');
+                        $('#evento-title').text(evento.nombre);
+                        $('#asis-container').append(table);
+                        $('#modal-asistentes').modal('show');
+                    }
+                    else {
+                        $('#asis-container').append(
+                            $('<p>').text('No hay asistentes registrados')
+                        );
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+            }
             EscribirListaEventos = _ => {
                 const container = $('#container-eventos');
                 container.empty();
@@ -109,7 +192,10 @@
                     for (let evento of ListaEventos) {
                         const iBoton = $('<a>').addClass('btn btn-sm').attr('href', 'javascript:void(0)');
                         if (evento.activo == 'S') {
-                            iBoton.addClass('btn-success').text('¡Es hoy!')
+                            iBoton.addClass('btn-success').text('Asistencia').attr({
+                                'data-evento': evento.codigo,
+                                'data-nombre': evento.descripcion
+                            }).on('click', VerAsistencia)
                         }
                         ul.append(
                             $('<li>').append(

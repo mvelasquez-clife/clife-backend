@@ -498,6 +498,7 @@ const LifeController = {
             const mv = require('mv');
             const formidable = require('formidable');
             const fupload = require('../../server/fupload');
+            const java = require('../../server/config/java');
             //
             const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
             var form = new formidable.IncomingForm();
@@ -510,7 +511,7 @@ const LifeController = {
                 }
                 const sFilename = 'DIGI_' + fields.cenvio + '_' + fields.codigo + '.pdf';
                 var oldpath = files.pdf.path;
-                var newpath = fupload.tmppath + sFilename;
+                var newpath = fupload.tmppath + 'unsigned_' + sFilename;
                 mv(oldpath, newpath, async function (err) {
                     if (err) {
                         response.json({
@@ -518,89 +519,108 @@ const LifeController = {
                         });
                         return;
                     }
-                    // genera la ruta del archivo alv
-                    let folders = [fields.empresa, 'CLIENTES', fields.codigo];
-                    const sPath = 'X:' + fupload.winseparator + folders.join(fupload.winseparator) + fupload.winseparator + sFilename;
-                    let remotePath = '/publico/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator);
-                    // subir con curl
-                    const fs = require('fs');
-                    const fileData = fs.readFileSync(newpath);
-                    const base64 = fileData.toString('base64'); //codifica el pdf a base 64
-                    const { Curl } = require('node-libcurl');
-                    const curl = new Curl();
-                    const url = 'http://192.168.0.248/uploader/index.php';
-                    curl.setOpt(Curl.option.URL, url);
-                    curl.setOpt(Curl.option.POSTFIELDS, 'path=' + remotePath + '&filename=' + sFilename + '&b64=' + encodeURIComponent(base64));
-                    curl.setOpt(Curl.option.VERBOSE, true);
-                    curl.on('end', async (statusCode, body) => {
-                        // guardar en la bd
-                        try {
-                            const conn = await oracledb.getConnection(dbParams);
-                            // registra en el legajo de clientes
-                            let query = "call pack_new_attached.sp_save_adjunto(:o_codigo, :o_resultado, :p_empresa, :p_usuario, :p_tipo_enti, :p_cataenti, :p_archivo, " +
-                                ":p_tipoarchivo, :p_ruta, :p_fichero, :p_extension, :p_descripcion, :p_tpdocu, :p_tipocarpeta, :p_nuitems)";
-                            let params = {
-                                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-                                o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-                                p_empresa: { val: fields.empresa },
-                                p_usuario: { val: sesion.codigo },
-                                p_tipo_enti: { val: 2 },
-                                p_cataenti: { val: fields.codigo },
-                                p_archivo: { val: fields.codigo },
-                                p_tipoarchivo: { val: 4 },
-                                p_ruta: { val: sPath },
-                                p_fichero: { val: sFilename },
-                                p_extension: { val: 'pdf' },
-                                p_descripcion: { val: fields.envio },
-                                p_tpdocu: { val: 639 },
-                                p_tipocarpeta: { val: 'CLIENTES' },
-                                p_nuitems: { val: 1 }
-                            };
-                            let result = await conn.execute(query, params, responseParams);
-                            let { o_codigo, o_resultado } = result.outBinds;
-                            if (o_codigo == 0) {
+                    // firma el mugre pdf
+                    const newpathsigned = fupload.tmppath + sFilename;
+                    var exec = require('child_process').exec, child;
+                    child = exec('java -jar ' + java.stamper + ' "' + newpath + '" "' + newpathsigned + '"',
+                    function (error, stdout, stderr){
+                        console.log('stdout: "' + stdout + '"');
+                        console.log('stderr: ' + stderr);
+                        if(stdout.indexOf('ola ke ase!') == -1){
+                            let serror = (error || stderr);
+                            console.log('exec error: ' + serror);
+                            response.json({
+                                error: serror
+                            });
+                            return;
+                        }
+                        // FINISH HIM!
+                        // genera la ruta del archivo alv
+                        let folders = [fields.empresa, 'CLIENTES', fields.codigo];
+                        const sPath = 'X:' + fupload.winseparator + folders.join(fupload.winseparator) + fupload.winseparator + sFilename;
+                        let remotePath = '/publico/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator);
+                        // subir con curl
+                        const fs = require('fs');
+                        const fileData = fs.readFileSync(newpathsigned);
+                        const base64 = fileData.toString('base64'); //codifica el pdf a base 64
+                        const { Curl } = require('node-libcurl');
+                        const curl = new Curl();
+                        const url = 'http://192.168.0.248/uploader/index.php';
+                        curl.setOpt(Curl.option.URL, url);
+                        curl.setOpt(Curl.option.POSTFIELDS, 'path=' + remotePath + '&filename=' + sFilename + '&b64=' + encodeURIComponent(base64));
+                        curl.setOpt(Curl.option.VERBOSE, true);
+                        curl.on('end', async (statusCode, body) => {
+                            const JsonOut = JSON.parse(body);
+                            console.log(JsonOut);
+                            // guardar en la bd
+                            try {
+                                const conn = await oracledb.getConnection(dbParams);
+                                // registra en el legajo de clientes
+                                let query = "call pack_new_attached.sp_save_adjunto(:o_codigo, :o_resultado, :p_empresa, :p_usuario, :p_tipo_enti, :p_cataenti, :p_archivo, " +
+                                    ":p_tipoarchivo, :p_ruta, :p_fichero, :p_extension, :p_descripcion, :p_tpdocu, :p_tipocarpeta, :p_nuitems)";
+                                let params = {
+                                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                                    o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                    p_empresa: { val: fields.empresa },
+                                    p_usuario: { val: sesion.codigo },
+                                    p_tipo_enti: { val: 2 },
+                                    p_cataenti: { val: fields.codigo },
+                                    p_archivo: { val: fields.codigo },
+                                    p_tipoarchivo: { val: 4 },
+                                    p_ruta: { val: sPath },
+                                    p_fichero: { val: sFilename },
+                                    p_extension: { val: 'pdf' },
+                                    p_descripcion: { val: fields.envio },
+                                    p_tpdocu: { val: 639 },
+                                    p_tipocarpeta: { val: 'CLIENTES' },
+                                    p_nuitems: { val: 1 }
+                                };
+                                let result = await conn.execute(query, params, responseParams);
+                                let { o_codigo, o_resultado } = result.outBinds;
+                                if (o_codigo == 0) {
+                                    conn.close();
+                                    response.json({
+                                        error: o_resultado
+                                    });
+                                    return;
+                                }
+                                // registra el envío del documento
+                                query = "call pack_digitalizacion.sp_carga_documento (:p_envio,:p_empresa,:p_personal,:p_item,:p_coarchivo,:p_tparchivo,:p_usuenvia,:o_codigo,:o_resultado)";
+                                params = {
+                                    p_envio: { val: fields.cenvio },
+                                    p_empresa: { val: fields.empresa },
+                                    p_personal: { val: fields.codigo },
+                                    p_item: { val: o_codigo },
+                                    p_coarchivo: { val: fields.codigo },
+                                    p_tparchivo: { val: 4 },
+                                    p_usuenvia: { val: sesion.codigo },
+                                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                                    o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                                };
+                                result = await conn.execute(query, params, responseParams);
                                 conn.close();
+                                // validar
+                                if (result.outBinds.o_codigo == 0) {
+                                    response.json({
+                                        error: result.outBinds.o_resultado
+                                    });
+                                    return;
+                                }
+                                // listijirillo
                                 response.json({
-                                    error: o_resultado
+                                    result: 'ok'
                                 });
-                                return;
                             }
-                            // registra el envío del documento
-                            query = "call pack_digitalizacion.sp_carga_documento (:p_envio,:p_empresa,:p_personal,:p_item,:p_coarchivo,:p_tparchivo,:p_usuenvia,:o_codigo,:o_resultado)";
-                            params = {
-                                p_envio: { val: fields.cenvio },
-                                p_empresa: { val: fields.empresa },
-                                p_personal: { val: fields.codigo },
-                                p_item: { val: o_codigo },
-                                p_coarchivo: { val: fields.codigo },
-                                p_tparchivo: { val: 4 },
-                                p_usuenvia: { val: sesion.codigo },
-                                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-                                o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
-                            };
-                            result = await conn.execute(query, params, responseParams);
-                            conn.close();
-                            // validar
-                            if (result.outBinds.o_codigo == 0) {
+                            catch (err) {
+                                console.error(err);
                                 response.json({
-                                    error: result.outBinds.o_resultado
+                                    error: err
                                 });
-                                return;
                             }
-                            // listijirillo
-                            response.json({
-                                result: 'ok'
-                            });
-                        }
-                        catch (err) {
-                            console.error(err);
-                            response.json({
-                                error: err
-                            });
-                        }
+                        });
+                        curl.on('error', curl.close.bind(curl));
+                        curl.perform();
                     });
-                    curl.on('error', curl.close.bind(curl));
-                    curl.perform();
                 });
             });
         }
@@ -806,8 +826,8 @@ const LifeController = {
                 const result = await conn.execute(query, params, responseParams);
                 const documentos = result.rows;
                 const numDocumentos = documentos.length;
-                const cipher = crypto.createCipher(encParams.algorytm, encParams.password);
                 for (let i = 0; i < numDocumentos; i++) {
+                    let cipher = crypto.createCipher(encParams.algorytm, encParams.password);
                     let iDocumento = documentos[i];
                     let string = [iDocumento.CODIGO, iDocumento.EMPRESA, sesion.codigo].join(encParams.separator);
                     var encrypted = cipher.update(string, encParams.charset, encParams.param);
@@ -1223,6 +1243,37 @@ const LifeController = {
                 response.json({
                     data: {
                         eventos: result.rows
+                    }
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: JSON.stringify(err)
+                });
+            }
+        }
+        else {
+            response.json({
+                error: 'No cuenta con permisos para acceder a esta opcion'
+            });
+        }
+    },
+    AsistentesEvento: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { evento } = request.body;
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                const query = "select * from table (pack_digitalizacion.f_asistentes_evento(:p_empresa, :p_evento))";
+                const params = {
+                    p_empresa: { val: sesion.empresa },
+                    p_evento: { val: evento }
+                };
+                const result = await conn.execute(query, params, responseParams);
+                response.json({
+                    data: {
+                        asistentes: result.rows
                     }
                 });
             }

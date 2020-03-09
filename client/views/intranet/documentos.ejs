@@ -31,7 +31,7 @@
                     <div class="col">
                         <ul class="list-group mb-2">
                             <li class="list-group-item">
-                                <p class="text-main mb-0">BOLETA DE PAGO EMP Y OBR - LIFE</p>
+                                <p class="text-main mb-0">Documentos del último periodo</p>
                             </li>
                             <li id="doc-vigente-container" class="list-group-item">
                                 <!--div class="d-flex w-100 justify-content-between">
@@ -147,19 +147,19 @@
                             ).addClass('list-group-item')
                         );
                     }
-                    // verifica si habia documentos
-                    if (vigentesCount == 0) {
-                        vgct.append(
-                            $('<p>').text('No se registraron documentos para el periodo en curso').addClass('mb-0')
-                        );
-                    }
-                    if (anterioresCount == 0) {
-                        atct.append(
-                            $('<li>').append(
-                                $('<p>').text('No hay documentos registrados para los periodos anteriores').addClass('mb-0')
-                            ).addClass('list-group-item')
-                        );
-                    }
+                }
+                // verifica si habia documentos
+                if (vigentesCount == 0) {
+                    vgct.append(
+                        $('<p>').text('No se registraron documentos para el periodo en curso').addClass('mb-0')
+                    );
+                }
+                if (anterioresCount == 0) {
+                    atct.append(
+                        $('<li>').append(
+                            $('<p>').text('No hay documentos registrados para los periodos anteriores').addClass('mb-0')
+                        ).addClass('list-group-item')
+                    );
                 }
             }
             CargarListaDocumentos = async _ => {
