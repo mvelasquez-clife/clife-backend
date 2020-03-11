@@ -534,7 +534,6 @@ const LifeController = {
                             });
                             return;
                         }
-                        // FINISH HIM!
                         // genera la ruta del archivo alv
                         let folders = [fields.empresa, 'CLIENTES', fields.codigo];
                         const sPath = 'X:' + fupload.winseparator + folders.join(fupload.winseparator) + fupload.winseparator + sFilename;
@@ -598,11 +597,72 @@ const LifeController = {
                                     o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
                                 };
                                 result = await conn.execute(query, params, responseParams);
+                                let resDb = result.outBinds;
+                                // datos del destinatario
+                                query = "call pack_digitalizacion.sp_datos_usuario (:p_dni, :p_empresa, :o_apepat, :o_apemat, :o_nombres, :o_fechanac, :o_sexo, :o_telefono, :o_email, :o_area, :o_cargo)";
+                                params = {
+                                    p_dni: { val: fields.codigo },
+                                    p_empresa: { val: fields.empresa },
+                                    o_apepat: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                    o_apemat: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                    o_nombres: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                    o_fechanac: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                    o_sexo: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                    o_telefono: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                    o_email: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                    o_area: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                    o_cargo: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                                };
+                                result = await conn.execute(query, params, responseParams);
+                                const destinatario = result.outBinds;
+                                // datos del envio
+                                query = "call pack_digitalizacion.sp_datos_envio (:p_envio, :p_empresa, :o_periodo, :o_envio)";
+                                params = {
+                                    p_envio: { val: fields.cenvio },
+                                    p_empresa: { val: fields.empresa },
+                                    o_periodo: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                    o_envio: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                                };
+                                result = await conn.execute(query, params, responseParams);
+                                const oenvio = result.outBinds;
+                                // enviar el correo
+                                const nodemailer = require('nodemailer');
+                                const ejs = require('ejs');
+                                const smtp = require('../../server/config/smtp');
+                                const transport = nodemailer.createTransport(smtp);
+                                // genera la url encriptada
+                                let cipher = crypto.createCipher(encParams.algorytm, encParams.password);
+                                let string = [fields.cenvio, fields.empresa, fields.codigo].join(encParams.separator);
+                                let encrypted = cipher.update(string, encParams.charset, encParams.param);
+                                encrypted += cipher.final(encParams.param);
+                                // envia el pinche email
+                                const data = {
+                                    nombre: destinatario.o_apepat + ' ' + destinatario.o_apemat + ', ' + destinatario.o_nombres,
+                                    url: 'http://192.168.11.163:3000/intranet/ver-documento/' + encrypted,
+                                    periodo: oenvio.o_periodo,
+                                    envio: oenvio.o_envio
+                                };
+                                const html = await ejs.renderFile(path.resolve('client/views/intranet/mail_documento.ejs'), data);
+                                const message = {
+                                    from: 'bi_sistemas@corporacionlife.com.pe',
+                                    to: destinatario.o_email,
+                                    subject: 'Documentos digitales - ' + oenvio.o_envio,
+                                    html: html
+                                };
+                                transport.sendMail(message, function(err, info) {
+                                    if (err) {
+                                        console.log(err)
+                                        response.send('no se pudo enviar el mail');
+                                        return;
+                                    }
+                                    response.send('Se envió el correo!');
+                                });
+                                // fin
                                 conn.close();
                                 // validar
-                                if (result.outBinds.o_codigo == 0) {
+                                if (resDb.o_codigo == 0) {
                                     response.json({
-                                        error: result.outBinds.o_resultado
+                                        error: resDb.o_resultado
                                     });
                                     return;
                                 }
@@ -671,7 +731,7 @@ const LifeController = {
                     p_numero: { val: o_numero },
                     p_detalle: { val: infoEquipo }
                 };
-                console.log(query, params);
+                await conn.execute(query, params, responseParams);
             }
             // descarga el pdf
             const { Curl } = require('node-libcurl');
@@ -913,6 +973,44 @@ const LifeController = {
                 };
                 let result = await conn.execute(query, params, responseParams);
                 let { o_codigo, o_resultado } = result.outBinds;
+                // busca datos del jefe
+                query = "call pack_digitalizacion.sp_datos_jefe(:p_dni, :p_empresa, :o_nombre, :o_email)";
+                params = {
+                    p_dni: { val: sesion.codigo },
+                    p_empresa: { val: sesion.empresa },
+                    o_nombre: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    o_email: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                };
+                result = await conn.execute(query, params, responseParams);
+                let { o_nombre, o_email } = result.outBinds;
+                // notifica con un email
+                const nodemailer = require('nodemailer');
+                const ejs = require('ejs');
+                const smtp = require('../../server/config/smtp');
+                const transport = nodemailer.createTransport(smtp);
+                const data = {
+                    nombre: o_nombre,
+                    solicita: sesion.rsocial,
+                    asunto: motivo,
+                    fecha: 'Desde ' + desde + (hasta ? (' - Hasta ' + hasta) : ''),
+                    observaciones: goce == 'S' ? 'Permiso con goce de haber' : 'Permiso sujeto a descuento'
+                };
+                const html = await ejs.renderFile(path.resolve('client/views/intranet/mail_solpermiso.ejs'), data);
+                const message = {
+                    from: 'bi_sistemas@corporacionlife.com.pe',
+                    to: o_email,
+                    subject: 'Solicitud de permiso',
+                    html: html
+                };
+                transport.sendMail(message, function(err, info) {
+                    if (err) {
+                        console.log(err)
+                        response.send('no se pudo enviar el mail');
+                        return;
+                    }
+                    response.send('Se envió el correo!');
+                });
+                // respuesta del servidor
                 if (o_codigo == 1) {
                     response.json({
                         result: 'ok'
@@ -923,6 +1021,8 @@ const LifeController = {
                         error: o_resultado
                     });
                 }
+                // fin
+                conn.close();
             }
             catch (err) {
                 console.error(err);
@@ -1105,6 +1205,46 @@ const LifeController = {
                 };
                 let result = await conn.execute(query, params, responseParams);
                 let { o_codigo, o_resultado } = result.outBinds;
+                // carga los datos de la papeleta
+                query = "call pack_digitalizacion.sp_datos_papeleta_rpt (:p_papeleta, :p_empresa, :o_destinatario, :o_motivo, :o_email)";
+                params = {
+                    p_papeleta: { val: papeleta },
+                    p_empresa: { val: sesion.empresa },
+                    o_destinatario: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    o_motivo: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                    o_email: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                };
+                result = await conn.execute(query, params, responseParams);
+                let { o_destinatario, o_motivo, o_email } = result.outBinds;
+                conn.close();
+                // notifica con un email
+                const nodemailer = require('nodemailer');
+                const ejs = require('ejs');
+                const smtp = require('../../server/config/smtp');
+                const transport = nodemailer.createTransport(smtp);
+                const data = {
+                    nombre: o_destinatario,
+                    responsable: sesion.rsocial,
+                    asunto: o_motivo,
+                    respuesta: (respuesta == 'S' ? 'Aprobado' : 'Desaprobado'),
+                    observaciones: observaciones
+                };
+                const html = await ejs.renderFile(path.resolve('client/views/intranet/mail_rptpermiso.ejs'), data);
+                const message = {
+                    from: 'bi_sistemas@corporacionlife.com.pe',
+                    to: o_email,
+                    subject: 'Papeleta respondida',
+                    html: html
+                };
+                transport.sendMail(message, function(err, info) {
+                    if (err) {
+                        console.log(err)
+                        response.send('no se pudo enviar el mail');
+                        return;
+                    }
+                    response.send('Se envió el correo!');
+                });
+                // fin
                 if (o_codigo == 1) {
                     response.json({
                         res: 'ok'
@@ -1289,6 +1429,97 @@ const LifeController = {
                 error: 'No cuenta con permisos para acceder a esta opcion'
             });
         }
+    },
+    PruebaMail: async (request, response) => {
+        const nodemailer = require('nodemailer');
+        const ejs = require('ejs');
+        const smtp = require('../../server/config/smtp');
+        const transport = nodemailer.createTransport(smtp);
+        const data = {
+            nombre: 'MIGUEL ALFONSO VELASQUEZ PORTUGAL',
+            url: 'http://192.168.11.163:3000/assets/intranet/archivo.xlsx',
+            periodo: 'Febrero 2020',
+            envio: 'REMUNERACIONES LIFE 2020'
+        };
+        const html = await ejs.renderFile(path.resolve('client/views/intranet/mail_documento.ejs'), data);
+        const message = {
+            from: 'mvelasquez@corporacionlife.com.pe',
+            to: 'bi_sistemas@corporacionlife.com.pe',
+            subject: 'ola ke ase',
+            html: html
+        };
+        transport.sendMail(message, function(err, info) {
+            if (err) {
+                console.log(err)
+                response.send('no se pudo enviar el mail');
+                return;
+            }
+            response.send('Se envió el correo!');
+        });
+        /*const data = { nombre: 'Alf!', url: 'http://192.168.11.163:3000/assets/intranet/archivo.xlsx' };
+        response.render(path.resolve('client/views/intranet/mail_documento.ejs'), data);*/
+    },
+    PruebaFcm: (request, response) => {
+        const serverKey = 'AIzaSyCSXYKYSDIfQEVwyE-TEACs9E4DDJmoUns';
+        //
+        const { URLSearchParams } = require('url');
+        //
+        /*const FCM = require('fcm-node');
+        const fcm = new FCM(serverKey);
+        const message = {
+            to: 'eUUgo94aSGI:APA91bGV7i4Em8gn1LPOnhX1ksZDUR-ccc4bE1MvXb0ONnSra3rCRQLKsdSluk-LRhXzjP7MFXhxLDlcYgyk3NB0kE8rYjW_EUMVR0EnmYQ1iHT7Hv6gc8wDYM-zKgOwtMkNa9r70l8t',
+            collapse_key: 'project-102725086164',
+            
+            notification: {
+                title: 'Ola ke ase', 
+                body: 'Enviando notificaciones o ke ase' 
+            },
+            
+            data: {  //you can send only notification or only data(or include both)
+                title: 'Ola ke ase',
+                message: 'Enviando notificaciones o ke ase'
+            }
+        };
+        fcm.send(message, function(err, res){
+            if (err) {
+                console.log(err);
+                console.log(res);
+                response.send("Something has gone wrong!");
+            }
+            else {
+                response.send("Successfully sent with response: ", res);
+            }
+        });*/
+        const { Curl } = require('node-libcurl');
+        const curl = new Curl();
+        const url = 'https://fcm.googleapis.com/fcm/send';
+        const postfields = {
+            to: 'eUUgo94aSGI:APA91bGV7i4Em8gn1LPOnhX1ksZDUR-ccc4bE1MvXb0ONnSra3rCRQLKsdSluk-LRhXzjP7MFXhxLDlcYgyk3NB0kE8rYjW_EUMVR0EnmYQ1iHT7Hv6gc8wDYM-zKgOwtMkNa9r70l8t',
+            data: {
+                title: 'ola ke ase',
+                message: 'enviando mensajes o ke ase'
+            }
+        };
+        curl.setOpt(Curl.option.URL, url);
+        curl.setOpt(Curl.option.POST, true);
+        curl.setOpt(Curl.option.HTTPHEADER, [
+            'Content-Type: application/json',
+            'Authorization: key=' + serverKey
+        ]);
+        curl.setOpt(Curl.option.SSL_VERIFYPEER, false);
+        curl.setOpt(Curl.option.POSTFIELDS, new URLSearchParams(postfields).toString());
+        // curl.setOpt(Curl.option.VERBOSE, true);
+        curl.on('end', async (statusCode, body) => {
+            console.log(statusCode);
+            console.log(body);
+            response.send(body);
+        });
+        curl.on('error', error => {
+            response.send('error pe mrd');
+            curl.close.bind(curl);
+            console.error(error);
+        });
+        curl.perform();
     }
 };
 
