@@ -1,11 +1,9 @@
 const path = require('path');
 const bcrypt = require('bcrypt');
 const oracledb = require('oracledb');
-const Client = require('ftp');
 const crypto = require('crypto');
 const dbParams = require('../../server/database');
 const confParams = require('../../server/config/intranet');
-const ftpAccess = require('../../server/ftp-access');
 const encParams = require('../../server/config/encrypt');
 const responseParams = {
     outFormat: oracledb.OBJECT
@@ -1490,36 +1488,33 @@ const LifeController = {
                 response.send("Successfully sent with response: ", res);
             }
         });*/
-        const { Curl } = require('node-libcurl');
-        const curl = new Curl();
-        const url = 'https://fcm.googleapis.com/fcm/send';
-        const postfields = {
-            to: 'eUUgo94aSGI:APA91bGV7i4Em8gn1LPOnhX1ksZDUR-ccc4bE1MvXb0ONnSra3rCRQLKsdSluk-LRhXzjP7MFXhxLDlcYgyk3NB0kE8rYjW_EUMVR0EnmYQ1iHT7Hv6gc8wDYM-zKgOwtMkNa9r70l8t',
-            data: {
+        //
+        var admin = require("firebase-admin");
+        var serviceAccount = require('../../server/config/fcm.json');
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            databaseURL: "https://clife-7c89b.firebaseio.com"
+        });
+        let registrationToken = 'eUUgo94aSGI:APA91bGV7i4Em8gn1LPOnhX1ksZDUR-ccc4bE1MvXb0ONnSra3rCRQLKsdSluk-LRhXzjP7MFXhxLDlcYgyk3NB0kE8rYjW_EUMVR0EnmYQ1iHT7Hv6gc8wDYM-zKgOwtMkNa9r70l8t';
+        var payload = {
+            notification: {
                 title: 'ola ke ase',
-                message: 'enviando mensajes o ke ase'
+                body: 'enviando mensajes o ke ase'
             }
         };
-        curl.setOpt(Curl.option.URL, url);
-        curl.setOpt(Curl.option.POST, true);
-        curl.setOpt(Curl.option.HTTPHEADER, [
-            'Content-Type: application/json',
-            'Authorization: key=' + serverKey
-        ]);
-        curl.setOpt(Curl.option.SSL_VERIFYPEER, false);
-        curl.setOpt(Curl.option.POSTFIELDS, new URLSearchParams(postfields).toString());
-        // curl.setOpt(Curl.option.VERBOSE, true);
-        curl.on('end', async (statusCode, body) => {
-            console.log(statusCode);
-            console.log(body);
-            response.send(body);
+        var options = {
+            priority: 'high',
+            timeToLive: 60 * 60 *24
+        };
+        admin.messaging().sendToDevice(registrationToken, payload, options)
+        .then(function(res) {
+            console.log("Successfully sent message:", res);
+            response.send("Successfully sent message:" + res);
+        })
+        .catch(function(error) {
+            console.log("Error sending message:", error);
+            response.send("Error sending message:" + error);
         });
-        curl.on('error', error => {
-            response.send('error pe mrd');
-            curl.close.bind(curl);
-            console.error(error);
-        });
-        curl.perform();
     }
 };
 
