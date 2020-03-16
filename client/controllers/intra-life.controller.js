@@ -1242,6 +1242,38 @@ const LifeController = {
                     }
                     response.send('Se envió el correo!');
                 });
+                // envia notificacion push
+                try {
+                    var admin = require("firebase-admin");
+                    var serviceAccount = require('../../server/config/fcm.json');
+                    admin.initializeApp({
+                        credential: admin.credential.cert(serviceAccount),
+                        databaseURL: "https://clife-7c89b.firebaseio.com"
+                    });
+                    let registrationToken = 'eUUgo94aSGI:APA91bGV7i4Em8gn1LPOnhX1ksZDUR-ccc4bE1MvXb0ONnSra3rCRQLKsdSluk-LRhXzjP7MFXhxLDlcYgyk3NB0kE8rYjW_EUMVR0EnmYQ1iHT7Hv6gc8wDYM-zKgOwtMkNa9r70l8t';
+                    var payload = {
+                        notification: {
+                            title: 'Papeleta respondida',
+                            body: 'El permiso solicitado a ' + sesion.rsocial + ', con motivo: "' + o_motivo + '" ha sido ' + (respuesta == 'S' ? 'Aprobado' : 'Desaprobado')
+                        }
+                    };
+                    var options = {
+                        priority: 'high',
+                        timeToLive: 60 * 60 *24
+                    };
+                    admin.messaging().sendToDevice(registrationToken, payload, options)
+                    .then(function(res) {
+                        console.log("Successfully sent message:", res);
+                        response.send("Successfully sent message:" + res);
+                    })
+                    .catch(function(error) {
+                        console.log("Error sending message:", error);
+                        response.send("Error sending message:" + error);
+                    });
+                }
+                catch (err) {
+                    console.log('errorcito alv');
+                }
                 // fin
                 if (o_codigo == 1) {
                     response.json({
@@ -1458,37 +1490,6 @@ const LifeController = {
         response.render(path.resolve('client/views/intranet/mail_documento.ejs'), data);*/
     },
     PruebaFcm: (request, response) => {
-        const serverKey = 'AIzaSyCSXYKYSDIfQEVwyE-TEACs9E4DDJmoUns';
-        //
-        const { URLSearchParams } = require('url');
-        //
-        /*const FCM = require('fcm-node');
-        const fcm = new FCM(serverKey);
-        const message = {
-            to: 'eUUgo94aSGI:APA91bGV7i4Em8gn1LPOnhX1ksZDUR-ccc4bE1MvXb0ONnSra3rCRQLKsdSluk-LRhXzjP7MFXhxLDlcYgyk3NB0kE8rYjW_EUMVR0EnmYQ1iHT7Hv6gc8wDYM-zKgOwtMkNa9r70l8t',
-            collapse_key: 'project-102725086164',
-            
-            notification: {
-                title: 'Ola ke ase', 
-                body: 'Enviando notificaciones o ke ase' 
-            },
-            
-            data: {  //you can send only notification or only data(or include both)
-                title: 'Ola ke ase',
-                message: 'Enviando notificaciones o ke ase'
-            }
-        };
-        fcm.send(message, function(err, res){
-            if (err) {
-                console.log(err);
-                console.log(res);
-                response.send("Something has gone wrong!");
-            }
-            else {
-                response.send("Successfully sent with response: ", res);
-            }
-        });*/
-        //
         var admin = require("firebase-admin");
         var serviceAccount = require('../../server/config/fcm.json');
         admin.initializeApp({
@@ -1515,6 +1516,34 @@ const LifeController = {
             console.log("Error sending message:", error);
             response.send("Error sending message:" + error);
         });
+    },
+    CargaQrEvento: async (request, response) => {
+        const QRCode = require('qrcode');
+        const { evento, empresa, personal } = request.body;
+        const string = [evento, empresa, personal].join('|');
+        try {
+            const base64 = await QRCode.toDataURL(string);
+            response.json({
+                data: {
+                    base64: base64
+                }
+            });
+        }
+        catch (err) {
+            response.json({
+                error: err
+            });
+        }
+    },
+    PruebaQr: async (request, response) => {
+        var QRCode = require('qrcode');
+        /*
+        QRCode.toDataURL('I am a pony!', function (err, url) {
+            console.log(url);
+            response.send('<img src="' + url + '" />');
+        });*/
+        const base64 = await QRCode.toDataURL('ola ke ase');
+        response.send('<img src="' + base64 + '" />');
     }
 };
 

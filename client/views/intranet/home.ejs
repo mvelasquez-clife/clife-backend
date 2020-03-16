@@ -199,12 +199,36 @@
                     alert(JSON.stringify(err));
                 }
             }
+            ModalAsistenciaShow = async args => {
+                const params = {
+                    evento: args.relatedTarget.dataset.evento,
+                    empresa: sesion.empresa,
+                    personal: sesion.codigo
+                };
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/genera-qr',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    const base64 = result.data.base64;
+                    $('#asis-qr').attr('src', base64);
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+            }
             // go!
             $(_ => {
                 $('#sidenav-inicio').addClass('active');
                 CargarMensajesUsuario();
                 VerificarEventosHOy();
-                $('#asis-qr').attr('src', '/assets/intranet/pictures/qr-eventos/11/5/' + sesion.codigo + '.png');
+                $('#modal-asistencia').on('show.bs.modal', ModalAsistenciaShow);
             });
         </script>
     </body>

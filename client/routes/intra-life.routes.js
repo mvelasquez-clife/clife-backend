@@ -43,8 +43,10 @@ const LifeController = require('../controllers/intra-life.controller');
     router.post('/lista-periodos', LifeController.ListaPeriodos);
     router.post('/eventos-hoy', LifeController.ListaEventosHoy);
     router.post('/lista-asistentes', LifeController.AsistentesEvento);
+    router.post('/genera-qr', LifeController.CargaQrEvento);
     //
     router.get('/prueba-email', LifeController.PruebaMail);
     router.get('/prueba-fcm', LifeController.PruebaFcm);
+    router.get('/prueba-qr', LifeController.PruebaQr);
 
 module.exports = router;
