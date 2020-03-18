@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const dbParams = require('../../server/database');
 const confParams = require('../../server/config/intranet');
 const encParams = require('../../server/config/encrypt');
+const curlHost = '192.168.1.202';
 const responseParams = {
     outFormat: oracledb.OBJECT
 };
@@ -502,6 +503,7 @@ const LifeController = {
             var form = new formidable.IncomingForm();
             form.parse(request, async function (err, fields, files) {
                 if (err) {
+                    console.log('form.parse', err);
                     response.json({
                         error: err
                     });
@@ -512,6 +514,7 @@ const LifeController = {
                 var newpath = fupload.tmppath + 'unsigned_' + sFilename;
                 mv(oldpath, newpath, async function (err) {
                     if (err) {
+                        console.log('mv', err);
                         response.json({
                             error: err
                         });
@@ -519,10 +522,9 @@ const LifeController = {
                     }
                     // firma el mugre pdf
                     const newpathsigned = fupload.tmppath + sFilename;
-                    var exec = require('child_process').exec, child;
-                    child = exec('java -jar ' + java.stamper + ' "' + newpath + '" "' + newpathsigned + '"',
-                    function (error, stdout, stderr){
-                        console.log('stdout: "' + stdout + '"');
+                    //var exec = require('child_process').exec, child;
+//                    child = exec('java -jar ' + java.stamper + ' "' + newpath + '" "' + newpathsigned + '"', function (error, stdout, stderr){
+                        /*console.log('stdout: "' + stdout + '"');
                         console.log('stderr: ' + stderr);
                         if(stdout.indexOf('ola ke ase!') == -1){
                             let serror = (error || stderr);
@@ -531,18 +533,19 @@ const LifeController = {
                                 error: serror
                             });
                             return;
-                        }
+                        }*/
                         // genera la ruta del archivo alv
                         let folders = [fields.empresa, 'CLIENTES', fields.codigo];
                         const sPath = 'X:' + fupload.winseparator + folders.join(fupload.winseparator) + fupload.winseparator + sFilename;
                         let remotePath = '/publico/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator);
                         // subir con curl
                         const fs = require('fs');
-                        const fileData = fs.readFileSync(newpathsigned);
+                        // const fileData = fs.readFileSync(newpathsigned);
+                        const fileData = fs.readFileSync(newpath);
                         const base64 = fileData.toString('base64'); //codifica el pdf a base 64
                         const { Curl } = require('node-libcurl');
                         const curl = new Curl();
-                        const url = 'http://192.168.0.248/uploader/index.php';
+                        const url = 'http://' + curlHost + '/uploader/index.php';
                         curl.setOpt(Curl.option.URL, url);
                         curl.setOpt(Curl.option.POSTFIELDS, 'path=' + remotePath + '&filename=' + sFilename + '&b64=' + encodeURIComponent(base64));
                         curl.setOpt(Curl.option.VERBOSE, true);
@@ -678,7 +681,7 @@ const LifeController = {
                         });
                         curl.on('error', curl.close.bind(curl));
                         curl.perform();
-                    });
+//                    });
                 });
             });
         }
@@ -734,7 +737,7 @@ const LifeController = {
             // descarga el pdf
             const { Curl } = require('node-libcurl');
             const curl = new Curl();
-            const url = 'http://192.168.0.248/uploader/download.php';
+            const url = 'http://' + curlHost + '/uploader/download.php';
             curl.setOpt(Curl.option.URL, url);
             curl.setOpt(Curl.option.POSTFIELDS, 'ruta=' + o_ruta);
             curl.setOpt(Curl.option.VERBOSE, true);
@@ -1375,7 +1378,7 @@ const LifeController = {
             const { empresa } = request.body;
             try {
                 const conn = await oracledb.getConnection(dbParams);
-                const query = "select * from table (pack_digitalizacion.f_lista_eventos(:p_empresa))";
+                const query = "select * from table (pack_digitalizacion.f_lista_periodos(:p_empresa))";
                 const params = {
                     p_empresa: { val: empresa }
                 };
@@ -1544,6 +1547,68 @@ const LifeController = {
         });*/
         const base64 = await QRCode.toDataURL('ola ke ase');
         response.send('<img src="' + base64 + '" />');
+    },
+    PdfReporteAcuse: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa, tipodoc, envio, periodo, usuario } = request.params;
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                let query = "select * from table (pack_digitalizacion.f_reporte_acuse(:p_empresa, :p_tipo, :p_envio, :p_periodo, :p_usuario))";
+                let params = {
+                    p_empresa: { val: empresa },
+                    p_tipo: { val: tipodoc },
+                    p_envio: { val: envio },
+                    p_periodo: { val: periodo },
+                    p_usuario: { val: usuario }
+                };
+                const result = await conn.execute(query, params, responseParams);
+                const filas = result.rows;
+                // escribe el mugre pdf alv
+                const pdfWriter = require('html-pdf');
+                const ejs = require('ejs');
+                const d = new Date();
+                const data = {
+                    fechahora: ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + d.getFullYear() + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2),
+                    filas: filas,
+                    usuario: sesion.ncomercial
+                };
+                const html = await ejs.renderFile(path.resolve('client/views/intranet/pdf_acuse.ejs'), data);
+                const pdfOptions = {
+                    border: {
+                        top: '0mm',
+                        right: '20mm',
+                        bottom: '0mm',
+                        left: '5mm'
+                    },
+                    footer: {
+                        height: '5mm',
+                        contents: {
+                            default: '<span style="color:#444;font-size:8pt;">Página <b>{{page}}</b> de <b>{{pages}}</b></span>'
+                        }
+                    },
+                    format: 'A4',
+                    header: {
+                        height: '10mm',
+                        contents: '<span style="font-size:8pt;text-align:left;vertical-align:middle;">Acuse de documentos</span>'
+                    },
+                    orientation: 'portrait'
+                };
+                pdfWriter.create(html, pdfOptions).toStream((err, stream) => {
+                    if (err) return response.end(err.stack);
+                    response.setHeader('Content-type', 'application/pdf');
+                    response.setHeader('Content-Disposition', 'attachment; filename="reporte.pdf');
+                    stream.pipe(response);
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        }
+        else response.redirect('/intranet/login');
     }
 };
 
