@@ -1538,16 +1538,6 @@ const LifeController = {
             });
         }
     },
-    PruebaQr: async (request, response) => {
-        var QRCode = require('qrcode');
-        /*
-        QRCode.toDataURL('I am a pony!', function (err, url) {
-            console.log(url);
-            response.send('<img src="' + url + '" />');
-        });*/
-        const base64 = await QRCode.toDataURL('ola ke ase');
-        response.send('<img src="' + base64 + '" />');
-    },
     PdfReporteAcuse: async (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             const { empresa, tipodoc, envio, periodo, usuario } = request.params;
@@ -1609,6 +1599,39 @@ const LifeController = {
             }
         }
         else response.redirect('/intranet/login');
+    },
+    PruebaQr: async (request, response) => {
+        var QRCode = require('qrcode');
+        /*
+        QRCode.toDataURL('I am a pony!', function (err, url) {
+            console.log(url);
+            response.send('<img src="' + url + '" />');
+        });*/
+        const base64 = await QRCode.toDataURL('ola ke ase');
+        response.send('<img src="' + base64 + '" />');
+    },
+    PruebaFtp: async (request, response) => {
+        const ftpManager = require('../../server/libs/ftp-manager');
+        /*
+        // descarga ok
+        const rutaFtp = '/domains/cspcomunicaciones.com/files/1/diarios/2020/02/12/cortes/306.jpg';
+        const result = await ftpManager.Descargar(rutaFtp);
+        if (result.error) {
+            response.send('Error: ' + result.error);
+        }
+        else {
+            response.send('Listo! Archivo guardado en "' + result.path + '"');
+        }*/
+        // subida
+        const rutaLocal = 'D:\\files\\nodejs\\tmp\\unsigned_DIGI_41_46455181.pdf';
+        const rutaRemota = '/domains/cspcomunicaciones.com/files/tmp/archivo.pdf';
+        const result = await ftpManager.Subir(rutaLocal, rutaRemota);
+        if (result.error) {
+            response.send('Error: ' + result.error);
+        }
+        else {
+            response.send('Archivo subido alv');
+        }
     }
 };
 

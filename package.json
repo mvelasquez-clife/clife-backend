@@ -36,7 +36,6 @@
     "morgan": "^1.9.1",
     "mv": "^2.1.1",
     "node-fetch": "^2.6.0",
-    "node-libcurl": "^2.0.3",
     "nodemailer": "^5.1.1",
     "nodemailer-express-handlebars": "^3.0.0",
     "npm": "^6.13.7",
