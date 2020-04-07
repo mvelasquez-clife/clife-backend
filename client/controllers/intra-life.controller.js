@@ -538,6 +538,7 @@ const LifeController = {
                         let folders = [fields.empresa, 'CLIENTES', fields.codigo];
                         const sPath = 'X:' + fupload.winseparator + folders.join(fupload.winseparator) + fupload.winseparator + sFilename;
                         let remotePath = '/publico/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator);
+                        /*
                         // subir con curl
                         const fs = require('fs');
                         // const fileData = fs.readFileSync(newpathsigned);
@@ -551,7 +552,17 @@ const LifeController = {
                         curl.setOpt(Curl.option.VERBOSE, true);
                         curl.on('end', async (statusCode, body) => {
                             const JsonOut = JSON.parse(body);
-                            console.log(JsonOut);
+                            console.log(JsonOut);*/
+// aqui subir con ftp-manager
+const ftpmanager = require('../../server/libs/ftp-manager');
+let result = await ftpmanager.Subir(newpath, remotePath + fupload.linuxseparator + sFilename);
+if (result.error) {
+    response.json({
+        error: result.error
+    });
+    return;
+}
+// fin ftp-manager
                             // guardar en la bd
                             try {
                                 const conn = await oracledb.getConnection(dbParams);
@@ -681,8 +692,8 @@ const LifeController = {
                         });
                         curl.on('error', curl.close.bind(curl));
                         curl.perform();
-//                    });
-                });
+//                    }); // fin exec java
+//                }); // fin curl
             });
         }
         else {
@@ -735,7 +746,7 @@ const LifeController = {
                 await conn.execute(query, params, responseParams);
             }
             // descarga el pdf
-            const { Curl } = require('node-libcurl');
+            /*const { Curl } = require('node-libcurl');
             const curl = new Curl();
             const url = 'http://' + curlHost + '/uploader/download.php';
             curl.setOpt(Curl.option.URL, url);
@@ -769,7 +780,32 @@ const LifeController = {
                 }
             });
             curl.on('error', curl.close.bind(curl));
-            curl.perform();
+            curl.perform();*/
+            const ftpmanager = require('../../server/libs/ftp-manager');
+            let ftpResult = await ftpmanager.Descargar(o_ruta);
+            if (ftpResult.error) {
+                response.send(ftpResult.error);
+                return;
+            }
+            let pdfPath = ftpResult.path;
+            let vFilename = o_nombre.split('.');
+            let nFilename = vFilename.length;
+            let extension = vFilename[nFilename - 1].toLowerCase();
+            const fs = require('fs');
+            var stream = fs.ReadStream(pdfPath);
+            switch (extension) {
+                case 'pdf':
+                    response.setHeader('Content-type', 'application/pdf');
+                    break;
+                case 'jpg':
+                case 'jpeg':
+                    response.setHeader('Content-type', 'image/jpeg');
+                    break;
+                default:
+                    response.setHeader('Content-type', 'text/plain');
+                    break;
+            }
+            stream.pipe(response);
         }
         catch (err) {
             console.error(err);
@@ -1574,20 +1610,21 @@ const LifeController = {
                     footer: {
                         height: '5mm',
                         contents: {
-                            default: '<span style="color:#444;font-size:8pt;">Página <b>{{page}}</b> de <b>{{pages}}</b></span>'
+                            default: '<span style="color:#444;font-size:6px;">Página <b>{{page}}</b> de <b>{{pages}}</b></span>'
                         }
                     },
                     format: 'A4',
                     header: {
                         height: '10mm',
-                        contents: '<span style="font-size:8pt;text-align:left;vertical-align:middle;">Acuse de documentos</span>'
+                        contents: '<span style="font-size:6px;text-align:left;vertical-align:middle;">Acuse de documentos</span>'
                     },
-                    orientation: 'portrait'
+                    orientation: 'portrait',
+                    zoomFactor: 0.5
                 };
                 pdfWriter.create(html, pdfOptions).toStream((err, stream) => {
                     if (err) return response.end(err.stack);
                     response.setHeader('Content-type', 'application/pdf');
-                    response.setHeader('Content-Disposition', 'attachment; filename="reporte.pdf');
+                    // response.setHeader('Content-Disposition', 'attachment; filename="reporte.pdf');
                     stream.pipe(response);
                 });
             }

@@ -15,9 +15,12 @@ module.exports = {
                 console.log('c ready');
                 c.get(rutaServidor, (err, stream) => {
                     console.log('c get');
-                    if (err) reject({
-                        error: err
-                    });
+                    if (err) {
+                        reject({
+                            error: err
+                        });
+                        return;
+                    }
                     stream.once('close', () => {
                         console.log('conexión cerrada!');
                         c.end();
@@ -53,7 +56,9 @@ module.exports = {
                 });
             });
             c.on('close', () => {
-                resolve(true);
+                resolve({
+                    success: true
+                });
             });
             c.connect(ftpAccess.srvclife);
         });

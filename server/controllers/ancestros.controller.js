@@ -60,7 +60,7 @@ const ancestroController = {
             let params = {
                 p_id: { val: id },
                 p_empresa: { val: empresa },
-                p_extra: { val: param }
+                p_extra: { val: param ? param : '' }
             };
             if (iparam > 1000) {
                 switch (iparam) {
@@ -70,8 +70,12 @@ const ancestroController = {
                             p_empresa: { val: empresa }
                         };
                         break;
+                    default: break;
                 }
             }
+console.log(iparam);
+console.log(query);
+console.log(params);
             conn.execute(query, params, responseParams, (error, result) => {
                 if(error) {
                     conn.close();
@@ -79,6 +83,7 @@ const ancestroController = {
                         state: 'error',
                         message: error.stack
                     });
+console.error(error);
                     return;
                 }
                 res.set('Content-Type', 'text/xml');
