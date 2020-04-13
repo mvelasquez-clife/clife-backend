@@ -49,5 +49,6 @@ const LifeController = require('../controllers/intra-life.controller');
     router.get('/prueba-email', LifeController.PruebaMail);
     router.get('/prueba-fcm', LifeController.PruebaFcm);
     router.get('/prueba-qr', LifeController.PruebaQr);
+    router.get('/prueba-ftp', LifeController.PruebaFtp);
 
 module.exports = router;

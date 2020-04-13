@@ -174,6 +174,8 @@ const extranetController = {
                     p_empresa: { val: tipo == 'E' ? UserExpo.empresa : UserNac.empresa },
                     p_texto: { val: texto }
                 };
+console.log(query);
+console.log(params);
                 result = await conn.execute(query, params, responseParams);
                 conn.close();
                 response.json({
