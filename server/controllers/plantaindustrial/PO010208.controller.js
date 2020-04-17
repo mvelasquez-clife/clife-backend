@@ -11,7 +11,26 @@ const responseParams = {
 };
 
 const po010208Controller = {
-    
+
+    mostrarformcosm: (req, res) => {
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ 'error_conexion': err.stack });
+                return;
+            }
+            const query = "SELECT CO_FORMA_COSMETICA AS value, DE_FORMA_COSMETICA AS label FROM TABLE (PACK_NEW_DIRECCION_TECN.F_LIST_FORM_COSM())";
+            const params = { };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderSelect(result.rows, '1'));
+            });
+        });
+    },    
     mostrarclase: (req, res) => {
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
@@ -170,7 +189,7 @@ const po010208Controller = {
     },
 
     grabarnsoc: (req, res) => {        
-        const {empresa,num_registro,cant_filas_prod,cadena_productos,vigencia_ini,vigencia_ter} = req.body;  
+        const {empresa,num_registro,cant_filas_prod,cadena_productos,vigencia_ini,vigencia_ter,nombre} = req.body;  
   
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
@@ -180,7 +199,7 @@ const po010208Controller = {
                 });
                 return;
             }
-            const query = "call PACK_NEW_DIRECCION_TECN.SP_NOTIFICACION_SANITARIA (:x_result,:x_de_result,:x_empresa,:x_num_registro,:x_cant_filas_prod,:x_cadena_productos,:x_vigencia_ini,:x_vigencia_ter)";
+            const query = "call PACK_NEW_DIRECCION_TECN.SP_NOTIFICACION_SANITARIA (:x_result,:x_de_result,:x_empresa,:x_num_registro,:x_cant_filas_prod,:x_cadena_productos,:x_vigencia_ini,:x_vigencia_ter,:x_nombre)";
             const params = { 
                 //parametros de salida
                 x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
@@ -192,6 +211,7 @@ const po010208Controller = {
                 x_cadena_productos: {val:cadena_productos},//,x_vigencia_ini varchar2,x_vigencia_ter varchar2
                 x_vigencia_ini: {val:vigencia_ini},
                 x_vigencia_ter: {val:vigencia_ter},
+                x_nombre : {val:nombre},
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
@@ -222,7 +242,7 @@ const po010208Controller = {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "SELECT NU_REGISTRO,DE_NOMBRE_REGISTRADO,ES_ESTADO,FE_INICIO_VIGENCIA,FE_TERMINO_VIGENCIA,DE_RESUMEN FROM TABLE (PACK_NEW_DIRECCION_TECN.F_LIST_NOT_SANIT(:x_buscador))";
+            const query = "SELECT CO_NSOC,DE_NOMBRE_REGISTRADO,ES_ESTADO,FE_INICIO_VIGENCIA,FE_TERMINO_VIGENCIA,NU_REGISTRO,CO_FORMA_COSMETICA FROM TABLE (PACK_NEW_DIRECCION_TECN.F_LIST_NOT_SANIT(:x_buscador))";
             
             const params = {
                 x_buscador: {val : buscador}
@@ -241,7 +261,7 @@ const po010208Controller = {
     
     mostrarproductosnso: (req, res) => {          
         const {co_nso} = req.params;  
-        
+        console.log(co_nso);
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });

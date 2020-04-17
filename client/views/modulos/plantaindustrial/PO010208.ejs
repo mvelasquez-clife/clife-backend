@@ -79,7 +79,7 @@
                     { type: "input",readonly: false,label: 'Código NSOC:',validate:"Greater100", style:"background-color:rgb(234, 255, 71);width: 300px;height:30px,font-family: Arial; font-size: 15pt;",position:"input-right", offsetLeft: 0,labelWidth: 100, inputWidth: 100, name: "_drt_nrosoc"}, { type: "newcolumn" },
                 { type: "newcolumn" },] },
                 {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "input",offsetLeft: 40,labelWidth: 100, inputWidth: 300, name: "_drt_nombre", label: 'Nombre Producto:',connector: BASE_URL + 'LO0107/mostrar-almacen/'+ usrJson.empresa}, { type: "newcolumn" },
+                    { type: "input",offsetLeft: 40,labelWidth: 100, inputWidth: 300, name: "_drt_nombre", label: 'Nombre Producto:',rows:5}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
@@ -90,10 +90,18 @@
                     { type: "calendar", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_fechahasta", label: 'Vigencia Fin: '}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
-                {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "input", name: '_drt_resumen', labelWidth: 150, readonly: true, label: 'Resumen Producto:', rows:8,offsetLeft: 40, inputWidth: 300 }, { type: "newcolumn" },
-                     ],},
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "select", offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_formacosmetica", label: 'Forma Cosmetica: ', connector: BASE_URL + 'PO010208/mostrar-forma-cosmetica'}, { type: "newcolumn" },
+                    ],},
                 { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_nroregistro", label: 'Nro. Registro: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                // {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 400, list: [
+                //     { type: "input", name: '_drt_resumen', labelWidth: 150, readonly: true, label: 'Resumen Producto:', rows:8,offsetLeft: 40, inputWidth: 300 }, { type: "newcolumn" },
+                //      ],},
+                // { type: "newcolumn" },
             ];
 
             var f_buscar_prod = [ { type: "newcolumn" },
@@ -146,6 +154,14 @@
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
                     { type: "calendar", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_fechahasta", label: 'Vigencia Fin: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_formacosmetica", label: 'Forma Cosmetica: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_nroregistro", label: 'Nro. Registro: '}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
                 

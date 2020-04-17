@@ -3,6 +3,7 @@ const router = express.Router();
 
 const po010208Controller = require('../../controllers/plantaindustrial/PO010208.controller');
 
+router.get('/mostrar-forma-cosmetica/',po010208Controller.mostrarformcosm);
 router.get('/mostrar-clase/',po010208Controller.mostrarclase);
 router.get('/mostrar-marca/',po010208Controller.mostrarmarca);
 router.post('/mostrar-familia/',po010208Controller.mostrarfamilia);
