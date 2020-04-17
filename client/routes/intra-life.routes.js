@@ -18,6 +18,9 @@ const LifeController = require('../controllers/intra-life.controller');
     router.get('/reporte-acuse', LifeController.ReporteAcuse);
     router.get('/info-equipo', LifeController.InfoEquipo);
     router.get('/pdf-reporte-acuse/:empresa/:tipodoc/:envio/:periodo/:usuario', LifeController.PdfReporteAcuse);
+    // activacion de usuarios
+    router.post('/validar-dni', LifeController.VerificarDni);
+    router.post('/registra-usuario', LifeController.RegistraUsuario);
     //
     router.post('/auth-login', LifeController.AuthLogin);
     router.post('/cargar-datos', LifeController.CargarDatosUsuario);
