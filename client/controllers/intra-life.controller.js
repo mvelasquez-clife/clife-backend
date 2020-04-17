@@ -5,7 +5,6 @@ const crypto = require('crypto');
 const dbParams = require('../../server/database');
 const confParams = require('../../server/config/intranet');
 const encParams = require('../../server/config/encrypt');
-const curlHost = '192.168.1.202';
 const responseParams = {
     outFormat: oracledb.OBJECT
 };
@@ -370,12 +369,13 @@ const LifeController = {
             const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
             try {
                 const conn = await oracledb.getConnection(dbParams);
-                const query = "call pack_digitalizacion.sp_registra_cabecera_envio (:p_empresa, :p_nombre, :p_tipodoc, :p_usureg, :p_inicio, :p_fin, :o_codigo, :o_mensaje)";
+                const query = "call pack_digitalizacion.sp_registra_cabecera_envio (:p_empresa, :p_nombre, :p_tipodoc, :p_usureg, :p_empreg, :p_inicio, :p_fin, :o_codigo, :o_mensaje)";
                 const params = {
                     p_empresa: empresa,
                     p_nombre: descripcion,
                     p_tipodoc: tipodoc,
                     p_usureg: sesion.codigo,
+                    p_empreg: sesion.empresa,
                     p_inicio: finicio,
                     p_fin: ffin,
                     o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
@@ -522,178 +522,157 @@ const LifeController = {
                     }
                     // firma el mugre pdf
                     const newpathsigned = fupload.tmppath + sFilename;
-                    //var exec = require('child_process').exec, child;
-//                    child = exec('java -jar ' + java.stamper + ' "' + newpath + '" "' + newpathsigned + '"', function (error, stdout, stderr){
-                        /*console.log('stdout: "' + stdout + '"');
-                        console.log('stderr: ' + stderr);
-                        if(stdout.indexOf('ola ke ase!') == -1){
+                    var exec = require('child_process').exec, child;
+                    child = exec('java -jar ' + java.stamper + ' "' + newpath + '" "' + newpathsigned + '"', async function (error, stdout, stderr){
+                        if(stdout.indexOf('OK') == -1){
                             let serror = (error || stderr);
                             console.log('exec error: ' + serror);
                             response.json({
                                 error: serror
                             });
                             return;
-                        }*/
+                        }
                         // genera la ruta del archivo alv
                         let folders = [fields.empresa, 'CLIENTES', fields.codigo];
                         const sPath = 'X:' + fupload.winseparator + folders.join(fupload.winseparator) + fupload.winseparator + sFilename;
                         let remotePath = '/publico/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator);
-                        /*
-                        // subir con curl
-                        const fs = require('fs');
-                        // const fileData = fs.readFileSync(newpathsigned);
-                        const fileData = fs.readFileSync(newpath);
-                        const base64 = fileData.toString('base64'); //codifica el pdf a base 64
-                        const { Curl } = require('node-libcurl');
-                        const curl = new Curl();
-                        const url = 'http://' + curlHost + '/uploader/index.php';
-                        curl.setOpt(Curl.option.URL, url);
-                        curl.setOpt(Curl.option.POSTFIELDS, 'path=' + remotePath + '&filename=' + sFilename + '&b64=' + encodeURIComponent(base64));
-                        curl.setOpt(Curl.option.VERBOSE, true);
-                        curl.on('end', async (statusCode, body) => {
-                            const JsonOut = JSON.parse(body);
-                            console.log(JsonOut);*/
-// aqui subir con ftp-manager
-const ftpmanager = require('../../server/libs/ftp-manager');
-let result = await ftpmanager.Subir(newpath, remotePath + fupload.linuxseparator + sFilename);
-if (result.error) {
-    response.json({
-        error: result.error
-    });
-    return;
-}
-// fin ftp-manager
-                            // guardar en la bd
-                            try {
-                                const conn = await oracledb.getConnection(dbParams);
-                                // registra en el legajo de clientes
-                                let query = "call pack_new_attached.sp_save_adjunto(:o_codigo, :o_resultado, :p_empresa, :p_usuario, :p_tipo_enti, :p_cataenti, :p_archivo, " +
-                                    ":p_tipoarchivo, :p_ruta, :p_fichero, :p_extension, :p_descripcion, :p_tpdocu, :p_tipocarpeta, :p_nuitems)";
-                                let params = {
-                                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-                                    o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-                                    p_empresa: { val: fields.empresa },
-                                    p_usuario: { val: sesion.codigo },
-                                    p_tipo_enti: { val: 2 },
-                                    p_cataenti: { val: fields.codigo },
-                                    p_archivo: { val: fields.codigo },
-                                    p_tipoarchivo: { val: 4 },
-                                    p_ruta: { val: sPath },
-                                    p_fichero: { val: sFilename },
-                                    p_extension: { val: 'pdf' },
-                                    p_descripcion: { val: fields.envio },
-                                    p_tpdocu: { val: 639 },
-                                    p_tipocarpeta: { val: 'CLIENTES' },
-                                    p_nuitems: { val: 1 }
-                                };
-                                let result = await conn.execute(query, params, responseParams);
-                                let { o_codigo, o_resultado } = result.outBinds;
-                                if (o_codigo == 0) {
-                                    conn.close();
-                                    response.json({
-                                        error: o_resultado
-                                    });
-                                    return;
-                                }
-                                // registra el envío del documento
-                                query = "call pack_digitalizacion.sp_carga_documento (:p_envio,:p_empresa,:p_personal,:p_item,:p_coarchivo,:p_tparchivo,:p_usuenvia,:o_codigo,:o_resultado)";
-                                params = {
-                                    p_envio: { val: fields.cenvio },
-                                    p_empresa: { val: fields.empresa },
-                                    p_personal: { val: fields.codigo },
-                                    p_item: { val: o_codigo },
-                                    p_coarchivo: { val: fields.codigo },
-                                    p_tparchivo: { val: 4 },
-                                    p_usuenvia: { val: sesion.codigo },
-                                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-                                    o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
-                                };
-                                result = await conn.execute(query, params, responseParams);
-                                let resDb = result.outBinds;
-                                // datos del destinatario
-                                query = "call pack_digitalizacion.sp_datos_usuario (:p_dni, :p_empresa, :o_apepat, :o_apemat, :o_nombres, :o_fechanac, :o_sexo, :o_telefono, :o_email, :o_area, :o_cargo)";
-                                params = {
-                                    p_dni: { val: fields.codigo },
-                                    p_empresa: { val: fields.empresa },
-                                    o_apepat: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-                                    o_apemat: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-                                    o_nombres: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-                                    o_fechanac: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-                                    o_sexo: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-                                    o_telefono: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-                                    o_email: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-                                    o_area: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-                                    o_cargo: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
-                                };
-                                result = await conn.execute(query, params, responseParams);
-                                const destinatario = result.outBinds;
-                                // datos del envio
-                                query = "call pack_digitalizacion.sp_datos_envio (:p_envio, :p_empresa, :o_periodo, :o_envio)";
-                                params = {
-                                    p_envio: { val: fields.cenvio },
-                                    p_empresa: { val: fields.empresa },
-                                    o_periodo: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-                                    o_envio: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
-                                };
-                                result = await conn.execute(query, params, responseParams);
-                                const oenvio = result.outBinds;
-                                // enviar el correo
-                                const nodemailer = require('nodemailer');
-                                const ejs = require('ejs');
-                                const smtp = require('../../server/config/smtp');
-                                const transport = nodemailer.createTransport(smtp);
-                                // genera la url encriptada
-                                let cipher = crypto.createCipher(encParams.algorytm, encParams.password);
-                                let string = [fields.cenvio, fields.empresa, fields.codigo].join(encParams.separator);
-                                let encrypted = cipher.update(string, encParams.charset, encParams.param);
-                                encrypted += cipher.final(encParams.param);
-                                // envia el pinche email
-                                const data = {
-                                    nombre: destinatario.o_apepat + ' ' + destinatario.o_apemat + ', ' + destinatario.o_nombres,
-                                    url: 'http://192.168.11.163:3000/intranet/ver-documento/' + encrypted,
-                                    periodo: oenvio.o_periodo,
-                                    envio: oenvio.o_envio
-                                };
-                                const html = await ejs.renderFile(path.resolve('client/views/intranet/mail_documento.ejs'), data);
-                                const message = {
-                                    from: 'bi_sistemas@corporacionlife.com.pe',
-                                    to: destinatario.o_email,
-                                    subject: 'Documentos digitales - ' + oenvio.o_envio,
-                                    html: html
-                                };
-                                transport.sendMail(message, function(err, info) {
-                                    if (err) {
-                                        console.log(err)
-                                        response.send('no se pudo enviar el mail');
-                                        return;
-                                    }
-                                    response.send('Se envió el correo!');
-                                });
-                                // fin
+                        // aqui subir con ftp-manager
+                        const ftpmanager = require('../../server/libs/ftp-manager');
+                        let result = await ftpmanager.Subir(newpathsigned, remotePath + fupload.linuxseparator + sFilename);
+                        if (result.error) {
+                            response.json({
+                                error: result.error
+                            });
+                            return;
+                        } // fin ftp-manager
+                        // guardar en la bd
+                        try {
+                            const conn = await oracledb.getConnection(dbParams);
+                            // registra en el legajo de clientes
+                            let query = "call pack_new_attached.sp_save_adjunto(:o_codigo, :o_resultado, :p_empresa, :p_usuario, :p_tipo_enti, :p_cataenti, :p_archivo, " +
+                                ":p_tipoarchivo, :p_ruta, :p_fichero, :p_extension, :p_descripcion, :p_tpdocu, :p_tipocarpeta, :p_nuitems)";
+                            let params = {
+                                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                                o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                p_empresa: { val: fields.empresa },
+                                p_usuario: { val: sesion.codigo },
+                                p_tipo_enti: { val: 2 },
+                                p_cataenti: { val: fields.codigo },
+                                p_archivo: { val: fields.codigo },
+                                p_tipoarchivo: { val: 4 },
+                                p_ruta: { val: sPath },
+                                p_fichero: { val: sFilename },
+                                p_extension: { val: 'pdf' },
+                                p_descripcion: { val: fields.envio },
+                                p_tpdocu: { val: 639 },
+                                p_tipocarpeta: { val: 'CLIENTES' },
+                                p_nuitems: { val: 1 }
+                            };
+                            let result = await conn.execute(query, params, responseParams);
+                            let { o_codigo, o_resultado } = result.outBinds;
+                            if (o_codigo == 0) {
                                 conn.close();
-                                // validar
-                                if (resDb.o_codigo == 0) {
-                                    response.json({
-                                        error: resDb.o_resultado
-                                    });
+                                response.json({
+                                    error: o_resultado
+                                });
+                                return;
+                            }
+                            // registra el envío del documento
+                            query = "call pack_digitalizacion.sp_carga_documento (:p_envio,:p_empresa,:p_personal,:p_item,:p_coarchivo,:p_tparchivo,:p_usuenvia,:o_codigo,:o_resultado)";
+                            params = {
+                                p_envio: { val: fields.cenvio },
+                                p_empresa: { val: fields.empresa },
+                                p_personal: { val: fields.codigo },
+                                p_item: { val: o_codigo },
+                                p_coarchivo: { val: fields.codigo },
+                                p_tparchivo: { val: 4 },
+                                p_usuenvia: { val: sesion.codigo },
+                                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                                o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                            };
+                            result = await conn.execute(query, params, responseParams);
+                            let resDb = result.outBinds;
+                            // datos del destinatario
+                            query = "call pack_digitalizacion.sp_datos_usuario (:p_dni, :p_empresa, :o_apepat, :o_apemat, :o_nombres, :o_fechanac, :o_sexo, :o_telefono, :o_email, :o_area, :o_cargo)";
+                            params = {
+                                p_dni: { val: fields.codigo },
+                                p_empresa: { val: fields.empresa },
+                                o_apepat: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                o_apemat: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                o_nombres: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                o_fechanac: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                o_sexo: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                o_telefono: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                o_email: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                o_area: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                o_cargo: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                            };
+                            result = await conn.execute(query, params, responseParams);
+                            const destinatario = result.outBinds;
+                            // datos del envio
+                            query = "call pack_digitalizacion.sp_datos_envio (:p_envio, :p_empresa, :o_periodo, :o_envio)";
+                            params = {
+                                p_envio: { val: fields.cenvio },
+                                p_empresa: { val: fields.empresa },
+                                o_periodo: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                                o_envio: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                            };
+                            result = await conn.execute(query, params, responseParams);
+                            const oenvio = result.outBinds;
+                            // enviar el correo
+                            const nodemailer = require('nodemailer');
+                            const ejs = require('ejs');
+                            const smtp = require('../../server/config/smtp');
+                            const transport = nodemailer.createTransport(smtp);
+                            // genera la url encriptada
+                            let cipher = crypto.createCipher(encParams.algorytm, encParams.password);
+                            let string = [fields.cenvio, fields.empresa, fields.codigo].join(encParams.separator);
+                            let encrypted = cipher.update(string, encParams.charset, encParams.param);
+                            encrypted += cipher.final(encParams.param);
+                            // envia el pinche email
+                            const data = {
+                                nombre: destinatario.o_apepat + ' ' + destinatario.o_apemat + ', ' + destinatario.o_nombres,
+                                url: 'http://192.168.11.163:3000/intranet/ver-documento/' + encrypted,
+                                periodo: oenvio.o_periodo,
+                                envio: oenvio.o_envio
+                            };
+                            const html = await ejs.renderFile(path.resolve('client/views/intranet/mail_documento.ejs'), data);
+                            const message = {
+                                from: 'bi_sistemas@corporacionlife.com.pe',
+                                to: destinatario.o_email,
+                                subject: 'Documentos digitales - ' + oenvio.o_envio,
+                                html: html
+                            };
+                            transport.sendMail(message, function(err, info) {
+                                if (err) {
+                                    console.log(err)
+                                    response.send('no se pudo enviar el mail');
                                     return;
                                 }
-                                // listijirillo
+                                response.send('Se envió el correo!');
+                            });
+                            // fin
+                            conn.close();
+                            // validar
+                            if (resDb.o_codigo == 0) {
                                 response.json({
-                                    result: 'ok'
+                                    error: resDb.o_resultado
                                 });
+                                return;
                             }
-                            catch (err) {
-                                console.error(err);
-                                response.json({
-                                    error: err
-                                });
-                            }
-                        });
-                        curl.on('error', curl.close.bind(curl));
-                        curl.perform();
-//                    }); // fin exec java
-//                }); // fin curl
+                            // listijirillo
+                            response.json({
+                                result: 'ok'
+                            });
+                        }
+                        catch (err) {
+                            console.error(err);
+                            response.json({
+                                error: err
+                            });
+                        }
+                    });
+                }); // fin exec java
             });
         }
         else {
@@ -746,41 +725,6 @@ if (result.error) {
                 await conn.execute(query, params, responseParams);
             }
             // descarga el pdf
-            /*const { Curl } = require('node-libcurl');
-            const curl = new Curl();
-            const url = 'http://' + curlHost + '/uploader/download.php';
-            curl.setOpt(Curl.option.URL, url);
-            curl.setOpt(Curl.option.POSTFIELDS, 'ruta=' + o_ruta);
-            curl.setOpt(Curl.option.VERBOSE, true);
-            curl.on('end', async (statusCode, body) => {
-                const fupload = require('../../server/fupload');
-                const base64 = require('base64topdf');
-                const out = JSON.parse(body);
-                // guardar en local
-                let pdfPath = fupload.downloadpath + o_nombre;
-                try {
-                    base64.base64Decode(out.data.b64, pdfPath);
-                    // out!
-                    if (o_codigo == 0) {
-                        response.send('error: ' + o_mensaje);
-                        return;
-                    }
-                    // muestra el pdf
-                    const fs = require('fs');
-                    var stream = fs.ReadStream(pdfPath);
-                    // Be careful of special characters
-                    filename = encodeURIComponent(o_nombre);
-                    // Ideally this should strip them
-                    response.setHeader('Content-disposition', 'inline; filename="' + filename + '"');
-                    response.setHeader('Content-type', 'application/pdf');
-                    stream.pipe(response);
-                }
-                catch (err) {
-                    response.send('No se encontró el archivo <b>' + o_nombre + '</b>');
-                }
-            });
-            curl.on('error', curl.close.bind(curl));
-            curl.perform();*/
             const ftpmanager = require('../../server/libs/ftp-manager');
             let ftpResult = await ftpmanager.Descargar(o_ruta);
             if (ftpResult.error) {
@@ -1636,6 +1580,87 @@ if (result.error) {
             }
         }
         else response.redirect('/intranet/login');
+    },
+    VerificarDni: async (request, response) => {
+        const { dni } = request.body;
+        try {
+            const conn = await oracledb.getConnection(dbParams);
+            let query = "call pack_digitalizacion.sp_validar_dni (:p_dni, :o_codigo, :o_mensaje, :o_nombres, :o_rzsocial, :o_empresa, :o_email, :o_telefono)";
+            let params = {
+                p_dni: { val: dni },
+                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_nombres: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_rzsocial: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_empresa: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_email: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_telefono: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            const result = await conn.execute(query, params, responseParams);
+            let { o_codigo, o_mensaje, o_nombres, o_rzsocial, o_empresa, o_email, o_telefono } = result.outBinds;
+            conn.close();
+            if (o_codigo == 1) {
+                response.json({
+                    data: {
+                        nombres: o_nombres,
+                        rzsocial: o_rzsocial,
+                        empresa: o_empresa,
+                        email: o_email,
+                        telefono: o_telefono
+                    }
+                });
+            }
+            else {
+                console.log(o_mensaje);
+                response.json({
+                    error: o_mensaje
+                });
+            }
+        }
+        catch (err) {
+            console.log(err);
+            response.json({
+                error: err
+            });
+        }
+    },
+    RegistraUsuario: async (request, response) => {
+        const { empresa, dni, nombres, rsocial, email, telefono, clave } = request.body;
+        bcrypt.hash(clave, 12, async (err, hash) => {
+            if (err) {
+                response.json({
+                    error: JSON.stringify(err)
+                });
+                return;
+            }
+            // almacena en la bd
+            const conn = await oracledb.getConnection(dbParams);
+            let query = "call pack_digitalizacion.sp_registra_usuario (:o_codigo, :o_mensaje, :p_dni, :p_empresa, :p_nombre, :p_rzsocial, :p_email, :p_telefono, :p_clave)";
+            let params = {
+                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                p_dni: { val: dni },
+                p_empresa: { val: empresa },
+                p_nombre: { val: nombres },
+                p_rzsocial: { val: rsocial },
+                p_email: { val: email },
+                p_telefono: { val: telefono },
+                p_clave: { val: hash }
+            };
+            const result = await conn.execute(query, params, responseParams);
+            let { o_codigo, o_mensaje } = result.outBinds;
+            conn.close();
+            if (o_codigo == 1) {
+                response.json({
+                    success: true
+                });
+            }
+            else {
+                response.json({
+                    error: o_mensaje
+                });
+            }
+        });
     },
     PruebaQr: async (request, response) => {
         var QRCode = require('qrcode');
