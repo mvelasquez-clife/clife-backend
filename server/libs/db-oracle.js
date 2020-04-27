@@ -89,8 +89,9 @@ module.exports = {
             });
         });
     },
-    resultSet: async (query, params) => {
+    resultSet: async (query, params = []) => {
         let parametros = {};
+        let output = {};
         for (let parametro of params) {
             if (parametro.io == 'in') {
                 parametros[parametro.name] = { val: parametro.value };
@@ -105,10 +106,15 @@ module.exports = {
         // go!
         const connection = await oracledb.getConnection(dbParams);
         const result = await connection.execute(query, parametros, cursorParams);
-        const resultSet = result.outBinds.rs;
-        let output = [];
-        while (fila = await resultSet.getRow()) {
-            output.push(fila);
+        //
+        let outBinds = result.outBinds;
+        for (let key in outBinds) {
+            let resultSet = outBinds[key];
+            let array = [];
+            while (fila = await resultSet.getRow()) {
+                array.push(fila);
+            }
+            output[key] = array;
         }
         connection.close();
         return output;
