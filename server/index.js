@@ -77,6 +77,8 @@ app.use('/coordenadas', require('./routes/coordenadas.routes'));
 app.use('/extranet', require('../client/routes/extranet.routes'));
 // intranet corporacionl life
 app.use('/intranet', require('../client/routes/intra-life.routes'));
+// web service
+app.use('/ws-life', require('./../client/routes/ws.routes'));
 
 //configura el chat
 /*io.set('origins', host.address);

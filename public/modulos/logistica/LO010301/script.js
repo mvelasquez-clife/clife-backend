@@ -1,4 +1,188 @@
-var entidad;
+var entidad, oldDocumentosRowId;
+
+// funciones comunes
+
+function setSens(calendar, inp, k) {
+    if (k == 'min') {
+        calendar.setSensitiveRange(inp.value, null);
+    }
+    else {
+        calendar.setSensitiveRange(null, inp.value);
+    }
+}
+
+// transferencias
+
+function toolbarTransferenciasOnClick (id) {
+    switch (id) {
+        case 'TrfBusca':
+            let moneda = comboTrfmonedas.getSelectedValue();
+            let columna = comboTrfcolumna.getSelectedValue();
+            let desde = encodeURIComponent(toolbarTransferencias.getValue('TrfDesde'));
+            let hasta = encodeURIComponent(toolbarTransferencias.getValue('TrfHasta'));
+            tabbar.tabs('transferencia').detachObject();
+            gridTransferencia = tabbar.tabs('transferencia').attachGrid();
+                gridTransferencia.setImagePath("/assets/images/icons/grid/");
+                gridTransferencia.setHeader('co_empresa,co_documento,fe_emitido,co_catalogo_entidad,de_razon_social,im_ingreso,im_egreso,im_saldo,de_concepto,co_trans_banc_tran,co_moneda,fe_sys,co_libro_contable,co_periodo,nu_voucher,co_documento_ancestro,fe_vencimiento,es_vigencia,st_detraccion,st_aprobado,co_unico,de_url,co_tipo_doc_administr');
+                gridTransferencia.setColTypes('rotxt,rotxt,rotxt,ron,rotxt,ron,ron,ron,rotxt,rotxt,ron,rotxt,ron,ron,rotxt,rotxt,rotxt,rotxt,img,img,rotxt,rotxt,rotxt');
+                gridTransferencia.setNumberFormat(comboTrfmonedas.getSelectedText().split(' ')[0] + ' 0,000.00', 5);
+                gridTransferencia.setNumberFormat(comboTrfmonedas.getSelectedText().split(' ')[0] + ' 0,000.00', 6);
+                gridTransferencia.setNumberFormat(comboTrfmonedas.getSelectedText().split(' ')[0] + ' 0,000.00', 7);
+                gridTransferencia.setInitWidths('60,100,80,100,240,120,120,120,320,100,60,80,60,80,80,80,80,80,30,30,60,160,50');
+                gridTransferencia.setColAlign('left,left,left,right,left,right,right,right,left,left,left,left,left,right,left,left,left,left,center,center,left,left,center');
+                gridTransferencia.init();
+            tabbar.tabs('transferencia').progressOn();
+            gridTransferencia.load('/api/LO010301/grid-pagos-transferencia/' + usrJson.empresa + '/' + moneda + '/' + columna + '/' + desde + '/' + hasta, function () {
+                tabbar.tabs('transferencia').progressOff();
+            });
+            break;
+        default: break;
+    }
+}
+
+function EstructuraTransferencias () {
+    toolbarTransferencias = tabbar.tabs('transferencia').attachToolbar();
+        toolbarTransferencias.setIconsPath('/assets/images/icons/toolbar/');
+        toolbarTransferencias.addText('lblMoneda', null, 'Moneda');
+        toolbarTransferencias.addText('cmbMoneda', null, '<div id="cmb-trfmoneda" class="dv-combo" style="width:100px;"></div>');
+        toolbarTransferencias.addText('lblColumna', null, 'Buscar por');
+        toolbarTransferencias.addText('cmbMoneda', null, '<div id="cmb-trfcolumna" class="dv-combo" style="width:120px;"></div>');
+        toolbarTransferencias.addText('lblDesde', null, 'Desde');
+        toolbarTransferencias.addInput('TrfDesde', null, null, 100);
+        toolbarTransferencias.addText('lblHasta', null, 'Hasta');
+        toolbarTransferencias.addInput('TrfHasta', null, null, 100);
+        toolbarTransferencias.addButton('TrfBusca', null, 'Buscar', 'ic-goggles.svg', 'ic-goggles-dis.svg');
+    comboTrfmonedas = new dhtmlXCombo('cmb-trfmoneda');
+    comboTrfcolumna = new dhtmlXCombo('cmb-trfcolumna');
+    // colocar los calendarios
+    calendarTrfinicio = toolbarTransferencias.getInput('TrfDesde');
+        calendarTrfinicio.setAttribute('readOnly', true);
+        calendarTrfinicio.onclick = function () { setSens(calendarTransferencia, calendarTrffin, 'max'); }
+    calendarTrffin = toolbarTransferencias.getInput('TrfHasta');
+        calendarTrffin.setAttribute('readOnly', true);
+        calendarTrffin.onclick = function () { setSens(calendarTransferencia, calendarTrfinicio, 'min'); }
+    calendarTransferencia = new dhtmlXCalendarObject([calendarTrfinicio, calendarTrffin]);
+        calendarTransferencia.setDateFormat('%d/%m/%Y');
+    toolbarTransferencias.setValue('TrfDesde', '01/01/2020');
+    toolbarTransferencias.setValue('TrfHasta', '30/04/2020');
+    toolbarTransferencias.attachEvent('onClick', toolbarTransferenciasOnClick);
+}
+
+// letras por pagar
+
+function toolbarLpagarOnClick (id) {
+    switch (id) {
+        case 'LpagarBusca':
+            let moneda = comboLmonedas.getSelectedValue();
+            let columna = comboLcolumna.getSelectedValue();
+            let desde = encodeURIComponent(toolbarLpagar.getValue('LpagarDesde'));
+            let hasta = encodeURIComponent(toolbarLpagar.getValue('LpagarHasta'));
+            tabbar.tabs('letras').detachObject();
+                gridLpagar = tabbar.tabs('letras').attachGrid();
+                gridLpagar.setImagePath("/assets/images/icons/grid/");
+                gridLpagar.setHeader('co_empresa,co_documento,fe_emitido,co_catalogo_entidad,de_razon_social,im_ingreso,im_egreso,im_saldo,de_concepto,co_trans_banc_tran,co_moneda,fe_sys,co_libro_contable,co_periodo,nu_voucher,co_documento_ancestro,fe_vencimiento,es_vigencia,st_detraccion,st_aprobado,co_unico,de_url,co_tipo_doc_administr');
+                gridLpagar.setColTypes('rotxt,rotxt,rotxt,ron,rotxt,ron,ron,ron,rotxt,rotxt,ron,rotxt,ron,ron,rotxt,rotxt,rotxt,rotxt,img,img,rotxt,rotxt,rotxt');
+                gridLpagar.setNumberFormat(comboLmonedas.getSelectedText().split(' ')[0] + ' 0,000.00', 5);
+                gridLpagar.setNumberFormat(comboLmonedas.getSelectedText().split(' ')[0] + ' 0,000.00', 6);
+                gridLpagar.setNumberFormat(comboLmonedas.getSelectedText().split(' ')[0] + ' 0,000.00', 7);
+                gridLpagar.setInitWidths('60,100,80,100,240,120,120,120,320,100,60,80,60,80,80,80,80,80,30,30,60,160,50');
+                gridLpagar.setColAlign('left,left,left,right,left,right,right,right,left,left,left,left,left,right,left,left,left,left,center,center,left,left,center');
+                gridLpagar.init();
+            tabbar.tabs('letras').progressOn();
+            gridLpagar.load('/api/LO010301/grid-letras-pagar/' + usrJson.empresa + '/' + moneda + '/' + columna + '/' + desde + '/' + hasta, function () {
+                tabbar.tabs('letras').progressOff();
+            });
+            break;
+        default: break;
+    }
+}
+
+function EstructuraLetras() {
+    toolbarLpagar = tabbar.tabs('letras').attachToolbar();
+        toolbarLpagar.setIconsPath('/assets/images/icons/toolbar/');
+        toolbarLpagar.addText('lblMoneda', null, 'Moneda');
+        toolbarLpagar.addText('cmbMoneda', null, '<div id="cmb-lmoneda" class="dv-combo" style="width:100px;"></div>');
+        toolbarLpagar.addText('lblColumna', null, 'Buscar por');
+        toolbarLpagar.addText('cmbMoneda', null, '<div id="cmb-lcolumna" class="dv-combo" style="width:120px;"></div>');
+        toolbarLpagar.addText('lblDesde', null, 'Desde');
+        toolbarLpagar.addInput('LpagarDesde', null, null, 100);
+        toolbarLpagar.addText('lblHasta', null, 'Hasta');
+        toolbarLpagar.addInput('LpagarHasta', null, null, 100);
+        toolbarLpagar.addButton('LpagarBusca', null, 'Buscar', 'ic-goggles.svg', 'ic-goggles-dis.svg');
+    comboLmonedas = new dhtmlXCombo('cmb-lmoneda');
+    comboLcolumna = new dhtmlXCombo('cmb-lcolumna');
+    // colocar los calendarios
+    calendarLinicio = toolbarLpagar.getInput('LpagarDesde');
+        calendarLinicio.setAttribute('readOnly', true);
+        calendarLinicio.onclick = function () { setSens(calendarLpagar, calendarLfin, 'max'); }
+    calendarLfin = toolbarLpagar.getInput('LpagarHasta');
+        calendarLfin.setAttribute('readOnly', true);
+        calendarLfin.onclick = function () { setSens(calendarLpagar, calendarLinicio, 'min'); }
+    calendarLpagar = new dhtmlXCalendarObject([calendarLinicio, calendarLfin]);
+        calendarLpagar.setDateFormat('%d/%m/%Y');
+    toolbarLpagar.setValue('LpagarDesde', '01/01/2020');
+    toolbarLpagar.setValue('LpagarHasta', '30/04/2020');
+    toolbarLpagar.attachEvent('onClick', toolbarLpagarOnClick);
+}
+
+// facturas por pagar
+
+function toolbarFpagarOnClick (id) {
+    switch (id) {
+        case 'FpagarBusca':
+            let moneda = comboFmonedas.getSelectedValue();
+            let columna = comboFcolumna.getSelectedValue();
+            let desde = encodeURIComponent(toolbarFpagar.getValue('FpagarDesde'));
+            let hasta = encodeURIComponent(toolbarFpagar.getValue('FpagarHasta'));
+            tabbar.tabs('fpagar').detachObject();
+            gridFpagar = tabbar.tabs('fpagar').attachGrid();
+                gridFpagar.setImagePath("/assets/images/icons/grid/");
+                gridFpagar.setHeader('co_empresa,co_documento,fe_emitido,co_catalogo_entidad,de_razon_social,im_ingreso,im_egreso,im_saldo,de_concepto,co_trans_banc_tran,co_moneda,fe_sys,co_libro_contable,co_periodo,nu_voucher,co_documento_ancestro,fe_vencimiento,es_vigencia,st_detraccion,st_aprobado,co_unico,co_tipo_doc_administr,st_fact_nego,nu_numero_unico,fe_vcto_negociable');
+                gridFpagar.setColTypes('ron,rotxt,rotxt,ron,rotxt,ron,ron,ron,rotxt,rotxt,ron,rotxt,ron,ron,rotxt,rotxt,rotxt,rotxt,img,img,rotxt,rotxt,img,rotxt,rotxt');
+                gridFpagar.setNumberFormat(comboFmonedas.getSelectedText().split(' ')[0] + ' 0,000.00', 5);
+                gridFpagar.setNumberFormat(comboFmonedas.getSelectedText().split(' ')[0] + ' 0,000.00', 6);
+                gridFpagar.setNumberFormat(comboFmonedas.getSelectedText().split(' ')[0] + ' 0,000.00', 7);
+                gridFpagar.setInitWidths('60,100,80,100,240,120,120,120,320,100,60,80,60,80,80,80,80,80,30,30,60,60,30,80,80');
+                gridFpagar.setColAlign('left,left,left,right,left,right,right,right,left,left,left,left,left,right,left,left,left,left,center,center,left,left,center,left,left');
+                gridFpagar.init();
+            tabbar.tabs('fpagar').progressOn();
+            gridFpagar.load('/api/LO010301/grid-facturas-pagar/' + usrJson.empresa + '/' + moneda + '/' + columna + '/' + desde + '/' + hasta, function () {
+                tabbar.tabs('fpagar').progressOff();
+            });
+            break;
+        default: break;
+    }
+}
+
+function EstructuraFactpagar() {
+    toolbarFpagar = tabbar.tabs('fpagar').attachToolbar();
+        toolbarFpagar.setIconsPath('/assets/images/icons/toolbar/');
+        toolbarFpagar.addText('lblMoneda', null, 'Moneda');
+        toolbarFpagar.addText('cmbMoneda', null, '<div id="cmb-fmoneda" class="dv-combo" style="width:100px;"></div>');
+        toolbarFpagar.addText('lblColumna', null, 'Buscar por');
+        toolbarFpagar.addText('cmbMoneda', null, '<div id="cmb-fcolumna" class="dv-combo" style="width:120px;"></div>');
+        toolbarFpagar.addText('lblDesde', null, 'Desde');
+        toolbarFpagar.addInput('FpagarDesde', null, null, 100);
+        toolbarFpagar.addText('lblHasta', null, 'Hasta');
+        toolbarFpagar.addInput('FpagarHasta', null, null, 100);
+        toolbarFpagar.addButton('FpagarBusca', null, 'Buscar', 'ic-goggles.svg', 'ic-goggles-dis.svg');
+    comboFmonedas = new dhtmlXCombo('cmb-fmoneda');
+    comboFcolumna = new dhtmlXCombo('cmb-fcolumna');
+    // colocar los calendarios
+    calendarFinicio = toolbarFpagar.getInput('FpagarDesde');
+        calendarFinicio.setAttribute('readOnly', true);
+        calendarFinicio.onclick = function () { setSens(calendarFpagar, calendarFfin, 'max'); }
+    calendarFfin = toolbarFpagar.getInput('FpagarHasta');
+        calendarFfin.setAttribute('readOnly', true);
+        calendarFfin.onclick = function () { setSens(calendarFpagar, calendarFinicio, 'min'); }
+    calendarFpagar = new dhtmlXCalendarObject([calendarFinicio, calendarFfin]);
+        calendarFpagar.setDateFormat('%d/%m/%Y');
+    toolbarFpagar.setValue('FpagarDesde', '01/01/2020');
+    toolbarFpagar.setValue('FpagarHasta', '30/04/2020');
+    toolbarFpagar.attachEvent('onClick', toolbarFpagarOnClick);
+}
+
+// facturas provisionadas
 
 function CargarInfoProveedor() {
     let params = {
@@ -15,13 +199,96 @@ function CargarInfoProveedor() {
         document.getElementById('lbl-saldo').innerHTML = result.data.osaldo.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }, 'json');
 }
+
+function MostrarLayoutDetalle(row) {
+    layoutDocumentosDetalle = layoutDocumentos.cells('b').attachLayout('4E');
+        layoutDocumentosDetalle.cells('a').hideHeader();
+        layoutDocumentosDetalle.cells('b').hideHeader();
+        layoutDocumentosDetalle.cells('c').hideHeader();
+        layoutDocumentosDetalle.cells('d').hideHeader();
+    // genera las grids
+    gridDocumentosDetalleA = layoutDocumentosDetalle.cells('a').attachGrid();
+        gridDocumentosDetalleA.setHeader('co_letra,im_monto,fe_registro,es_vigencia,co_documento,co_empresa,de_nombre');
+        gridDocumentosDetalleA.setColTypes('rotxt,ron,rotxt,rotxt,rotxt,ron,rotxt');
+        gridDocumentosDetalleA.init();
+        layoutDocumentosDetalle.cells('a').progressOn();
+        gridDocumentosDetalleA.load('/api/LO010301/grid-letras-provisionadas/' + usrJson.empresa + '/' + row.documento, function () {
+            layoutDocumentosDetalle.cells('a').progressOff();
+        });
+    gridDocumentosDetalleB = layoutDocumentosDetalle.cells('b').attachGrid();
+        gridDocumentosDetalleB.setHeader('co_nota_cred_debi_compra,co_documento,co_guia_devo_prov,im_final,de_tipo,es_vigencia,fe_registro');
+        gridDocumentosDetalleB.setColTypes('rotxt,rotxt,rotxt,ron,rotxt,rotxt,rotxt');
+        gridDocumentosDetalleB.init();
+        layoutDocumentosDetalle.cells('b').progressOn();
+        gridDocumentosDetalleB.load('/api/LO010301/grid-notas-crdb/' + usrJson.empresa + '/' + row.documento + '/' + entidad.codigo, function () {
+            layoutDocumentosDetalle.cells('b').progressOff();
+        });
+    gridDocumentosDetalleC = layoutDocumentosDetalle.cells('c').attachGrid();
+        gridDocumentosDetalleC.setHeader('co_documento,co_documento,im_egreso,im_saldo,im_tipo_cambio,fe_emision,de_descripcion,co_prin_voucher');
+        gridDocumentosDetalleC.setColTypes('rotxt,rotxt,ron,ron,ron,rotxt,rotxt,rotxt');
+        gridDocumentosDetalleC.setNumberFormat('0,000.00', 2);
+        gridDocumentosDetalleC.setNumberFormat('0,000.00', 3);
+        gridDocumentosDetalleC.setNumberFormat('0,000.00', 4);
+        gridDocumentosDetalleC.init();
+        layoutDocumentosDetalle.cells('c').progressOn();
+        gridDocumentosDetalleC.load('/api/LO010301/grid-ctacte-compras/' + usrJson.empresa + '/' + row.documento + '/' + entidad.codigo, function () {
+            layoutDocumentosDetalle.cells('c').progressOff();
+        });
+    gridDocumentosDetalleD = layoutDocumentosDetalle.cells('d').attachGrid();
+        gridDocumentosDetalleD.setHeader('Documento,Importe,Fecha,Origen,Concepto,Trans.Bancaria,TipoDoc.Admin.');
+        gridDocumentosDetalleD.setColTypes('rotxt,ron,rotxt,rotxt,rotxt,rotxt,rotxt');
+        gridDocumentosDetalleD.setNumberFormat('0,000.00', 1);
+        gridDocumentosDetalleD.setInitWidths('120,100,80,120,240,80,80');
+        gridDocumentosDetalleD.setColAlign('left,right,left,left,left,right,right');
+        gridDocumentosDetalleD.init();
+        layoutDocumentosDetalle.cells('d').progressOn();
+    gridDocumentosDetalleD.load('/api/LO010301/grid-documentos-proveedor/' + usrJson.empresa + '/' + row.tpentidad + '/' + row.coclasif + '/' + entidad.codigo + '/' + row.documento + '/' + row.tpdocadmin, function () {
+        layoutDocumentosDetalle.cells('d').progressOff();
+    });
+}
+
+function gridDocumentosOnRowSelect (rowId, colId) {
+    let iFila = gridDocumentos.getRowData(rowId);
+    switch (colId) {
+        case 0:
+            break;
+        case 1:
+            break;
+        case 2:
+            if (rowId == oldDocumentosRowId) {
+                if (layoutDocumentos.cells('b').isCollapsed()) {
+                    layoutDocumentos.cells('b').expand();
+                }
+                else {
+                    layoutDocumentos.cells('b').collapse();
+                }
+            }
+            else {
+                layoutDocumentos.cells('b').detachObject();
+                if (layoutDocumentos.cells('b').isCollapsed()) layoutDocumentos.cells('b').expand();
+                MostrarLayoutDetalle(iFila);
+            }
+            oldDocumentosRowId = rowId;
+            break;
+        /*case 5:
+            break;
+        case 13:
+            break;*/
+        default: break;
+    }
+}
+
 function PreparaInterfazProveedor() {
     tabbar.tabs('provisionados').detachObject();
     tabbar.tabs('provisionados').progressOn();
-    layoutDocumentos = tabbar.tabs('provisionados').attachLayout('1C');
+    layoutDocumentos = tabbar.tabs('provisionados').attachLayout('2U');
         layoutDocumentos.cells('a').hideHeader();
+        layoutDocumentos.cells('b').hideHeader();
+        layoutDocumentos.cells('b').setText('Información');
+        layoutDocumentos.cells('b').setWidth(400);
+        layoutDocumentos.cells('b').collapse();
     toolbarGridDocumentos = layoutDocumentos.cells('a').attachToolbar();
-        toolbarGridDocumentos.addText('lblResumen', null, 'Datos del proveedor');
+        toolbarGridDocumentos.addText('lblResumen', null, '<b>Datos del proveedor</b>');
         toolbarGridDocumentos.addText('lblMoneda', null, 'Moneda');
         toolbarGridDocumentos.addText('ipMoneda', null, '<div id="lbl-moneda" class="dv-label" style="width:80px;"></div>');
         toolbarGridDocumentos.addText('lblIngreso', null, 'Ingreso');
@@ -31,10 +298,46 @@ function PreparaInterfazProveedor() {
         toolbarGridDocumentos.addText('lblSaldo', null, 'Saldo');
         toolbarGridDocumentos.addText('ipSaldo', null, '<div id="lbl-saldo" class="dv-label text-right" style="width:120px;"></div>');
     gridDocumentos = layoutDocumentos.cells('a').attachGrid();
+        gridDocumentos.setImagePath("/assets/images/icons/grid/");
+        gridDocumentos.setHeader('Fe.Emisión,Documento,Negociable,Concepto,Saldo,Ingreso,Egreso,Vencimiento,TipoDoc.Admi.,Nombre,Detracción,Vigencia,Periodo,Libro,Voucher,Nu.Único,Fe.Vence,TipoEnti.,Clasif.Enti.');
+        gridDocumentos.setInitWidths('80,100,30,320,120,120,120,80,50,240,30,60,80,60,100,80,80,40,40');
+        gridDocumentos.setColTypes('rotxt,rotxt,img,rotxt,ron,ron,ron,rotxt,rotxt,rotxt,img,rotxt,ron,ron,ron,ron,rotxt,rotxt,rotxt');
+        gridDocumentos.setColAlign('left,left,center,left,right,right,right,left,left,left,center,left,right,left,left,left,left,left,left');
+        gridDocumentos.setColumnIds('femision,documento,esnegociable,concepto,saldo,ingreso,egreso,vencimiento,tpdocadmin,nombre,detraccion,vigencia,periodo,libro,voucher,nunico,fvence,tpentidad,coclasif');
+        gridDocumentos.setNumberFormat('0,000.00', 4);
+        gridDocumentos.setNumberFormat('0,000.00', 5);
+        gridDocumentos.setNumberFormat('0,000.00', 6);
+        gridDocumentos.init();
+        gridDocumentos.attachEvent('onRowSelect', gridDocumentosOnRowSelect);
 }
 
-function CargarDocumentosProveedor () {
-    tabbar.tabs('provisionados').progressOff();
+function CargarDocumentosProveedor() {
+    let moneda = comboMonedas.getSelectedValue();
+    let tpentidad = comboTpentis.getSelectedValue();
+    gridDocumentos.load('/api/LO010301/grid-docs-provisionados/' + usrJson.empresa + '/' + entidad.codigo + '/' + moneda + '/' + tpentidad, function () {
+        gridDocumentos.insertColumn(0, 'Detalle', 'img', 30, 'text', 'center', 'center', null);
+        gridDocumentos.insertColumn(1, 'Adjuntos', 'img', 30, 'text', 'center', 'center', null);
+        gridDocumentos.insertColumn(2, 'Expandir/contraer', 'img', 30, 'text', 'center', 'center', null);
+        let numFilas = gridDocumentos.getRowsNum();
+        for (let i = 0; i < numFilas; i++) {
+            let iRowId = gridDocumentos.getRowId(i);
+            gridDocumentos.cells(iRowId, 0).setValue('/assets/images/icons/grid/ic-detalle.svg^Detalles');
+            gridDocumentos.cells(iRowId, 1).setValue('/assets/images/icons/grid/ic-adjunto.svg^Adjuntos');
+            gridDocumentos.cells(iRowId, 2).setValue('/assets/images/icons/grid/ic-expand.svg^Expandir/contraer');
+            gridDocumentos.cells(iRowId, 5).setValue(gridDocumentos.cells(iRowId, 5).getTitle() == 'S' ? '/assets/images/icons/grid/ic-checked.gif^Si' : '/assets/images/icons/grid/ic-unchecked.gif^No');
+            gridDocumentos.cells(iRowId, 13).setValue(gridDocumentos.cells(iRowId, 13).getTitle() == 'S' ? '/assets/images/icons/grid/ic-checked.gif^Si' : '/assets/images/icons/grid/ic-unchecked.gif^No');
+            gridDocumentos.setCellTextStyle(iRowId, 0, 'cursor:pointer;');
+            gridDocumentos.setCellTextStyle(iRowId, 1, 'cursor:pointer;');
+            gridDocumentos.setCellTextStyle(iRowId, 2, 'cursor:pointer;');
+            gridDocumentos.setCellTextStyle(iRowId, 5, 'cursor:pointer;');
+            gridDocumentos.setCellTextStyle(iRowId, 13, 'cursor:pointer;');
+        }
+        /*gridDocumentos.setColumnExcellType(5, 'img');
+        gridDocumentos.setColumnExcellType(13, 'img');*/
+        //5,13
+        //let ch = gridDocumentos.cells2(1,2).getTitle();
+        tabbar.tabs('provisionados').progressOff();
+    });
 }
 
 async function toolbarDocumentosOnClick (id) {
@@ -77,6 +380,8 @@ function EstructuraProvisionados () {
         comboTpentis = new dhtmlXCombo('cmb-tpenti');
 }
 
+// iniciar vista
+
 function ConfiguraLayout () {
     layout = new dhtmlXLayoutObject(document.body, '1C');
 }
@@ -91,14 +396,32 @@ function ConfiguraTabbar () {
         tabbar.addTab('transferencia', 'Pagos por transferencias');
         tabbar.addTab('reportes', 'Reportes por tipo doc.');
     EstructuraProvisionados();
+    EstructuraFactpagar();
+    // doc. aprobados para pagar
+    EstructuraLetras();
+    // documentos digitales
+    EstructuraTransferencias();
+    // reporte por tipos de documento
 }
 
 function onDatosIniciales (response) {
     let data = response.data;
     comboMonedas.load({ options: data.monedas });
     comboTpentis.load({ options: data.tpentidades });
+    comboFmonedas.load({ options: data.monedas });
+    comboFcolumna.load({ options: data.columnas });
+    comboLmonedas.load({ options: data.monedas });
+    comboLcolumna.load({ options: data.columnas });
+    comboTrfmonedas.load({ options: data.monedas });
+    comboTrfcolumna.load({ options: data.columnas });
     comboMonedas.selectOption(0);
     comboTpentis.selectOption(0);
+    comboFmonedas.selectOption(0);
+    comboFcolumna.selectOption(0);
+    comboLmonedas.selectOption(0);
+    comboLcolumna.selectOption(0);
+    comboTrfmonedas.selectOption(0);
+    comboTrfcolumna.selectOption(0);
 }
 
 function IniciarComponentes () {
