@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Kardex x Producto - N° 1</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css"> -->
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">   -->
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+            integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        <!--link rel="stylesheet" href="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.css" -->
+        <link rel="stylesheet" type="text/css" href="codebase/dhtmlxtabbar.css">
+        <style type="text/css">
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                width: 100%
+            }
+
+            #dhxDesktop {
+                height: 100%;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <!-- <script src="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.js"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+        <!-- <script src="/codebase/dhtmlxtabbar.js"></script> -->
+        <!-- script propio de la ventana -->
+        <!--<script type="text/javascript" src="<%=path%>script.js"></script> -->
+        <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- ancestro de la ventana de seguridad -->
+        <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+        <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script>
+            
+            var f_filtro_producto = [
+                { type: "settings", labelWidth: 100 },
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 5, position: "label-left", width: 220, list: [
+                    { type: "select",offsetLeft: 10,labelWidth: 40,inputWidth: 150, name: "_kd_filtro", label: 'Filtro:', connector: BASE_URL + 'LO0101030401/mostrar-filtro'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 5, position: "label-left", width: 500, list: [
+                    { type: "input",offsetLeft: 0,inputWidth: 500,  name: "_kd_buscar"}, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                // {type: "block", blockOffset: 0,  offsetTop: 5, position: "label-left", width: 50, list: [
+                //     { type: "button",offsetLeft: 15,  offsetTop: 1,labelWidth: 50, value:'Buscar', name: "_kd_busbut"}, { type: "newcolumn" },
+                //     ],},
+            ];
+            
+            var f_periodo = [
+                // { type: "settings", labelWidth: 100 },
+                {type: "block", blockOffset: 0,  offsetTop: 5, position: "label-left", width: 300, list: [
+                    { type: "select",offsetLeft: 20,labelWidth: 50,inputWidth:200, name: "_kd_periodo", label: 'Periodo:'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 5, position: "label-left", width: 50, list: [
+                    { type: "button",offsetLeft: 15,  offsetTop:3,labelWidth: 50, value:'Ir', name: "_kd_ir"}, { type: "newcolumn" },
+                    ],},
+            ];
+
+            var f_transaccion = [
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 400, list: [
+                    { type: "select",offsetLeft: 20,labelWidth: 100,inputWidth:200, name: "_kd_tipotrans", label: 'Tipo Transacción:'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 400, list: [
+                    { type: "input",readonly: true,style:"background-color:rgb(234, 255, 71);width: 300px;height:30px,font-family: Arial; font-size: 9pt;",position:"input-right",offsetLeft: 20,labelWidth: 100,inputWidth:200, name: "_kd_nombre_producto"}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                //  { type: "input",readonly: true, style:"background-color:rgb(234, 255, 71);width: 300px;height:30px,font-family: Arial; font-size: 15pt;",position:"input-right", offsetLeft: 0,labelWidth: 200, inputWidth: 200, name: "_r_nroreque"}, { type: "newcolumn" },        
+            ];
+          
+            Iniciokardex();       
+
+        </script>
+    </body>
+</html>

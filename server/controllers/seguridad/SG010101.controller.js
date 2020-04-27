@@ -407,7 +407,7 @@ const sg010101Controller = {
     
     replicarEmpresa:  (req,res) => {
         const {usuario,empresa_source,empresa_destino} = req.body;
-        
+        console.log(usuario,empresa_source,empresa_destino);
         oracledb.getConnection(dbParams,(err, conn) => {
             if (err){
                 console.log(err);

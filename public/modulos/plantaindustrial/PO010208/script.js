@@ -1,4 +1,5 @@
 var permiso_cataedit,html_general,myFormdatos_nso_esp,mainLayout_especificacion,myGrid_nso,myToolbar_nso,myGrid_ver,Winid_,Wind_,myToolbar_ver,tipo_doc,mainLayout_formula,tabbar,myToolbardatos_detalle,maingrid_search,myFormdatos_search,mainLayout_load,myToolbardatos_search,mainLayout_search,myGrid_lista,Wind_,maingrid,myFormdatos_prod,mainLayout_product,myFormdatos,myToolbardatos_register,mainLayout,myForm,myToolbardatos,mainLayout_register;
+let WinDocumentoViewer;
 //myGrid_dev,win_devol,codigo_producto,dhxCombo,codigo_requerimiento,mainGrid_prod,mainGrid_det,cod_reque,permiso_aprobar,almacen_rev,desde,hasta,pendiente,rech,atend,mainGrid_cab,myFormdatos_rev,layoutReq_prin,periodo_siste,periodo_fun,var_guardar,cod_centro_costo,cod_entidad,cod_solicita,cod_zona_come,cod_fza_venta,cad_prod_ubi_var,cad_cod_prod_var,cad_cant_soli_var,cad_lote_prod_var,cant_filas_l_total,cad_prod_ubi,cad_cod_prod,cad_cant_soli,cad_lote_prod,cant_filas_prod,reque_temporal,layoutRev,myToolbardatos_rev,mainLayout_rev,win_dire,myToolbar_a,co_cata_enti,prcantidad,prstock,myGrid_prod,myFormdatos,layoutReq,mainGrid_,val_co_ingreo,personal,ccosto,raz_soc_cata,mainToolbar,cod_almacen,codprod,nomprod,ubiprod,ume,saldprod,loteprod,cant_filas_l;
 permiso_cataedit = 'E';
 Inicio = () => {
@@ -115,11 +116,12 @@ Buscar = () => {
     mainLayout_load.cells('a').setHeight(100);
     mainLayout_load.cells('a').setWidth(600);
     maingrid_search = mainLayout_load.cells('c').attachGrid(); 
+    mainLayout_load.cells('c').setWidth(1000);
     maingrid_search.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/");
-    maingrid_search.setHeader('CÓDIGO NSO,NOMBRE PRODUCTO,ESTADO,FE_INICIO_VIGENCIA,FE_TERMINO_VIGENCIA,NRO REGISTRO');
-    maingrid_search.setInitWidths('200,300,120,100,100,0,0');
-    maingrid_search.setColAlign('left,left,left,left,left,left,left'); 
-    maingrid_search.setColumnIds("cod_nso,desc,estado,fec_ini,fec_fin,nreg");   
+    maingrid_search.setHeader('CÓDIGO NSO,NOMBRE PRODUCTO,ESTADO,FE_INICIO_VIGENCIA,FE_TERMINO_VIGENCIA,NRO REGISTRO,CO_FORMA_COSMETICA');
+    maingrid_search.setInitWidths('200,450,120,120,120,0,0,0');
+    maingrid_search.setColAlign('left,left,left,left,left,left,left,left'); 
+    maingrid_search.setColumnIds("cod_nso,desc,estado,fec_ini,fec_fin,nreg,fcos");   
     maingrid_search.attachHeader("#text_filter,#text_filter,#text_filter,#text_filter,#text_filter");
     maingrid_search.init();  
     myToolbardatos_detalle = mainLayout_detalle_sub.cells('a').attachToolbar();
@@ -127,7 +129,8 @@ Buscar = () => {
     myToolbardatos_detalle.setIconsPath('/assets/images/icons/');
     myToolbardatos_detalle.addButton('ver',null,'<b>Ver lista</b>',"ic-look.png","");  
     myToolbardatos_detalle.addButton('file',null,'<b>Ver documentos</b>',"ic-file.png","");  
-    myToolbardatos_detalle.attachEvent('onClick', detalleOnClick);  
+    myToolbardatos_detalle.attachEvent('onClick', detalleOnClick);       
+    WinContainer = new dhtmlXWindows();
     myFormdatos_search.attachEvent("onButtonClick", function (id_ind){
         buscar = myFormdatos_search.getItemValue('_drt_buscarnso').length>0 ? myFormdatos_search.getItemValue('_drt_buscarnso') : '|';
         cargarnso(buscar);
@@ -180,6 +183,7 @@ Buscar = () => {
         fecha_inicio= data.fec_ini;
         fecha_fin= data.fec_fin;        
         nregistro = data.nreg;
+        fcos = data.fcos;
         myFormdatos_nso = mainLayout_detalle_sub.cells("a").attachForm(f_rev_nso);
         myFormdatos_nso.setItemValue('_drt_nrosoc',codigo);
         myFormdatos_nso.setItemValue('_drt_nombre',nombre);
@@ -187,11 +191,12 @@ Buscar = () => {
         myFormdatos_nso.setItemValue('_drt_fechadesde',fecha_inicio);
         myFormdatos_nso.setItemValue('_drt_fechahasta',fecha_fin);
         myFormdatos_nso.setItemValue('_drt_nroregistro',nregistro);
+        myFormdatos_nso.setItemValue('_drt_formacosmetica',fcos);
         tabbar = mainLayout_detalle_sub.cells('b').attachTabbar();
         tabbar.addTab('s_formula', 'FÓRMULA', null, null, true);
         tabbar.addTab('s_especificaciones', 'ESPECIFICACIONES', null, null, false);
-        tabbar.addTab('s_conreque', 'DOCUMENTO 3', null, null, false);
-        tabbar.addTab('s_revdevol', 'DOCUMENTO 4', null, null, false);  
+        tabbar.addTab('s_conreque', 'MATERIAL DE ENVASE', null, null, false);
+        tabbar.addTab('s_revdevol', 'ROTULADO', null, null, false);  
         tabbar. attachEvent ( "onSelect" , doOnSelect ); 
         mainLayout_formula= tabbar.cells("s_formula").attachLayout('1C');
         mainLayout_especificacion= tabbar.cells("s_especificaciones").attachLayout('1C'); 
@@ -241,10 +246,10 @@ buscarnotificacion = async (name) => {
         (id === 'b_close') ? Wind_.window("wbusq").close() : console.log('hola');
     });
     myGrid_nso = Winid_.attachGrid();
-    myGrid_nso.setHeader('Nro NSO,Descripción,Estado,Inicio Vigenia, Fin Vigencia,Forma Cosmética,Nro Registro');
+    myGrid_nso.setHeader('Nro NSO,Descripción,Estado,Inicio Vigenia, Fin Vigencia,Nro Registro,Forma Cosmética');
     myGrid_nso.setInitWidthsP('30,30,20,20,20,30,0');
     myGrid_nso.setColTypes('ro,ro,ro,ro,ro,ro,ro');
-    myGrid_nso.setColumnIds("nsoc,desc,estado,inicio,fin,fcos,nreg");
+    myGrid_nso.setColumnIds("nsoc,desc,estado,inicio,fin,nreg,fcos");
     myGrid_nso.attachHeader("#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter");
     myGrid_nso.clearAll();
     cargarnsogeneral(Wind_,'|');
@@ -259,13 +264,13 @@ buscarnotificacion = async (name) => {
         res = data.res;
         fcos = data.fcos
         nregistro = data.nreg;
-        console.log(data);
         myFormdatos.setItemValue('_drt_nrosoc',cod);
         myFormdatos.setItemValue('_drt_nombre',desc);
         myFormdatos.setItemValue('_drt_fechadesde',inicio);
         myFormdatos.setItemValue('_drt_fechahasta',fin);
         myFormdatos.setItemValue('_drt_nroregistro',nregistro);
-        myFormdatos.setItemValue('_drt_resumen',fcos);
+        myFormdatos.setItemValue('_drt_formacosmetica',fcos);
+        myFormdatos.setItemValue('_drt_estado',estado);
         cargarProductosnsogeneral(nregistro);
         Wind_.window("wbusq").close();
     });
@@ -309,7 +314,12 @@ VerArchivo = async e => {
     };
     $.post(BASE_URL + 'PO010208/ver-pdf/', params, function (res) {
         console.log(res);        
-        if (res.state=='success'){
+        if (res.state=='success'){            
+            WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 640, 640);
+            WinDocumentoViewer.keepInViewport();
+            WinDocumentoViewer.setText('Mostrando documento ' + tipodoc +' - '+nsoc);
+            console.log(res);
+            WinDocumentoViewer.attachURL(res.message);
         } else {
             Swal.fire({ type: 'error', title: 'Error..', text: 'El archivo no existe :' + res.message });
         }
@@ -324,6 +334,7 @@ OnClicktoolbar= async (id) => {
         var fecha_ini = myFormdatos.getItemValue('_drt_fechadesde').toLocaleDateString().replace('/', '-');
         var fecha_fin = myFormdatos.getItemValue('_drt_fechahasta').toLocaleDateString().replace('/', '-');
         var nombre_nso = myFormdatos.getItemValue('_drt_nombre');
+        var form_cosm = myFormdatos.getItemValue('_drt_formacosmetica');
         fecha_ini = fecha_ini.replace('/', '-');
         fecha_fin = fecha_fin.replace('/', '-');        
             if(nsoc) {
@@ -349,7 +360,7 @@ OnClicktoolbar= async (id) => {
                             console.log(cad_cod_prod);
                             console.log(cadena);
 
-                            guardarnsoc(nsoc,cad_cod_prod,cadena,cant_filas_guardar-1,fecha_ini,fecha_fin,nombre_nso);
+                            guardarnsoc(nsoc,cad_cod_prod,cadena,cant_filas_guardar-1,fecha_ini,fecha_fin,nombre_nso,form_cosm);
                         }
 
                     }
@@ -364,13 +375,18 @@ OnClicktoolbar= async (id) => {
                 var output = await IniciarFormularioSeguridad(58, mainLayout);
                 if (output.result === 'S') {
                     permiso_cataedit = 'S';
+                    Inicio();
                     buscarnotificacion();
                 }else{
                     permiso_cataedit = 'E';
                 }
            }else{
+            Inicio();
             buscarnotificacion();
            }
+        break;
+        case '__nuevo':            
+            Inicio();
         break;
         default:
             null;
@@ -378,15 +394,16 @@ OnClicktoolbar= async (id) => {
     }
 };
 
-guardarnsoc = (nsoc,cad_cod_prod,cadena,cant_filas_guardar,fecha_ini,fecha_fin,nombre_nso) => {
+guardarnsoc = (nsoc,cad_cod_prod,cadena,cant_filas_guardar,fecha_ini,fecha_fin,nombre_nso,form_cosm) => {
     params = {
         empresa: usrJson.empresa,
-        num_registro: nsoc,
+        num_registro_nsoc: nsoc,
         cant_filas_prod: cant_filas_guardar,
         cadena_productos: cad_cod_prod,
         vigencia_ini:fecha_ini,
         vigencia_ter:fecha_fin,
         nombre: nombre_nso,
+        form_cosm : form_cosm
     };
     console.log(params);
     $.post(BASE_URL + "PO010208/grabar-nsoc", params, function (res) {
@@ -449,14 +466,12 @@ mainToolbarOnClick= async (id) => {
             mainLayout_product.cells('c').expand();
             break;
         case 'agregar':
-            var cant_filas_l_total  =maingrid.getRowsNum() ;
-            console.log(cant_filas_l_total);
+            var cant_filas_l_total  = cant_filas_l ;
             data = '';
             for(let i=0;i<cant_filas_l_total;i++){
                 data = maingrid.getRowData(i);
-                console.log(data);
                 if (data.che == 1) {
-                    myGrid_lista.addRow(myGrid_lista.uid(),[0,data.cod_prod,data.desc,data.desc],1);
+                    myGrid_lista.addRow(myGrid_lista.uid(),[0,data.cod_prod,data.desc,data.mar,data.sbmr,data.cla,data.fam,data.sbfa],1);
                 }
             }
             break;        
@@ -474,8 +489,8 @@ mainToolbarOnClick= async (id) => {
 
 OnclickLista = (id) => {
     switch (id) {
-        case 'b_close':
-             Wind_.window("wprod").close();
+        case 'b_close':             
+            mainLayout_product.cells('c').collapse();
             break;  
         case 'desmarcar':
             myGrid_lista.setCheckedRows(0,0);
@@ -483,6 +498,21 @@ OnclickLista = (id) => {
         case 'marcar':
             myGrid_lista.setCheckedRows(0,1);
         break;        
+        case 'eliminar':
+            var to_fila_data_num_gri = myGrid_lista.getRowsNum();
+            console.log(to_fila_data_num_gri);
+            for(var i=1;i<to_fila_data_num_gri;i++){
+                console.log('data');
+                let iRowId_gri = myGrid_lista.getRowId(i);
+                console.log(iRowId_gri);
+                data = myGrid_lista.getRowData(iRowId_gri);
+                if (data.chk == 1) {
+                    myGrid_lista.deleteRow(iRowId_gri);
+                    i = i - 1;
+                    to_fila_data_num_gri = to_fila_data_num_gri - 1;
+                }
+            }
+        break;
         default:
             null;
             break;
@@ -534,7 +564,7 @@ cargarProductos = (buscar,co_clase,co_familia,co_subfamilia,co_marca,co_submarca
     mainLayout_product.cells('b').progressOn();
     maingrid.load( BASE_URL + 'PO010208/mostrar-producto/'+ buscar+'/'+co_clase+'/'+co_familia+'/'+co_subfamilia+'/'+co_marca+'/'+co_submarca).then(function (text) {
     mainLayout_product.cells('b').progressOff();
-        // cant_filas_l = maingrid.getRowsNum();
+        cant_filas_l = maingrid.getRowsNum();
     });
 };
 

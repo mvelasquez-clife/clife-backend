@@ -83,15 +83,23 @@
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "calendar", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_fechadesde", label: 'Vigencia Inicio: '}, { type: "newcolumn" },
+                    { type: "calendar", readonly: false, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_fechadesde", label: 'Vigencia Inicio: '}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "calendar", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_fechahasta", label: 'Vigencia Fin: '}, { type: "newcolumn" },
+                    { type: "calendar", readonly: false, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_fechahasta", label: 'Vigencia Fin: '}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
                     { type: "select", offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_formacosmetica", label: 'Forma Cosmetica: ', connector: BASE_URL + 'PO010208/mostrar-forma-cosmetica'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_estado", label: 'Estado: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "checkbox", checked: false,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_kit", label: 'KIT: '}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
@@ -157,9 +165,17 @@
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_formacosmetica", label: 'Forma Cosmetica: '}, { type: "newcolumn" },
+                { type: "select", offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_formacosmetica", label: 'Forma Cosmetica: ', connector: BASE_URL + 'PO010208/mostrar-forma-cosmetica'}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_estado", label: 'Estado: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "checkbox", checked: false,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_kit", label: 'KIT: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },,
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
                     { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_nroregistro", label: 'Nro. Registro: '}, { type: "newcolumn" },
                     ],},

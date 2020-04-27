@@ -1,9 +1,6 @@
 const oracledb = require('oracledb');
 const dbParams = require('../../database');
 const xmlParser = require('../../xml-parser');
-// const bcrypt = require('bcrypt');
-// const crypto = require('crypto');
-// const curlHost = '192.168.1.202';
 var fs = require('fs');
 const responseParams = {
     outFormat: oracledb.OBJECT,
@@ -189,7 +186,7 @@ const po010208Controller = {
     },
 
     grabarnsoc: (req, res) => {        
-        const {empresa,num_registro,cant_filas_prod,cadena_productos,vigencia_ini,vigencia_ter,nombre} = req.body;  
+        const {empresa,num_registro_nsoc,cant_filas_prod,cadena_productos,vigencia_ini,vigencia_ter,nombre,form_cosm} = req.body;  
   
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
@@ -199,19 +196,20 @@ const po010208Controller = {
                 });
                 return;
             }
-            const query = "call PACK_NEW_DIRECCION_TECN.SP_NOTIFICACION_SANITARIA (:x_result,:x_de_result,:x_empresa,:x_num_registro,:x_cant_filas_prod,:x_cadena_productos,:x_vigencia_ini,:x_vigencia_ter,:x_nombre)";
+            const query = "call PACK_NEW_DIRECCION_TECN.SP_NOTIFICACION_SANITARIA (:x_result,:x_de_result,:x_empresa,:x_num_registro_nsoc,:x_cant_filas_prod,:x_cadena_productos,:x_vigencia_ini,:x_vigencia_ter,:x_nombre,:x_form_cosm)";
             const params = { 
                 //parametros de salida
                 x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
                 x_de_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING },
                 //parametros de entrada
                 x_empresa: {val:empresa},
-                x_num_registro: {val:num_registro},
+                x_num_registro_nsoc: {val:num_registro_nsoc},
                 x_cant_filas_prod: {val:cant_filas_prod},
                 x_cadena_productos: {val:cadena_productos},//,x_vigencia_ini varchar2,x_vigencia_ter varchar2
                 x_vigencia_ini: {val:vigencia_ini},
                 x_vigencia_ter: {val:vigencia_ter},
                 x_nombre : {val:nombre},
+                x_form_cosm  : {val:form_cosm},
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
@@ -287,6 +285,7 @@ const po010208Controller = {
     CargarPdf: async (request, response) => {
             const mv = require('mv');
             const formidable = require('formidable');
+            const fupload = require('./../../fupload');
             var form = new formidable.IncomingForm();
             form.parse(request, async function (err, fields, files) {
                 if (err) {
@@ -299,8 +298,9 @@ const po010208Controller = {
                 const sFilename = 'Formula.pdf';
                 var oldpath = files.pdf.path;
                 console.log(fields.nsoc);
-                var newpath = 'public/files/direccion_tecnica/'+fields.tipo+'/nso_'+fields.nsoc+'.pdf';
-                
+                var rfilename = fields.tipo+'_'+fields.nsoc+'.pdf';
+                var rutaserv = 'public/files/direccion_tecnica/'+fields.tipo+'/nso_'+fields.nsoc+'.pdf';
+                var newpath = fupload.tmppath + 'unsigned_' + rfilename;
                 mv(oldpath, newpath, async function (err) {
                     console.log('entro11');
                     if (err) {
@@ -309,6 +309,16 @@ const po010208Controller = {
                             error: err
                         });
                     }
+                    // console.log(newpath);
+                    // const newpathsigned = fupload.tmppath + 'unsigned_' + rfilename;
+                    // const ftpmanager = require('./../../libs/ftp-manager');
+                    // let result = await ftpmanager.SubirRegistro(newpathsigned, rutaserv);
+                    // if (result.error) {
+                    //     response.json({ 
+                    //         error: result.error
+                    //     });
+                    //     return;
+                    // } // fin ftp-manager
                     response.json({
                         result: 'ok'
                     });
@@ -317,18 +327,27 @@ const po010208Controller = {
         
     },
     
-    abrirPDF: (req, res) => {    
+    abrirPDF: async (req, res) => {    
         const {tipodoc,nsoc} = req.body;  
-        var opn = require('opn'); 
-
-        fs.stat('public/files/direccion_tecnica/'+tipodoc+'/nso_'+nsoc+'.pdf', function(err) {
-            if (!err) { 
-                opn('public/files/direccion_tecnica/'+tipodoc+'/nso_'+nsoc+'.pdf',{app: 'chrome'});
+        const fupload = require('./../../fupload');
+        // var opn = require('opn'); 
+        var newpath = 'C:\\clife-backend\\public\\files\\direccion_tecnica\\'+tipodoc+'\\nso_'+nsoc+'.pdf';
+        // let o_nombre ='public/files/direccion_tecnica/'+fields.tipo+'/nso_'+fields.nsoc+'.pdf';
+        
+        var rfilename = tipodoc+'_'+nsoc+'.pdf';
+        var newpath = fupload.tmppath + 'unsigned_' + rfilename;
+        fs.stat(newpath, async function(err) {
+            if (!err) {    
+                console.log('entra fs'); 
+                
+                res.send({ 'state': 'success','message': "https://mail.corporacionlife.com.pe/service/home/~/?auth=co&loc=es&id=2972&part=2" });
+                
             }
             else if (err.code === 'ENOENT') {                
                 res.send({ 'error_query': 'Error' });
             }
         });
+
              
     },
 
