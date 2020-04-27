@@ -62,6 +62,7 @@ app.use('/api/VT010123', require('./routes/ventas/VT010123.routes'));
 app.use('/api/CO0201', require('./routes/contabilidad/CO0201.routes'));
 app.use('/api/SG010101', require('./routes/seguridad/SG010101.routes'));
 app.use('/api/SG010203', require('./routes/seguridad/SG010203.routes'));
+app.use('/api/PO010208', require('./routes/plantaindustrial/PO010208.routes'));
 
 //ruta del chat
 app.use('/chat', require('./routes/chat.routes'));

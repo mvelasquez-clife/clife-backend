@@ -86,6 +86,7 @@ async function save_recuperacion(event) {
 function FormLoginOnSubmit() {
     var p = {usuario: document.getElementById("usuario").value, clave: document.getElementById("clave").value};
     $.post(BASE_URL + "auth/login", p, function (response) {
+        console.log('aaa');
         resultado = response.state;
         if (response.state == "success") {
             localStorage.setItem('jwt', response.data.token);

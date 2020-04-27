@@ -50,6 +50,9 @@ const intranetController = {
             case 'SG':
                 subcarpeta = 'seguridad';
                 break;
+            case 'PO':
+                subcarpeta = 'plantaindustrial';
+                break;
             default:
                 '';
         }
