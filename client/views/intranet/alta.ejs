@@ -134,8 +134,8 @@
                         return;
                     }
                     alert('Datos registrados. Ya puedes ingresar a la Intranet Life');
-                    $('#modal-confirma').modal('hide');
-                    location.redirect('/intranet/login');
+                    // $('#modal-confirma').modal('hide');
+                    location.href = '/intranet/login';
                 }
                 catch (err) {
                     alert(JSON.stringify(err));

@@ -411,6 +411,7 @@
                 let cfiles = $('#doc-container').children('div');
                 const totalArchivos = cfiles.length;
                 MuestraIndicadorCarga();
+                let destinatarios = [];
                 for (let i = 0; i < totalArchivos; i++) {
                     let div = cfiles.eq(i);
                     if (div.data('valid') == 1) {
@@ -443,6 +444,7 @@
                             div.removeClass('bg-light text-secondary').addClass('bg-success text-light').append(
                                 $('<small>').html('Archivo subido con éxito')
                             ).children('p').children('i').removeClass('fa-hourglass-half').addClass('fa-check');
+                            destinatarios.push(result.codigo);
                         }
                         catch (err) {
                             console.error(err);
@@ -459,9 +461,32 @@
                         });
                     }
                 }
+                // listo
                 $('#form-archivos').val('').next().removeClass('text-success').text('No ha seleccionado archivos para subir');
                 // $('#btn-upload').removeClass('disabled');
                 OcultaIndicadorCarga();
+                // enviar el sms
+                let resms;
+                try {
+                    let smsdata = {
+                        documentos: destinatarios.join(','),
+                        empresa: document.getElementById('form-empresa').value,
+                        envio: document.getElementById('crear-envio').value
+                    };
+                    resms = await $.ajax({
+                        url: '/intranet/send-sms',
+                        type: 'post',
+                        dataType: 'json',
+                        data: smsdata
+                    });
+console.log(smsdata);
+                    if (resms.error) {
+                        console.error(resms.error);
+                    }
+                }
+                catch (err) {
+                    console.error(err);
+                }
             }
             // go!
             $(_ => {

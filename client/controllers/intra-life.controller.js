@@ -8,6 +8,7 @@ const encParams = require('../../server/config/encrypt');
 const responseParams = {
     outFormat: oracledb.OBJECT
 };
+const db = require('./../../server/libs/db-oracle');
 
 const LifeController = {
     Login: (request, response) => {
@@ -208,13 +209,13 @@ const LifeController = {
     ListaEmpresas: async (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             try {
-                const conn = await oracledb.getConnection(dbParams);
-                const query = "select * from table(pack_digitalizacion.f_lista_empresas)";
-                const params = {};
-                const result = await conn.execute(query, params, responseParams);
+                let params = [
+                    { name: 'rs', io: 'out', type: 'cursor' }
+                ];
+                let result = await db.resultSet('call pack_digitalizacion.sp_lista_empresas (:rs)', params);
                 response.json({
                     data: {
-                        empresas: result.rows
+                        empresas: result.rs
                     }
                 });
             }
@@ -341,13 +342,22 @@ const LifeController = {
     ListaTiposDoc: async (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             try {
-                const conn = await oracledb.getConnection(dbParams);
+                /*const conn = await oracledb.getConnection(dbParams);
                 const query = "select * from table(pack_digitalizacion.f_lista_tipos_doc)";
                 const params = {};
                 const result = await conn.execute(query, params, responseParams);
                 response.json({
                     data: {
                         tiposdoc: result.rows
+                    }
+                });*/
+                let params = [
+                    { name: 'rs', io: 'out', type: 'cursor' }
+                ];
+                let result = await db.resultSet('call pack_digitalizacion.sp_lista_tipos_doc (:rs)', params);
+                response.json({
+                    data: {
+                        tiposdoc: result.rs
                     }
                 });
             }
@@ -523,7 +533,7 @@ const LifeController = {
                     // firma el mugre pdf
                     const newpathsigned = fupload.tmppath + sFilename;
                     var exec = require('child_process').exec, child;
-                    child = exec('java -jar ' + java.stamper + ' "' + newpath + '" "' + newpathsigned + '"', async function (error, stdout, stderr){
+                    child = exec('java -jar ' + java.stamper + ' "' + newpath + '" "' + newpathsigned + '"', async function (error, stdout, stderr) {
                         if(stdout.indexOf('OK') == -1){
                             let serror = (error || stderr);
                             console.log('exec error: ' + serror);
@@ -549,7 +559,7 @@ const LifeController = {
                         try {
                             const conn = await oracledb.getConnection(dbParams);
                             // registra en el legajo de clientes
-                            let query = "call pack_new_attached.sp_save_adjunto(:o_codigo, :o_resultado, :p_empresa, :p_usuario, :p_tipo_enti, :p_cataenti, :p_archivo, " +
+                            let query = "call pack_new_attached.sp_save_adjunto_2(:o_codigo, :o_resultado, :p_empresa, :p_usuario, :p_tipo_enti, :p_cataenti, :p_archivo, " +
                                 ":p_tipoarchivo, :p_ruta, :p_fichero, :p_extension, :p_descripcion, :p_tpdocu, :p_tipocarpeta, :p_nuitems)";
                             let params = {
                                 o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
@@ -632,7 +642,7 @@ const LifeController = {
                             // envia el pinche email
                             const data = {
                                 nombre: destinatario.o_apepat + ' ' + destinatario.o_apemat + ', ' + destinatario.o_nombres,
-                                url: 'http://192.168.11.163:3000/intranet/ver-documento/' + encrypted,
+                                url: 'http://201.131.220.18:3000/intranet/ver-documento/' + encrypted,
                                 periodo: oenvio.o_periodo,
                                 envio: oenvio.o_envio
                             };
@@ -662,7 +672,7 @@ const LifeController = {
                             }
                             // listijirillo
                             response.json({
-                                result: 'ok'
+                                codigo: fields.codigo
                             });
                         }
                         catch (err) {
@@ -1022,16 +1032,15 @@ const LifeController = {
         if (request.cookies[confParams.cookieIntranet]) {
             const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
             try {
-                const conn = await oracledb.getConnection(dbParams);
-                let query = "select * from table(pack_digitalizacion.f_papeletas_solicitadas(:p_empresa, :p_usuario))";
-                let params = {
-                    p_empresa: { val: sesion.empresa },
-                    p_usuario: { val: sesion.codigo }
-                };
-                let result = await conn.execute(query, params, responseParams);
+                let params = [
+                    { name: 'empresa', io: 'in', value: sesion.empresa },
+                    { name: 'codigo', io: 'in', value: sesion.codigo },
+                    { name: 'rs', io: 'out', type: 'cursor' }
+                ];
+                let result = await db.resultSet('call pack_digitalizacion.sp_papeletas_solicitadas (:empresa,:codigo,:rs)', params);
                 response.json({
                     data: {
-                        papeletas: result.rows
+                        papeletas: result.rs
                     }
                 });
             }
@@ -1084,7 +1093,7 @@ const LifeController = {
         if (request.cookies[confParams.cookieIntranet]) {
             const { empresa, tipodoc, envio, periodo, usuario } = request.body;
             try {
-                const conn = await oracledb.getConnection(dbParams);
+                /*const conn = await oracledb.getConnection(dbParams);
                 let query = "select * from table (pack_digitalizacion.f_reporte_acuse(:p_empresa, :p_tipo, :p_envio, :p_periodo, :p_usuario))";
                 let params = {
                     p_empresa: { val: empresa },
@@ -1093,10 +1102,19 @@ const LifeController = {
                     p_periodo: { val: periodo },
                     p_usuario: { val: usuario }
                 };
-                const result = await conn.execute(query, params, responseParams);
+                const result = await conn.execute(query, params, responseParams);*/
+                let params = [
+                    { name: 'empresa', io: 'in', value: empresa },
+                    { name: 'tipodoc', io: 'in', value: tipodoc },
+                    { name: 'envio', io: 'in', value: envio },
+                    { name: 'periodo', io: 'in', value: periodo },
+                    { name: 'usuario', io: 'in', value: usuario },
+                    { name: 'rs', io: 'out', type: 'cursor' }
+                ];
+                let result = await db.resultSet('call pack_digitalizacion.sp_reporte_acuse (:empresa,:tipodoc,:envio,:periodo,:usuario,:rs)', params);
                 response.json({
                     data: {
-                        reporte: result.rows
+                        reporte: result.rs
                     }
                 });
             }
@@ -1328,15 +1346,14 @@ const LifeController = {
         if (request.cookies[confParams.cookieIntranet]) {
             const { empresa } = request.body;
             try {
-                const conn = await oracledb.getConnection(dbParams);
-                const query = "select * from table (pack_digitalizacion.f_lista_eventos(:p_empresa))";
-                const params = {
-                    p_empresa: { val: empresa }
-                };
-                const result = await conn.execute(query, params, responseParams);
+                let params = [
+                    { name: 'empresa', io: 'in', value: empresa },
+                    { name: 'rs', io: 'out', type: 'cursor' }
+                ];
+                let result = await db.resultSet('call pack_digitalizacion.sp_lista_eventos (:empresa,:rs)', params);
                 response.json({
                     data: {
-                        eventos: result.rows
+                        eventos: result.rs
                     }
                 });
             }
@@ -1357,15 +1374,20 @@ const LifeController = {
         if (request.cookies[confParams.cookieIntranet]) {
             const { empresa } = request.body;
             try {
-                const conn = await oracledb.getConnection(dbParams);
+                /*const conn = await oracledb.getConnection(dbParams);
                 const query = "select * from table (pack_digitalizacion.f_lista_periodos(:p_empresa))";
                 const params = {
                     p_empresa: { val: empresa }
                 };
-                const result = await conn.execute(query, params, responseParams);
+                const result = await conn.execute(query, params, responseParams);*/
+                let params = [
+                    { name: 'empresa', io: 'in', value: empresa },
+                    { name: 'rs', io: 'out', type: 'cursor' }
+                ];
+                let result = await db.resultSet('call pack_digitalizacion.sp_lista_periodos (:empresa,:rs)', params);
                 response.json({
                     data: {
-                        periodos: result.rows
+                        periodos: result.rs
                     }
                 });
             }
@@ -1386,16 +1408,15 @@ const LifeController = {
         if (request.cookies[confParams.cookieIntranet]) {
             const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
             try {
-                const conn = await oracledb.getConnection(dbParams);
-                const query = "select * from table (pack_digitalizacion.f_lista_eventos_hoy(:p_empresa, :p_personal))";
-                const params = {
-                    p_empresa: { val: sesion.empresa },
-                    p_personal: { val: sesion.codigo }
-                };
-                const result = await conn.execute(query, params, responseParams);
+                let params = [
+                    { name: 'empresa', io: 'in', value: sesion.empresa },
+                    { name: 'personal', io: 'in', value: sesion.codigo },
+                    { name: 'rs', io: 'out', type: 'cursor' }
+                ];
+                let result = await db.resultSet('call pack_digitalizacion.sp_lista_eventos_hoy (:empresa,:personal,:rs)', params);
                 response.json({
                     data: {
-                        eventos: result.rows
+                        eventos: result.rs
                     }
                 });
             }
@@ -1417,16 +1438,15 @@ const LifeController = {
             const { evento } = request.body;
             const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
             try {
-                const conn = await oracledb.getConnection(dbParams);
-                const query = "select * from table (pack_digitalizacion.f_asistentes_evento(:p_empresa, :p_evento))";
-                const params = {
-                    p_empresa: { val: sesion.empresa },
-                    p_evento: { val: evento }
-                };
-                const result = await conn.execute(query, params, responseParams);
+                let params = [
+                    { name: 'empresa', io: 'in', value: sesion.empresa },
+                    { name: 'evento', io: 'in', value: evento },
+                    { name: 'rs', io: 'out', type: 'cursor' }
+                ];
+                let result = await db.resultSet('call pack_digitalizacion.sp_asistentes_evento (:empresa,:evento,:rs)', params);
                 response.json({
                     data: {
-                        asistentes: result.rows
+                        asistentes: result.rs
                     }
                 });
             }
@@ -1694,6 +1714,79 @@ const LifeController = {
         else {
             response.send('Archivo subido alv');
         }
+    },
+    PruebaSms: async (request, response) => {
+        let sms = require('./../../server/config/sms');
+        var http = require("https");
+        var btoa = require("btoa");
+        var options = {
+            "method": "POST",
+            "hostname": 'https://api.labsmobile.com/json/send',
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Basic " + btoa(sms.username + ':' + sms.password),
+                "Cache-Control": "no-cache"
+            }
+        };
+        var req = http.request(options, function (res, err) {
+            if (err) {
+                console.error(err);
+            }
+            var chunks = [];
+            res.on("data", function (chunk) {
+                chunks.push(chunk);
+            });
+            res.on("end", function () {
+                var body = Buffer.concat(chunks);
+                console.log(body.toString());
+            });
+        });
+
+        req.write(JSON.stringify({
+            message: 'Text of the SMS message',
+            tpoa: 'Sender',
+            recipient: [
+                { msisdn: '+51989845561' },
+                { msisdn: '+51932819630' }
+            ]
+        }));
+        req.send();
+        response.json({
+            gg: 'wp'
+        });
+    },
+    EnviarSms: async (request, response) => {
+        let { documentos, empresa, envio } = request.body;
+        let dblib = require('./../../server/libs/db-oracle');
+        let query = "call pack_digitalizacion.sp_lista_telefonos (:documentos, :empresa, :telefonos)";
+        let params = [
+            { name: 'documentos', io: 'in', value: documentos },
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'telefonos', io: 'out', type: 'cursor' }
+        ];
+        let result = await dblib.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        let telefonos = result.telefonos;
+        let command = 'php /var/www/html/sms/sms.php ' + envio;
+        // let command = 'php D:\\desarrollo\\www\\sms\\sms.php ' + envio;
+        for (let telefono of telefonos) {
+            if (telefono != '') {
+                command += ' ' + telefono.telefono;
+            }
+        }
+console.log('EnviarSms', command);
+        var exec = require('child_process').exec, child;
+        child = exec(command, async function (error, stdout, stderr) {
+console.log('child exec', stdout);
+            response.json({
+                result: 'OK'
+            });
+        });
     }
 };
 
