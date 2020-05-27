@@ -1,0 +1,22 @@
+.dv-combo {
+    height: 24px;
+    margin-top: -3px;
+}
+.dv-label {
+    background-color: #ffffff;
+    border: 1px solid #a4bed4;
+    box-sizing: border-box;
+    cursor: text;
+    height: 20px;
+    margin-top: -1px;
+    padding: 1px 6px;
+}
+.text-left {
+    text-align: left;
+}
+.text-right {
+    text-align: right;
+}
+.text-center {
+    text-align: center;
+}

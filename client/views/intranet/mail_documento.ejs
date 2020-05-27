@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div style="background-color:#d0d0d0;box-sizing:border-box;text-align:center;width:100%">
+        <div style="box-sizing:border-box;margin:0 auto;width:640px;">
+            <div style="background-color:#404040;border-top:4px solid #00aa9b;box-sizing:border-box;text-align:left;width:100%;">
+                <img src="http://192.168.11.163:3000/assets/intranet/images/clife-banner-light.svg" alt="Corporacion Life" style="height:28px;margin:16px 32px;">
+            </div>
+            <div style="background-color:#f0f0f0;box-sizing:border-box;padding:24px 0;width:100%;">
+                <h1 style="box-sizing:border-box;font-family:Verdana;font-size:18px;font-weight:normal;margin:0;">Envío de documentos</h1>
+            </div>
+            <div style="background-color:#ffffff;box-sizing:border-box;padding:16px 0;width:100%;">
+                <div style="background-color:#fff59d;box-sizing:border-box;margin:4px 40px 20px;padding:6px;width:560px;">
+                    <p style="font-family:Verdana;font-size:12px;margin:0;padding:8px 12px;text-align:justify;">
+                        Este archivo es una representación del documento emitido por el área de Recursos Humanos.
+                    </p>
+                </div>
+                <p style="color:#00aa9b;font-family:Verdana;font-size:13px;margin:0 40px;padding:8px 12px;text-align:justify;">
+                    Estimad@ <%=nombre%>
+                </p>
+                <p style="font-family:Verdana;font-size:12px;margin:0 40px;padding:8px 12px;text-align:justify;">
+                    Por medio del presente correo, el área de Recursos Humanos le hace entrega del siguiente documento:
+                </p>
+                <p style="font-family:Verdana;font-size:12px;margin:0 40px 0 52px;padding:8px 12px;text-align:justify;">
+                    &bull; Periodo: <span style="font-weight:700;"><%=periodo%></span>
+                </p>
+                <p style="font-family:Verdana;font-size:12px;margin:0 40px 0 52px;padding:8px 12px;text-align:justify;">
+                    &bull; Proceso: <span style="font-weight:700;"><%=envio%></span>
+                </p>
+                <p style="font-family:Verdana;font-size:12px;margin:0 40px;padding:8px 12px;text-align:justify;">
+                    Podrá descargar su boleta utilizando el siguiente enlace:
+                </p>
+                <p style="font-family:Verdana;font-size:12px;margin:0 40px;padding:8px 12px;text-align:justify;">
+                    <a href="<%=url%>" target="_blank" style="background-color:#e53935;color:#ffffff;display:block;font-size:16px;margin:0 auto;padding:10px 16px;text-align:center;text-decoration:none;">Descargar mi documento ahora</a>
+                </p>
+                <p style="font-family:Verdana;font-size:12px;margin:0 40px;padding:8px 12px;text-align:justify;">
+                    ¡Muchas gracias y saludos cordiales de todo el equipo de Corporacion Life!
+                </p>
+            </div>
+            <div style="background-color:#404040;border-top:4px solid #00aa9b;box-sizing:border-box;text-align:left;width:100%;">
+                <div style="padding-top:6px;width:100%;">
+                    <div style="display:inline-block;margin:0;padding:8px 0;text-align:center;vertical-align:top;width:33.33%;">
+                        <img src="http://192.168.11.163:3000/assets/intranet/images/ic-phone.png" style="margin:0;width:40px;">
+                        <p style="color:#ffffff;font-family:Verdana;font-size:12px;margin:0 0 12px;text-align:center;">(01) 253-5609</p>
+                    </div><div style="display:inline-block;margin:0;padding:8px 0;text-align:center;vertical-align:top;width:33.33%;">
+                        <img src="http://192.168.11.163:3000/assets/intranet/images/ic-marker.png" style="margin:0;width:40px;">
+                        <p style="color:#ffffff;font-family:Verdana;font-size:12px;margin:0 0 12px;text-align:center;">Av. Javier Prado Este 578 - San Isidro</p>
+                    </div><div style="display:inline-block;margin:0;padding:8px 0;text-align:center;vertical-align:top;width:33.33%;">
+                        <img src="http://192.168.11.163:3000/assets/intranet/images/ic-mail.png" style="margin:0;width:40px;">
+                        <p style="color:#ffffff;font-family:Verdana;font-size:12px;margin:0 0 12px;text-align:center;">analistaplanillas @corporacionlife.com.pe</p>
+                    </div>
+                </div>
+            </div>
+            <div style="background-color:#f0f0f0;box-sizing:border-box;padding:8px 0;width:100%;">
+                <p style="font-family:Verdana;font-size:10px;margin:0 40px;padding:2px 6px;text-align:center;">
+                    &copy;2020 Corporacion Life SAC - Todos los derechos reservados
+                </p>
+                <p style="font-family:Verdana;font-size:10px;margin:0 40px;padding:2px 6px;text-align:center;">
+                    Este mensaje fue enviado automáticamente. Por favor, no responda este correo.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

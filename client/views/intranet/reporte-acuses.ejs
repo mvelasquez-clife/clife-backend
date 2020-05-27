@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <% include _main.sidenav.admin.ejs %>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Reportes</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Acuse de documentos</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Datos del reporte</p>
+                            </li>
+                            <li class="list-group-item">
+                                <ul class="nav nav-pills mb-1" id="pills-tab" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" id="busqueda-envio-tab" data-toggle="pill" href="#busqueda-envio" role="tab" aria-controls="busqueda-envio" aria-selected="true">Por envío</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="busqueda-usuario-tab" data-toggle="pill" href="#busqueda-usuario" role="tab" aria-controls="busqueda-usuario" aria-selected="false">Por usuario</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" id="busqueda-periodo-tab" data-toggle="pill" href="#busqueda-periodo" role="tab" aria-controls="busqueda-periodo" aria-selected="false">Por periodo</a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content" id="pills-tabContent">
+                                    <div class="tab-pane fade show active" id="busqueda-envio" role="tabpanel" aria-labelledby="busqueda-envio-tab">
+                                        <form id="form-reporte" class="py-1">
+                                            <div class="form-group row mb-2">
+                                                <label for="rpa-empresa" class="col-sm-2 col-form-label">Empresa</label>
+                                                <div class="col-sm-6">
+                                                    <select id="rpa-empresa" class="form-control form-control-sm">
+                                                        <option value="0">- Seleccione -</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row mb-2">
+                                                <label for="rpa-tipodoc" class="col-sm-2 col-form-label">Tipo documento</label>
+                                                <div class="col-sm-6">
+                                                    <select id="rpa-tipodoc" class="form-control form-control-sm">
+                                                        <option value="0">- Seleccione -</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row mb-2">
+                                                <label for="rpa-envio" class="col-sm-2 col-form-label">Envío</label>
+                                                <div class="col-sm-10">
+                                                    <select id="rpa-envio" class="form-control form-control-sm">
+                                                        <option value="0">- Seleccione -</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row mb-0">
+                                                <div class="col-sm-10 offset-lg-2">
+                                                    <button id="rpa-buscar" class="btn btn-sm btn-primary"><i class="fa fa-cogs"></i> Generar reporte</button>
+                                                    <a id="rpa-pdf" href="#" class="btn btn-sm btn-danger btn-pdf disabled ml-1" target="_blank"><i class="fa fa-file-pdf-o"></i> Exportar a PDF</a>
+                                                    <a id="rpa-xls" href="#" class="btn btn-sm btn-success btn-xls d-none disabled ml-1" target="_blank"><i class="fa fa-file-excel-o"></i> Exportar a XLS</a>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="tab-pane fade" id="busqueda-usuario" role="tabpanel" aria-labelledby="busqueda-usuario-tab">
+                                        <form id="form-usuario" class="py-1">
+                                            <div class="form-group row mb-2">
+                                                <label for="rpu-empresa" class="col-sm-2 col-form-label">Empresa</label>
+                                                <div class="col-sm-6">
+                                                    <select id="rpu-empresa" class="form-control form-control-sm">
+                                                        <option value="0">- Seleccione -</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row mb-2">
+                                                <label for="rpu-personal" class="col-sm-2 col-form-label">Personal</label>
+                                                <div class="col-sm-10">
+                                                    <select id="rpu-personal" class="form-control form-control-sm">
+                                                        <option value="0">- Seleccione -</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row mb-0">
+                                                <div class="col-sm-10 offset-lg-2">
+                                                    <button id="rpu-buscar" class="btn btn-sm btn-primary"><i class="fa fa-cogs"></i> Generar reporte</button>
+                                                    <a id="rpu-pdf" href="#" class="btn btn-sm btn-danger btn-pdf disabled ml-1" target="_blank"><i class="fa fa-file-pdf-o"></i> Exportar a PDF</a>
+                                                    <a id="rpu-xls" href="#" class="btn btn-sm btn-success btn-xls d-none disabled ml-1" target="_blank"><i class="fa fa-file-excel-o"></i> Exportar a XLS</a>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="tab-pane fade" id="busqueda-periodo" role="tabpanel" aria-labelledby="busqueda-periodo-tab">
+                                        <form id="form-periodo" class="py-1">
+                                            <div class="form-group row mb-2">
+                                                <label for="rpp-empresa" class="col-sm-2 col-form-label">Empresa</label>
+                                                <div class="col-sm-6">
+                                                    <select id="rpp-empresa" class="form-control form-control-sm">
+                                                        <option value="0">- Seleccione -</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row mb-2">
+                                                <label for="rpp-periodo" class="col-sm-2 col-form-label">Periodo</label>
+                                                <div class="col-sm-4">
+                                                    <select id="rpp-periodo" class="form-control form-control-sm">
+                                                        <option value="0">- Seleccione -</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row mb-0">
+                                                <div class="col-sm-10 offset-lg-2">
+                                                    <button id="rpp-buscar" class="btn btn-sm btn-primary"><i class="fa fa-cogs"></i> Generar reporte</button>
+                                                    <a id="rpp-pdf" href="#" class="btn btn-sm btn-danger btn-pdf disabled ml-1" target="_blank"><i class="fa fa-file-pdf-o"></i> Exportar a PDF</a>
+                                                    <a id="rpp-xls" href="#" class="btn btn-sm btn-success btn-xls d-none disabled ml-1" target="_blank"><i class="fa fa-file-excel-o"></i> Exportar a XLS</a>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item" id="reporte-container">
+                                <p class="text-secondary mb-0">Debe seleccionar un envío para mostrar el reporte</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            let DatosReporteAcuse = [];
+            // funciones
+            CargarListaEnvios = async _ => {
+                const empresa = document.getElementById('rpa-empresa').value;
+                const tipodoc = document.getElementById('rpa-tipodoc').value;
+                if (empresa != '0' && tipodoc != '0') {
+                    $('#rpa-envio').empty().append(
+                        $('<option>').val('0').html('- Seleccione -')
+                    );
+                    try {
+                        let result = await $.ajax({
+                            url: '/intranet/lista-envios',
+                            method: 'post',
+                            data: { empresa: empresa, tipodoc: tipodoc },
+                            dataType: 'json'
+                        });
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        for (let envio of result.data.envios) {
+                            $('#rpa-envio').append(
+                                $('<option>').val(envio.codigo).text(envio.descripcion)
+                            );
+                        }
+                    }
+                    catch (err) {
+                        alert(JSON.stringify(err));
+                        console.error(err);
+                    }
+                }
+            }
+            CargarListaPersonal = async _ => {
+                const empresa = document.getElementById('rpu-empresa').value;
+                try {
+                    let result = await $.ajax({
+                        url: '/intranet/lista-personal',
+                        method: 'post',
+                        data: { empresa: empresa },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    for (let persona of result.data.personal) {
+                        $('#rpu-personal').append(
+                            $('<option>').val(persona.DOCIDEN).text(persona.APEPAT + ' ' + persona.APEMAT + ', ' + persona.NOMBRES)
+                        );
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                    console.error(err);
+                }
+            }
+            CargarListaPeriodos = async _ => {
+                const empresa = document.getElementById('rpp-empresa').value;
+                try {
+                    let result = await $.ajax({
+                        url: '/intranet/lista-periodos',
+                        method: 'post',
+                        data: { empresa: empresa },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    for (let periodo of result.data.periodos) {
+                        $('#rpp-periodo').append(
+                            $('<option>').val(periodo.value).text(periodo.text)
+                        );
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                    console.error(err);
+                }
+            }
+            CargarCombos = async _ => {
+                // combo empresas - busca x envio
+                let result = await $.ajax({
+                    url: '/intranet/lista-empresas',
+                    method: 'post',
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                for (let empresa of result.data.empresas) {
+                    $('#rpa-empresa').append(
+                        $('<option>').val(empresa.value).text(empresa.text)
+                    );
+                    $('#rpu-empresa').append(
+                        $('<option>').val(empresa.value).text(empresa.text)
+                    );
+                    $('#rpp-empresa').append(
+                        $('<option>').val(empresa.value).text(empresa.text)
+                    );
+                }
+                $('#rpa-empresa').on('change', CargarListaEnvios);
+                $('#rpu-empresa').on('change', CargarListaPersonal);
+                $('#rpp-empresa').on('change', CargarListaPeriodos);
+                // combo tipos documento - busca x envio
+                result = await $.ajax({
+                    url: '/intranet/lista-tipos-doc',
+                    method: 'post',
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                for (let tipodoc of result.data.tiposdoc) {
+                    $('#rpa-tipodoc').append(
+                        $('<option>').val(tipodoc.value).text(tipodoc.text)
+                    );
+                }
+                $('#rpa-tipodoc').on('change', CargarListaEnvios);
+            }
+            EscribirReporteAcuse = _ => {
+                let tbody = $('<tbody>');
+                for (let fila of DatosReporteAcuse) {
+                    tbody.append(
+                        $('<tr>').append(
+                            $('<td>').text(fila.dni)
+                        ).append(
+                            $('<td>').text(fila.nombre)
+                        ).append(
+                            $('<td>').text(fila.periodo)
+                        ).append(
+                            $('<td>').text(fila.documento + ' - ' + fila.descripcion)
+                        ).append(
+                            $('<td>').append(
+                                $('<span>').append(
+                                    $('<i>').addClass('mr-1 fa fa-' + (fila.estado == 'S' ? 'check' : 'hourglass-half'))
+                                ).append(fila.estado == 'S' ? 'Leído' : 'Pendiente').addClass('badge badge-md badge-' + (fila.estado == 'S' ? 'primary text-light' : 'warning text-dark'))
+                            )
+                        ).append(
+                            $('<td>').append(
+                                $('<p>').text(fila.detalle).addClass('mb-0')
+                            ).append(
+                                $('<p>').append(
+                                    $('<b>').text(fila.estado == 'S' ? 'Fecha y hora:' : '').addClass('mr-1')
+                                ).append(fila.fecha).addClass('mb-0')
+                            )
+                        )
+                    );
+                }
+                const table = $('<table>').append(
+                    $('<thead>').append(
+                        $('<tr>').append(
+                            $('<th>').text('DNI')
+                        ).append(
+                            $('<th>').text('Apellidos y nombres')
+                        ).append(
+                            $('<th>').text('Periodo')
+                        ).append(
+                            $('<th>').text('Documento')
+                        ).append(
+                            $('<th>').text('Estado')
+                        ).append(
+                            $('<th>').text('Detalle lectura')
+                        )
+                    )
+                ).append(tbody).addClass('table table-striped table-hover table-responsive');
+                $('#reporte-container').append(table);
+            }
+            GeneraReporteUsuario = async e => {
+                e.preventDefault();
+                $('.btn-pdf').addClass('disabled').attr('href', '#');
+                $('.btn-xls').addClass('disabled').attr('href', '#');
+                $('#reporte-container').empty();
+                const params = {
+                    empresa: document.getElementById('rpu-empresa').value,
+                    tipodoc: 0,
+                    envio: 0,
+                    periodo: 0,
+                    usuario: document.getElementById('rpu-personal').value
+                };
+                if (params.empresa == '0') {
+                    alert('Debe seleccionar una empresa');
+                    return;
+                }
+                if (params.usuario == '0') {
+                    alert('Debe seleccionar un usuario');
+                    return;
+                }
+                MuestraIndicadorCarga();
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/intranet/carga-reporte-acuse',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                    }
+                    else {
+                        DatosReporteAcuse = result.data.reporte;
+                        EscribirReporteAcuse();
+                        $('#rpu-pdf').removeClass('disabled').attr('href', '/intranet/pdf-reporte-acuse/' + params.empresa + '/' + params.tipodoc + '/' + params.envio + '/' + params.periodo + '/' + params.usuario);
+                        $('#rpu-xls').removeClass('disabled');
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+                OcultaIndicadorCarga();
+            }
+            GeneraReportePeriodo = async e => {
+                e.preventDefault();
+                $('.btn-pdf').addClass('disabled').attr('href', '#');
+                $('.btn-xls').addClass('disabled').attr('href', '#');
+                $('#reporte-container').empty();
+                const params = {
+                    empresa: document.getElementById('rpp-empresa').value,
+                    tipodoc: 0,
+                    envio: 0,
+                    periodo: document.getElementById('rpp-periodo').value,
+                    usuario: 0
+                };
+                if (params.empresa == '0') {
+                    alert('Debe seleccionar una empresa');
+                    return;
+                }
+                if (params.periodo == '0') {
+                    alert('Debe seleccionar un periodo');
+                    return;
+                }
+                MuestraIndicadorCarga();
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/intranet/carga-reporte-acuse',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                    }
+                    else {
+                        DatosReporteAcuse = result.data.reporte;
+                        EscribirReporteAcuse();
+                        $('#rpp-pdf').removeClass('disabled').attr('href', '/intranet/pdf-reporte-acuse/' + params.empresa + '/' + params.tipodoc + '/' + params.envio + '/' + params.periodo + '/' + params.usuario);
+                        $('#rpp-xls').removeClass('disabled');
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+                OcultaIndicadorCarga();
+            }
+            GeneraReporte = async e => {
+                e.preventDefault();
+                $('.btn-pdf').addClass('disabled').attr('href', '#');
+                $('.btn-xls').addClass('disabled').attr('href', '#');
+                $('#reporte-container').empty();
+                const params = {
+                    empresa: document.getElementById('rpa-empresa').value,
+                    tipodoc: document.getElementById('rpa-tipodoc').value,
+                    envio: document.getElementById('rpa-envio').value,
+                    periodo: 0,
+                    usuario: 0
+                };
+                if (params.empresa == '0') {
+                    alert('Debe seleccionar una empresa');
+                    return;
+                }
+                if (params.tipodoc == '0') {
+                    alert('Debe seleccionar un tipo de documento');
+                    return;
+                }
+                if (params.envio == '0') {
+                    alert('Debe seleccionar un envío');
+                    return;
+                }
+                MuestraIndicadorCarga();
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/intranet/carga-reporte-acuse',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                    }
+                    else {
+                        DatosReporteAcuse = result.data.reporte;
+                        EscribirReporteAcuse();
+                        $('#rpa-pdf').removeClass('disabled').attr('href', '/intranet/pdf-reporte-acuse/' + params.empresa + '/' + params.tipodoc + '/' + params.envio + '/' + params.periodo + '/' + params.usuario);
+                        $('#rpa-xls').removeClass('disabled');
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+                OcultaIndicadorCarga();
+            }
+            // go!
+            $(_ => {
+                $('#menu-reportes').collapse('show')
+                $('#reportes-acuse').addClass('active');
+                $('#<%=id%>').addClass('active');
+                $('#form-reporte').on('submit', GeneraReporte);
+                $('#form-usuario').on('submit', GeneraReporteUsuario);
+                $('#form-periodo').on('submit', GeneraReportePeriodo);
+                CargarCombos();
+            });
+        </script>
+    </body>
+</html>

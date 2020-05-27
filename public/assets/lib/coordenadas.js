@@ -1,5 +1,6 @@
 const structs = {
     FormUbicacion: [
+        /*
         {type: 'settings', labelWidth: 75, offsetLeft: 10, offsetTop: 10},
         {type: 'hidden', name: 'frCliente'},
         {type: 'hidden', name: 'frCodigo'},
@@ -15,6 +16,51 @@ const structs = {
             {type: 'newcolumn'},
             {type: 'button', value: 'Observar', name: 'btObservar'}
         ]}
+        */
+       { type: 'settings', labelWidth: 75, offsetLeft: 20, offsetTop: 0 },
+       { type: 'hidden', name: 'frCliente' },
+       { type: 'hidden', name: 'frCodigo' },
+       { type: 'block', label: 'Ubigeo', blockOffset: 0, offsetTop: 10, list: [
+           { type: 'combo', name: 'departamento', labelWidth: 75, label: 'Ubigeo', inputWidth: 120, offsetLeft: 0 },
+           { type: 'newcolumn' },
+           { type: 'combo', name: 'provincia', labelWidth: 0, inputWidth: 120, offsetLeft: 0 },
+           { type: 'newcolumn' },
+           { type: 'combo', name: 'distrito', labelWidth: 0, inputWidth: 120, offsetLeft: 0 }
+        ] },
+        { type: 'block', blockOffset: 0, list: [
+            { type: 'combo', name: 'covia', labelWidth: 75, label: 'Vía', inputWidth: 120, offsetLeft: 0 },
+            { type: 'newcolumn' },
+            { type: 'input', name: 'nomvia', labelWidth: 0, inputWidth: 320, offsetLeft: 0 }
+        ] },
+        { type: 'block', blockOffset: 0, list: [
+            { type: 'combo', name: 'cozona', labelWidth: 75, label: 'Zona', inputWidth: 120, offsetLeft: 0 },
+            { type: 'newcolumn' },
+            { type: 'input', name: 'nomzona', labelWidth: 0, inputWidth: 320, offsetLeft: 0 }
+        ] },
+        { type: 'block', blockOffset: 0, list: [
+            { type: 'input', name: 'numero', labelWidth: 75, label: 'Número', inputWidth: 120, offsetLeft: 0 },
+            { type: 'newcolumn' },
+            { type: 'input', name: 'interior', labelWidth: 0, label: 'Interior', inputWidth: 120, offsetLeft: 10 }
+        ] },
+        { type: 'block', blockOffset: 0, list: [
+            { type: 'input', name: 'referencias', labelWidth: 75, label: 'Referencias', inputWidth: 480, offsetLeft: 0 }
+        ] },
+        { type: 'block', blockOffset: 0, list: [
+            {type: 'container', name: 'mapCanvas', labelWidth: 75, label: 'Ubicación', inputWidth: 960, inputHeight: 320, offsetLeft: 0 },
+        ] },
+        { type: 'block', blockOffset: 0, list: [
+            { type: 'input', name: 'direccion', labelWidth: 75, label: ' ', inputWidth: 480, offsetLeft: 0, readonly: true }
+        ] },
+        { type: 'block', blockOffset: 0, list: [
+            { type: 'input', name: 'frLatitud', labelWidth: 75, label: 'Coordenadas', inputWidth: 120, offsetLeft: 0, readonly: true },
+            { type: 'newcolumn' },
+            { type: 'input', name: 'frLongitud', labelWidth: 0, inputWidth: 120, offsetLeft: 0, readonly: true }
+        ] },
+        { type: 'block', blockOffset: 0, list: [
+            { type: 'button', value: 'Guardar', name: 'btGuardar', offsetLeft: 75 },
+            { type: 'newcolumn' },
+            { type: 'button', value: 'Cancelar', name: 'btObservar', offsetLeft: 0 }
+        ] }
     ]
 };
 
@@ -69,6 +115,7 @@ GridDireccionesOnLoad = () => {
     }
 }
 FormUbicacionOnButtonClick = (button) => {
+console.log('FormUbicacionOnButtonClick:', button);
     switch(button) {
         case 'btBuscar':
             CalcularCoordenadas();
@@ -112,18 +159,24 @@ CalcularCoordenadas = () => {
 }
 GuardarInformacionGeografica = async () => {
     let result;
-    let iCliente = FormUbicacion.getItemValue('frCliente');
+    const params = {
+        codire: FormUbicacion.getItemValue('frCodigo'),
+        ubigeo: FormUbicacion.getItemValue('distrito'),
+        via: FormUbicacion.getItemValue('covia'),
+        nomvia: FormUbicacion.getItemValue('nomvia'),
+        zona: FormUbicacion.getItemValue('cozona'),
+        nomzona: FormUbicacion.getItemValue('nomzona'),
+        numero: FormUbicacion.getItemValue('numero'),
+        interior: FormUbicacion.getItemValue('interior'),
+        referencias: FormUbicacion.getItemValue('referencias'),
+        latitud: FormUbicacion.getItemValue('frLatitud'),
+        longitud: FormUbicacion.getItemValue('frLongitud')
+    };
     try {
         result = await $.ajax({
             url: '/coordenadas/guardar-info-coordenadas',
             method: 'post',
-            data: {
-                cliente: iCliente,
-                direccion: FormUbicacion.getItemValue('frCodigo'),
-                latitud: FormUbicacion.getItemValue('frLatitud'),
-                longitud: FormUbicacion.getItemValue('frLongitud'),
-                dsunat: FormUbicacion.getItemValue('frDireSunat')
-            },
+            data: params,
             dataType: 'json'
         });
         if(result.error) {
@@ -131,7 +184,7 @@ GuardarInformacionGeografica = async () => {
             return;
         }
         GridDirecciones.clearAll();
-        GridDirecciones.load('/coordenadas/carga-lista-direcciones/' + iCliente, GridDireccionesOnLoad);
+        GridDirecciones.load('/coordenadas/carga-lista-direcciones/' + FormUbicacion.getItemValue('frCliente'), GridDireccionesOnLoad);
         alert('Coordenadas almacenadas!');
 
     }
@@ -171,7 +224,6 @@ ObservarDireccion = async () => {
 GridDireccionesOnRowSelect = async (rowId, colId) => {
     Layout.cells('b').detachObject();
     FormUbicacion = Layout.cells('b').attachForm();
-        FormUbicacion.loadStruct(structs.FormUbicacion);
     let result;
     try {
         result = await $.ajax({
@@ -184,6 +236,100 @@ GridDireccionesOnRowSelect = async (rowId, colId) => {
             alert(result.error);
             return;
         }
+        const comboDepartamentos = result.data.combos.departamentos;
+        for (let i in comboDepartamentos) {
+            if (comboDepartamentos[i].value == result.data.direccion.departamento) {
+                comboDepartamentos[i].selected = true;
+            }
+        }
+        const comboProvincias = result.data.combos.provincias;
+        for (let i in comboProvincias) {
+            if (comboProvincias[i].value == result.data.direccion.provincia) {
+                comboProvincias[i].selected = true;
+            }
+        }
+        const comboDistritos = result.data.combos.distritos;
+        for (let i in comboDistritos) {
+            if (comboDistritos[i].value == result.data.direccion.ubigeo) {
+                comboDistritos[i].selected = true;
+            }
+        }
+        const comboVias = result.data.combos.vias;
+        for (let i in comboVias) {
+            if (comboVias[i].value == result.data.direccion.via) {
+                comboVias[i].selected = true;
+            }
+        }
+        const comboZonas = result.data.combos.zonas;
+        for (let i in comboZonas) {
+            if (comboZonas[i].value == result.data.direccion.zona) {
+                comboZonas[i].selected = true;
+            }
+        }
+        structs.FormUbicacion[3].list[0].options = comboDepartamentos;
+        structs.FormUbicacion[3].list[2].options = comboProvincias;
+        structs.FormUbicacion[3].list[4].options = comboDistritos;
+        structs.FormUbicacion[4].list[0].options = comboVias;
+        structs.FormUbicacion[5].list[0].options = comboZonas;
+        FormUbicacion.loadStruct(structs.FormUbicacion);
+        FormUbicacion.setItemValue('frCliente', result.data.direccion.cliente);
+        FormUbicacion.setItemValue('frCodigo', rowId);
+        FormUbicacion.setItemValue('frUbigeo', result.data.direccion.ubigeo);
+        FormUbicacion.setItemValue('nomvia', result.data.direccion.nomvia);
+        FormUbicacion.setItemValue('nomzona', result.data.direccion.nomzona);
+        FormUbicacion.setItemValue('referencias', result.data.direccion.referencias);
+        // FormUbicacion.setItemValue('direccion', result.data.direccion.direccion);
+        FormUbicacion.setItemValue('frLatitud', result.data.direccion.latitud);
+        FormUbicacion.setItemValue('frLongitud', result.data.direccion.longitud);
+        let MapId = FormUbicacion.getContainer('mapCanvas').id;
+        //
+        geocoder = new google.maps.Geocoder();
+        if (result.data.direccion.latitud && result.data.direccion.longitud) {
+            let center = {
+                lat: result.data.direccion.latitud,
+                lng: result.data.direccion.longitud
+            };
+            map = new google.maps.Map(document.getElementById(MapId), {
+                zoom: 18,
+                center: center
+            });
+            Marker = new google.maps.Marker({
+                map: map,
+                position: center,
+                draggable: true
+            });
+            Marker.addListener('dragend', MarkerDragEnd);
+        }
+        else {
+            let busca = (result.data.direccion.nomvia ? result.data.direccion.nomvia : result.data.direccion.nomzona) + ', ' + FormUbicacion.getCombo('departamento').getSelectedText();
+            let center = {
+                lat: -12.091675,
+                lng: -77.027384
+            };
+            geocoder.geocode({'address': busca}, function(results, status) {
+                if (status === 'OK') {
+                    center = {
+                        lat: results[0].geometry.location.lat(),
+                        lng: results[0].geometry.location.lng()
+                    };
+                }
+                FormUbicacion.setItemValue('frLatitud', center.lat);
+                FormUbicacion.setItemValue('frLongitud', center.lng);
+                map = new google.maps.Map(document.getElementById(MapId), {
+                    zoom: 18,
+                    center: center
+                });
+                map.setCenter(results[0].geometry.location);
+                Marker = new google.maps.Marker({
+                    map: map,
+                    position: results[0].geometry.location,
+                    draggable: true
+                });
+                Marker.addListener('dragend', MarkerDragEnd);
+            });
+        }
+        FormUbicacion.attachEvent('onButtonClick', FormUbicacionOnButtonClick);
+        /*
         let direccion = result.data.direccion;
         FormUbicacion.setItemValue('frCliente', direccion.cliente);
         FormUbicacion.setItemValue('frCodigo', direccion.codigo);
@@ -192,32 +338,8 @@ GridDireccionesOnRowSelect = async (rowId, colId) => {
         FormUbicacion.setItemValue('frLatitud', direccion.latitud);
         FormUbicacion.setItemValue('frLongitud', direccion.longitud);
         FormUbicacion.setItemValue('frDireSunat', result.data.dsunat);
-        FormUbicacion.attachEvent('onButtonClick', FormUbicacionOnButtonClick);
         //
-        let center = {
-            lat:-12.091675,
-            lng:-77.027384
-        };
-        if(direccion.latitud && direccion.longitud && direccion.latitud != '' && direccion.longitud != '') {
-            center = {
-                lat: parseFloat(direccion.latitud),
-                lng: parseFloat(direccion.longitud)
-            };
-        }
-        let MapId = FormUbicacion.getContainer('mapCanvas').id;
-        map = new google.maps.Map(document.getElementById(MapId), {
-            zoom: 18,
-            center: center
-        });
-        if(direccion.latitud != '' && direccion.longitud != '') {
-            Marker = new google.maps.Marker({
-                map: map,
-                position: center,
-                draggable: true
-            });
-            Marker.addListener('dragend', MarkerDragEnd);
-        }
-        geocoder = new google.maps.Geocoder();
+        */
     }
     catch(err) {
         console.error(err);

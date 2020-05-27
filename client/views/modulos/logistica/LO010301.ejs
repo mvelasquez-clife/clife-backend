@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Cuenta corriente proveedores</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+        <style type="text/css">
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                width: 100%
+            }
+
+            #dhxDesktop {
+                height: 100%;
+                width: 100%;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="dhxDesktop"></div>
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+        <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- ancestro de la ventana de seguridad -->
+        <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+        <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script>
+            // variables globales
+            var layout, tabbar, viewport;
+            var layoutDocumentos, toolbarDocumentos, comboMonedas, comboTpentis, toolbarGridDocumentos, gridDocumentos, layoutDocumentosDetalle, gridDocumentosDetalleA, gridDocumentosDetalleB, gridDocumentosDetalleC, gridDocumentosDetalleD;
+            var toolbarFpagar, comboFmonedas, comboFcolumna, calendarFpagar, calendarFinicio, calendarFfin, gridFpagar;
+            var toolbarLpagar, comboLmonedas, comboLcolumna, calendarLpagar, calendarLinicio, calendarLfin, gridLpagar;
+            var toolbarTransferencias, comboTrfmonedas, comboTrfcolumna, calendarTransferencia, calendarTrfinicio, calendarTrffin, gridTransferencia;
+            // iniciar los componentes de la vista
+            $(IniciarComponentes);
+        </script>
+    </body>
+</html>

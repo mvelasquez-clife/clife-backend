@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <% if (admin == 'S') { %>
+            <% include _main.sidenav.admin.ejs %>
+        <% } else { %>
+            <% include _main.sidenav.ejs %>
+        <% } %>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div id="main-row" class="row mb-2">
+                    <div class="col-12 col-md-6">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Bienvenido a la Intranet de Corporación Life</p>
+                            </li>
+                            <li class="list-group-item">
+                                <p class="mb-1 text-dark font-weight-bold">Misión Corporación Life</p>
+                                <p class="mb-0 text-dark">"Alegrar a nuestros clientes entregando productos innovadores y de calidad"</p>
+                            </li>
+                            <li class="list-group-item">
+                                <p class="mb-1 text-dark font-weight-bold">Visión Corporación Life</p>
+                                <p class="mb-0 text-dark">"Ser una de las principales empresas latinoamericanas líder e innovadora en la elaboración y comercialización de productos para el Cuidado Capilar y la Belleza"</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row mb-2">
+                    <div id="alertas-container" class="col">
+                        <div class="alert alert-primary no-rounded mb-2">
+                            <p class="font-weight-bold mb-1">REGLAMENTO INTERNO CORPORACION LIFE</p>
+                            <p class="mb-0">Puedes descargar el reglamento interno de Corporación Life desde <a href="#">este enlace</a></p>
+                        </div>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <ul id="mensajes-container" class="list-group">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Anuncios importantes</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <div id="modal-asistencia" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Corte de luz</h5>
+                        <button class="close" data-dismiss="modal" aria-label="close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <img id="asis-qr" class="d-block mx-auto mb-1" style="width:256px;">
+                        <div class="row">
+                            <div class="col">
+                                <div class="alert alert-primary no-rounded mb-2">
+                                    <p class="mb-0">Muestra este código QR al ingreso del evento para validar tu asistencia.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-sm btn-light" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            var ListaMensajes;
+            // funciones
+            EscribirListaMensajes = _ => {
+                const alct = $('#alertas-container');
+                const msct = $('#mensajes-container');
+                for (let mensaje of ListaMensajes) {
+                    if (mensaje.TIPO == 'A') {
+                        alct.prepend(
+                            $('<div>').addClass('alert alert-primary no-rounded mb-2').append(
+                                $('<p>').addClass('font-weight-bold mb-1').text(mensaje.TITULO.toUpperCase())
+                            ).append(
+                                $('<p>').addClass('mb-0').text(mensaje.TEXTO)
+                            )
+                        );
+                    }
+                    else {
+                        msct.append(
+                            $('<li>').append(
+                                $('<div>').append(
+                                    $('<div>').append(
+                                        $('<img>').attr('src', '/assets/intranet/images/ic-aviso.svg')
+                                    ).addClass('icono-aviso my-auto')
+                                ).append(
+                                    $('<div>').append(
+                                        $('<p>').text(mensaje.TITULO).addClass('font-weight-bold mb-0')
+                                    ).append(
+                                        $('<p>').text(mensaje.TEXTO).addClass('mb-0')
+                                    ).addClass('mr-auto px-2 my-auto')
+                                ).append(
+                                    $('<small>').text(mensaje.FECHA).addClass('text-primary my-auto')
+                                ).addClass('d-flex w-100 justify-content-between')
+                            ).addClass('list-group-item')
+                        );
+                    }
+                }
+            }
+            CargarMensajesUsuario = async _ => {
+                MuestraIndicadorCarga();
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/lista-mensajes',
+                        method: 'post',
+                        dataType: 'json'
+                    });
+                    ListaMensajes = result.data.mensajes;
+                    EscribirListaMensajes();
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+                finally {
+                    OcultaIndicadorCarga();
+                }
+            }
+            VerificarEventosHOy = async _ => {
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/eventos-hoy',
+                        method: 'post',
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    const ls_hoy = result.data.eventos;
+                    if (ls_hoy.length > 0) {
+                        const ul = $('<ul>').addClass('list-group');
+                        ul.append(
+                            $('<li>').append(
+                                $('<p>').text('Eventos del día').addClass('text-light mb-0')
+                            ).addClass('list-group-item bg-main')
+                        );
+                        for (let evento of ls_hoy) {
+                            const iBoton = $('<a>').addClass('btn btn-sm');
+                            if (evento.activo == 'S') {
+                                iBoton.text('Registrado').addClass('btn-success').attr('href', 'javascript:void(0)')
+                            }
+                            else {
+                                iBoton.text('Asistencia').addClass('btn-primary').attr({
+                                    'href': '#',
+                                    'data-evento': evento.codigo,
+                                    'data-toggle': 'modal',
+                                    'data-target': '#modal-asistencia'
+                                })
+                            }
+                            ul.append(
+                                $('<li>').append(
+                                    $('<div>').append(
+                                        $('<div>').append(
+                                            $('<p>').text(evento.descripcion).addClass('mb-0 text-main font-weight-bold')
+                                        ).append(
+                                            $('<p>').append(
+                                                $('<b>').text('Lugar:').addClass('mr-1')
+                                            ).append(evento.lugar).addClass('mb-0')
+                                        ).append(
+                                            $('<p>').append(
+                                                $('<b>').text('Hora:').addClass('mr-1')
+                                            ).append(evento.fecha).addClass('mb-0')
+                                        ).addClass('mr-auto my-auto')
+                                    ).append(
+                                        $('<div>').append(iBoton).addClass('my-auto')
+                                    ).addClass('d-flex w-100 justify-content-between')
+                                ).addClass('list-group-item list-group-item-action')
+                            );
+                        }
+                        $('#main-row').append(
+                            $('<div>').append(ul).addClass('col-12 col-md-6')
+                        );
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+            }
+            ModalAsistenciaShow = async args => {
+                const params = {
+                    evento: args.relatedTarget.dataset.evento,
+                    empresa: sesion.empresa,
+                    personal: sesion.codigo
+                };
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/genera-qr',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    const base64 = result.data.base64;
+                    $('#asis-qr').attr('src', base64);
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+            }
+            // go!
+            $(_ => {
+                $('#sidenav-inicio').addClass('active');
+                CargarMensajesUsuario();
+                VerificarEventosHOy();
+                $('#modal-asistencia').on('show.bs.modal', ModalAsistenciaShow);
+            });
+        </script>
+    </body>
+</html>

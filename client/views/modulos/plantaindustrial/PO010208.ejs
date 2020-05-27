@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Notificación Sanitaria</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css"> -->
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">   -->
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+            integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        <!--link rel="stylesheet" href="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.css" -->
+        <link rel="stylesheet" type="text/css" href="codebase/dhtmlxtabbar.css">
+        <style type="text/css">
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                width: 100%
+            }
+
+            #dhxDesktop {
+                height: 100%;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <!-- <script src="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.js"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+        <!-- <script src="/codebase/dhtmlxtabbar.js"></script> -->
+        <!-- script propio de la ventana -->
+        <!--<script type="text/javascript" src="<%=path%>script.js"></script> -->
+        <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- ancestro de la ventana de seguridad -->
+        <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+        <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script>
+            function Greater100(data){
+                if (data=="") return true;// returns 'true' if the field is empty
+
+                return (data>100);
+            }
+            var base_tollbar_nvo = {
+            iconset: "awesome", items: [
+                { id: "__nuevo", type: "button", disabled: false, text: "Nuevo", img: "fas fa-plus-square txtrskyblue", imgdis: "fas fa-plus-square disable txtrskyblue" },
+                { type: "separator" },
+                { id: "__edit", type: "button", text: "Editar", disabled: false, hideHeader: true, img: "fas fa-edit txtroran", imgdis: "fas fa-edit disable txtroran" },
+                { type: "separator" },
+                { id: "__save", type: "button", text: "Guardar", disabled: false, img: "fas fa-save txtrdarkblue", imgdis: "fas fa-save disable txtrdarkblue" },
+                { type: "separator" },
+            ]
+            };
+
+            var base_tollbar_rev = {
+            iconset: "awesome", items: [
+                { id: "__pass", type: "button", text: "Aprobar", disabled: true, img: "far fa-thumbs-up txtrblue", imgdis: "far fa-thumbs-up" }, //<i class="far fa-thumbs-up"></i>
+                { type: "separator" },
+                { id: "__fail", type: "button", text: "Rechazar", disabled: true, img: "far fa-thumbs-down txtrblue", imgdis: "far fa-thumbs-down" },//<i class="far fa-thumbs-down"></i>
+                { type: "separator" },
+                { id: "__dele", type: "button", text: "Anular", disabled: true, img: "fas fa-ban txtred", imgdis: "fas fa-ban txtred" },//<i class="fas fa-people-carry"></i>
+                { type: "separator" },
+                { id: "__back", type: "button", text: "Devolver a Almacen", disabled: true, img: "fas fa-people-carry", imgdis: "fas fa-people-carry" },
+                { type: "separator" },
+            ]
+            };
+
+            var f_nuevo_registro = [
+                { type: "settings", labelWidth: 100 },
+                {type: "block", blockOffset: 0,  offsetTop: 20,offsetLeft: 40, position: "label-left", width: 400, list: [
+                    { type: "input",readonly: false,label: 'Código NSOC:',validate:"Greater100", style:"background-color:rgb(234, 255, 71);width: 300px;height:30px,font-family: Arial; font-size: 15pt;",position:"input-right", offsetLeft: 0,labelWidth: 100, inputWidth: 100, name: "_drt_nrosoc"}, { type: "newcolumn" },
+                { type: "newcolumn" },] },
+                {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input",offsetLeft: 40,labelWidth: 100, inputWidth: 300, name: "_drt_nombre", label: 'Nombre Producto:',rows:5}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "calendar", readonly: false, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_fechadesde", label: 'Vigencia Inicio: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "calendar", readonly: false, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_fechahasta", label: 'Vigencia Fin: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "select", offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_formacosmetica", label: 'Forma Cosmetica: ', connector: BASE_URL + 'PO010208/mostrar-forma-cosmetica'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_estado", label: 'Estado: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "checkbox", checked: false,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_kit", label: 'KIT: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_nroregistro", label: 'Nro. Registro: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                // {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 400, list: [
+                //     { type: "input", name: '_drt_resumen', labelWidth: 150, readonly: true, label: 'Resumen Producto:', rows:8,offsetLeft: 40, inputWidth: 300 }, { type: "newcolumn" },
+                //      ],},
+                // { type: "newcolumn" },
+            ];
+
+            var f_buscar_prod = [ { type: "newcolumn" },
+            {type: "fieldset", label: "Filtrar por clase",offsetLeft: 40,  offsetTop: 10, inputWidth: 690, list:[
+                {type: "block", blockOffset: 0, position: "label-left", width: 690, list: [
+                    { type: "select",disabled: false, offsetLeft: 0,labelWidth: 40, inputWidth: 150, name: "_drt_clase", label: 'Clase:' ,connector: BASE_URL + 'PO010208/mostrar-clase'}, { type: "newcolumn" },
+                    { type: "select",disabled: true, offsetLeft: 15,labelWidth: 50, inputWidth: 150, name: "_drt_familia", label: 'Familia:' }, { type: "newcolumn" },
+                    { type: "select",disabled: true, offsetLeft: 15,labelWidth: 70, inputWidth: 150, name: "_drt_subfamilia", label: 'Sub Familia:' }, { type: "newcolumn" },
+
+                ]}
+            ]},
+            { type: "newcolumn" },
+            {type: "fieldset", label: "Filtrar por marca",offsetLeft: 40,  offsetTop: 10, inputWidth: 460, list:[
+                {type: "block", blockOffset: 0, position: "label-left", width: 460, list: [
+                    { type: "select",disabled: false, offsetLeft: 0,labelWidth: 45, inputWidth: 150, name: "_drt_marca", label: 'Marca:' ,connector: BASE_URL + 'PO010208/mostrar-marca'}, { type: "newcolumn" },
+                    { type: "select",disabled: true, offsetLeft: 20,labelWidth: 60, inputWidth: 150, name: "_drt_submarca", label: 'Sub Marca:' }, { type: "newcolumn" },
+
+                ]}
+            ]}, { type: "newcolumn" },
+            {type: "block",blockOffset: 10,  offsetTop: 10, position: "label-left", width: 800, list: [
+                { type: "newcolumn" },
+                { type: "input",offsetLeft: 40,labelWidth: 60, inputWidth: 300, name: "_drt_buscador", label: 'Producto:'}, { type: "newcolumn" },
+
+                { type: "button",style:"height:200px;width:200px",disabled: false, offsetTop: 0, offsetLeft: 20, name: "_r_revisar",rows:5,labelWidth: "100", value: ' <div ><b>Buscar </b>    <img src="/assets/images/icons/ic-buscarp.png" style="width:20px; height:20px"></div> '}, { type: "newcolumn" }
+            ],}];
+
+            var f_consulta_notif = [ { type: "newcolumn" },
+            {type: "block",blockOffset: 10,  offsetTop: 10, position: "label-left", width: 450, list: [
+                { type: "newcolumn" },
+                { type: "input",offsetLeft: 10,labelWidth: 40, inputWidth: 200, name: "_drt_buscarnso", label: 'NSO:'}, { type: "newcolumn" },
+
+                { type: "button",style:"height:200px;width:200px",disabled: false, offsetTop: 0, offsetLeft: 20, name: "_r_revisar",rows:5,labelWidth: "80", value: ' <div ><b>Buscar </b>    <img src="/assets/images/icons/ic-buscarp.png" style="width:20px; height:20px"></div> '}, { type: "newcolumn" }
+            ],}
+            ];
+            var f_rev_nso = [ { type: "newcolumn" },
+            {type: "block", blockOffset: 0,  offsetTop: 20,offsetLeft: 40, position: "label-left", width: 400, list: [
+                    { type: "input",readonly: true,label: 'Código NSOC:',validate:"Greater100", style:"background-color:rgb(234, 255, 71);width: 300px;height:30px,font-family: Arial; font-size: 15pt;",position:"input-right", offsetLeft: 0,labelWidth: 100, inputWidth: 100, name: "_drt_nrosoc"}, { type: "newcolumn" },
+                { type: "newcolumn" },] },
+                {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input",readonly: true,offsetLeft: 40,labelWidth: 100, inputWidth: 300, name: "_drt_nombre", label: 'Nombre Producto:'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input",readonly: true,offsetLeft: 40,labelWidth: 100, inputWidth: 300, name: "_drt_estado", label: 'Estado:'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "calendar", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_fechadesde", label: 'Vigencia Inicio: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "calendar", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_fechahasta", label: 'Vigencia Fin: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                { type: "select", offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_formacosmetica", label: 'Forma Cosmetica: ', connector: BASE_URL + 'PO010208/mostrar-forma-cosmetica'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_estado", label: 'Estado: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "checkbox", checked: false,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_kit", label: 'KIT: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },,
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_nroregistro", label: 'Nro. Registro: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                
+
+            ];
+
+            Inicio();
+
+            
+            MuestraIndicadorCarga = _ => {
+                if (document.getElementById('dv-loader')) {
+                    $('#dv-loader').remove();
+                }
+                const loader = $('<div>').append(
+                    $('<table>').append(
+                        $('<tbody>').append(
+                            $('<tr>').append(
+                                $('<td>').append(
+                                    $('<img>').attr('src', '/assets/intranet/images/ic-loader.svg').css('height', '32px')
+                                )
+                            ).append(
+                                $('<td>').append(
+                                    $('<p>').addClass('mb-0').text('Cargando datos. Por favor, espere...')
+                                )
+                            )
+                        )
+                    )
+                ).attr('id', 'dv-loader').hide();
+                $('body').append(loader);
+                $('#dv-loader').fadeIn(250);
+            }
+
+            SubirArchivos = async e => {
+                e.preventDefault();
+                $('#btn-upload').addClass('disabled');
+                let cfiles = $('#doc-container').children('div');
+                const totalArchivos = cfiles.length;
+                console.log(totalArchivos);
+                if (totalArchivos == 0){
+                    alert("No ha eligió archivo ");
+                    return;
+                }else{
+                console.log('nntotalArchivos');
+                    let div = cfiles.eq(0);
+                    let formData = new FormData();
+                        formData.append('tipo', document.getElementById('form-tipodoc').value);
+                        formData.append('nsoc', document.getElementById('form-nsoc').value);
+                        formData.append('pdf', document.getElementById('form-archivos').files[0]);
+                    let result;
+                    console.log('formData');
+                    console.log(formData);
+                    try {
+                        result = await $.ajax({
+                            url: BASE_URL + 'PO010208/cargar-pdf/',
+                            type: 'post',
+                            dataType: 'json',
+                            data: formData,
+                            cache: false,
+                            contentType: false,
+                            processData: false
+                        });
+                        if (result.error) {
+                            div.removeClass('bg-light text-secondary').addClass('bg-danger').append(
+                                $('<small>').html(result.error)
+                            ).children('p').children(0).removeClass('fa-hourglass-half').addClass('fa-exclamation-triangle');
+                            return;
+                        }
+                        $('#doc-container').empty();
+                        alert("Archivo subido con éxito");
+                        // div.removeClass('bg-light text-secondary').addClass('bg-success text-light').append(
+                        //     $('<small>').html('Archivo subido con éxito')
+                        // ).children('p').children(0).removeClass('fa-hourglass-half').addClass('fa-check');
+                    }
+                    catch (err) {
+                        console.error(err);
+                        alert(JSON.stringify(err));
+                        div.removeClass('bg-light text-secondary').addClass('bg-danger').append(
+                            $('<small>').html(JSON.stringify(err))
+                        ).children('p').children(0).removeClass('fa-hourglass-half').addClass('fa-exclamation-triangle');
+                        // return;
+                    }
+                }
+                $('#form-archivos').val('').next().removeClass('text-success').text('No ha seleccionado archivos para subir');
+                // $('#btn-upload').removeClass('disabled');
+                // OcultaIndicadorCarga();
+            },
+            SeleccionarArchivos = async e => {
+                // MuestraIndicadorCarga();
+                $('#doc-container').empty();
+                const files = document.getElementById('form-archivos').files;
+                $('#form-archivos').next().text(files.length + ' archivo(s) seleccionado(s)').addClass('text-success');
+                let totalArchivos = 0;
+                let totalValidaciones = 0;
+                if (files.length > 0) {
+                    for (let i = 0; i < files.length; i++) {
+                        let file = files[i];
+                        $('#doc-container').append(
+                            $('<div>').append(
+                                $('<p>').append(
+                                    $('<span>').html('&nbsp&nbsp'+file.name).addClass(' font-weight-bold')
+                                ).addClass('mb-0')
+                            ).attr('id', 'container-' + i).addClass('alert alert-warning no-rounded py-1 px-2 mb-2')
+                        );
+                        totalArchivos++;
+                    }
+                }
+            }
+                // $(_ => {
+                // console.log("sss");
+                // $("#btn-upload").on("click", SubirArchivos);
+                // $("#btn-loadfile").on("click", VerArchivo);
+                // $("#btn-loadfile2").on("click", VerArchivo);
+                // $("#form-archivos").on("change", SeleccionarArchivos); });
+
+        </script>
+    </body>
+</html>

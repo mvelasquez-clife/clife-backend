@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <% if (admin == 'S') { %>
+            <% include _main.sidenav.admin.ejs %>
+        <% } else { %>
+            <% include _main.sidenav.ejs %>
+        <% } %>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Mis documentos</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page"><%=tipo%></li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Documentos del último periodo</p>
+                            </li>
+                            <li id="doc-vigente-container" class="list-group-item">
+                                <!--div class="d-flex w-100 justify-content-between">
+                                    <div class="my-auto">
+                                        <p class="mb-0">Periodo anterior</p>
+                                        <p class="font-weight-bold mb-0">ENERO 2020</p>
+                                    </div>
+                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
+                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
+                                </div-->
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul id="doc-anteriores-container" class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Documentos anteriores</p>
+                            </li>
+                            <!--li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">DICIEMBRE 2019</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
+                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">NOVIEMBRE 2019</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
+                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">OCTUBRE 2019</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
+                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">CTS ABR-SET 2019</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
+                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">SEPTIEMBRE 2019</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
+                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
+                                </div>
+                            </li-->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            var ListaDocumentos;
+            // funciones
+            EscribirListaDocumentos = _ => {
+                const vgct = $('#doc-vigente-container');
+                const atct = $('#doc-anteriores-container');
+                let vigentesCount = 0;
+                let anterioresCount = 0;
+                for (let documento of ListaDocumentos) {
+                    if (documento.VIGENCIA == 'Vigente') {
+                        vigentesCount++;
+                        vgct.append(
+                            $('<div>').append(
+                                $('<div>').append(
+                                    $('<p>').text('Periodo anterior').addClass('mb-0')
+                                ).append(
+                                    $('<p>').text(documento.PERIODO).addClass('font-weight-bold mb-0')
+                                ).addClass('my-auto')
+                            ).append(
+                                $('<p>').text(documento.DESCRIPCION).addClass('mb-0 px-2 my-auto mr-auto')
+                            ).append(
+                                $('<a>').append(
+                                    $('<i>').addClass('fa fa-download mr-1')
+                                ).append('Descargar').addClass('btn btn-sm btn-danger my-auto').attr({
+                                    href: '/intranet/ver-documento/' + documento.url,
+                                    target: '_blank'
+                                })
+                            ).addClass('d-flex w-100 justify-content-between')
+                        );
+                    }
+                    else {
+                        anterioresCount++;
+                        atct.append(
+                            $('<li>').append(
+                                $('<div>').append(
+                                    $('<p>').text(documento.PERIODO).addClass('font-weight-bold mb-0 my-auto')
+                                ).append(
+                                    $('<p>').text(documento.DESCRIPCION).addClass('mb-0 px-2 my-auto mr-auto')
+                                ).append(
+                                    $('<a>').append(
+                                        $('<i>').addClass('fa fa-download mr-1')
+                                    ).append('Descargar').addClass('btn btn-sm btn-danger my-auto').attr({
+                                        href: '/intranet/ver-documento/' + documento.url,
+                                        target: '_blank'
+                                    })
+                                ).addClass('d-flex w-100 justify-content-between')
+                            ).addClass('list-group-item')
+                        );
+                    }
+                }
+                // verifica si habia documentos
+                if (vigentesCount == 0) {
+                    vgct.append(
+                        $('<p>').text('No se registraron documentos para el periodo en curso').addClass('mb-0')
+                    );
+                }
+                if (anterioresCount == 0) {
+                    atct.append(
+                        $('<li>').append(
+                            $('<p>').text('No hay documentos registrados para los periodos anteriores').addClass('mb-0')
+                        ).addClass('list-group-item')
+                    );
+                }
+            }
+            CargarListaDocumentos = async _ => {
+                MuestraIndicadorCarga();
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/lista-documentos',
+                        method: 'post',
+                        dataType: 'json'
+                    });
+                    ListaDocumentos = result.data.documentos;
+                    EscribirListaDocumentos();
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+                finally {
+                    OcultaIndicadorCarga();
+                }
+            }
+            // go!
+            $(_ => {
+                $('#menu-docs').collapse('show')
+                $('#sidenav-documentos').addClass('active');
+                $('#<%=id%>').addClass('active');
+                CargarListaDocumentos();
+            });
+        </script>
+    </body>
+</html>

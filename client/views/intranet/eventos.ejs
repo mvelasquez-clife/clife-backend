@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <% include _main.sidenav.admin.ejs %>
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Administrar</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Eventos</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <div class="alert alert-primary no-rounded mb-2">
+                            <p class="mb-0">Programe los eventos corporativos desde aquí. Cuando cree un evento, este aparecerá en la pantalla de inicio del personal de la empresa.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Programar un nuevo evento</p>
+                            </li>
+                            <li class="list-group-item">
+                                <form id="nev-form">
+                                    <div class="form-group row">
+                                        <label for="nev-empresa" class="col-sm-2 col-form-label">Empresa</label>
+                                        <div class="col-sm-4">
+                                            <select id="nev-empresa" class="form-control form-control-sm">
+                                                <option value="0">- Seleccione -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="nev-descripcion" class="col-sm-2 col-form-label">Descripcion</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" id="nev-descripcion" class="form-control form-control-sm" placeholder="Nombre o asunto del evento">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="nev-fechahora" class="col-sm-2 col-form-label">Fecha y hora</label>
+                                        <div class="col-sm-3">
+                                            <input type="text" id="nev-fechahora" class="form-control form-control-sm datepicker" placeholder="dd/mm/yyyy hh24:mi">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="nev-lugar" class="col-sm-2 col-form-label">Lugar</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" id="nev-lugar" class="form-control form-control-sm" placeholder="¿En dónde se realizará el evento?">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-sm-10 offset-sm-2">
+                                            <button type="submit" class="btn btn-sm btn-main">Crear el evento</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div id="container-eventos" class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Próximos eventos</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <div id="modal-asistentes" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="evento-title"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div id="asis-container" class="col"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                        <a href="/intranet/logout" type="button" class="btn btn-sm btn-danger"><i class="fa fa-sign-out"></i> Cerrar sesión</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% include _main.logout.ejs %>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            let ListaEventos;
+            // funciones
+            VerAsistencia = async e => {
+                $('#asis-container').empty();
+                e.preventDefault();
+                const evento = e.delegateTarget.dataset;
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/lista-asistentes',
+                        method: 'post',
+                        data: { evento: evento.evento },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    const asistentes = result.data.asistentes;
+                    if (asistentes.length > 0) {
+                        const tbody = $('<tbody>');
+                        for (let asistente of asistentes) {
+                            tbody.append(
+                                $('<tr>').append(
+                                    $('<td>').text(asistente.codigo).addClass('text-right')
+                                ).append(
+                                    $('<td>').text(asistente.nombre)
+                                ).append(
+                                    $('<td>').text(asistente.area)
+                                ).append(
+                                    $('<td>').text(asistente.cargo)
+                                ).append(
+                                    $('<td>').text(asistente.hora).addClass('text-right')
+                                )
+                            );
+                        }
+                        const table = $('<table>').append(
+                            $('<thead>').append(
+                                $('<tr>').append(
+                                    $('<th>').text("DNI")
+                                ).append(
+                                    $('<th>').text("Nombre")
+                                ).append(
+                                    $('<th>').text("Área")
+                                ).append(
+                                    $('<th>').text("Cargo")
+                                ).append(
+                                    $('<th>').text("Hora")
+                                )
+                            )
+                        ).append(tbody).addClass('table table-striped table-hover');
+                        $('#evento-title').text(evento.nombre);
+                        $('#asis-container').append(table);
+                        $('#modal-asistentes').modal('show');
+                    }
+                    else {
+                        $('#asis-container').append(
+                            $('<p>').text('No hay asistentes registrados')
+                        );
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+            }
+            EscribirListaEventos = _ => {
+                const container = $('#container-eventos');
+                container.empty();
+                const ul = $('<ul>').addClass('list-group mb-2').append(
+                    $('<li>').append(
+                        $('<p>').text('Próximos eventos').addClass('text-main mb-0')
+                    ).addClass('list-group-item')
+                );
+                if (ListaEventos.length > 0) {
+                    for (let evento of ListaEventos) {
+                        const iBoton = $('<a>').addClass('btn btn-sm').attr('href', 'javascript:void(0)');
+                        if (evento.activo == 'S') {
+                            iBoton.addClass('btn-success').text('Asistencia').attr({
+                                'data-evento': evento.codigo,
+                                'data-nombre': evento.descripcion
+                            }).on('click', VerAsistencia)
+                        }
+                        ul.append(
+                            $('<li>').append(
+                                $('<div>').append(
+                                    $('<div>').append(
+                                        $('<p>').text(evento.descripcion).addClass('font-weight-bold mb-0')
+                                    ).append(
+                                        $('<p>').append(
+                                            $('<b>').text('Fecha y hora:').addClass('mr-1')
+                                        ).append(evento.fecha + (evento.dias > 0 ? (' - Falta ' + evento.dias + ' día(s)') : '')).addClass('mb-0')
+                                    ).append(
+                                        $('<p>').html('<b>Lugar: </b>' + evento.lugar).addClass('mb-0')
+                                    ).addClass('my-auto')
+                                ).append(
+                                    $('<div>').append(iBoton).addClass('my-auto')
+                                ).addClass('d-flex w-100 justify-content-between')
+                            ).addClass('list-group-item')
+                        );
+                    }
+                }
+                else {
+                    ul.append(
+                        $('<li>').append(
+                            $('<p>').text('No hay eventos programados para ' + $('#nev-empresa option:selected').text()).addClass('mb-0')
+                        ).addClass('list-group-item')
+                    );
+                }
+                container.append(ul);
+            }
+            CargarListaEventos = async _ => {
+                MuestraIndicadorCarga();
+                const empresa = document.getElementById('nev-empresa').value;
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/lista-eventos',
+                        method: 'post',
+                        data: { empresa: empresa },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                    }
+                    else {
+                        ListaEventos = result.data.eventos;
+                        EscribirListaEventos();
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+                OcultaIndicadorCarga();
+            }
+            CargarListaEmpresas = async _ => {
+                const result = await $.ajax({
+                    url: '/intranet/lista-empresas',
+                    method: 'post',
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                for (let empresa of result.data.empresas) {
+                    $('#nev-empresa').append(
+                        $('<option>').val(empresa.value).text(empresa.text)
+                    );
+                }
+                $('#nev-empresa').on('change', _ => {
+                    if (document.getElementById('nev-empresa').value != 0) {
+                        CargarListaEventos();
+                    }
+                });
+            }
+            ConfiguraDatePicker = _ => {
+                $('#nev-fechahora').datetimepicker({
+                    // locale: 'es-es',
+                    format: 'dd/mm/yyyy HH:MM',
+                    datepicker: { weekStartDay: 1 },
+                    uiLibrary: 'bootstrap4',
+                    iconsLibrary: 'fontawesome'
+                });
+            }
+            LimpiarFormulario = _ => {
+                $('#nev-empresa option[value=0]').prop('selected', true);
+                document.getElementById('nev-descripcion').value = '';
+                document.getElementById('nev-fechahora').value = '';
+                document.getElementById('nev-lugar').value = '';
+            }
+            RegistraEvento = async e => {
+                e.preventDefault();
+                MuestraIndicadorCarga();
+                const params = {
+                    empresa: document.getElementById('nev-empresa').value,
+                    descripcion: document.getElementById('nev-descripcion').value,
+                    fechahora: document.getElementById('nev-fechahora').value,
+                    lugar: document.getElementById('nev-lugar').value
+                };
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/registra-evento',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                    }
+                    else {
+                        alert('Se registró el evento');
+                        document.getElementById('nev-descripcion').value = '';
+                        document.getElementById('nev-fechahora').value = '';
+                        document.getElementById('nev-lugar').value = '';
+                        CargarListaEventos();
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+                OcultaIndicadorCarga();
+            }
+            // iniciar
+            $(_ => {
+                $('#menu-admin').collapse('show')
+                $('#sidenav-eventos').addClass('active');
+                $('#nev-form').on('submit', RegistraEvento);
+                LimpiarFormulario();
+                ConfiguraDatePicker();
+                CargarListaEmpresas();
+            });
+        </script>
+    </body>
+</html>

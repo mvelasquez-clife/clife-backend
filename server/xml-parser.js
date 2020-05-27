@@ -114,5 +114,30 @@ module.exports = {
                 item: arr
             }
         });
-    }
+    },
+    
+    renderComboGrid: (jsonRows) => {
+        var arr = [];
+        for(var i in jsonRows) {
+            var iRow = jsonRows[i];
+            if(i == 1) {
+                arr.push({
+                    '@': { value: iRow.VALUE, selected: "true"}, 
+                    '#': iRow.LABEL
+                });
+            }
+            else {
+                arr.push({
+                    '@': { value: iRow.VALUE},
+                    '#': iRow.LABEL
+                });
+            }
+        }
+        return o2x({
+            '?xml version="1.0" encoding="utf-8"?' : null,
+            complete: {
+                option: arr
+            }
+        });
+    },
 };

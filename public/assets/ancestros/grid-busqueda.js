@@ -40,7 +40,8 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
         tpEnti = tipoEntidad;
         if (container.dhxWins.isWindow('winGridBusqueda')) {
             winGridBusqueda.bringToTop();
-        } else {
+        }
+        else {
             winGridBusqueda = container.dhxWins.createWindow('winGridBusqueda', 0, 0, 720, 480);
             winGridBusqueda.center();
             winGridBusqueda.keepInViewport(true);
@@ -94,7 +95,7 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
                     gridBusqueda.setHeader('#,Codigo,Descripción,Vigencia,Observaciones 1,Observaciones 2');
                     gridBusqueda.attachHeader('&nbsp,#numeric_filter,#text_filter,#select_filter,#text_filter,#text_filter');
                     gridBusqueda.setInitWidthsP('5,10,45,10,15,15');
-                    gridBusqueda.setColTypes('ron,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
                     gridBusqueda.setColumnIds("ch,codigo,descripcion,vigencia,observ1,observ2");
                     break;
                 case 2://busqueda de vendedores
@@ -169,6 +170,15 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
                     gridBusqueda.enableSmartRendering(true, 50);
                     break;
                 //miguel
+                case 21:
+                    gridBusqueda.setHeader('#,RUC,Razón Social,Vigencia,,');
+                    gridBusqueda.attachHeader('#rspan,#text_filter,#text_filter,#select_filter,#rspan,#rspan');
+                    gridBusqueda.setInitWidthsP('5,20,60,15,0,0');
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,codigo,rsocial,vigencia,p4,p6");
+                    gridBusqueda.setColumnHidden(4, true);
+                    gridBusqueda.setColumnHidden(5, true);
+                    break;
                 case 1001:
                     gridBusqueda.setHeader('#,Codigo,Operario,Tipo,Vigencia,');
                     gridBusqueda.attachHeader('#rspan,#text_filter,#text_filter,#select_filter,#select_filter,#text_filter');
@@ -186,8 +196,8 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
             gridBusqueda.init();
             winGridBusqueda.progressOn();
             gridBusqueda.load('/api/ancestros/datos-modal-busqueda/' + tipoEntidad + '/' + usrJson.empresa + '/' + extraParam).then(function (a, b, c) {//console.log(a +'-' +b +'-'+c)
-                      winGridBusqueda.progressOff();
-        });
+                winGridBusqueda.progressOff();
+            });
         }
     });
 };

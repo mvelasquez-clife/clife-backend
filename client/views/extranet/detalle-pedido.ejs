@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Corporacion Life</title>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.css">
+    <link rel='stylesheet prefetch' href='http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'>
+    <style>
+        body {
+            padding-top: 60px;
+        }
+        .navbar-brand {
+            background-image: url('/assets/images/extranet/clife-logo-light.png');
+            background-size: auto 30px;
+            background-repeat: no-repeat;
+            padding-left: 36px;
+            font-size: 1.5rem;
+            line-height: 1.75rem;
+            height: 30px;
+            width: 224px;
+        }
+        .ip-cant {
+            width: 60px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-cprimary">
+        <a class="navbar-brand" href="/extranet">Corporacion Life</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <h5 class="text-light font-weight-light mb-0">Pedido <span class="font-weight-normal sp-pedido">Espere...</span></h5>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="nav-dropdown" role="button" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">Opciones</a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="nav-dropdown">
+                        <a class="dropdown-item" href="#">Mis datos</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-logout">Cerrar sesión</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-light" href="/extranet">Volver</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="row d-lg-none">
+            <div class="col">
+                <h3 class="mb-3">Pedido N° <span class="font-italic text-primary sp-pedido">Espere...</span></h3>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-auto">
+                <div class="alert bg-light">
+                    <h5 class="font-weight-light mb-2">Cliente: <span class="font-weight-normal" id="nombre-cliente">Cargando datos...</span></h5>
+                    <!-- -->
+                    <a href="#" class="btn btn-primary m-1 dropdown-toggle" id="btn-agregar" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-plus"></i> Agregar productos</a>
+                    <div class="dropdown-menu" aria-labelledby="btn-agregar">
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-lista"><i class="fa fa-list"></i> Desde el catálogo de productos</a>
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-plantilla"><i class="fa fa-upload"></i> Utilizando una plantilla</a>
+                    </div>
+                    <a href="#" class="btn btn-danger m-1" id="btn-eliminar"><i class="fa fa-remove"></i> Quitar productos</a>
+                    <a href="#" class="btn btn-info m-1" id="btn-itsfree"><i class="fa fa-remove"></i> Título gratuito</a>
+                    <a href="#" class="btn btn-success ml-5 mr-1" data-toggle="modal" data-target="#modal-cierre"><i class="fa fa-check"></i> Cerrar pedido</a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col" id="container"></div>
+        </div>
+    </div>
+    <!-- modals -->
+    <!-- modal logout -->
+    <div id="modal-logout" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">Cerrar sesión</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Desea cerrar la sesión? Tendrá que ingresar sus credenciales nuevamente la próxima vez</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                    <a href="/extranet/logout" class="btn btn-danger">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- modal lista-productos -->
+    <div id="modal-lista" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-primary">Agregar Productos</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>A continuación, seleccione los productos que desea agregar al pedido</p>
+                    <div class="row">
+                        <div class="col" id="lista-container"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary"><i class="fa fa-plus"></i> Agregar los productos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- modal plantilla -->
+    <div id="modal-plantilla" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-success">Carga masiva</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-carga-masiva" action="/extranet/carga-xlsx" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="fl-plantilla">Adjunte una plantilla en formato xls para agregar productos de manera masiva.</label>
+                            <input type="file" class="form-control-file" id="fl-plantilla" name="plantilla" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                        </div>
+                        <div class="form-group">
+                            <p class="text-dark">Puede descargar una plantilla de muestra haciendo clic en el <a href="/files/formato.xlsx" download="formato.xlsx">siguiente enlace</a>.</p>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success"><i class="fa fa-upload"></i> Enviar plantilla</button>
+                </div>
+            </div>
+        </div>
+    </div><!-- modal plantilla -->
+    <div id="modal-cierre" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-success">Cierre del pedido</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-dark mb-2">A continuación, le mostramos el resumen de su pedido</p>
+                    <form>
+                        <div class="form-group row mb-0">
+                            <label for="rp-items" class="col-sm-3 col-form-label text-right pr-2">Nro. items</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control-plaintext font-weight-bold" id="rp-items">
+                            </div>
+                        </div>
+                        <div class="form-group row mb-0">
+                            <label for="rp-subtotal" class="col-sm-3 col-form-label text-right pr-2">Subtotal</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control-plaintext font-weight-bold" id="rp-subtotal">
+                            </div>
+                        </div>
+                        <div class="form-group row mb-0">
+                            <label for="rp-cajas" class="col-sm-3 col-form-label text-right pr-2">Cajas</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control-plaintext font-weight-bold" id="rp-cajas">
+                            </div>
+                        </div>
+                        <div class="form-group row mb-0">
+                            <label for="rp-pallets" class="col-sm-3 col-form-label text-right pr-2">Pallets</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control-plaintext font-weight-bold" id="rp-pallets">
+                            </div>
+                        </div>
+                    </form>
+                    <p class="text-dark mb-2">Si ya no desea agregar más items, utilice el botón de <span class="text-success font-weight-bold">Cerrar el pedido</span>, y procesaremos su solicitud lo más pronto posible.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success"><i class="fa fa-check"></i> Cerrar el pedido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- scripts -->
+    <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script src="/assets/bootstrap/js/popper.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+        let sesdata = JSON.parse('<%-sesion %>');
+        let CodigoPedido = '<%=pedido %>';
+        let Pedido, Cliente, DetallePedido;
+        let catalogo = [];
+        let totales = {
+            cantidad: 0,
+            cajas: 0,
+            pallets: 0,
+            importe: 0
+        };
+
+        CargarDatosPedido = async () => {
+            let result;
+            try {
+                result = await $.ajax({
+                    url: '/extranet/datos-pedido',
+                    method: 'post',
+                    data: { pedido: CodigoPedido },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+//                    location.href = '/extranet';
+                    return;
+                }
+                Pedido = result.pedido;
+                $('.sp-pedido').html(Pedido.codigo);
+                Cliente = result.cliente;
+                document.getElementById('nombre-cliente').innerHTML = Cliente.nombre;
+                DetallePedido = Pedido.productos;
+                if (Pedido.vigencia != 'Vigente' && Pedido.vigencia != 'Pendiente') {
+                    $('#btn-agregar').prop('disabled', true);
+                }
+                EscribirListaProductos();
+            }
+            catch (err) {
+                alert(err);
+            }
+        }
+        async function EditarProducto(event) {
+            event.preventDefault();
+            let a = $(this);
+            let cantidad = window.prompt('¿Cuántas unidades?');
+            if (cantidad != null && cantidad != '') {
+                let params = {
+                    pedido: Pedido.codigo,
+                    codigo: a.data('codigo'),
+                    tipo: a.data('tipo'),
+                    difer: a.data('difer'),
+                    cantidad: parseInt(cantidad)
+                }
+                // actualizar cantidad
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/extranet/actualizar-cantidad-producto',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    DetallePedido = result.detalle;
+                    EscribirListaProductos();
+                }
+                catch (err) {
+                    console.error(err);
+                    alert(err);
+                }
+            }
+        }
+        // funciones
+        AdjuntarPlantilla = (event) => {
+            event.preventDefault();
+            const button = $('#modal-plantilla .modal-footer .btn-success').empty().html('Procesando la plantilla...');
+            button.prop('disabled', true);
+            setTimeout(() => {
+                button.prop('disabled', false).empty().append(
+                    $('<i>').addClass('fa fa-upload')
+                ).append(' Enviar plantilla');
+                $('#modal-plantilla').modal('hide');
+                alert('Los productos fueron cargados con éxito');
+                // agrega los productos y recarga la grilla
+                DetallePedido.push({ codigo: '03025015400014', ean: '7756719003377', nombre: 'Silicona Plife Saloon Fco. 80ml.', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 49.0863, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '04026016000008', ean: '7756719004299', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '04026016000009', ean: '7756719004367', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 1L', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '04026016200020', ean: '7756719004282', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
+                DetallePedido.push({ codigo: '04026016200021', ean: '7756719004350', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 1L', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'C' });
+                DetallePedido.push({ codigo: '04026016200023', ean: '7756719004374', nombre: 'Shampoo Placenta Life Lisso Keratina Fco x 1l', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'P' });
+                DetallePedido.push({ codigo: '04026016200024', ean: '7756719004305', nombre: 'Shampoo Placenta Life Hydra Macadamia Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
+                EscribirListaProductos();
+            }, 3000);
+        }
+        EscribirListaProductos = () => {
+            $('#container').empty();
+            if (DetallePedido.length > 0) {
+                let tbody = $('<tbody>');
+                totales = {
+                    cantidad: 0,
+                    cajas: 0,
+                    pallets: 0,
+                    importe: 0
+                };
+                for (let i in DetallePedido) {
+                    let producto = DetallePedido[i];
+                    let btnTipo = $('<a>').attr('href', 'javascript:void(0)').addClass('btn btn-sm').html(producto.tipo);
+                    switch (producto.tipo) {
+                        case 'L': btnTipo.addClass('btn-success').attr('title', 'Precio de lista'); break;
+                        case 'C': btnTipo.addClass('btn-info').attr('title', 'Producto complementario'); break;
+                        case 'P': btnTipo.addClass('btn-danger').attr('title', 'Producto promocional'); break;
+                        case 'N': btnTipo.addClass('btn-warning').attr('title', 'Precio normal'); break;
+                        default: btnTipo.addClass('btn-light'); break;
+                    }
+                    tbody.append(
+                        $('<tr>').append(
+                            $('<td>').append(
+                                $('<input>').attr({
+                                    type: 'checkbox',
+                                    name: 'productos[]',
+                                    value: producto.tipo + '@' + producto.codigo + '@' + producto.difer,
+                                    'data-key': i
+                                }).prop('checked', false).addClass('ch-producto')
+                            )
+                        ).append(
+                            $('<td>').append(btnTipo)
+                        ).append(
+                            $('<td>').append(
+                                $('<a>').attr('href', 'javascript:void(0)').addClass('btn btn-primary btn-sm').html(producto.ean)
+                            )
+                        ).append(
+                            $('<td>').html(producto.nombre)
+                        ).append(
+                            $('<td>').html(producto.pventa.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                        ).append(
+                            $('<td>').html(producto.unidcaja.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                        ).append(
+                            $('<td>').html(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                        ).append(
+                            $('<td>').html(producto.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                        ).append(
+                            $('<td>').html(producto.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                        ).append(
+                            $('<td>').html(producto.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                        ).append(
+                            $('<td>').append(
+                                $('<a>').append(
+                                    $('<i>').addClass('fa fa-edit')
+                                ).attr({
+                                    'href': '#',
+                                    'data-tipo': producto.tipo,
+                                    'data-codigo': producto.codigo,
+                                    'data-difer': producto.difer
+                                }).on('click', EditarProducto).addClass('btn btn-sm btn-warning')
+                            )
+                        )
+                    );
+                    totales.cantidad += producto.cantidad;
+                    totales.cajas += producto.cajas;
+                    totales.pallets += producto.pallets;
+                    totales.importe += producto.importe;
+                }
+                $('#container').append(
+                    $('<table>').append(
+                        $('<thead>').append(
+                            $('<tr>').append(
+                                $('<th>').html('')
+                            ).append(
+                                $('<th>').html('Tipo')
+                            ).append(
+                                $('<th>').html('Cod. EAN')
+                            ).append(
+                                $('<th>').html('Producto')
+                            ).append(
+                                $('<th>').html('Pr.Venta')
+                            ).append(
+                                $('<th>').html('Unid./Caja')
+                            ).append(
+                                $('<th>').html('Cantidad')
+                            ).append(
+                                $('<th>').html('Subtotal')
+                            ).append(
+                                $('<th>').html('Cajas')
+                            ).append(
+                                $('<th>').html('Pallets')
+                            ).append(
+                                $('<th>').html('')
+                            )
+                        )
+                    ).append(tbody).append(
+                        $('<tfoot>').append(
+                            $('<tr>').append(
+                                $('<th>').html('')
+                            ).append(
+                                $('<th>').html('')
+                            ).append(
+                                $('<th>').html('TOTALES')
+                            ).append(
+                                $('<th>').html('')
+                            ).append(
+                                $('<th>').html('')
+                            ).append(
+                                $('<th>').html('')
+                            ).append(
+                                $('<th>').html(totales.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                            ).append(
+                                $('<th>').html(Pedido.moneda + ' ' + totales.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                            ).append(
+                                $('<th>').html(totales.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                            ).append(
+                                $('<th>').html(totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                            ).append(
+                                $('<th>').html('')
+                            )
+                        )
+                    ).addClass('table table-hover table-striped table-responsive')
+                );
+            }
+            else {
+                $('#container').empty().append(
+                    $('<p>').addClass('mb-0').html('Aún no ha agregado productos para su pedido')
+                );
+            }
+        }
+        function IngresarCantidad(event) {
+            let scantidad = $(this).val();
+            if (scantidad != '') {
+                let ds = event.target.dataset;
+                let idx = parseInt(ds.idx);
+                let pventa = parseFloat(ds.pventa);
+                let caja = parseInt(ds.caja);
+                let pcaja = parseFloat(ds.pcaja);
+                let stock = parseInt(ds.stock);
+                let cantidad = parseInt(scantidad);
+                // validaciones
+                let resto = cantidad % caja;
+                let cajas = Math.floor(cantidad / caja);
+                if (cantidad > stock) {
+                    cantidad = stock;
+                    $(this).val(stock);
+                    document.getElementById('alert-' + idx).innerHTML = 'Stock superado';
+                }
+                else {
+                    if (resto > 0) {
+                        cajas += 1;
+                        let faltante = cajas * caja;
+                        document.getElementById('alert-' + idx).innerHTML = faltante + ' para ' + cajas + ' caja(s)';
+                    }
+                    else {
+                        document.getElementById('alert-' + idx).innerHTML = '';
+                    }
+                }
+                let subtotal = cantidad * pventa;
+                let pallets = cajas * pcaja;
+                // actualiza array
+                catalogo[idx].cantidad = cantidad;
+                catalogo[idx].subtotal = subtotal;
+                catalogo[idx].cajas = cajas;
+                catalogo[idx].pallets = pallets;
+                //
+                document.getElementById('subtotal-' + idx).innerHTML = subtotal.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                document.getElementById('pallets-' + idx).innerHTML = pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });;
+            }
+        }
+        CargarCatalogoProductos = async (event) => {
+            $('#lista-container').empty();
+            try {
+                let result = await $.ajax({
+                    url: '/extranet/catalogo-productos',
+                    method: 'post',
+                    data: { pedido: Pedido.codigo },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                catalogo = result.productos;
+            }
+            catch (err) {
+                console.error(err);
+            }
+            //
+            let tbody = $('<tbody>');
+            for (let j in catalogo) {
+                let item = catalogo[j];
+                tbody.append(
+                    $('<tr>').append(
+                        $('<td>').html(item.ean)
+                    ).append(
+                        $('<td>').html(item.nombre)
+                    ).append(
+                        $('<td>').html(item.pventa.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                    ).append(
+                        $('<td>').html(item.stock).addClass('text-right')
+                    ).append(
+                        $('<td>').html(item.caja).addClass('text-right')
+                    ).append(
+                        $('<td>').append(
+                            $('<input>').attr({
+                                type: 'text',
+                                id: 'cnt-' + j,
+                                'data-idx': j,
+                                'data-codigo': item.codigo,
+                                'data-pventa': item.pventa,
+                                'data-caja': item.caja,
+                                'data-pcaja': item.pcaja,
+                                'data-stock': item.stock + 50,
+                                'data-grupo': item.cogrupo
+                            }).addClass('form-control form-control-sm ip-cant').on('keyup', IngresarCantidad).prop('disabled', item.stock == 0)
+                        ).append(
+                            $('<small>').attr('id', 'alert-' + j).addClass('text-danger')
+                        )
+                    ).append(
+                        $('<td>').append(
+                            $('<span>').attr('id', 'subtotal-' + j).html('0')
+                        ).addClass('text-right')
+                    ).append(
+                        $('<td>').append(
+                            $('<span>').attr('id', 'pallets-' + j).html('0')
+                        ).addClass('text-right')
+                    )
+                );
+            }
+            $('#lista-container').append(
+                $('<table>').append(
+                    $('<thead>').append(
+                        $('<tr>').append(
+                            $('<th>').html('EAN')
+                        ).append(
+                            $('<th>').html('Producto')
+                        ).append(
+                            $('<th>').html('P.Venta')
+                        ).append(
+                            $('<th>').html('Stock')
+                        ).append(
+                            $('<th>').html('Unids/ Caja')
+                        ).append(
+                            $('<th>').html('Cantidad')
+                        ).append(
+                            $('<th>').html('Subtotal')
+                        ).append(
+                            $('<th>').html('Pallets')
+                        )
+                    )
+                ).append(tbody).addClass('table table-hover table-striped')
+            );
+        }
+        EliminarProductos = async (event) => {
+            event.preventDefault();
+            let eliminar = [];
+            if (window.confirm('¿Eliminar los productos seleccionados?')) {
+                let productos = $('.ch-producto:checked');
+                $.each(productos, function () {
+                    let chbox = $(this).val().split('@');
+                    eliminar.push({
+                        tipo: chbox[0],
+                        codigo: chbox[1],
+                        difer: parseInt(chbox[2])
+                    });
+                });
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/extranet/eliminar-productos',
+                        method: 'post',
+                        data: { pedido: Pedido.codigo, productos: eliminar },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    let mensajes = result.mensajes;
+                    for (let mensaje of mensajes) {
+                        if (mensaje.error) alert(mensaje.error);
+                    }
+                    DetallePedido = result.detalle;
+                    $('#modal-lista').modal('hide');
+                    EscribirListaProductos();
+                }
+                catch (err) {
+                    alert(err);
+                }
+            }
+        }
+        AgregarProductos = async (event) => {
+            event.preventDefault();
+            const boton = $('#modal-lista .modal-footer .btn-primary');
+            boton.prop('disabled', true).empty().html('Procesando su pedido...');
+            let cantidades = $('.ip-cant');
+            let productos = [];
+            $.each(cantidades, function() {
+                let input = $(this);
+                if (input.val() != '' && input.val() != '0') {
+                    productos.push({
+                        grupo: input.data('grupo'),
+                        codigo: input.data('codigo'),
+                        cantidad: parseInt(input.val()),
+                        tpventa: 'L'
+                    });
+                }
+            });
+            let result;
+            try {
+                result = await $.ajax({
+                    url: '/extranet/agregar-productos-expo',
+                    method: 'post',
+                    data: { productos: productos, pedido: Pedido.codigo },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    console.log(result.data.mensajes);
+                    alert(JSON.stringify(result.error));
+                    return;
+                }
+                let mensajes = result.data.mensajes;
+                for (let mensaje of mensajes) {
+                    if (mensaje.error) alert(mensaje.error);
+                }
+                DetallePedido = result.data.detalle;
+                $('#modal-lista').modal('hide');
+                EscribirListaProductos();
+                alert('Se agregaron los productos');
+                boton.prop('disabled', false).empty().append(
+                    $('<i>').addClass('fa fa-plus')
+                ).append(' Agregar los productos');
+            }
+            catch (err) {
+                alert(err);
+                result;
+            }
+        }
+        ResumenPedido = (event) => {
+            document.getElementById('rp-items').value = totales.cantidad.toLocaleString('en-us', { minimumFractionDigits:0, maximumFractionDigits: 0 });
+            document.getElementById('rp-subtotal').value = Pedido.moneda + ' ' + totales.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('rp-cajas').value = totales.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            document.getElementById('rp-pallets').value = totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+        CerrarPedido = async (event) => {
+            event.preventDefault();
+            const boton = $('#modal-cierre .modal-footer .btn-success');
+            boton.prop('disabled', true);
+            boton.empty().html('Procesando. Por favor, espere...');
+            /*setTimeout(() => {
+                boton.prop('disabled', false).empty().append(
+                    $('<i>').addClass('fa fa-check')
+                ).append(' Cerrar el pedido');
+                $('#modal-cierre').modal('hide');
+                alert('¡Su pedido ha sido enviado!');
+                location.href = '/extranet';
+            }, 1500);*/
+            try {
+                let result = await $.ajax({
+                    url: '/extranet/cerrar-pedido',
+                    method: 'post',
+                    data: { pedido: CodigoPedido, cliente: Cliente.rucdni },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                alert(result.mensaje);
+                location.href = '/extranet';
+            }
+            catch (err) {
+                alert(err);
+                console.error(err);
+            }
+        }
+        ObsequiarProductos = async () => {
+            event.preventDefault();
+            let gratis = [];
+            if (window.confirm('¿Convertir los productos a título gratuito?')) {
+                let productos = $('.ch-producto:checked');
+                $.each(productos, function () {
+                    let chbox = $(this).val().split('@');
+                    gratis.push({
+                        tipo: chbox[0],
+                        codigo: chbox[1],
+                        difer: parseInt(chbox[2])
+                    });
+                });
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/extranet/obsequiar-productos',
+                        method: 'post',
+                        data: { pedido: Pedido.codigo, productos: gratis },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    let mensajes = result.mensajes;
+                    for (let mensaje of mensajes) {
+                        if (mensaje.error) alert(mensaje.error);
+                    }
+                    DetallePedido = result.detalle;
+                    $('#modal-lista').modal('hide');
+                    EscribirListaProductos();
+                }
+                catch (err) {
+                    alert(err);
+                }
+            }
+        }
+        FormCargaMasivaSubmit = (event) => {
+            event.preventDefault();
+            if (document.getElementById('fl-plantilla').files.length == 0) {
+                alert('No ha cargado una plantilla');
+                return;
+            }
+            $('#form-carga-masiva').append(
+                $('<input>').attr({
+                    name: 'pedido',
+                    type: 'hidden'
+                }).val(CodigoPedido)
+            );
+            document.getElementById('form-carga-masiva').submit();
+        }
+        // iniciar la interfaz
+        if (sesdata.admin != 'S') {
+            $('#btn-itsfree').remove();
+        }
+        else {
+            $('#btn-itsfree').on('click', ObsequiarProductos);
+        }
+        $('#btn-eliminar').on('click', EliminarProductos);
+        // $('#modal-plantilla .modal-footer .btn-success').on('click', AdjuntarPlantilla);
+        $('#modal-plantilla .modal-footer .btn-success').on('click', FormCargaMasivaSubmit);
+        $('#modal-lista').on('show.bs.modal', CargarCatalogoProductos);
+        $('#modal-lista .modal-footer .btn-primary').on('click', AgregarProductos);
+        $('#modal-cierre').on('show.bs.modal', ResumenPedido);
+        $('#modal-cierre .modal-footer .btn-success').on('click', CerrarPedido);
+        CargarDatosPedido();
+    </script>
+</body>
+
+</html>

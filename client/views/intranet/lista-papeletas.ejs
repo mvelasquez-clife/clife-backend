@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            #np-goce:checked ~label {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <% if (admin == 'S') { %>
+            <% include _main.sidenav.admin.ejs %>
+        <% } else { %>
+            <% include _main.sidenav.ejs %>
+        <% } %>
+        <!-- body -->
+        <div id="main-content">
+            <div id="ct-papeletas" class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Papeletas</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Nueva papeleta</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div id="papeletas-container">
+                    <div class="row">
+                        <div class="col">
+                            <ul class="list-group mb-2">
+                                <li class="list-group-item">
+                                    <p class="text-main mb-0">Papeletas solicitadas</p>
+                                </li>
+                                <li id="doc-vigente-container" class="list-group-item">
+                                    <p class="mb-0">Por favor, espere...</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- modal revision -->
+        <div id="modal-revision" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Revisión de papeleta</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group row mb-1">
+                                <label for="rvp-solicita" class="col-sm-2 col-form-label">Solicitante</label>
+                                <div class="col-sm-10">
+                                    <input type="text" readonly class="form-control-plaintext form-control-sm" id="rvp-solicita" placeholder="Persona que solicita">
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1">
+                                <label for="rvp-motivo" class="col-sm-2 col-form-label">Motivo</label>
+                                <div class="col-sm-10">
+                                    <input type="text" readonly class="form-control-plaintext form-control-sm" id="rvp-motivo" placeholder="Motivo del permiso">
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1">
+                                <label for="rvp-fechahora" class="col-sm-2 col-form-label">Fecha</label>
+                                <div class="col-sm-10">
+                                    <input type="text" readonly class="form-control-plaintext form-control-sm" id="rvp-fechahora" placeholder="Fecha solicitada">
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1">
+                                <label for="rvp-goce" class="col-sm-2 col-form-label">Goce</label>
+                                <div class="col-sm-10">
+                                    <input type="text" readonly class="form-control-plaintext form-control-sm" id="rvp-goce" placeholder="¿Con goce de haber?">
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1">
+                                <label for="rvp-respuesta" class="col-sm-2 col-form-label">Respuesta</label>
+                                <div class="col-sm-6">
+                                    <select id="rvp-respuesta" class="form-control form-control-sm">
+                                        <option value="0">- Seleccione -</option>
+                                        <option value="S" class="text-success">Aprobado</option>
+                                        <option value="N" class="text-danger">Rechazado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row mb-1">
+                                <label for="rvp-observaciones" class="col-sm-2 col-form-label">Observaciones</label>
+                                <div class="col-sm-10">
+                                    <textarea type="text" class="form-control form-control-sm" id="rvp-observaciones" style="resize:none;" placeholder="Ingrese las observaciones, si las hubiera"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                        <a id="rvp-enviar" href="#" type="button" class="btn btn-sm btn-main"><i class="fa fa-sign-out"></i> Confirmar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            let PapeletasSolicitadas = [];
+            let PapeletasAprobar = [];
+            let CodigoPapeleta;
+            // funciones
+            CargaPapeletas = async _ => {
+                MuestraIndicadorCarga();
+                let result;
+                try {
+                    // papeletas solicitadas
+                    result = await $.ajax({
+                        url: '/intranet/papeletas-solicitadas',
+                        method: 'post',
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                    }
+                    else {
+                        PapeletasSolicitadas = result.data.papeletas;
+                    }
+                    // papeletas para aprobacion
+                    result = await $.ajax({
+                        url: '/intranet/papeletas-aprobar',
+                        method: 'post',
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                    }
+                    else {
+                        PapeletasAprobar = result.data.papeletas;
+                    }
+                    // escribir lista de papeletas
+                    EscribirListaPapeletas();
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+                OcultaIndicadorCarga();
+            }
+            RevisarPapeleta = async e => {
+                e.preventDefault();
+            }
+            EscribirListaPapeletas = _ => {
+                const container = $('#papeletas-container');
+                container.empty();
+                // papeletas para aprobacion
+                if (PapeletasAprobar.length > 0) {
+                    let aprobacion = $('<ul>').addClass('list-group mb-2');
+                    aprobacion.append(
+                        $('<li>').append(
+                            $('<p>').text('Papeletas para aprobación').addClass('text-main mb-0')
+                        ).addClass('list-group-item')
+                    );
+                    for (let papeleta of PapeletasAprobar) {
+                        let iBoton = $('<a>').addClass('btn btn-sm my-auto').attr({
+                            'href': '#',
+                            'id': 'papeleta-' + papeleta.codigo,
+                            'data-id': papeleta.codigo,
+                            'data-toggle': 'modal',
+                            'data-target': '#modal-revision'
+                        });
+                        let iGoce = $('<p>').addClass('mb-0');
+                        if (papeleta.goce == 'S') iGoce.text('Permiso con goce de haber').addClass('text-success');
+                        else iGoce.text('Permiso sujeto a descuento').addClass('text-danger');
+                        if (papeleta.aprobado) {
+                            if (papeleta.aprobado == 'S') iBoton.text('Aprobada').addClass('btn-success');
+                            else iBoton.text('Rechazada').addClass('btn-danger');
+                        }
+                        else {
+                            iBoton.text('Revisar').addClass('btn-primary');
+                        }
+                        aprobacion.append(
+                            $('<li>').append(
+                                $('<div>').append(
+                                    $('<div>').append(iGoce).append(
+                                        $('<p>').append(
+                                            $('<b>').text('Solicita:').addClass('mr-1')
+                                        ).append(papeleta.solicita).addClass('mb-0')
+                                    ).append(
+                                        $('<p>').append(
+                                            $('<b>').text('Motivo:').addClass('mr-1')
+                                        ).append(papeleta.motivo).addClass('mb-0')
+                                    ).append(
+                                        $('<p>').html('Desde: <i>' + papeleta.finicio + '</i>' + (papeleta.ffin ? (' - Hasta <i>' + papeleta.ffin + '</i>') : '')).addClass('mb-0')
+                                    ).addClass('my-auto mr-auto px-2')
+                                ).append(iBoton).addClass('d-flex w-100 justify-content-between')
+                            ).addClass('list-group-item')
+                        );
+                    }
+                    container.append(
+                        $('<div>').append(
+                            $('<div>').append(aprobacion).addClass('col')
+                        ).addClass('row')
+                    );
+                }
+                // papeletas enviadas
+                const solicitudes = $('<ul>').addClass('list-group mb-2');
+                solicitudes.append(
+                    $('<li>').append(
+                        $('<p>').text('Papeletas enviadas').addClass('text-main mb-0')
+                    ).addClass('list-group-item')
+                );
+                if (PapeletasSolicitadas.length > 0) {
+                    for (let papeleta of PapeletasSolicitadas) {
+                        let iBoton = $('<a>').addClass('btn btn-sm my-auto').attr('href', 'javascript:void(0)');
+                        let iGoce = $('<p>').addClass('mb-0');
+                        if (papeleta.goce == 'S') iGoce.text('Permiso con goce de haber').addClass('text-success');
+                        else iGoce.text('Permiso sujeto a descuento').addClass('text-danger');
+                        if (papeleta.aprobado) {
+                            if (papeleta.aprobado == 'S') iBoton.text('Aprobada').addClass('btn-success');
+                            else iBoton.text('Rechazada').addClass('btn-danger');
+                        }
+                        else {
+                            iBoton.text('Pendiente').addClass('btn-primary');
+                        }
+                        solicitudes.append(
+                            $('<li>').append(
+                                $('<div>').append(
+                                    $('<div>').append(iGoce).append(
+                                        $('<p>').append(
+                                            $('<b>').text('Motivo:').addClass('mr-1')
+                                        ).append(papeleta.motivo).addClass('mb-0')
+                                    ).append(
+                                        $('<p>').html('Desde: <i>' + papeleta.finicio + '</i>' + (papeleta.ffin ? (' - Hasta <i>' + papeleta.ffin + '</i>') : '')).addClass('mb-0')
+                                    ).append(
+                                        $('<p>').append(
+                                            $('<b>').text('Observaciones:').addClass('mr-1')
+                                        ).append(papeleta.observaciones ? papeleta.observaciones : '(ninguna)').addClass('mb-0')
+                                    ).addClass('my-auto mr-auto px-2')
+                                ).append(iBoton).addClass('d-flex w-100 justify-content-between')
+                            ).addClass('list-group-item')
+                        );
+                    }
+                }
+                else {
+                    solicitudes.append(
+                        $('<li>').append(
+                            $('<p>').text('A la fecha, no ha solicitado ninguna papeleta').addClass('mb-0')
+                        ).addClass('list-group-item')
+                    );
+                    /*
+                    <li id="doc-vigente-container" class="list-group-item">
+                        <p class="mb-0">Por favor, espere...</p>
+                    </li>
+                    */
+                }
+                container.append(
+                    $('<div>').append(
+                        $('<div>').append(solicitudes).addClass('col')
+                    ).addClass('row')
+                );
+            }
+            ModalRevisionOnShow = async args => {
+                let a = args.relatedTarget;
+                const params = {
+                    papeleta: a.dataset.id
+                };
+                try {
+                    const result = await $.ajax({
+                        url: '/intranet/datos-papeleta',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                    }
+                    else {
+                        CodigoPapeleta = params.papeleta;
+                        const papeleta = result.data.papeleta;
+                        document.getElementById('rvp-solicita').value = papeleta.solicitante;
+                        document.getElementById('rvp-motivo').value = papeleta.motivo;
+                        document.getElementById('rvp-fechahora').value = papeleta.fechahora;
+                        $('#rvp-respuesta option[value=' + papeleta.respuesta + ']').prop('selected', true);
+                        document.getElementById('rvp-goce').value = papeleta.goce;
+                        document.getElementById('rvp-observaciones').value = papeleta.observaciones;
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+            }
+            ResponderPapeleta = async e => {
+                e.preventDefault();
+                $('#rvp-enviar').hide();
+                try {
+                    const data = {
+                        papeleta: CodigoPapeleta,
+                        respuesta: document.getElementById('rvp-respuesta').value,
+                        observaciones: document.getElementById('rvp-observaciones').value
+                    };
+                    const result = await $.ajax({
+                        url: '/intranet/responder-papeleta',
+                        method: 'post',
+                        data: data,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                    }
+                    else {
+                        $('#papeleta-' + CodigoPapeleta).removeClass('btn-primary').removeClass('btn-success').removeClass('btn-danger');
+                        if (data.respuesta == 'S') $('#papeleta-' + CodigoPapeleta).addClass('btn-success').text('Aprobada');
+                        else if (data.respuesta == 'N') $('#papeleta-' + CodigoPapeleta).addClass('btn-danger').text('Rechazada');
+                        else $('#papeleta-' + CodigoPapeleta).addClass('btn-primary').text('Revisar');
+                        $('#modal-revision').modal('hide');
+                    }
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+                finally {
+                    $('#rvp-enviar').show();
+                }
+            }
+            // go!
+            $(_ => {
+                $('#menu-papeletas').collapse('show')
+                $('#sidenav-lista-papeletas').addClass('active');
+                $('#modal-revision').on('show.bs.modal', ModalRevisionOnShow);
+                $('#rvp-enviar').on('click', ResponderPapeleta);
+                CargaPapeletas();
+            });
+        </script>
+    </body>
+</html>

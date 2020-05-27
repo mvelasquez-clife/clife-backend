@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Intranet Corporacion Life</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="/assets/intranet/css/login.css">
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-5">
+                <div id="form-login" class="py-5 mt-5">
+                    <img src="/assets/intranet/images/clife-logo.svg" class="mx-auto mb-2 d-block" style="height:64px;" alt="Corporacion Life">
+                    <h3 class="text-main text-center font-weight-light mb-3">Activar cuenta</h3>
+                    <input id="alta-dni" type="text" class="form-input" placeholder="Documento de Identidad">
+                    <button id="alta-submit" class="btn btn-main mt-4 mb-1 py-2">Verificar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- modals -->
+    <div id="modal-confirma" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Usuario encontrado</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-secondary mb-0">Estimad@</p>
+                    <p id="nom-usuario" class="text-primary font-italic my-2"></p>
+                    <p class="text-dark mb-3">A continuación, confirma tus datos para culminar con el registro</p>
+                    <form>
+                        <input type="hidden" id="dt-dni">
+                        <input type="hidden" id="dt-empresa">
+                        <input type="hidden" id="dt-nombres">
+                        <input type="hidden" id="dt-rsocial">
+                        <div class="form-group row">
+                            <label for="dt-email" class="col-sm-2 col-form-label">e-mail</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control form-control-sm" id="dt-email">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="dt-telefono" class="col-sm-2 col-form-label">Teléfono</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control form-control-sm" id="dt-telefono">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="dt-clave" class="col-sm-2 col-form-label">Contraseña</label>
+                            <div class="col-sm-10">
+                                <input type="password" class="form-control form-control-sm" id="dt-clave">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="dt-rclave" class="col-sm-2 col-form-label">Repetir contraseña</label>
+                            <div class="col-sm-10">
+                                <input type="password" class="form-control form-control-sm" id="dt-rclave">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                    <button id="dt-submit" type="button" class="btn btn-sm btn-primary">Confirmar datos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- separador de bajo presupuesto -->
+    <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script src="/assets/bootstrap/js/popper.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+        ValidarDni = async event => {
+            try {
+                const result = await $.ajax({
+                    url: '/intranet/validar-dni',
+                    method: 'post',
+                    data: { dni: document.getElementById('alta-dni').value },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                // escribir los datos
+                const datos = result.data;
+                document.getElementById('nom-usuario').innerHTML = datos.nombres;
+                document.getElementById('dt-empresa').value = datos.empresa;
+                document.getElementById('dt-dni').value = document.getElementById('alta-dni').value;
+                document.getElementById('dt-email').value = datos.email;
+                document.getElementById('dt-telefono').value = datos.telefono;
+                document.getElementById('dt-nombres').value = datos.nombres;
+                document.getElementById('dt-rsocial').value = datos.rzsocial;
+                // modal
+                $('#modal-confirma').modal('show');
+                console.log(result.data);
+            }
+            catch (err) {
+                alert(JSON.stringify(err));
+            }
+        }
+        RegistraUsuario = async event => {
+            event.preventDefault();
+            let clave = document.getElementById('dt-clave').value;
+            let rclave = document.getElementById('dt-rclave').value
+            if (clave == rclave) {
+                const params = {
+                    empresa: document.getElementById('dt-empresa').value,
+                    dni: document.getElementById('dt-dni').value,
+                    nombres: document.getElementById('dt-nombres').value,
+                    rsocial: document.getElementById('dt-rsocial').value,
+                    email: document.getElementById('dt-email').value,
+                    telefono: document.getElementById('dt-telefono').value,
+                    clave: clave
+                };
+                try {
+                    let result = await $.ajax({
+                        url: '/intranet/registra-usuario',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    alert('Datos registrados. Ya puedes ingresar a la Intranet Life');
+                    // $('#modal-confirma').modal('hide');
+                    location.href = '/intranet/login';
+                }
+                catch (err) {
+                    alert(JSON.stringify(err));
+                }
+            }
+            else {
+                alert('Las claves deben coincidir');
+            }
+        }
+        $(_ => {
+            $('#alta-submit').on('click', ValidarDni);
+            $('#dt-submit').on('click', RegistraUsuario);
+        });
+    </script>
+</body>
+
+</html>

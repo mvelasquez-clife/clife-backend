@@ -43,6 +43,16 @@ const intranetController = {
                 break;
             case 'CR':
                 subcarpeta = 'creditos';
+                break;
+            case 'CO':
+                subcarpeta = 'contabilidad';
+                break;
+            case 'SG':
+                subcarpeta = 'seguridad';
+                break;
+            case 'PO':
+                subcarpeta = 'plantaindustrial';
+                break;
             default:
                 '';
         }

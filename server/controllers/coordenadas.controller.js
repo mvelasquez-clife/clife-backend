@@ -63,30 +63,89 @@ const CoordenadasController = {
         let { codireccion } = request.body;
         let result;
         try {
+            const xPais = 177;
             let conn = await oracledb.getConnection(dbParams);
-            let query = "select co_catalogo_entidad \"cliente\",co_direccion_entidad \"codigo\",departamento || '-' || provincia || '-' || de_distrito \"ubigeo\",direccion \"direccion\",nu_latitud \"latitud\",nu_longitud \"longitud\",es_vigencia_direccion \"vigencia\" from v_dire_entidad where co_direccion_entidad = :p_direccion";
+            // carga datos de la direccion
+            let query = "call pack_new_direcciones.sp_datos_direccion(:p_codireccion, :o_departamento, :o_provincia, :o_ubigeo, :o_via, :o_nomvia, :o_zona, :o_nomzona, :o_numero, :o_interior, :o_referencias, :o_direccion, :o_latitud, :o_longitud, :o_cliente)";
             let params = {
-                p_direccion: { val: codireccion }
+                p_codireccion: { val: codireccion },
+                o_departamento: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_provincia: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_ubigeo: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_via: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_nomvia: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_zona: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_nomzona: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_numero: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_interior: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_referencias: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_direccion: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                o_latitud: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_longitud: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_cliente: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
             };
             result = await conn.execute(query, params, responseParams);
-            //direccion sunat
-            let sDireccionSunat = '';
-            const url = 'http://192.168.11.138/ruc/' + result.rows[0].cliente;
-            try {
-                const response = await fetch(url);
-                const json = await response.json();
-                sDireccionSunat = json.result.datos.direccion;
-                console.log(sDireccionSunat);
-            }
-            catch (error) {
-                console.log(error);
-                sDireccionSunat = '';
-            }            
-            //fin
+            let { o_departamento, o_provincia, o_ubigeo, o_via, o_nomvia, o_zona, o_nomzona, o_numero, o_interior, o_referencias, o_direccion, o_latitud, o_longitud, o_cliente } = result.outBinds;
+            // combo vias
+            query = "select * from table(pack_new_direcciones.f_combo_vias)";
+            params = {};
+            result = await conn.execute(query, params, responseParams);
+            const vias = result.rows;
+            // combo zonas
+            query = "select * from table(pack_new_direcciones.f_combo_zonas)";
+            params = {};
+            result = await conn.execute(query, params, responseParams);
+            const zonas = result.rows;
+            // combo departamentos
+            query = "select * from table(pack_new_direcciones.f_combo_departamentos(:p_pais))";
+            params = {
+                p_pais: xPais
+            };
+            result = await conn.execute(query, params, responseParams);
+            const departamentos = result.rows;
+            // combo provincias
+            query = "select * from table(pack_new_direcciones.f_combo_provincias(:p_pais, :p_departamento))";
+            params = {
+                p_pais: xPais,
+                p_departamento: o_departamento
+            };
+            result = await conn.execute(query, params, responseParams);
+            const provincias = result.rows;
+            // combo distritos
+            query = "select * from table(pack_new_direcciones.f_combo_distritos(:p_pais, :p_departamento, :p_provincia))";
+            params = {
+                p_pais: xPais,
+                p_departamento: o_departamento,
+                p_provincia: o_provincia
+            };
+            result = await conn.execute(query, params, responseParams);
+            const distritos = result.rows;
+            // listo
             response.json({
                 data: {
-                    direccion: result.rows[0],
-                    dsunat: sDireccionSunat
+                    direccion: {
+                        departamento: o_departamento,
+                        provincia: o_provincia,
+                        ubigeo: o_ubigeo,
+                        via: o_via,
+                        nomvia: o_nomvia,
+                        zona: o_zona,
+                        nomzona: o_nomzona,
+                        numero: o_numero,
+                        interior: o_interior,
+                        referencias: o_referencias,
+                        direccion: o_direccion,
+                        latitud: o_latitud,
+                        longitud: o_longitud,
+                        cliente: o_cliente
+                    },
+                    combos: {
+                        vias: vias,
+                        zonas: zonas,
+                        departamentos: departamentos,
+                        provincias: provincias,
+                        distritos: distritos
+                    }
                 }
             });
         }
@@ -98,21 +157,37 @@ const CoordenadasController = {
         }
     },
     GuardarInformacionCoordenadas: async (request,response) => {
-        let { cliente, direccion, latitud, longitud, dsunat } = request.body;
+        let { codire, ubigeo, via, nomvia, zona, nomzona, numero, interior, referencias, latitud, longitud } = request.body;
         try {
             let conn = await oracledb.getConnection(dbParams);
-            let query = "update ma_dire_enti_m set nu_latitud = :p_latitud, nu_longitud = :p_longitud, de_direccion_sunat = :p_diresunat where co_catalogo_entidad = :p_cliente and co_direccion_entidad = :p_direccion";
+            let query = "call pack_new_direcciones.sp_actualiza_direccion (:o_codigo, :o_mensaje, :p_codireccion, :p_ubigeo, :p_via, :p_nomvia, :p_zona, :p_nomzona, :p_numero, :p_interior, :p_referencias, :p_latitud, :p_longitud)";
             let params = {
+                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                p_codireccion: { val: codire },
+                p_ubigeo: { val: ubigeo },
+                p_via: { val: via },
+                p_nomvia: { val: nomvia },
+                p_zona: { val: zona },
+                p_nomzona: { val: nomzona },
+                p_numero: { val: numero },
+                p_interior: { val: interior },
+                p_referencias: { val: referencias },
                 p_latitud: { val: latitud },
-                p_longitud: { val: longitud },
-                p_cliente: { val: cliente },
-                p_direccion: { val: direccion },
-                p_diresunat: { val: dsunat }
+                p_longitud: { val: longitud }
             };
-            await conn.execute(query, params, { autoCommit: true });
-            response.json({
-                res: 'ok'
-            });
+            const result = await conn.execute(query, params, responseParams);
+            let { o_codigo, o_mensaje } = result.outBinds;
+            if (o_codigo == 1) {
+                response.json({
+                    res: 'ok'
+                });
+            }
+            else {
+                response.json({
+                    error: o_mensaje
+                });
+            }
         }
         catch(error) {
             response.json({
