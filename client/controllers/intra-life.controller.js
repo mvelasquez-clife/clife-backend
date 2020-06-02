@@ -17,6 +17,12 @@ const LifeController = {
             return;
         }
         let data = {};
+        if (request.cookies[confParams.cookieError]) {
+            let error = request.cookies[confParams.cookieError];
+            console.error(error);
+            data.eror = error;
+            response.clearCookie(confParams.cookieError, { httpOnly: true });
+        }
         response.render(path.resolve('client/views/intranet/login.ejs'), data);
     },
     Logout: (request, response) => {
@@ -31,13 +37,17 @@ const LifeController = {
         let data = {};
         response.render(path.resolve('client/views/intranet/alta.ejs'), data);
     },
+    RecuperaClave: (request, response) => {
+        let data = {};
+        response.render('./../client/views/intranet/recupera-clave.ejs', data);
+    },
     AuthLogin: async (request, response) => {
         const { codigo, pswd } = request.body;
         let empresa = 11;
         let result;
         try {
             let conn = await oracledb.getConnection(dbParams);
-            let query = "select node_password \"hash\", st_cuenta_activada \"stact\", st_verifica_mail \"stmail\", co_cliente \"codigo\", initcap(de_nombre_comercial) \"ncomercial\", " +
+            let query = "select node_password \"hash\", st_intranet_activada \"stact\", st_verifica_mail \"stmail\", co_cliente \"codigo\", initcap(de_nombre_comercial) \"ncomercial\", " +
                 "initcap(de_razon_social) \"rsocial\", fe_suscripcion \"fsuscripcion\", de_email \"email\", de_telefono \"telefono\", st_admin \"admin\", st_tipo_usuario \"tipo\", " +
                 "co_empresa as \"empresa\" from cl_usuarios where co_cliente = :p_rucdni and co_empresa = :p_empresa";
             let params = {
@@ -58,23 +68,32 @@ const LifeController = {
             puesto = puesto.rows[0];
             conn.close();
             // verificar si la cuenta esta activada y el email fue validado
-            // compara la clave con el hash
-            bcrypt.compare(pswd, result.hash, function (err, res) {
-                if (err) {
+            if (result.stact == 'S') {
+                // compara la clave con el hash
+                bcrypt.compare(pswd, result.hash, function (err, res) {
+                    if (err) {
+                        response.cookie(confParams.cookieError, 'Ocurrió un error. Intente nuevamente', { httpOnly: true });
+                        response.redirect('/intranet/login');
+                        return;
+                    }
+                    if (res) {
+                        let sesion = result;
+                        sesion.puesto = puesto.puesto;
+                        delete sesion.hash;
+                        delete sesion.stact;
+                        delete sesion.stmail;
+                        response.cookie(confParams.cookieAdmin, sesion.admin, { httpOnly: true });
+                        response.cookie(confParams.cookieIntranet, JSON.stringify(sesion), { httpOnly: true });
+                        response.redirect('/intranet');
+                        return;
+                    }
                     response.cookie(confParams.cookieError, 'La clave ingresada es incorrecta.', { httpOnly: true });
                     response.redirect('/intranet/login');
-                    return;
-                }
-                let sesion = result;
-                sesion.puesto = puesto.puesto;
-                delete sesion.hash;
-                delete sesion.stact;
-                delete sesion.stmail;
-                console.log(sesion);
-                response.cookie(confParams.cookieAdmin, sesion.admin, { httpOnly: true });
-                response.cookie(confParams.cookieIntranet, JSON.stringify(sesion), { httpOnly: true });
-                response.redirect('/intranet');
-            });
+                });
+            }
+            else {
+                response.send('Tu cuenta no ha sido activada. Puedes activarla haciendo clic <a href="/intranet/activar-cuenta">aquí</a>');
+            }
         }
         catch (err) {
             console.error(err);
@@ -96,22 +115,27 @@ const LifeController = {
             let sess = request.cookies[confParams.cookieIntranet];
             let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
             let { tipo } = request.params;
-            let id;
+            let id, codigo;
             // ubica el código a partir del tipo
             switch (tipo) {
                 case 'boletas':
                     id = 'sidenav-boletas';
+                    tipo = tipo[0].toUpperCase() + tipo.slice(1);
+                    codigo = '801';
                     break;
-                case 'contratos':
-                    id = 'sidenav-contratos';
+                case 'cts':
+                    id = 'sidenav-cts';
+                    tipo = tipo.toUpperCase();
+                    codigo = '802';
                     break;
-                case 'memorandos':
-                    id = 'sidenav-memorandos';
+                case 'informacion':
+                    id = 'sidenav-informacion';
+                    tipo = 'Información laboral para el trabajador';
+                    codigo = '803';
                     break;
                 default: break;
             }
-            tipo = tipo[0].toUpperCase() + tipo.slice(1);
-            let data = { sesion: sess, admin: admin, tipo: tipo, id: id };
+            let data = { sesion: sess, admin: admin, tipo: tipo, id: id, documento: codigo };
             response.render(path.resolve('client/views/intranet/documentos.ejs'), data);
         }
         else response.redirect('/intranet/login');
@@ -454,7 +478,7 @@ const LifeController = {
             if (cliente.indexOf('.') > -1) {
                 try {
                     const scliente = cliente;
-                    cliente = cliente.split('.')[0];
+                    cliente = (cliente.split('.')[0]).split('_')[0];
                     const conn = await oracledb.getConnection(dbParams);
                     const query = "call pack_digitalizacion.sp_datos_cliente(:p_rucdni, :p_envio, :p_empresa, :o_codigo, :o_mensaje)";
                     const params = {
@@ -519,7 +543,8 @@ const LifeController = {
                     });
                     return;
                 }
-                const sFilename = 'DIGI_' + fields.cenvio + '_' + fields.codigo + '.pdf';
+                const codusr = fields.codigo.split('_')[0];
+                const sFilename = 'DIGI_' + fields.cenvio + '_' + codusr + '.pdf';
                 var oldpath = files.pdf.path;
                 var newpath = fupload.tmppath + 'unsigned_' + sFilename;
                 mv(oldpath, newpath, async function (err) {
@@ -543,7 +568,7 @@ const LifeController = {
                             return;
                         }
                         // genera la ruta del archivo alv
-                        let folders = [fields.empresa, 'CLIENTES', fields.codigo];
+                        let folders = [fields.empresa, 'PERSONAL', codusr];
                         const sPath = 'X:' + fupload.winseparator + folders.join(fupload.winseparator) + fupload.winseparator + sFilename;
                         let remotePath = '/publico/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator);
                         // aqui subir con ftp-manager
@@ -567,17 +592,18 @@ const LifeController = {
                                 p_empresa: { val: fields.empresa },
                                 p_usuario: { val: sesion.codigo },
                                 p_tipo_enti: { val: 2 },
-                                p_cataenti: { val: fields.codigo },
-                                p_archivo: { val: fields.codigo },
+                                p_cataenti: { val: codusr },
+                                p_archivo: { val: codusr },
                                 p_tipoarchivo: { val: 4 },
                                 p_ruta: { val: sPath },
                                 p_fichero: { val: sFilename },
                                 p_extension: { val: 'pdf' },
                                 p_descripcion: { val: fields.envio },
                                 p_tpdocu: { val: 639 },
-                                p_tipocarpeta: { val: 'CLIENTES' },
+                                p_tipocarpeta: { val: 'PERSONAL' },
                                 p_nuitems: { val: 1 }
                             };
+console.log(query, params);
                             let result = await conn.execute(query, params, responseParams);
                             let { o_codigo, o_resultado } = result.outBinds;
                             if (o_codigo == 0) {
@@ -592,9 +618,9 @@ const LifeController = {
                             params = {
                                 p_envio: { val: fields.cenvio },
                                 p_empresa: { val: fields.empresa },
-                                p_personal: { val: fields.codigo },
+                                p_personal: { val: codusr },
                                 p_item: { val: o_codigo },
-                                p_coarchivo: { val: fields.codigo },
+                                p_coarchivo: { val: codusr },
                                 p_tparchivo: { val: 4 },
                                 p_usuenvia: { val: sesion.codigo },
                                 o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
@@ -603,9 +629,9 @@ const LifeController = {
                             result = await conn.execute(query, params, responseParams);
                             let resDb = result.outBinds;
                             // datos del destinatario
-                            query = "call pack_digitalizacion.sp_datos_usuario (:p_dni, :p_empresa, :o_apepat, :o_apemat, :o_nombres, :o_fechanac, :o_sexo, :o_telefono, :o_email, :o_area, :o_cargo)";
+                            /*query = "call pack_digitalizacion.sp_datos_usuario (:p_dni, :p_empresa, :o_apepat, :o_apemat, :o_nombres, :o_fechanac, :o_sexo, :o_telefono, :o_email, :o_area, :o_cargo)";
                             params = {
-                                p_dni: { val: fields.codigo },
+                                p_dni: { val: codusr },
                                 p_empresa: { val: fields.empresa },
                                 o_apepat: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
                                 o_apemat: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
@@ -636,7 +662,7 @@ const LifeController = {
                             const transport = nodemailer.createTransport(smtp);
                             // genera la url encriptada
                             let cipher = crypto.createCipher(encParams.algorytm, encParams.password);
-                            let string = [fields.cenvio, fields.empresa, fields.codigo].join(encParams.separator);
+                            let string = [fields.cenvio, fields.empresa, codusr].join(encParams.separator);
                             let encrypted = cipher.update(string, encParams.charset, encParams.param);
                             encrypted += cipher.final(encParams.param);
                             // envia el pinche email
@@ -660,7 +686,7 @@ const LifeController = {
                                     return;
                                 }
                                 response.send('Se envió el correo!');
-                            });
+                            });*/
                             // fin
                             conn.close();
                             // validar
@@ -672,7 +698,7 @@ const LifeController = {
                             }
                             // listijirillo
                             response.json({
-                                codigo: fields.codigo
+                                codigo: codusr
                             });
                         }
                         catch (err) {
@@ -700,10 +726,10 @@ const LifeController = {
         const envio = decParams[0];
         const empresa = decParams[1];
         const personal = decParams[2];
-        // response.send(envio + ' - ' + empresa + ' - ' + personal);
+        const tipodoc = decParams[3];
         try {
             const conn = await oracledb.getConnection(dbParams);
-            // registra en el legajo de clientes
+            // verifica el acuse del documento
             let query = "call pack_digitalizacion.sp_info_fichero (:p_envio, :p_empresa, :p_usuario, :o_codigo, :o_mensaje, :o_ruta, :o_nombre, :o_fecha, :o_numero, :o_leido)";
             let params = {
                 p_envio: { val: envio },
@@ -719,6 +745,12 @@ const LifeController = {
             };
             let result = await conn.execute(query, params, responseParams);
             let { o_codigo, o_mensaje, o_ruta, o_nombre, o_fecha, o_numero, o_leido } = result.outBinds;
+            if (o_codigo == 0) {
+                response.json({
+                    error: o_mensaje
+                });
+                return;
+            }
             // verifica si el archivo fue leído o no
             if (o_leido == 'N') {
                 const infoEquipo = 'IP: ' + request.ip + ' | Browser: ' + request.headers['user-agent'];
@@ -866,21 +898,23 @@ const LifeController = {
     ListaDocumentos: async (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            const { codigo } = request.body;
             try {
                 const conn = await oracledb.getConnection(dbParams);
                 let query = "select * from table (pack_digitalizacion.f_lista_documentos(:p_empresa, :p_codigo, :p_tipodoc))";
                 let params = {
                     p_empresa: { val: sesion.empresa },
                     p_codigo: { val: sesion.codigo },
-                    p_tipodoc: { val: '801' }
+                    p_tipodoc: { val: codigo }
                 };
+console.log(params);
                 const result = await conn.execute(query, params, responseParams);
                 const documentos = result.rows;
                 const numDocumentos = documentos.length;
                 for (let i = 0; i < numDocumentos; i++) {
                     let cipher = crypto.createCipher(encParams.algorytm, encParams.password);
                     let iDocumento = documentos[i];
-                    let string = [iDocumento.CODIGO, iDocumento.EMPRESA, sesion.codigo].join(encParams.separator);
+                    let string = [iDocumento.CODIGO, iDocumento.EMPRESA, sesion.codigo, codigo].join(encParams.separator);
                     var encrypted = cipher.update(string, encParams.charset, encParams.param);
                     encrypted += cipher.final(encParams.param);
                     documentos[i].url = encrypted;
@@ -1093,16 +1127,6 @@ const LifeController = {
         if (request.cookies[confParams.cookieIntranet]) {
             const { empresa, tipodoc, envio, periodo, usuario } = request.body;
             try {
-                /*const conn = await oracledb.getConnection(dbParams);
-                let query = "select * from table (pack_digitalizacion.f_reporte_acuse(:p_empresa, :p_tipo, :p_envio, :p_periodo, :p_usuario))";
-                let params = {
-                    p_empresa: { val: empresa },
-                    p_tipo: { val: tipodoc },
-                    p_envio: { val: envio },
-                    p_periodo: { val: periodo },
-                    p_usuario: { val: usuario }
-                };
-                const result = await conn.execute(query, params, responseParams);*/
                 let params = [
                     { name: 'empresa', io: 'in', value: empresa },
                     { name: 'tipodoc', io: 'in', value: tipodoc },
@@ -1543,17 +1567,16 @@ const LifeController = {
             const { empresa, tipodoc, envio, periodo, usuario } = request.params;
             const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
             try {
-                const conn = await oracledb.getConnection(dbParams);
-                let query = "select * from table (pack_digitalizacion.f_reporte_acuse(:p_empresa, :p_tipo, :p_envio, :p_periodo, :p_usuario))";
-                let params = {
-                    p_empresa: { val: empresa },
-                    p_tipo: { val: tipodoc },
-                    p_envio: { val: envio },
-                    p_periodo: { val: periodo },
-                    p_usuario: { val: usuario }
-                };
-                const result = await conn.execute(query, params, responseParams);
-                const filas = result.rows;
+                let params = [
+                    { name: 'empresa', io: 'in', value: empresa },
+                    { name: 'tipodoc', io: 'in', value: tipodoc },
+                    { name: 'envio', io: 'in', value: envio },
+                    { name: 'periodo', io: 'in', value: periodo },
+                    { name: 'usuario', io: 'in', value: usuario },
+                    { name: 'rs', io: 'out', type: 'cursor' }
+                ];
+                let result = await db.resultSet('call pack_digitalizacion.sp_reporte_acuse (:empresa,:tipodoc,:envio,:periodo,:usuario,:rs)', params);
+                const filas = result.rs;
                 // escribe el mugre pdf alv
                 const pdfWriter = require('html-pdf');
                 const ejs = require('ejs');
@@ -1600,6 +1623,100 @@ const LifeController = {
             }
         }
         else response.redirect('/intranet/login');
+    },
+    XlsxReporteAcuse: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa, tipodoc, envio, periodo, usuario } = request.params;
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            // jala los datos
+            try {
+                let params = [
+                    { name: 'empresa', io: 'in', value: empresa },
+                    { name: 'tipodoc', io: 'in', value: tipodoc },
+                    { name: 'envio', io: 'in', value: envio },
+                    { name: 'periodo', io: 'in', value: periodo },
+                    { name: 'usuario', io: 'in', value: usuario },
+                    { name: 'rs', io: 'out', type: 'cursor' }
+                ];
+                let result = await db.resultSet('call pack_digitalizacion.sp_reporte_acuse (:empresa,:tipodoc,:envio,:periodo,:usuario,:rs)', params);
+                const filas = result.rs;
+                // go!
+                var Workbook = require('xlsx-workbook').Workbook;
+                var workbook = new Workbook();
+                var reporte = workbook.add("acuse");
+                // encabezados
+                reporte[0] = ['DNI', 'Apellidos y nombres', 'Periodo', 'Documento', 'Estado', 'Detalle lectura'];
+                let i = 1;
+                // reporte[fila][columna]
+                for (let fila of filas) {
+                    reporte[i] = [
+                        fila.dni,
+                        fila.nombre,
+                        fila.periodo,
+                        fila.documento != null ? (fila.documento + ' - ' + fila.descripcion) : '',
+                        fila.estado == 'S' ? 'Leído' : (fila.estado == 'X' ? 'No enviado' : 'Pendiente'),
+                        fila.detalle
+                    ];
+                    i++;
+                }
+                // automatically appends the '.xlsx' extension
+                let fpath = './tmp/' + sesion.codigo + '.xlsx';
+                workbook.save(fpath);
+                response.setHeader('Content-Disposition', 'attachment; filename=reporte.xlsx');
+                response.setHeader('Content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                let filestream = require('fs').createReadStream(fpath);
+                filestream.pipe(response);
+            }
+            catch (err) {
+                response.send('Ocurrió un error: ' + JSON.stringify(err));
+            }
+        }
+        else response.redirect('/intranet/login');
+    },
+    XlsxReportePersonal: async (request, response) => {
+        try {
+            const { empresa } = request.params;
+            const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            const conn = await oracledb.getConnection(dbParams);
+            const query = "select * from table(pack_digitalizacion.f_personal_empresa(:p_empresa))";
+            const params = {
+                p_empresa: { val: empresa }
+            };
+            const result = await conn.execute(query, params, responseParams);
+            const personal = result.rows;
+            // go!
+            var Workbook = require('xlsx-workbook').Workbook;
+            var workbook = new Workbook();
+            var reporte = workbook.add("personal");
+            // encabezados
+            reporte[0] = ['DNI', 'Ap. Paterno', 'Ap. Materno', 'Nombres', 'e-mail', 'Teléfono', 'Área', 'Cargo', 'Estado'];
+            let i = 1;
+            // reporte[fila][columna]
+            for (let fila of personal) {
+                reporte[i] = [
+                    fila.DOCIDEN,
+                    fila.APEPAT,
+                    fila.APEMAT,
+                    fila.NOMBRES,
+                    fila.EMAIL,
+                    fila.TELEFONO,
+                    fila.AREA,
+                    fila.CARGO,
+                    fila.VIGENCIA
+                ];
+                i++;
+            }
+            // automatically appends the '.xlsx' extension
+            let fpath = './tmp/' + sesion.codigo + '.xlsx';
+            workbook.save(fpath);
+            response.setHeader('Content-Disposition', 'attachment; filename=reporte.xlsx');
+            response.setHeader('Content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            let filestream = require('fs').createReadStream(fpath);
+            filestream.pipe(response);
+        }
+        catch (err) {
+            response.send(JSON.stringify(err));
+        }
     },
     VerificarDni: async (request, response) => {
         const { dni } = request.body;
@@ -1779,12 +1896,129 @@ const LifeController = {
                 command += ' ' + telefono.telefono;
             }
         }
-console.log('EnviarSms', command);
         var exec = require('child_process').exec, child;
         child = exec(command, async function (error, stdout, stderr) {
-console.log('child exec', stdout);
             response.json({
                 result: 'OK'
+            });
+        });
+    },
+    //
+    CargaDatosDni: async (request, response) => {
+        const { dni } = request.body;
+        const conn = await oracledb.getConnection(dbParams);
+        let query = "call pack_digitalizacion.sp_datos_dni(:p_dni, :p_empresa, :o_codigo, :o_nombre)";
+        let params = {
+            p_dni: { val: dni },
+            p_empresa: { val: 11 },
+            o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+            o_nombre: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+        };
+        let result = await conn.execute(query, params, responseParams);
+        const { o_codigo, o_nombre } = result.outBinds;
+        if (o_codigo == 1) {
+            // genera el pin
+            const pin = Math.floor(Math.random() * (1 + 999999 - 100000)) + 100000;
+            // registra la solicitud de cambio de clave
+            query = 'call pack_digitalizacion.sp_asignar_pin(:p_dni, :p_empresa, :p_pin, :o_solicitud, :o_telefono)';
+            params = {
+                p_dni: { val: dni },
+                p_empresa: { val: 11 },
+                p_pin: { val: pin },
+                o_solicitud: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_telefono: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            result = await conn.execute(query, params, responseParams);
+            let { o_solicitud, o_telefono } = result.outBinds;
+            if (o_solicitud == 0) {
+                response.json({
+                    error: o_telefono
+                });
+                return;
+            }
+            // enviar el sms
+            let command = 'php /var/www/html/sms/pin.php ' + o_telefono + ' ' + pin;
+            var exec = require('child_process').exec, child;
+            child = exec(command, async function (error, stdout, stderr) {
+                console.log('child exec', stdout);
+                response.json({
+                    result: 'OK'
+                });
+            });
+            // enviar respuesta
+            response.json({
+                data: {
+                    nombre: o_nombre,
+                    solicitud: o_solicitud,
+                    telefono: '******' + o_telefono.substr(6)
+                }
+            });
+            return;
+        }
+        response.json({
+            error: o_nombre
+        });
+    },
+    ValidarPin: async (request, response) => {
+        const { pin, solicitud } = request.body;
+        const conn = await oracledb.getConnection(dbParams);
+        let query = "call pack_digitalizacion.sp_validar_pin(:p_solicitud, :p_pin, :o_codigo, :o_mensaje)";
+        let params = {
+            p_solicitud: { val: solicitud },
+            p_pin: { val: pin },
+            o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+            o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+        };
+        let result = await conn.execute(query, params, responseParams);
+        const { o_codigo, o_mensaje } = result.outBinds;
+        if (o_codigo == -1) {
+            response.json({
+                error: o_mensaje,
+                expira: true
+            });
+            return;
+        }
+        if (o_codigo == 0) {
+            response.json({
+                error: o_mensaje,
+                expira: false
+            });
+            return;
+        }
+        response.json({
+            data: {
+                solicitud: o_codigo
+            }
+        });
+    },
+    ActualizarClave: async (request, response) => {
+        let { dni, clave } = request.body;
+        bcrypt.hash(clave, 12, async(err, hash) => {
+            if (err) {
+                response.json({
+                    error: JSON.stringify(err)
+                });
+                return;
+            }
+            const conn = await oracledb.getConnection(dbParams);
+            let query = "call pack_digitalizacion.sp_actualiza_clave(:p_dni, :p_empresa, :p_clave, :o_codigo, :o_mensaje)";
+            let params = {
+                p_dni: { val: dni },
+                p_empresa: { val: 11 },
+                p_clave: { val: hash },
+                o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            };
+            let result = await conn.execute(query, params, responseParams);
+            const { o_codigo, o_mensaje } = result.outBinds;
+            if (o_codigo == 0) {
+                response.json({
+                    error: o_mensaje
+                });
+                return;
+            }
+            response.json({
+                result: 'ok'
             });
         });
     }

@@ -110,11 +110,16 @@ module.exports = {
         let outBinds = result.outBinds;
         for (let key in outBinds) {
             let resultSet = outBinds[key];
-            let array = [];
-            while (fila = await resultSet.getRow()) {
-                array.push(fila);
+            if (typeof outBinds[key] == 'object') {
+                let array = [];
+                while (fila = await resultSet.getRow()) {
+                    array.push(fila);
+                }
+                output[key] = array;
             }
-            output[key] = array;
+            else {
+                output[key] = outBinds[key];
+            }
         }
         connection.close();
         return output;

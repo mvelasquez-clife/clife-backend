@@ -7,6 +7,7 @@ const LifeController = require('../controllers/intra-life.controller');
     router.get('/logout', LifeController.Logout);
     router.get('/documentos/:tipo', LifeController.Documentos);
     router.get('/activar-cuenta', LifeController.ActivarCuenta);
+    router.get('/recupera-clave', LifeController.RecuperaClave);
     router.get('/datos-personales', LifeController.DatosPersonales);
     router.get('/personal', LifeController.Personal);
     router.get('/subir-docs', LifeController.SubirDocumentos);
@@ -18,6 +19,8 @@ const LifeController = require('../controllers/intra-life.controller');
     router.get('/reporte-acuse', LifeController.ReporteAcuse);
     router.get('/info-equipo', LifeController.InfoEquipo);
     router.get('/pdf-reporte-acuse/:empresa/:tipodoc/:envio/:periodo/:usuario', LifeController.PdfReporteAcuse);
+    router.get('/xlsx-reporte-acuse/:empresa/:tipodoc/:envio/:periodo/:usuario', LifeController.XlsxReporteAcuse);
+    router.get('/xls-reporte-usuarios/:empresa', LifeController.XlsxReportePersonal);
     // activacion de usuarios
     router.post('/validar-dni', LifeController.VerificarDni);
     router.post('/registra-usuario', LifeController.RegistraUsuario);
@@ -55,5 +58,9 @@ const LifeController = require('../controllers/intra-life.controller');
     router.get('/prueba-qr', LifeController.PruebaQr);
     router.get('/prueba-ftp', LifeController.PruebaFtp);
     router.get('/prueba-sms', LifeController.PruebaSms);
+    // recuperacion de contraseña
+    router.post('/cargar-datos-dni', LifeController.CargaDatosDni);
+    router.post('/validar-pin', LifeController.ValidarPin);
+    router.post('/actualizar-clave', LifeController.ActualizarClave);
 
 module.exports = router;

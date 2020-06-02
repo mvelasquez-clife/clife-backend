@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Intranet Corporacion Life</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="/assets/intranet/css/login.css">
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <style>
+        #success-step-1, #fail-step-1, #step-2, #step-3, #success-step-2, #fail-step-2, #success-step-3 {
+            display: none;
+        }
+        .text-md { font-size: 1rem; }
+        .text-lg { font-size: 1.2rem; }
+        .text-xl { font-size: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-6">
+                <div id="form-login" class="py-5 mt-5">
+                    <img src="/assets/intranet/images/clife-logo.svg" class="mx-auto mb-2 d-block" style="height:64px;" alt="Corporacion Life">
+                    <h3 class="text-main text-center font-weight-light mb-3">Recuperación de contraseña</h3>
+                    <tag>
+                        <p class="mb-1"><b class="text-primary">Paso 1:</b> Ingresa tu DNI.</p>
+                        <input type="text" id="dni" class="form-input text-center text-lg" placeholder="Documento de Identidad">
+                        <button id="submit-step-1" class="btn btn-main mt-4 mb-1 py-2">Continuar</button>
+                        <p class="mb-4 font-weight-bold" id="success-step-1">¡Usuario <span id="sp-nombre" class="text-success"></span> encontrado!</p>
+                        <p class="mb-4" id="fail-step-1">El DNI ingresado <b id="b-dni"></b> no existe. Por favor, verifica el número de DNI ingresado</p>
+                    </tag>
+                    <tag id="step-2">
+                        <p class="mb-0"><b class="text-primary">Paso 2:</b> Hemos enviado un pin de 6 dígitos al número <span id="sp-celular"></span>. Por favor, ingresa la clave para confirmar tu identidad.</p>
+                        <input type="text" id="pin" class="form-input text-center text-xl" placeholder="Ingresa el PIN">
+                        <button id="submit-step-2" class="btn btn-main mt-4 mb-1 py-2">Verificar código</button>
+                        <p class="mt-2 mb-4 font-weight-bold" id="success-step-2">
+                            <span class="btn btn-sm btn-success">¡PIN verificado!</span>
+                        </p>
+                        <p id="fail-step-2" class="mb-4">PIN incorrecto</p>
+                    </tag>
+                    <tag id="step-3">
+                        <p class="mb-2"><b class="text-primary">Paso 3:</b> Ingresa una nueva contraseña. Recuerda que debe tener 8 caracteres como mínimo, y debe contener letras y números.</p>
+                        <input type="password" id="clave" class="form-input" placeholder="Nueva contraseña">
+                        <input type="password" id="rclave" class="form-input" placeholder="Repite la contraseña">
+                        <button id="submit-step-3" class="btn btn-main mt-3 mb-1 py-2">Actualizar contraseña</button>
+                        <p id="success-step-3" class="text-md mt-4 mb-1"><span class="text-success">¡Contraseña actualizada!</span> Ya puedes acceder a la intranet. Haz clic en el siguiente <a href="/intranet/login">enlace</a> para ingresar con tu DNI y tu nueva clave.</p>
+                    </tag>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- separador de bajo presupuesto -->
+    <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script src="/assets/bootstrap/js/popper.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+        var solicitud, rucdni;
+        async function verificarDni () {
+            $('#submit-step-1').hide();
+            let dni = document.getElementById('dni').value;
+            let result;
+            try {
+                result = await $.ajax({
+                    url: '/intranet/cargar-datos-dni',
+                    method: 'post',
+                    data: { dni: dni },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    document.getElementById('b-dni').innerHTML = dni;
+                    console.error(result.error);
+                    return;
+                }
+                rucdni = dni;
+                solicitud = result.data.solicitud;
+                telefono = result.data.telefono;
+                document.getElementById('sp-nombre').innerHTML = result.data.nombre;
+                $('#success-step-1').fadeIn(200, function () {
+                    document.getElementById('sp-celular').innerHTML = telefono;
+                    $('#step-2').show();
+                });
+            }
+            catch (err) {
+                alert(err);
+            }
+        }
+        async function verificarPin () {
+            $('#submit-step-2').hide();
+            let pin = document.getElementById('pin').value;
+            if (pin.length != 6) {
+                alert('Ingrese un PIN válido. Recuerde que el PIN consta de 6 dígitos.');
+                return;
+            }
+            let result;
+            try {
+                result = await $.ajax({
+                    url: '/intranet/validar-pin',
+                    method: 'post',
+                    data: { pin: pin, solicitud: solicitud },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    document.getElementById('fail-step-2').innerHTML = result.error;
+                    $('#fail-step-2').show();
+                    if (result.expira) {
+                        setTimeout(3000, function () {
+                            location.reload();
+                        });
+                    }
+                    return;
+                }
+                // habilita envio de clave
+                $('#success-step-2').fadeIn(200, function () {
+                    $('#pin').hide();
+                    $('#step-3').show();
+                });
+            }
+            catch (err) {
+                alert(err);
+            }
+        }
+        async function actualizarClave () {
+            $('#submit-step-3').hide();
+            let clave = document.getElementById('clave').value;
+            let rclave = document.getElementById('rclave').value;
+            if (clave == rclave) {
+                $('#clave').hide();
+                $('#rclave').hide();
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/intranet/actualizar-clave',
+                        method: 'post',
+                        data: { dni: rucdni, clave: clave },
+                        dataType: 'json'
+                    });
+                    //
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    $('#success-step-3').fadeIn(200);
+                }
+                catch (err) {
+                    console.error(err);
+                    alert('catch! ' + err);
+                }
+            }
+            else {
+                alert('Las claves deben coincidir');
+                $('#submit-step-3').show();
+            }
+        }
+        function onLoad () {
+            document.getElementById('dni').value = '';
+            document.getElementById('pin').value = '';
+            document.getElementById('clave').value = '';
+            document.getElementById('rclave').value = '';
+            $('#submit-step-1').on('click', verificarDni);
+            $('#submit-step-2').on('click', verificarPin);
+            $('#submit-step-3').on('click', actualizarClave);
+        }
+        $(onLoad);
+    </script>
+</body>
+
+</html>

@@ -6,9 +6,11 @@ const lo010301Controller = {
         // carga el combo de monedas
         let params = [
             { name: 'monedas', io: 'out', type: 'cursor' },
-            { name: 'tpsenti', io: 'out', type: 'cursor' }
+            { name: 'tpsenti', io: 'out', type: 'cursor' },
+            { name: 'fecha', io: 'out', type: 'string' },
+            { name: 'tcambio', io: 'out', type: 'number' }
         ];
-        let result = await db.resultSet('call pack_new_ctacte_prov.sp_datos_iniciales(:monedas, :tpsenti)', params);
+        let result = await db.resultSet('call pack_new_ctacte_prov.sp_datos_iniciales(:monedas, :tpsenti, :fecha, :tcambio)', params);
         response.json({
             data: {
                 monedas: result.monedas,
@@ -17,7 +19,9 @@ const lo010301Controller = {
                     { value: 1, text: 'Fecha ingreso' },
                     { value: 2, text: 'Fecha vencimiento' },
                     { value: 3, text: 'Fecha sistema' }
-                ]
+                ],
+                fecha: result.fecha,
+                tcambio: result.tcambio
             }
         });
     },
@@ -147,6 +151,38 @@ const lo010301Controller = {
             { name: 'columna', io: 'in', value: columna },
             { name: 'desde', io: 'in', value: desde },
             { name: 'hasta', io: 'in', value: hasta },
+            { name: 'resultset', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet(query, params);
+        response.set('Content-Type', 'text/xml');
+        response.send(xmlParser.renderXml(result.resultset));
+    },
+    DocsAprobCajas: async (request, response) => {
+        const { alias } = request.params;
+        let query = 'call pack_new_ctacte_prov.sp_lista_cajas (:alias, :resultset)';
+        let params = [
+            { name: 'alias', io: 'in', value: alias },
+            { name: 'resultset', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet(query, params);
+        response.set('Content-Type', 'text/xml');
+        response.send(xmlParser.renderXml(result.resultset));
+    },
+    DocsAprobCancelar: async (request, response) => {
+        const { empresa } = request.params;
+        let query = 'call pack_new_ctacte_prov.sp_documentos_cancelar (:empresa, :resultset)';
+        let params = [
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'resultset', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet(query, params);
+        response.set('Content-Type', 'text/xml');
+        response.send(xmlParser.renderXml(result.resultset));
+    },
+    TiposDocAdmin: async (request, response) => {
+        const { alias } = request.params;
+        let query = 'call pack_new_ctacte_prov.sp_tipos_doc_admin (:resultset)';
+        let params = [
             { name: 'resultset', io: 'out', type: 'cursor' }
         ];
         let result = await db.resultSet(query, params);

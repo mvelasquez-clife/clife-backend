@@ -48,7 +48,8 @@
     "request": "^2.88.0",
     "socket.io": "^2.2.0",
     "utf8": "^3.0.0",
-    "xlsx": "^0.15.5"
+    "xlsx": "^0.15.5",
+    "xlsx-workbook": "^1.0.3"
   },
   "devDependencies": {
     "@ionic/app-scripts": "^3.2.2-201901242027-201901242027",

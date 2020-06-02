@@ -1,6 +1,7 @@
 const db = require('./../../server/libs/db-oracle');
 const pwmanager = require('./../../server/libs/password-manager');
 const tknmanager = require('./../../server/libs/token-manager');
+const DEFAULT_EMPRESA = 11;
 
 const WsController = {
     RegistraUsuario: async (request, response) => {
@@ -37,6 +38,9 @@ const WsController = {
     },
     ObtenerToken: async (request, response) => {
         const { alias, empresa, clave } = request.query;
+        if (typeof empresa == 'undefined') {
+            empresa = DEFAULT_EMPRESA;
+        }
         let params = [
             { name: 'empresa', io: 'in', value: empresa },
             { name: 'alias', io: 'in', value: alias },
@@ -85,15 +89,25 @@ const WsController = {
         if (!token) {
             response.status(401).send({
                 error: 'Es necesario el token de autenticación'
-            })
+            });
             return;
         }
-        const { empresa, tipo, lista } = request.query;
-        if (typeof empresa == 'undefined' || typeof tipo == 'undefined' || typeof lista == 'undefined') {
+        let tokenData = tknmanager.ObtenerDatos(token);
+        if (tokenData.error) {
+            response.status(401).send({
+                error: tokenData.error
+            });
+            return;
+        }
+        let { empresa, tipo, lista } = request.query;
+        if (typeof tipo == 'undefined' || typeof lista == 'undefined') {
             response.status(401).json({
                 error: 'Parámetros incorrectos'
             });
             return;
+        }
+        if (typeof empresa == 'undefined') {
+            empresa = tokenData.empresa;
         }
         let params = [
             { name: 'empresa', io: 'in', value: empresa },
@@ -127,12 +141,22 @@ const WsController = {
             })
             return;
         }
-        const { empresa, tipo } = request.query;
-        if (typeof empresa == 'undefined' || typeof tipo == 'undefined') {
+        let tokenData = tknmanager.ObtenerDatos(token);
+        if (tokenData.error) {
+            response.status(401).send({
+                error: tokenData.error
+            });
+            return;
+        }
+        let { empresa, tipo } = request.query;
+        if (typeof tipo == 'undefined') {
             response.status(401).json({
                 error: 'Parámetros incorrectos'
             });
             return;
+        }
+        if (typeof empresa == 'undefined') {
+            empresa = tokenData.empresa;
         }
         let params = [
             { name: 'empresa', io: 'in', value: empresa },
@@ -158,12 +182,22 @@ const WsController = {
             })
             return;
         }
-        const { empresa, tipo, lista, almacen } = request.query;
-        if (typeof empresa == 'undefined' || typeof tipo == 'undefined' || typeof lista == 'undefined' || typeof almacen == 'undefined') {
+        let tokenData = tknmanager.ObtenerDatos(token);
+        if (tokenData.error) {
+            response.status(401).send({
+                error: tokenData.error
+            });
+            return;
+        }
+        let { empresa, tipo, lista, almacen } = request.query;
+        if (typeof tipo == 'undefined' || typeof lista == 'undefined' || typeof almacen == 'undefined') {
             response.status(401).json({
                 error: 'Parámetros incorrectos'
             });
             return;
+        }
+        if (typeof empresa == 'undefined') {
+            empresa = tokenData.empresa;
         }
         let params = [
             { name: 'empresa', io: 'in', value: empresa },
@@ -191,12 +225,22 @@ const WsController = {
             })
             return;
         }
-        const { empresa, pedido } = request.query;
-        if (typeof empresa == 'undefined' || typeof pedido == 'undefined') {
+        let tokenData = tknmanager.ObtenerDatos(token);
+        if (tokenData.error) {
+            response.status(401).send({
+                error: tokenData.error
+            });
+            return;
+        }
+        let { empresa, pedido } = request.query;
+        if (typeof pedido == 'undefined') {
             response.status(401).json({
                 error: 'Parámetros incorrectos'
             });
             return;
+        }
+        if (typeof empresa == 'undefined') {
+            empresa = tokenData.empresa;
         }
         let params = [
             { name: 'empresa', io: 'in', value: empresa },
@@ -259,12 +303,23 @@ const WsController = {
             })
             return;
         }
-        const { empresa, rucdni, nombre1, nombre2, nombre3, tipodoc, email, telefono } = request.body;
-        if (typeof empresa == 'undefined' || typeof rucdni == 'undefined' || typeof nombre1 == 'undefined' || typeof nombre2 == 'undefined' || typeof tipodoc == 'undefined' || typeof email == 'undefined' || typeof telefono == 'undefined') {
+        let tokenData = tknmanager.ObtenerDatos(token);
+        if (tokenData.error) {
+            response.status(401).send({
+                error: tokenData.error
+            });
+            return;
+        }
+        let { empresa, rucdni, nombre1, nombre2, nombre3, tipodoc, email, telefono } = request.body;
+        if (typeof rucdni == 'undefined' || typeof nombre1 == 'undefined' || typeof nombre2 == 'undefined' ||
+            typeof tipodoc == 'undefined' || typeof email == 'undefined' || typeof telefono == 'undefined') {
             response.status(401).json({
                 error: 'Parámetros incorrectos'
             });
             return;
+        }
+        if (typeof empresa == 'undefined') {
+            empresa = tokenData.empresa;
         }
         let params = [
             { name: 'empresa', io: 'in', value: empresa },
@@ -390,6 +445,13 @@ const WsController = {
             })
             return;
         }
+        let tokenData = tknmanager.ObtenerDatos(token);
+        if (tokenData.error) {
+            response.status(401).send({
+                error: tokenData.error
+            });
+            return;
+        }
         let params = [
             { name: 'vias', io: 'out', type: 'cursor' },
             { name: 'zonas', io: 'out', type: 'cursor' }
@@ -410,6 +472,13 @@ const WsController = {
             response.status(401).send({
                 error: 'Es necesario el token de autenticación'
             })
+            return;
+        }
+        let tokenData = tknmanager.ObtenerDatos(token);
+        if (tokenData.error) {
+            response.status(401).send({
+                error: tokenData.error
+            });
             return;
         }
         const { rucdni } = request.query;
@@ -443,11 +512,16 @@ const WsController = {
             })
             return;
         }
+        let tokenData = tknmanager.ObtenerDatos(token);
+        if (tokenData.error) {
+            response.status(401).send({
+                error: tokenData.error
+            });
+            return;
+        }
 // ubigeo,covia,nomvia,cozona,nomzona,numero,interior,referencia,rucdni,o_codigo,o_mensaje 
-        const { ubigeo, covia, nomvia, cozona, nomzona, numero, interior, referencia, rucdni } = request.body;
-        if (typeof ubigeo == 'undefined' || typeof covia == 'undefined' || typeof nomvia == 'undefined' || typeof cozona == 'undefined' ||
-            typeof nomzona == 'undefined' || typeof numero == 'undefined' || typeof interior == 'undefined' || typeof referencia == 'undefined' ||
-            typeof rucdni == 'undefined') {
+        const { ubigeo, direccion, referencia, rucdni } = request.body;
+        if (typeof ubigeo == 'undefined' || typeof direccion == 'undefined' || typeof referencia == 'undefined' || typeof rucdni == 'undefined') {
             response.status(401).json({
                 error: 'Parámetros incorrectos'
             });
@@ -457,16 +531,11 @@ const WsController = {
             { name: 'codigo', io: 'out', type: 'number' },
             { name: 'mensaje', io: 'out', type: 'string' },
             { name: 'ubigeo', io: 'in', value: ubigeo },
-            { name: 'covia', io: 'in', value: covia },
-            { name: 'nomvia', io: 'in', value: nomvia },
-            { name: 'cozona', io: 'in', value: cozona },
-            { name: 'nomzona', io: 'in', value: nomzona },
-            { name: 'numero', io: 'in', value: numero },
-            { name: 'interior', io: 'in', value: interior },
+            { name: 'direccion', io: 'in', value: direccion },
             { name: 'referencia', io: 'in', value: referencia },
             { name: 'rucdni', io: 'in', value: rucdni }
         ];
-        let query = 'call pack_web_service.sp_registra_direccion (:codigo, :mensaje, :ubigeo, :covia, :nomvia, :cozona, :nomzona, :numero, :interior, :referencia, :rucdni)';
+        let query = 'call pack_web_service.sp_registra_direccion (:codigo, :mensaje, :ubigeo, :direccion, :referencia, :rucdni)';
         let result = await db.statement(query, params);
         if (result.error) {
             response.json({
@@ -481,7 +550,9 @@ const WsController = {
             return;
         }
         response.json({
-            result: result.out.codigo
+            result: {
+                id: result.out.codigo
+            }
         });
     },
     DatosCliente: async (request, response) => {

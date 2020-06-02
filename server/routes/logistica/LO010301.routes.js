@@ -14,5 +14,8 @@ const lo010301Controller = require('./../../controllers/logistica/LO010301.contr
     router.get('/grid-facturas-pagar/:empresa/:moneda/:columna/:desde/:hasta', lo010301Controller.FacturasPagar);
     router.get('/grid-letras-pagar/:empresa/:moneda/:columna/:desde/:hasta', lo010301Controller.LetrasPagar);
     router.get('/grid-pagos-transferencia/:empresa/:moneda/:columna/:desde/:hasta', lo010301Controller.PagosTransferencia);
+    router.get('/grid-docs-aprob-cajas/:alias', lo010301Controller.DocsAprobCajas);
+    router.get('/grid-docs-aprob-cancelar/:empresa', lo010301Controller.DocsAprobCancelar);
+    router.get('/tipos-doc-admin', lo010301Controller.TiposDocAdmin);
 
 module.exports = router;

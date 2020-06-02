@@ -68,6 +68,154 @@ function EstructuraTransferencias () {
     toolbarTransferencias.attachEvent('onClick', toolbarTransferenciasOnClick);
 }
 
+// reportes tipo documento
+
+function gridWinBuscaTpdocOnRowDblClicked (rowId, colId) {
+    let data = gridWinBuscaTpdoc.getRowData(rowId);
+    document.getElementById('lbl-tpdoc-cod').innerHTML = data.codigo;
+    document.getElementById('lbl-tpdoc-desc').innerHTML = data.tpdocumento;
+    winBuscaTpdoc.close();
+}
+
+function toolbarRepTpdocOnClick (name) {
+    switch (name) {
+        case 'btTpdocFiltro':
+            winBuscaTpdoc = viewport.createWindow('winBuscaTpdoc', 0, 0, 640, 480);
+            winBuscaTpdoc.setText('Tipo documento administrativo')
+            winBuscaTpdoc.center();
+            gridWinBuscaTpdoc = winBuscaTpdoc.attachGrid();
+                gridWinBuscaTpdoc.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/");
+                gridWinBuscaTpdoc.setIconsPath("/assets/images/icons/grid/");
+                gridWinBuscaTpdoc.setHeader('Código,Tipo documento,Abreviatura,Bancario,Estado');
+                gridWinBuscaTpdoc.attachHeader('#text_filter,#text_filter,#text_filter,#rspan,#select_filter');
+                gridWinBuscaTpdoc.setColumnIds('codigo,tpdocumento,abreviatura,bancario,estado');
+                gridWinBuscaTpdoc.setColTypes('rotxt,rotxt,rotxt,img,rotxt');
+                gridWinBuscaTpdoc.setInitWidths('80,320,80,40,80');
+                gridWinBuscaTpdoc.setColAlign('left,left,left,center,left');
+                gridWinBuscaTpdoc.init();
+            winBuscaTpdoc.progressOn();
+            gridWinBuscaTpdoc.load('/api/LO010301/tipos-doc-admin', function() {
+                winBuscaTpdoc.progressOff();
+            });
+            gridWinBuscaTpdoc.attachEvent('onRowDblClicked', gridWinBuscaTpdocOnRowDblClicked);
+            break;
+        case 'btTpdocBusca':
+            let tpdoc = document.getElementById('lbl-tpdoc-cod').innerHTML;
+            if (tpdoc != '') {
+                generaGridReportesTpdoc();
+            }
+            else {
+                alert('Debe seleccionar un tipo de documento');
+            }
+            break;
+        default: break;
+    }
+}
+
+function generaGridReportesTpdoc() {
+    tabbar.tabs('reportes').detachObject();
+    gridRepTpdoc = tabbar.tabs('reportes').attachGrid();
+        gridRepTpdoc.setImagePath("/assets/images/icons/grid/");
+        gridRepTpdoc.setHeader('Tp.Doc.,Documento,Documento,F.Emisión,RUC/DNI,Razón social,Ingreso,Egreso,Saldo,Concepto,Moneda,F.Vence,Doc.Banco,F.Sistema,Libro,Periodo,Voucher,Doc.Ancestro,Estado,Detracción');
+        gridRepTpdoc.setColumnIds('tpdoc,documento1,documento2,femision,rucdni,rsocial,ingreso,egreso,saldo,concepto,moneda,fvence,docbanco,fsistema,libro,periodo,voucher,ancestro,estado,detraccion');
+        gridRepTpdoc.setColTypes('rotxt,rotxt,rotxt,rotxt,ron,rotxt,ron,ron,ron,rotxt,rotxt,rotxt,rotxt,rotxt,ron,ron,ron,rotxt,rotxt,img');
+        gridRepTpdoc.setNumberFormat('0,000.00', 6);
+        gridRepTpdoc.setNumberFormat('0,000.00', 7);
+        gridRepTpdoc.setNumberFormat('0,000.00', 8);
+        gridRepTpdoc.setInitWidths('60,80,80,80,80,240,100,100,100,240,60,80,80,80,80,80,80,80,60,60');
+        //gridRepTpdoc.setColAlign('right,left,right,right,right,right,right,left,right,left,right,right');
+        gridRepTpdoc.init();
+}
+
+function EstructuraReportesTpdoc() {
+    toolbarRepTpdoc = tabbar.tabs('reportes').attachToolbar();
+        toolbarRepTpdoc.setIconsPath('/assets/images/icons/toolbar/');
+        toolbarRepTpdoc.addText('lblDesde', null, 'Desde');
+        toolbarRepTpdoc.addInput('RepTpdocDesde', null, null, 100);
+        toolbarRepTpdoc.addText('lblHasta', null, 'Hasta');
+        toolbarRepTpdoc.addInput('RepTpdocHasta', null, null, 100);
+        toolbarRepTpdoc.addText('lblTpdocCodigo', null, 'Tipo documento');
+        toolbarRepTpdoc.addText('ipTpdocCodigo', null, '<div id="lbl-tpdoc-cod" class="dv-label text-right" style="width:80px;"></div>');
+        toolbarRepTpdoc.addButton('btTpdocFiltro', null, '', 'ic-search.svg');
+        toolbarRepTpdoc.addText('ipTpdocDesc', null, '<div id="lbl-tpdoc-desc" class="dv-label" style="width:240px;"></div>');
+        toolbarRepTpdoc.addButton('btTpdocBusca', null, 'Buscar', 'ic-goggles.svg', 'ic-goggles-dis.svg');
+    // colocar los calendarios
+    calendarRinicio = toolbarRepTpdoc.getInput('RepTpdocDesde');
+        calendarRinicio.setAttribute('readOnly', true);
+        calendarRinicio.onclick = function () { setSens(calendarRepTpdoc, calendarRfin, 'max'); }
+    calendarRfin = toolbarRepTpdoc.getInput('RepTpdocHasta');
+        calendarRfin.setAttribute('readOnly', true);
+        calendarRfin.onclick = function () { setSens(calendarRepTpdoc, calendarRinicio, 'min'); }
+    calendarRepTpdoc = new dhtmlXCalendarObject([calendarRinicio, calendarRfin]);
+        calendarRepTpdoc.setDateFormat('%d/%m/%Y');
+    toolbarRepTpdoc.setValue('RepTpdocDesde', '01/01/2020');
+    toolbarRepTpdoc.setValue('RepTpdocHasta', '30/04/2020');
+    toolbarRepTpdoc.attachEvent('onClick', toolbarRepTpdocOnClick);
+}
+
+// documentos aprobados por pagar
+
+function generaGridCajasDisponibles() {
+    gridDocsAprobCajas = layoutDocsAprob.cells('b').attachGrid();
+        gridDocsAprobCajas.setImagePath("/assets/images/icons/grid/");
+        gridDocsAprobCajas.setHeader('Caja,Moneda,Movimientos,Periodo,Inicial,Ingreso,Egreso,F.Cierre,Cierre,Estado,F.Inicio,F.Registro');
+        gridDocsAprobCajas.setColumnIds('caja,moneda,movimientos,periodo,inicial,ingreso,egreso,fcierre,cierre,estado,finicio,fregistro');
+        gridDocsAprobCajas.setColTypes('ron,rotxt,ron,ron,ron,ron,ron,rotxt,ron,rotxt,rotxt,rotxt');
+        gridDocsAprobCajas.setNumberFormat('0,000.00', 2);
+        gridDocsAprobCajas.setNumberFormat('0,000.00', 4);
+        gridDocsAprobCajas.setNumberFormat('0,000.00', 5);
+        gridDocsAprobCajas.setNumberFormat('0,000.00', 6);
+        gridDocsAprobCajas.setNumberFormat('0,000.00', 8);
+        gridDocsAprobCajas.setInitWidths('50,100,100,80,100,100,100,80,100,100,80,80');
+        gridDocsAprobCajas.setColAlign('right,left,right,right,right,right,right,left,right,left,right,right');
+    gridDocsAprobCajas.init();
+    layoutDocsAprob.cells('b').progressOn();
+    gridDocsAprobCajas.load('/api/LO010301/grid-docs-aprob-cajas/' + usrJson.alias, function() {
+        layoutDocsAprob.cells('b').progressOff();
+    });
+}
+
+function generaGridDocsCancelar() {
+    gridDocsAprobDocumentos = layoutDocsAprob.cells('a').attachGrid();
+        gridDocsAprobDocumentos.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/");
+        gridDocsAprobDocumentos.setIconsPath("/assets/images/icons/grid/");
+        gridDocsAprobDocumentos.setHeader('Moneda,F.Emisión,Documento,RUC/DNI,Raz.Social,Saldo,Ingreso,Egreso,Concepto,F.Vence,Doc.Banco,F.Sistema,Libro,Periodo,Voucher,Doc.Ancestro,Estado,Detracción');
+        gridDocsAprobDocumentos.setColumnIds('moneda,femision,documento,rucdni,rsocial,saldo,ingreso,egreso,concepto,fvence,docbanco,fsistema,libro,periodo,voucher,docancestro,estado,detraccion');
+        gridDocsAprobDocumentos.setColTypes('rotxt,rotxt,rotxt,rotxt,rotxt,ron,ron,ron,rotxt,rotxt,rotxt,rotxt,ron,ron,ron,rotxt,rotxt,img');
+        gridDocsAprobDocumentos.setNumberFormat('0,000.00', 5);
+        gridDocsAprobDocumentos.setNumberFormat('0,000.00', 6);
+        gridDocsAprobDocumentos.setNumberFormat('0,000.00', 7);
+        gridDocsAprobDocumentos.setInitWidths('60,80,80,90,240,100,100,100,240,80,80,80,60,70,60,80,80,60');
+        gridDocsAprobDocumentos.setColAlign('left,left,left,right,left,right,right,right,left,left,left,left,left,left,left,left,left,center');
+    gridDocsAprobDocumentos.init();
+    layoutDocsAprob.cells('a').progressOn();
+    gridDocsAprobDocumentos.load('/api/LO010301/grid-docs-aprob-cancelar/' + usrJson.empresa, function() {
+        gridDocsAprobDocumentos.insertColumn(5,'Sel.','ch','30','asc','center','middle');
+        layoutDocsAprob.cells('a').progressOff();
+    });
+}
+
+function EstructuraDocsAprobsPagar() {
+    // toolbarDocsAprob, layoutDocsAprob, gridDocsAprobCajas, gridDocsAprobDocumentos
+    toolbarDocsAprob = tabbar.tabs('documentos').attachToolbar();
+        toolbarDocsAprob.setIconsPath('/assets/images/icons/toolbar/');
+        toolbarDocsAprob.addText('lblFecha', null, 'Fecha');
+        toolbarDocsAprob.addInput('ipFecha', null, null, 80);
+        toolbarDocsAprob.addText('lblTcambio', null, 'Tipo cambio');
+        toolbarDocsAprob.addInput('ipTcambio', null, null, 60);
+        toolbarDocsAprob.addSeparator();
+        toolbarDocsAprob.addButton('btPagoMasivo', null, 'Pago masivo', 'ic-generate.svg', 'ic-generate-dis.svg');
+        toolbarDocsAprob.addButton('btPermisos', null, 'Permisos', 'ic-shield.svg');
+        toolbarDocsAprob.addButton('btAutorizar', null, 'Autorizar', 'ic-ok.svg', 'ic-ok-dis.svg');
+    layoutDocsAprob = tabbar.tabs('documentos').attachLayout('2E');
+    layoutDocsAprob.cells('a').setText('Documentos aprobados para cancelar');
+    layoutDocsAprob.cells('b').setHeight('120');
+    layoutDocsAprob.cells('b').setText('Cajas disponibles');
+    // :alias
+    generaGridCajasDisponibles();
+    generaGridDocsCancelar();
+}
+
 // letras por pagar
 
 function toolbarLpagarOnClick (id) {
@@ -397,11 +545,11 @@ function ConfiguraTabbar () {
         tabbar.addTab('reportes', 'Reportes por tipo doc.');
     EstructuraProvisionados();
     EstructuraFactpagar();
-    // doc. aprobados para pagar
+    EstructuraDocsAprobsPagar();
     EstructuraLetras();
     // documentos digitales
     EstructuraTransferencias();
-    // reporte por tipos de documento
+    EstructuraReportesTpdoc();
 }
 
 function onDatosIniciales (response) {
@@ -422,6 +570,9 @@ function onDatosIniciales (response) {
     comboLcolumna.selectOption(0);
     comboTrfmonedas.selectOption(0);
     comboTrfcolumna.selectOption(0);
+    toolbarDocsAprob.setValue('ipFecha', data.fecha);
+    toolbarDocsAprob.setValue('ipTcambio', data.tcambio);
+    toolbarDocsAprob.getInput('ipTcambio').style.textAlign = 'right';
 }
 
 function IniciarComponentes () {

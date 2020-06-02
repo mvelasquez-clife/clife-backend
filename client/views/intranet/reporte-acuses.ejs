@@ -72,7 +72,7 @@
                                                 <div class="col-sm-10 offset-lg-2">
                                                     <button id="rpa-buscar" class="btn btn-sm btn-primary"><i class="fa fa-cogs"></i> Generar reporte</button>
                                                     <a id="rpa-pdf" href="#" class="btn btn-sm btn-danger btn-pdf disabled ml-1" target="_blank"><i class="fa fa-file-pdf-o"></i> Exportar a PDF</a>
-                                                    <a id="rpa-xls" href="#" class="btn btn-sm btn-success btn-xls d-none disabled ml-1" target="_blank"><i class="fa fa-file-excel-o"></i> Exportar a XLS</a>
+                                                    <a id="rpa-xls" href="#" class="btn btn-sm btn-success btn-xls disabled ml-1" target="_blank"><i class="fa fa-file-excel-o"></i> Exportar a XLS</a>
                                                 </div>
                                             </div>
                                         </form>
@@ -281,12 +281,12 @@
                         ).append(
                             $('<td>').text(fila.periodo)
                         ).append(
-                            $('<td>').text(fila.documento + ' - ' + fila.descripcion)
+                            $('<td>').html(fila.documento != null ? (fila.documento + ' - ' + fila.descripcion) : '<span class="text-danger font-weight-bold">(documento no enviado)</span>')
                         ).append(
                             $('<td>').append(
                                 $('<span>').append(
-                                    $('<i>').addClass('mr-1 fa fa-' + (fila.estado == 'S' ? 'check' : 'hourglass-half'))
-                                ).append(fila.estado == 'S' ? 'Leído' : 'Pendiente').addClass('badge badge-md badge-' + (fila.estado == 'S' ? 'primary text-light' : 'warning text-dark'))
+                                    $('<i>').addClass('mr-1 fa fa-' + (fila.estado == 'S' ? 'check' : (fila.estado == 'X' ? 'close' : 'hourglass-half')))
+                                ).append(fila.estado == 'S' ? 'Leído' : (fila.estado == 'X' ? 'No enviado' : 'Pendiente')).addClass('badge badge-md badge-' + (fila.estado == 'S' ? 'primary text-light' : (fila.estado == 'X' ? 'danger text-light' : 'warning text-dark')))
                             )
                         ).append(
                             $('<td>').append(
@@ -446,7 +446,7 @@
                         DatosReporteAcuse = result.data.reporte;
                         EscribirReporteAcuse();
                         $('#rpa-pdf').removeClass('disabled').attr('href', '/intranet/pdf-reporte-acuse/' + params.empresa + '/' + params.tipodoc + '/' + params.envio + '/' + params.periodo + '/' + params.usuario);
-                        $('#rpa-xls').removeClass('disabled');
+                        $('#rpa-xls').removeClass('disabled').attr('href', '/intranet/xlsx-reporte-acuse/' + params.empresa + '/' + params.tipodoc + '/' + params.envio + '/' + params.periodo + '/' + params.usuario);
                     }
                 }
                 catch (err) {

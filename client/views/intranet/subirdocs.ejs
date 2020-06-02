@@ -439,11 +439,12 @@
                                 div.removeClass('bg-light text-secondary').addClass('bg-danger').append(
                                     $('<small>').html(result.error)
                                 ).children('p').children('i').removeClass('fa-hourglass-half').addClass('fa-exclamation-triangle');
-                                return;
                             }
-                            div.removeClass('bg-light text-secondary').addClass('bg-success text-light').append(
-                                $('<small>').html('Archivo subido con éxito')
-                            ).children('p').children('i').removeClass('fa-hourglass-half').addClass('fa-check');
+                            else {
+                                div.removeClass('bg-light text-secondary').addClass('bg-success text-light').append(
+                                    $('<small>').html('Archivo subido con éxito')
+                                ).children('p').children('i').removeClass('fa-hourglass-half').addClass('fa-check');
+                            }
                             destinatarios.push(result.codigo);
                         }
                         catch (err) {
@@ -499,6 +500,7 @@ console.log(smsdata);
                 $('#btn-upload').on('click', SubirArchivos);
                 CargarCombos();
                 ConfiguraDatePickers();
+                console.log('46455181.pdf'.split('_')[0]);
             });
         </script>
     </body>

@@ -79,6 +79,11 @@ app.use('/extranet', require('../client/routes/extranet.routes'));
 app.use('/intranet', require('../client/routes/intra-life.routes'));
 // web service
 app.use('/ws-life', require('./../client/routes/ws.routes'));
+/*app.use('/ws-life', (request, response) => {
+    response.status(503).json({
+        error: 'Servidor en mantenimiento'
+    });
+});*/
 
 //configura el chat
 /*io.set('origins', host.address);
