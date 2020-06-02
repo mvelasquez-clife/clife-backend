@@ -4,9 +4,10 @@ const router = express.Router();
 const cr010902Controller = require('../../controllers/creditos/CR010902.controller');
        router.get('/list_periodo/:emp', cr010902Controller.Listadoper);
        router.get('/data_total/:emp/:per', cr010902Controller.Datatotal);
-       router.get('/data_filtro/:emp/:per/:tipo/:venc/:doc', cr010902Controller.Datafiltro);
        router.get('/data_tot_deta/:emp/:per', cr010902Controller.DatatotalDeta);
-       router.get('/data_filtro_deta/:emp/:per/:tipo/:venc/:doc', cr010902Controller.DatafiltroDeta);
+       router.get('/data_tot_nego/:emp/:per', cr010902Controller.DatatotalNego);
+       router.get('/grilla_deta/:emp/:per/:vend', cr010902Controller.Grilla_deta);
+       router.get('/grilla_detnego/:emp/:per/:vend', cr010902Controller.Grilla_detnegocio);
 /*
     router.get('/cuenta-corriente/:empresa/:cliente/:desde/:hasta', cr0100Controller.CargaCuentaCorriente);
     router.get('/planillas-documento/:empresa/:cliente/:documento/:moneda', cr0100Controller.CargaPlanillasDocumento);
