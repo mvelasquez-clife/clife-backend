@@ -215,6 +215,7 @@ const LifeController = {
             };
             const result = await conn.execute(query, params, responseParams);
             const { o_apepat, o_apemat, o_nombres, o_fechanac, o_sexo, o_telefono, o_email, o_area, o_cargo } = result.outBinds;
+            conn.close();
             response.json({
                 data: {
                     apepat: o_apepat,
@@ -265,6 +266,7 @@ const LifeController = {
             };
             const result = await conn.execute(query, params, responseParams);
             const personal = result.rows;
+            conn.close();
             response.json({
                 data: {
                     personal: personal
@@ -417,6 +419,7 @@ const LifeController = {
                 };
                 const result = await conn.execute(query, params, responseParams);
                 const { o_codigo, o_mensaje } = result.outBinds;
+                conn.close();
                 if (o_codigo == 0) {
                     response.json({
                         error: o_mensaje
@@ -454,6 +457,7 @@ const LifeController = {
                     p_tipodoc: tipodoc
                 };
                 const result = await conn.execute(query, params, responseParams);
+                conn.close();
                 response.json({
                     data: {
                         envios: result.rows
@@ -490,6 +494,7 @@ const LifeController = {
                     };
                     const result = await conn.execute(query, params, responseParams);
                     const { o_codigo, o_mensaje } = result.outBinds;
+                    conn.close();
                     if (o_codigo == 0) {
                         response.json({
                             error: o_mensaje,
@@ -765,6 +770,7 @@ console.log(query, params);
                     p_detalle: { val: infoEquipo }
                 };
                 await conn.execute(query, params, responseParams);
+                conn.close();
             }
             // descarga el pdf
             const ftpmanager = require('../../server/libs/ftp-manager');
@@ -841,8 +847,8 @@ console.log(query, params);
                 };
                 let result = await conn.execute(query, params, responseParams);
                 let { o_codigo, o_mensaje } = result.outBinds;
+                conn.close();
                 if (o_codigo == 0) {
-                    conn.close();
                     response.json({
                         error: o_mensaje
                     });
@@ -876,9 +882,11 @@ console.log(query, params);
                     p_usuario: { val: sesion.codigo }
                 };
                 const result = await conn.execute(query, params, responseParams);
+                let mensajes = result.rows;
+                conn.close();
                 response.json({
                     data: {
-                        mensajes: result.rows
+                        mensajes: mensajes
                     }
                 });
             }
@@ -910,6 +918,7 @@ console.log(query, params);
 console.log(params);
                 const result = await conn.execute(query, params, responseParams);
                 const documentos = result.rows;
+                conn.close();
                 const numDocumentos = documentos.length;
                 for (let i = 0; i < numDocumentos; i++) {
                     let cipher = crypto.createCipher(encParams.algorytm, encParams.password);
@@ -953,6 +962,7 @@ console.log(params);
                 };
                 let result = await conn.execute(query, params, responseParams);
                 let { o_codigo, o_resultado, o_nombre } = result.outBinds;
+                conn.close();
                 if (o_codigo == 1) {
                     response.json({
                         data: {
@@ -1008,6 +1018,7 @@ console.log(params);
                 };
                 result = await conn.execute(query, params, responseParams);
                 let { o_nombre, o_email } = result.outBinds;
+                conn.close();
                 // notifica con un email
                 const nodemailer = require('nodemailer');
                 const ejs = require('ejs');
@@ -1046,8 +1057,6 @@ console.log(params);
                         error: o_resultado
                     });
                 }
-                // fin
-                conn.close();
             }
             catch (err) {
                 console.error(err);
@@ -1104,9 +1113,11 @@ console.log(params);
                     p_usuario: { val: sesion.codigo }
                 };
                 let result = await conn.execute(query, params, responseParams);
+                let papeletas = result.rows;
+                conn.close();
                 response.json({
                     data: {
-                        papeletas: result.rows
+                        papeletas: papeletas
                     }
                 });
             }
@@ -1177,6 +1188,7 @@ console.log(params);
                 };
                 let result = await conn.execute(query, params, responseParams);
                 let { o_codigo, o_resultado, o_solicitante, o_motivo, o_fechahora, o_goce, o_respuesta, o_observaciones } = result.outBinds;
+                conn.close();
                 if (o_codigo == 1) {
                     response.json({
                         data: {
@@ -1342,6 +1354,7 @@ console.log(params);
                 };
                 let result = await conn.execute(query, params, responseParams);
                 let { o_codigo, o_resultado } = result.outBinds;
+                conn.close();
                 if (o_codigo > 0) {
                     response.json({
                         res: 'ok'
@@ -1874,14 +1887,14 @@ console.log(params);
     },
     EnviarSms: async (request, response) => {
         let { documentos, empresa, envio } = request.body;
-        let dblib = require('./../../server/libs/db-oracle');
+        // let dblib = require('./../../server/libs/db-oracle');
         let query = "call pack_digitalizacion.sp_lista_telefonos (:documentos, :empresa, :telefonos)";
         let params = [
             { name: 'documentos', io: 'in', value: documentos },
             { name: 'empresa', io: 'in', value: empresa },
             { name: 'telefonos', io: 'out', type: 'cursor' }
         ];
-        let result = await dblib.resultSet(query, params);
+        let result = await db.resultSet(query, params);
         if (result.error) {
             response.json({
                 error: result.error
@@ -1889,7 +1902,7 @@ console.log(params);
             return;
         }
         let telefonos = result.telefonos;
-        let command = 'php /var/www/html/sms/sms.php ' + envio;
+        let command = 'php /var/www/html/sms/sms.php "' + envio + '"';
         // let command = 'php D:\\desarrollo\\www\\sms\\sms.php ' + envio;
         for (let telefono of telefonos) {
             if (telefono != '') {
@@ -1930,6 +1943,7 @@ console.log(params);
             };
             result = await conn.execute(query, params, responseParams);
             let { o_solicitud, o_telefono } = result.outBinds;
+            conn.close();
             if (o_solicitud == 0) {
                 response.json({
                     error: o_telefono
@@ -1955,6 +1969,7 @@ console.log(params);
             });
             return;
         }
+        conn.close();
         response.json({
             error: o_nombre
         });
@@ -1971,6 +1986,7 @@ console.log(params);
         };
         let result = await conn.execute(query, params, responseParams);
         const { o_codigo, o_mensaje } = result.outBinds;
+        conn.close();
         if (o_codigo == -1) {
             response.json({
                 error: o_mensaje,
@@ -2011,6 +2027,7 @@ console.log(params);
             };
             let result = await conn.execute(query, params, responseParams);
             const { o_codigo, o_mensaje } = result.outBinds;
+            conn.close();
             if (o_codigo == 0) {
                 response.json({
                     error: o_mensaje

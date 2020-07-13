@@ -22,5 +22,8 @@ const WsController = require('./../controllers/ws.controller');
     router.get('/datos-cliente', WsController.DatosCliente);
     // mas nuevos 11-05-2020
     router.post('/registra-pedido', WsController.RegistraPedido);
+    // ultra nuevos 19-06-2020
+    router.get('/tipos-cobro', WsController.TiposCobro);
+    router.put('/buscar-pedido', WsController.MatchPedido);
 
 module.exports = router;

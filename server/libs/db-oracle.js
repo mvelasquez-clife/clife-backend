@@ -35,6 +35,7 @@ module.exports = {
                 conn.execute(query, parametros, responseParams, (error, result) => {
                     if (error) {
                         console.error(error);
+                        if (conn) conn.close();
                         reject({
                             error: error
                         });
@@ -69,6 +70,7 @@ module.exports = {
             oracledb.getConnection(dbParams, (err, conn) => {
                 if (err) {
                     console.error(err);
+                    if (conn) conn.close();
                     reject({
                         error: err
                     });

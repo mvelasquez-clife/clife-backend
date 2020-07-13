@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Voucher</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+    <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+    <style type="text/css">
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            width: 100%
+        }
+
+        #dhxDesktop {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="dhxDesktop"></div>
+    <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="/assets/js/conf.js"></script>
+    <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+    <script type="text/javascript" src="<%=path%>layout.js"></script>
+    <script type="text/javascript" src="<%=path%>voucher.js"></script>
+    <script type="text/javascript" src="<%=path%>busqueda.js"></script>
+    <script type="text/javascript" src="<%=path%>resumen.js"></script>
+    <script type="text/javascript" src="<%=path%>adjuntos.js"></script>
+    <!-- ancestros -->
+    <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+    <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
+    <script>
+        // variables globales
+        var layout, tabbar, viewport;
+        // variables - tabbar voucher
+        var toolbarVoucher, layoutVoucher, formVoucher, gridVoucher, comboPeriodosVoucher, comboLibroVoucher, comboVoucher;
+        var calFemision, cmbMoneda, cmbTipoenti, cmbTipodociden, cmbTipodoc, calFregistro, calFvence, calFdetraccion;
+        // variables - tabbar de busqueda
+        var layoutBusqueda, formBusqueda, toolbarBusqueda, gridTipoDocs, gridBusqueda;
+        // variables - tabbar resumen de vouchers
+        var layoutResumen, toolbarResumen, calResumen, calResumenDesde, calResumenHasta, gridLibros, gridVouchers;
+        // variables - tabbar documentos adjuntos
+        var toolbarAdjuntos, comboPeriodosAdjuntos, comboLibroAdjuntos, gridAdjuntos;
+        // iniciar los componentes de la vista
+        $(IniciarComponentes);
+    </script>
+</body>
+
+</html>

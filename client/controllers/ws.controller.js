@@ -232,6 +232,7 @@ const WsController = {
             });
             return;
         }
+        console.log(tokenData);
         let { empresa, pedido } = request.query;
         if (typeof pedido == 'undefined') {
             response.status(401).json({
@@ -619,9 +620,12 @@ const WsController = {
             });
             return;
         }
-        const { cliente, direccion, fecha, factura, flete, orderid, sispago, observaciones, detalle } = request.body;
+        let jsparams = JSON.stringify(request.body);
+        const { cliente, direccion, fecha, factura, flete, orderid, sispago, observaciones, detalle, pagoid, fepago, deposito, comision, igv } = request.body;
         if (typeof cliente == 'undefined' || typeof direccion == 'undefined' || typeof fecha == 'undefined' || typeof factura == 'undefined' ||
-            typeof flete == 'undefined' || typeof orderid == 'undefined' || typeof sispago == 'undefined' || typeof detalle == 'undefined') {
+            typeof flete == 'undefined' || typeof orderid == 'undefined' || typeof sispago == 'undefined' || typeof detalle == 'undefined' ||
+            typeof pagoid == 'undefined' || typeof fepago == 'undefined' || typeof deposito == 'undefined' || typeof comision == 'undefined' ||
+            typeof igv == 'undefined') {
             response.status(401).json({
                 error: 'Parámetros incorrectos'
             });
@@ -641,10 +645,17 @@ const WsController = {
             { name: 'orderid', io: 'in', value: orderid },
             { name: 'sispago', io: 'in', value: sispago },
             { name: 'observaciones', io: 'in', value: observaciones },
-            { name: 'detalle', io: 'in', value: detalle }
+            { name: 'detalle', io: 'in', value: detalle },
+            { name: 'pagoid', io: 'in', value: pagoid },
+            { name: 'fepago', io: 'in', value: fepago },
+            { name: 'deposito', io: 'in', value: deposito },
+            { name: 'comision', io: 'in', value: comision },
+            { name: 'igv', io: 'in', value: igv }
         ];
-        let query = 'call pack_web_service.sp_registra_pedido (:codigo, :mensaje, :cliente, :direccion, :fecha, :factura, :flete, :orderid, :sispago, :observaciones, :detalle)';
+        let query = 'call pack_web_service.sp_registra_pedido (:codigo, :mensaje, :cliente, :direccion, :fecha, :factura, :flete, :orderid, :sispago, :observaciones, ' +
+            ':detalle, :pagoid, :fepago, :deposito, :comision, :igv)';
         let result = await db.statement(query, params);
+        // listo
         if (result.error) {
             response.json({
                 error: result.error
@@ -657,8 +668,89 @@ const WsController = {
             });
             return;
         }
+        // grabar el log
+        let pedido = result.out.mensaje;
+        query = "call pack_web_service.sp_log_pedido (:pedido, :empresa, :json, :usuario, :mensaje)";
+        params = [
+            { name: 'pedido', io: 'in', value: pedido },
+            { name: 'empresa', io: 'in', value: tokenData.empresa },
+            { name: 'json', io: 'in', value: jsparams },
+            { name: 'usuario', io: 'in', value: tokenData.id },
+            { name: 'mensaje', io: 'out', type: 'number' },
+        ];
+        await db.statement(query, params);
+        // fin
         response.json({
-            pedido: result.out.mensaje
+            pedido: pedido
+        });
+    },
+    TiposCobro: async (request, response) => {
+        let token = request.headers['authorization'];
+        if (!token) {
+            response.status(401).send({
+                error: 'Es necesario el token de autenticación'
+            })
+            return;
+        }
+        let tokenData = tknmanager.ObtenerDatos(token);
+        if (tokenData.error) {
+            response.status(401).send({
+                error: tokenData.error
+            });
+            return;
+        }
+        let params = [
+            { name: 'rs', io: 'out', type: 'cursor' }
+        ];
+        let query = 'call pack_web_service.sp_tipos_cobro (:rs)';
+        let result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        response.json({
+            data: result.rs
+        });
+    },
+    MatchPedido: async (request, response) => {
+        let token = request.headers['authorization'];
+        if (!token) {
+            response.status(401).send({
+                error: 'Es necesario el token de autenticación'
+            })
+            return;
+        }
+        let tokenData = tknmanager.ObtenerDatos(token);
+        if (tokenData.error) {
+            response.status(401).send({
+                error: tokenData.error
+            });
+            return;
+        }
+        const { orderid } = request.body;
+        let query = 'call pack_web_service.sp_match_pedido (:orderid, :codigo, :pedido)';
+        let params = [
+            { name: 'orderid', io: 'in', value: orderid },
+            { name: 'codigo', io: 'out', type: 'number' },
+            { name: 'pedido', io: 'out', type: 'string' }
+        ];
+        let result = await db.statement(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.out.codigo == 0) {
+            response.json({
+                error: result.out.pedido
+            });
+            return;
+        }
+        response.json({
+            pedido: result.out.pedido
         });
     }
 };

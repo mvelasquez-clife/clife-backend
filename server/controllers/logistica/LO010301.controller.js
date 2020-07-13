@@ -1,5 +1,6 @@
 const xmlParser = require('./../../xml-parser');
 const db = require('./../../libs/db-oracle');
+// const { request, response } = require('express');
 
 const lo010301Controller = {
     DatosIniciales: async (request, response) => {
@@ -188,6 +189,84 @@ const lo010301Controller = {
         let result = await db.resultSet(query, params);
         response.set('Content-Type', 'text/xml');
         response.send(xmlParser.renderXml(result.resultset));
+    },
+    AprobarPagoDocumentos: async (request, response) => {
+        const { documentos } = request.body;
+        for (let documento of documentos) {
+            let xdata = [documento.codigo, documento.caja, documento.proveedor, documento.moneda, documento.unico, documento.pago, documento.tcambio].join('@*@');
+            let query = 'call pack_caja2.sp_au_pago_caja_prov(:xdata)';
+            let params = [
+                { name: 'xdata', io: 'in', value: xdata }
+            ];
+            await db.statement(query, params);
+        }
+        response.json({
+            success: true
+        });
+    },
+    GeneraUrlVisor: async (request, response) => {
+        const { empresa, proveedor, tipodoc, documento } = request.body;
+        let query = 'select pack_new_attached.f_get_url(:empresa,:proveedor,:tipodoc,:documento) "url" from dual';
+        let params = [
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'proveedor', io: 'in', value: proveedor },
+            { name: 'tipodoc', io: 'in', value: tipodoc },
+            { name: 'documento', io: 'in', value: documento }
+        ];
+        let result = await db.select(query, params);
+        response.json(result);
+    },
+    ReportesTipodoc: async (request, response) => {
+        const { empresa, tipodoc, desde, hasta } = request.params;
+        let query = 'call pack_new_ctacte_prov.sp_reportes_tipodoc (:empresa, :tipodoc, :desde, :hasta, :resultset)';
+        let params = [
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'tipodoc', io: 'in', value: tipodoc },
+            { name: 'desde', io: 'in', value: desde },
+            { name: 'hasta', io: 'in', value: hasta },
+            { name: 'resultset', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet(query, params);
+        response.set('Content-Type', 'text/xml');
+        response.send(xmlParser.renderXml(result.resultset));
+    },
+    BuscarCuentaCorriente: async (request, response) => {
+        const { moneda } = request.params;
+        let query = 'call pack_new_ctacte_prov.sp_lupa_ctacte (:moneda, :resultset)';
+        let params = [
+            { name: 'moneda', io: 'in', value: moneda },
+            { name: 'resultset', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet(query, params);
+        response.set('Content-Type', 'text/xml');
+        response.send(xmlParser.renderXml(result.resultset));
+    },
+    ProcesarPagosTransferencias: async (request, response) => {
+        const { datos } = request.body;
+        let out = [];
+        for (let fila of datos) {
+            let query = 'call pack_new_ctacte_prov.sp_procesar_pago_trf (:rucdni,:tipoenti,:clasenti,:documento,:moneda,:cuenta,:banco,:pais,:importe,:empresa,:usuario,:ocodigo,:omensaje)';
+            let params = [
+                { name: 'rucdni', io: 'in', value: fila.rucdni },
+                { name: 'tipoenti', io: 'in', value: fila.tipoenti },
+                { name: 'clasenti', io: 'in', value: fila.clasenti },
+                { name: 'documento', io: 'in', value: fila.documento },
+                { name: 'moneda', io: 'in', value: fila.moneda },
+                { name: 'cuenta', io: 'in', value: fila.cuenta },
+                { name: 'banco', io: 'in', value: fila.banco },
+                { name: 'pais', io: 'in', value: fila.pais },
+                { name: 'importe', io: 'in', value: fila.importe },
+                { name: 'empresa', io: 'in', value: fila.empresa },
+                { name: 'usuario', io: 'in', value: fila.usuario },
+                { name: 'ocodigo', io: 'out', type: 'number' },
+                { name: 'omensaje', io: 'out', type: 'string' }
+            ];
+            let result = await db.resultSet(query, params);
+            out.push(result.ocodigo);
+        }
+        response.json({
+            result: out
+        });
     }
 };
 

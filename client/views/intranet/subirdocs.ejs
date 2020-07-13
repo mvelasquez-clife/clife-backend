@@ -472,7 +472,8 @@
                     let smsdata = {
                         documentos: destinatarios.join(','),
                         empresa: document.getElementById('form-empresa').value,
-                        envio: document.getElementById('crear-envio').value
+                        envio: document.getElementById('crear-envio').value,
+                        codigo: $('#crear-envio').data('codigo')
                     };
                     resms = await $.ajax({
                         url: '/intranet/send-sms',
