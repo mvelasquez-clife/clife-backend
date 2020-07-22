@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/intranet/css/login.css">
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <title>re</title> 
+    <img src="file:///C:/clife-backend/public/assets/images/home/clife-ini.png" class="mx-auto mb-2 d-block" style="height:64px;">
+                    
+    <h1 align="center">CORPORACIÓN LIFE SAC</h1>
+    <style>
+        html, body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+        table {
+            border-collapse:collapse;
+        }
+        th,td {
+            border: none;
+            padding: 4px 4px;
+        }
+        thead tr {
+            background-color: #1C1C1C;
+            color: #ffffff;
+        }
+        tbody tr {
+            border-top: 1px solid #c0c0c0;
+        }
+        tr:nth-child(even) td {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="col-12 col-lg-5">
+            <form id="form-login" method="post" action="auth-login" class="py-5 mt-5">
+                
+                <p style="font-size:10pt;margin-bottom:0;padding-left:15mm;width:100%;"><b>EPT N°:</b></p>
+                <p style="font-size:10pt;margin-bottom:0;padding-left:15mm;width:100%;"><%=esp%></p>
+                <p style="font-size:10pt;margin-bottom:0;padding-left:15mm;width:100%;"><b>ESPECIFICACIÓN TÉCNICA DE  PRODUCTO TERMINADO:</b></p>
+                <p style="font-size:10pt;margin-bottom:0;padding-left:15mm;width:100%;"><%=nombre%></p>
+                <p style="font-size:10pt;margin-bottom:0;padding-left:15mm;width:100%;"><b>NSOC:</b></p>
+                <p style="font-size:10pt;margin-bottom:0;padding-left:15mm;width:100%;"><%=codigo%></p>
+                <p style="font-size:10pt;margin-bottom:0;padding-left:15mm;width:100%;"><b>MARCA:</b></p>
+                <p style="font-size:10pt;margin-bottom:0;padding-left:15mm;width:100%;"><%=marc%></p>
+                <br>
+                </form>
+            </div>
+            
+    <div style="box-sizing:border-box;padding-left:15mm;width:100%;">
+        <table style="font-family:Arial,Verdana;font-size:7pt;width:80%;">
+            <thead>
+                <tr>
+                    <th style="text-align:center;">Método</th>
+                    <th style="text-align:center;">Ensayo</th>
+                    <th style="text-align:center;">Tipo de ensayo</th>
+                </tr>
+            </thead>
+            <tbody>
+            <% filas.forEach(function(fila) { %>
+                <tr>
+                    <td style="text-align:right;"><%=fila.DE_METODO%></td>
+                    <td style="text-align:left;"><%=fila.DE_ENSAYO%></td>
+                    <td style="text-align:left;"><%=fila.DE_TIPO_ENSAYO%></td>
+                </tr>
+            <% }); %>
+            </tbody>
+        </table>
+    </div>
+    </div>
+
+
+</body>
+</html>

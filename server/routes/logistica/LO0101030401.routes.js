@@ -17,5 +17,6 @@ router.get('/mostrar-detalleuno-reserva/:empresa/:periodo/:almacen/:producto/',l
 router.get('/mostrar-detalledos-reserva/:empresa/:periodo/:almacen/:producto/',lo0101030401Controller.mostrardetsegres);
 router.get('/mostrar-cambio-ubicaciones/:empresa/:periodo/:almacen/:producto/',lo0101030401Controller.mostrarcambioubi);
 router.get('/mostrar-movimientos/:empresa/:periodo/:almacen/:producto/',lo0101030401Controller.mostrarmovimientos);
+router.get('/pdf-reporte-uno/:movimiento/:empresa/:transacc/:periodo/:coddoc1/', lo0101030401Controller.PdfReporteuno);
 
 module.exports = router;

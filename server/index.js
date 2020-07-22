@@ -55,6 +55,8 @@ app.use('/api/LO01010209', require('./routes/logistica/LO01010209.routes'));
 app.use('/api/LO01010210', require('./routes/logistica/LO01010210.routes'));
 app.use('/api/LO0107', require('./routes/logistica/LO0107.routes'));
 app.use('/api/LO010301', require('./routes/logistica/LO010301.routes'));
+app.use('/api/LO0101030401', require('./routes/logistica/LO0101030401.routes'));
+app.use('/api/LO0101030402', require('./routes/logistica/LO0101030402.routes'));
 app.use('/api/VT010101', require('./routes/ventas/VT010101.routes'));
 app.use('/api/VT010102', require('./routes/ventas/VT010102.routes'));
 app.use('/api/VT010108', require('./routes/ventas/VT010108.routes'));
@@ -63,7 +65,8 @@ app.use('/api/CO0201', require('./routes/contabilidad/CO0201.routes'));
 app.use('/api/SG010101', require('./routes/seguridad/SG010101.routes'));
 app.use('/api/SG010203', require('./routes/seguridad/SG010203.routes'));
 app.use('/api/PO010208', require('./routes/plantaindustrial/PO010208.routes'));
-app.use('/api/LO0101030401', require('./routes/logistica/LO0101030401.routes'));
+app.use('/api/PO010411', require('./routes/plantaindustrial/PO010411.routes'));
+app.use('/api/PO010410', require('./routes/plantaindustrial/PO010410.routes'));
 
 //ruta del chat
 app.use('/chat', require('./routes/chat.routes'));

@@ -43,7 +43,12 @@
         <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
         <!-- scripts de la carga de la vista -->
         <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
+        <script src="https://code.highcharts.com/modules/export-data.js"></script>
+        <script src="https://code.highcharts.com/modules/accessibility.js"></script>
         <script>
+            var tabbarinicio,mainLayout_inicio;
             function Greater100(data){
                 if (data=="") return true;// returns 'true' if the field is empty
 
@@ -76,40 +81,49 @@
             var f_nuevo_registro = [
                 { type: "settings", labelWidth: 100 },
                 {type: "block", blockOffset: 0,  offsetTop: 20,offsetLeft: 40, position: "label-left", width: 400, list: [
-                    { type: "input",readonly: false,label: 'Código NSOC:',validate:"Greater100", style:"background-color:rgb(234, 255, 71);width: 300px;height:30px,font-family: Arial; font-size: 15pt;",position:"input-right", offsetLeft: 0,labelWidth: 100, inputWidth: 100, name: "_drt_nrosoc"}, { type: "newcolumn" },
+                    { type: "input",readonly: false,required: true,label: 'Código NSOC',validate:"Greater100", style:"width: 300px;height:30px,font-family: Arial; font-size: 15pt;",position:"input-right", offsetLeft: 0,labelWidth: 100, inputWidth: 100, name: "_drt_nrosoc"}, { type: "newcolumn" },
                 { type: "newcolumn" },] },
                 {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "input",offsetLeft: 40,labelWidth: 100, inputWidth: 300, name: "_drt_nombre", label: 'Nombre Producto:',rows:5}, { type: "newcolumn" },
+                    { type: "input",offsetLeft: 40,labelWidth: 100, inputWidth: 300, name: "_drt_nombre", label: 'Nombre Producto:',rows:7}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "calendar", readonly: false, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_fechadesde", label: 'Vigencia Inicio: '}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 80,offsetLeft:0,inputWidth: 150,label:'Especificación', name: "_drt_esp"}, { type: "newcolumn" },
+                    { type: "button", name: 'buscaresp',offsetTop:1, disabled: false,  value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "select", offsetLeft: 0,required: true,labelWidth: 80, inputWidth: 100, name: "_drt_formacosmetica", label: 'Forma Cosmetica', connector: BASE_URL + 'PO010208/mostrar-forma-cosmetica'}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "calendar", readonly: false, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_fechahasta", label: 'Vigencia Fin: '}, { type: "newcolumn" },
+                    { type: "calendar", readonly: false, offsetLeft: 0,required: true,labelWidth: 80, inputWidth: 100, name: "_drt_fechadesde", label: 'Vigencia Inicio'}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "select", offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_formacosmetica", label: 'Forma Cosmetica: ', connector: BASE_URL + 'PO010208/mostrar-forma-cosmetica'}, { type: "newcolumn" },
+                    { type: "calendar", readonly: false, offsetLeft: 0,required: true,labelWidth: 80, inputWidth: 100, name: "_drt_fechahasta", label: 'Vigencia Fin  '}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_estado", label: 'Estado: '}, { type: "newcolumn" },
+                    { type: "checkbox", checked: false,disabled: false, offsetLeft: 0,required: true,labelWidth: 80,  name: "_drt_kit", label: 'Dejar Vencer'}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "checkbox", checked: false,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_kit", label: 'KIT: '}, { type: "newcolumn" },
+                    { type: "calendar", inputWidth: 100,disabled: false, offsetLeft: 0,required: true,labelWidth: 80,  name: "_drt_tuv_com", label: 'TVU  Comercial'}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "calendar", inputWidth: 100,disabled: false, offsetLeft: 0,required: true,labelWidth: 80,  name: "_drt_tuv_prod", label: 'TVU  Producción'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20,position: "label-left", width: 400, list: [
+                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_estado", label: 'Estado  '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20,position: "label-left", width: 400, list: [
                     { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_nroregistro", label: 'Nro. Registro: '}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
-                // {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 400, list: [
-                //     { type: "input", name: '_drt_resumen', labelWidth: 150, readonly: true, label: 'Resumen Producto:', rows:8,offsetLeft: 40, inputWidth: 300 }, { type: "newcolumn" },
-                //      ],},
-                // { type: "newcolumn" },
             ];
 
             var f_buscar_prod = [ { type: "newcolumn" },
@@ -173,18 +187,92 @@
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "checkbox", checked: false,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_kit", label: 'KIT: '}, { type: "newcolumn" },
+                    { type: "checkbox", checked: false,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_kit", label: 'Dejar Vencer: '}, { type: "newcolumn" },
                     ],},
-                { type: "newcolumn" },,
+                { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
                     { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_nroregistro", label: 'Nro. Registro: '}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input",readonly:true,labelWidth: 100,offsetLeft:0,inputWidth: 150,label:'Cod.Especificación:', name: "_drt_esp"}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "calendar", inputWidth: 100,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_tuv_com", label: 'TVU Comercial: '}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "calendar", inputWidth: 100,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_tuv_prod", label: 'TVU Producción: '}, { type: "newcolumn" },
+                    ],},
                 
 
             ];
+            var f_filtro_formula = [
+                { type: "settings", labelWidth: 100 },
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
+                    { type: "input",offsetLeft:20,inputWidth: 500,  name: "_fr_buscar"}, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 100, list: [
+                    { type: "button",offsetLeft: 50,  offsetTop: 1,labelWidth: 50, value:'Buscar', name: "_fr_busbut"}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 100, list: [
+                    { type: "button",offsetLeft: 50,  offsetTop: 1,labelWidth: 50, value:'Limpiar', name: "_fr_limpiar"}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 15, position: "label-left", width: 300, list: [
+                    { type: "checkbox",offsetLeft: 100,  offsetTop: 5,labelWidth: 120, label:'Todas las fórmulas', name: "_ch_todo"}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 15, position: "label-left", width: 250, list: [
+                    { type: "checkbox",checked:true, offsetLeft: 20,  offsetTop: 5,labelWidth: 180, label:'Sólo las fórmulas por aprobar', name: "_ch_porap"}, { type: "newcolumn" },
+                    ],},
+            ];
+            var f_filtro_especificacion = [
+                { type: "settings", labelWidth: 100 },
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
+                    { type: "input",offsetLeft:20,inputWidth: 500,  name: "_fr_buscar"}, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 100, list: [
+                    { type: "button",offsetLeft: 50,  offsetTop: 1,labelWidth: 50, value:'Buscar', name: "_fr_busbut"}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 15, position: "label-left", width: 350, list: [
+                    { type: "checkbox",checked:true, offsetLeft: 100,  offsetTop: 5,labelWidth: 100, label:'Mostrar vigentes', name: "_ch_vigente"}, { type: "newcolumn" },
+                    ],},
+            ];
 
-            Inicio();
+            var f_cosmetica = [ { type: "newcolumn" },
+            {type: "block",blockOffset: 10,  offsetTop: 10, position: "label-left", width: 450, list: [
+                { type: "newcolumn" },
+                { type: "input",offsetLeft: 10,labelWidth: 150, inputWidth: 200, name: "_drt_form_cosm", label: 'NOMBRE FORMA COSMÉTICA:'}, { type: "newcolumn" },
+
+            ],}
+            ];
+
+            var form_caract = [
+                { type: "settings", labelWidth: 100 },
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 1300, list: [
+                    { type: "input",readonly:false,labelWidth: 110,offsetLeft:15,inputWidth: 500,rows:6,label:'<b>CARACTERÍSTICAS GENERALES</b>', name: "_ep_car_gen"}, { type: "newcolumn" },
+                    { type: "input",readonly:false,labelWidth: 120,offsetLeft:15,inputWidth: 500,rows:6,label:'<b>CONDICIONES DE ALMACENAMIENTO</b>', name: "_ep_car_alm"}, { type: "newcolumn" },
+                   ],},
+            ];
+            
+            mainLayout_inicio = new dhtmlXLayoutObject(document.body, '1C'); 
+            mainLayout_inicio.cells('a').hideHeader();
+            tabbarinicio = mainLayout_inicio.cells('a').attachTabbar();
+            tabbarinicio.addTab('__register', 'Registrar Notificación Sanitaria', null, null, true);
+            tabbarinicio.addTab('__graf', 'Dashboard', null, null, false);
+            // tabbarinicio.addTab('__search', 'Consultar Notificación Sanitaria', null, null, false);
+            // tabbarinicio.addTab('__formapr', 'Aprobación/Anulación de fórmula', null, null, false);
+            tabbarinicio. attachEvent ( "onSelect" , inicioOnSelect);  
+            Inicio();            
 
             
             MuestraIndicadorCarga = _ => {
@@ -285,12 +373,6 @@
                     }
                 }
             }
-                // $(_ => {
-                // console.log("sss");
-                // $("#btn-upload").on("click", SubirArchivos);
-                // $("#btn-loadfile").on("click", VerArchivo);
-                // $("#btn-loadfile2").on("click", VerArchivo);
-                // $("#form-archivos").on("change", SeleccionarArchivos); });
 
         </script>
     </body>

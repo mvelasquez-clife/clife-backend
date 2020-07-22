@@ -1,5 +1,5 @@
-var filtro,buscador,myGrid_resumen,myGrid_movimiento,myGrid_cambio,de_transaccion,myGrid_detalleprod,desc_producto,win_detalle,transaccion,myGrid_pedres,myToolbar_pedres,producto,almacen,periodo,myToolbar_resumen,Winid_,Wind_,myFormdatos_transaccion,maingridalma_2,maingridtran,codigoprod,maingridalma,mainLayout_tran,mainLayout,mainLayout_prod,myFormdatos,maingridprod,mainLayout_per,myFormdatos_periodo,myToolbardatos_periodo;
-var inicio='N',
+var fecha_periodo,filtro,buscador,myGrid_resumen,myGrid_movimiento,myGrid_cambio,de_transaccion,myGrid_detalleprod,desc_producto,win_detalle,transaccion,myGrid_pedres,myToolbar_pedres,producto,almacen,periodo,myToolbar_resumen,Winid_,Wind_,myFormdatos_transaccion,maingridalma_2,maingridtran,codigoprod,maingridalma,mainLayout_tran,mainLayout,mainLayout_prod,myFormdatos,maingridprod,mainLayout_per,myFormdatos_periodo,myToolbardatos_periodo;
+let WinDocumentoViewer,
 Iniciokardex = () => {
     mainLayout = new dhtmlXLayoutObject(document.body, '3U'); 
     mainLayout.cells('a').setWidth(800);
@@ -27,9 +27,9 @@ Iniciokardex = () => {
     mainLayout_per.cells('b').setHeight(150);
     myToolbardatos_periodo = mainLayout_per.cells('c').attachToolbar();
     myToolbardatos_periodo.setIconsPath('/assets/images/icons/');
-    myToolbardatos_periodo.addButton('pedres',null,'<b>Reserva de pedidos - Productos Terminados</b>',"ic-look.png","");  
-    myToolbardatos_periodo.addButton('insures',null,'<b>Reserva de Insumos y Empaques</b>',"ic-resumen.png","");  
-    myToolbardatos_periodo.addButton('detalle',null,'<b>Detalle de reservas</b>',"ic-buskard.png",""); 
+    myToolbardatos_periodo.addButton('pedres',null,'<b>Reserva de pedidos</b>',"ic-look.png",""); 
+    myToolbardatos_periodo.addButton('insures',null,'<b>Reserva Ins y Emp</b>',"ic-resumen.png","");  
+    myToolbardatos_periodo.addButton('detalle',null,'<b>Det. Reservas</b>',"ic-buskard.png",""); 
     myToolbardatos_periodo.attachEvent('onClick', Onclick); 
     maingridper = mainLayout_per.cells('c').attachGrid(); 
     maingridper.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/");
@@ -64,9 +64,10 @@ Iniciokardex = () => {
     mainLayout_info.cells('b').setHeight(30);
     myToolbardatos_info = mainLayout_info.cells('b').attachToolbar();
     myToolbardatos_info.setIconsPath('/assets/images/icons/');
-    myToolbardatos_info.addButton('cambio',null,'<b>Cambio de Ubicaciones</b>',"ic-giveback.png","");  
-    myToolbardatos_info.addButton('movimiento',null,'<b>Ver todos los movimientos</b>',"ic-buscar.png","");  
-    myToolbardatos_info.attachEvent('onClick', Onclickinfo); 
+    myToolbardatos_info.addButton('cambio',null,'<b>Ubicaciones</b>',"ic-giveback.png","");  
+    myToolbardatos_info.addButton('movimiento',null,'<b>Movimientos</b>',"ic-buscar.png","");
+    myToolbardatos_info.addButton('reporte1',null,'<b>Ver</b>',"ic-buscarp.png","");
+    myToolbardatos_info.attachEvent('onClick', Onclickinfo);   
     maingridtran = mainLayout_tran.cells('b').attachGrid(); 
     maingridalma_2 = mainLayout_tran.cells('c').attachGrid(); 
     maingridtran.setHeader('Ubicación,Lote,Inicial,Saldo,F.Vencimiento,Real, Cuarentena,Reserva,Análisis,Prioridad,F.Salida Programada');
@@ -92,10 +93,12 @@ Iniciokardex = () => {
     maingridtran.attachFooter(",,,#stat_sum,,#stat_sum,#stat_sum",["","","","text-align:right;",,"text-align:right;","text-align:right;"]);
     maingridtran.setEditable(false);
     maingridtran.init(); 
+    maingridalma_2.setImagePath("/assets/images/icons/");
     maingridalma_2.setHeader('N° Movimiento,F.Movimiento,Tipo Transacción,Num.Ingreso,Num.Egreso,Lote,Ubicación,Documento 1,T.Documento 1,F.Documento 1,Documento 2,T.Documento 2,F.Documento 2,Cod.Documento3,Vigencia,Cod.Pedido,Voucher,Cod.Producto,Cod.Almacen,Periodo,Cod.Tipo Doc. 1,Cod.Tipo Doc. 2');
     maingridalma_2.setInitWidths('100,120,200,100,100,100,100,120,120,120,120,120,120,120,120,120,120,120,120,120,120,120');
     maingridalma_2.setColAlign('center,center,left,right,right,center,center,center,center,center,center,center,center,center,center,left,center,center,center,center,left,center,center,center');
-    maingridalma_2.setColTypes("ro,ro,ro,edn,edn,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro");    
+    maingridalma_2.setColTypes("ro,ro,ro,edn,edn,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro"); 
+    maingridalma_2.setColumnIds("nromov,femov,tipot,ingreso,egreso,lote,ubic,doc1,tdoc1,fdoc1,doc2,tdoc2,fdoc2,doc3,vigencia,codped,vou,codprod,codalm,peri,coddoc1,codtipdoc2");           
     maingridalma_2.setNumberFormat("0,000.00",3,".",",");   
     maingridalma_2.setNumberFormat("0,000.00",4,".",",");   
     maingridalma_2._in_header_stat_sum=function(tag,index,data){       
@@ -217,6 +220,7 @@ cargarPeriodo = (codproducto) => {
     };
     $.post(BASE_URL + 'LO0101030401/mostrar-periodo/', params, function (res) {
         const valor = res.data.periodo;
+        console.log('aqui viene: '+valor);
         myFormdatos_periodo.reloadOptions('_kd_periodo', valor);
     } , 'json');
 }
@@ -274,12 +278,24 @@ Onclick = (id) => {
 };
 
 Onclickinfo= (id) => {
+    var sel = maingridalma_2.getSelectedRowId();    
     switch (id) {
         case 'cambio':             
             mostrarcambio();
             break; 
         case 'movimiento':             
             mostrarmovimiento();
+            break;   
+        case 'reporte1':             
+            if(sel) {                
+                data_2  = maingridalma_2.getRowData(maingridalma_2.getSelectedRowId());
+                var opts = myFormdatos_periodo.getOptions('_kd_periodo');
+                var text = (opts[opts.selectedIndex].text);
+                cargareport1(data_2.nromov,usrJson.empresa,data_2.tipot,text,data_2.doc1);
+            }else{
+                dhtmlx.confirm("Debe elegir un N° Movimiento", function (result) {
+                });
+            }
             break;   
         default:
             null;
@@ -391,8 +407,7 @@ mostrarcambio = async () => {
     cargarcambio(Wind_);
     myGrid_cambio.init();    
 };
-
-
+                     
 mostrarmovimiento = async () => {
     Wind_ = new dhtmlXWindows();
     Winid_ = Wind_.createWindow("winmovimiento", 0, 0, 800, 500);
@@ -463,4 +478,15 @@ cargarmovimiento = (win) => {
     myGrid_movimiento.load( BASE_URL + 'LO0101030401/mostrar-movimientos/'+ usrJson.empresa+'/'+periodo+'/'+almacen+'/'+producto).then(function (text) {
         win.window("winmovimiento").progressOff();
     });
+};
+
+  
+cargareport1 = async (codigo,empresa,transacc,periodo,coddoc1) => {
+    // var codigo = 'NMS001-237214';
+    WinContainer = new dhtmlXWindows();
+    WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 800, 800);
+//                WinDocumentoViewer.center();
+        WinDocumentoViewer.keepInViewport();
+        WinDocumentoViewer.setText('Mostrando documento ');
+        WinDocumentoViewer.attachURL('/api/lo0101030401/pdf-reporte-uno/'+codigo+'/'+empresa+'/'+transacc+'/'+periodo+'/'+coddoc1);
 };
