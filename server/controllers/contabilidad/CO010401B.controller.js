@@ -1,6 +1,7 @@
 const xmlParser = require('./../../xml-parser');
 const db = require('./../../libs/db-oracle');
-const { response, request } = require('express');
+const { resultSet } = require('./../../libs/db-oracle');
+const { response } = require('express');
 
 const co010401BController = {
     ComboPeriodos: async (request, response) => {
@@ -8,7 +9,7 @@ const co010401BController = {
         let params = [
             { name: 'empresa', value: empresa }
         ];
-        let result = await db.select('select co_periodo "value", de_nombre "text" from ma_peri_m where fe_primer_dia < sysdate and nu_mes <> 0 and co_empresa = :empresa order by co_periodo desc', params);
+        let result = await db.select('select co_periodo "value", de_nombre "text", case es_vigencia when \'Vigente\' then \'ic-unlocked.svg\' else \'ic-locked.svg\' end "img", case es_vigencia when \'Vigente\' then \'ic-unlocked-dis.svg\' else \'ic-locked-dis.svg\' end "img_dis" from ma_peri_m where fe_primer_dia < sysdate and nu_mes <> 0 and co_empresa = :empresa order by co_periodo desc', params);
         result.rows.unshift({ value: 0, text: '- Periodo -' });
         response.json({
             options: result.rows
@@ -28,6 +29,7 @@ const co010401BController = {
             options.push({
                 value: row.id + '',
                 text: {
+                    icono: row.icono,
                     codigo: row.codigo,
                     libro: row.libro,
                     cantidad: row.cantidad + '',
@@ -40,6 +42,7 @@ const co010401BController = {
             template: {
                 input: "#libro#",
                 columns: [
+                    { header: "&nbsp;", width: 40, css: "icono", option: "<img src='/assets/images/icons/toolbar/#icono#' border='0' style='margin-top: 4px;'>" },
                     { header: "Código", width: 60, css: "codigo", option: "#codigo#" },
                     { header: "Libro", width: 160, css: "libro", option: "#libro#" },
                     { header: "Cantidad", width: 60, css: "cantidad", option: "#cantidad#" },
@@ -220,6 +223,250 @@ const co010401BController = {
         let result = await db.select(query, params);
         response.set('Content-Type', 'text/xml');
         response.send(xmlParser.renderXml(result.rows));
+    },
+    guardaDetalleVoucher: async(request, response) => {
+        const { empresa, usuario, periodo, libro, voucher, filas, acciones, cuentas, vouchers, debe, haber, glosas, condtribs, alias, eliminar } = request.body;
+        let query, params, result, resupd;
+        if (filas > 0) {
+            query = "call pack_new_conta_voucher.sp_grabar_det_voucher(:codigo,:mensaje,:empresa,:usuario,:periodo,:libro,:voucher,:filas,to_clob(:acciones),to_clob(:cuentas),to_clob(:vouchers),to_clob(:debe),to_clob(:haber),to_clob(:glosas),to_clob(:condtribs))";
+            params = [
+                { name: 'codigo', io: 'out', type: 'number' },
+                { name: 'mensaje', io: 'out', type: 'string' },
+                { name: 'empresa', io: 'in', value: empresa },
+                { name: 'usuario', io: 'in', value: usuario },
+                { name: 'periodo', io: 'in', value: periodo },
+                { name: 'libro', io: 'in', value: libro },
+                { name: 'voucher', io: 'in', value: voucher },
+                { name: 'filas', io: 'in', value: filas },
+                { name: 'acciones', io: 'in', value: acciones },
+                { name: 'cuentas', io: 'in', value: cuentas },
+                { name: 'vouchers', io: 'in', value: vouchers },
+                { name: 'debe', io: 'in', value: debe },
+                { name: 'haber', io: 'in', value: haber },
+                { name: 'glosas', io: 'in', value: glosas },
+                { name: 'condtribs', io: 'in', value: condtribs }
+            ];
+            resupd = await db.resultSet(query, params);
+        }
+        else {
+            resupd = {
+                codigo: 1,
+                mensaje: 'Filas eliminadas'
+            };
+        }
+        if (eliminar != '') {
+            var rowsEliminar = eliminar.split('@');
+            var numEliminar = rowsEliminar.length;
+            query = "call pack_new_conta_voucher.sp_eliminar_det_voucher(:codigo,:mensaje,:empresa,:usuario,:periodo,:libro,:voucher,:covoucher)";
+// x_empresa number,x_usuario number,x_periodo number,x_libro_contable number,x_nu_voucher number,x_co_voucher
+            for (var i = 0; i < numEliminar; i++) {
+                var iVoucher = rowsEliminar[i];
+                params = [
+                    { name: 'codigo', io: 'out', type: 'number' },
+                    { name: 'mensaje', io: 'out', type: 'string' },
+                    { name: 'empresa', io: 'in', value: empresa },
+                    { name: 'usuario', io: 'in', value: usuario },
+                    { name: 'periodo', io: 'in', value: periodo },
+                    { name: 'libro', io: 'in', value: libro },
+                    { name: 'voucher', io: 'in', value: voucher },
+                    { name: 'covoucher', io: 'in', value: iVoucher }
+                ];
+                result = await db.statement(query, params);
+            }
+        }
+        return response.json({
+            codigo: resupd.codigo,
+            mensaje: resupd.mensaje
+        });
+    },
+    ComboMoneda: async (request, response) => {
+        let query = 'select co_moneda as "value", de_nombre as "text" from ma_mone_m order by co_moneda asc';
+        let params = [];
+        let result = await db.select(query, params);
+        return response.json({
+            options: result.rows
+        });
+    },
+    ComboTipoDocAdmin: async (request, response) => {
+        const { libro } = request.params;
+        let query = 'select co_tipo_docu_admi "codigo", de_tipo_docu_admi "tipo" from table(pack_new_conta_voucher.f_list_tipo_docu_voucher(:p_libro))';
+        let params = [
+            { name: 'p_libro', io: 'in', value: libro }
+        ];
+        let result = await db.select(query, params);
+        let options = [];
+        for (let row of result.rows) {
+            options.push({
+                value: row.codigo + '',
+                text: {
+                    descripcion: row.tipo,
+                    codigo: row.codigo
+                }
+            });
+        }
+        let out = {
+            template: {
+                input: "#descripcion#",
+                columns: [
+                    { header: "Tipo Doc. Admin.", width: 240, css: "descripcion", option: "#descripcion#" },
+                    { header: "ID", width: 60, css: "codigo", option: "#codigo#" }
+                ]
+            },
+            options: options
+        };
+        response.json(out);
+    },
+    ComboTipoEntidad: async (request, response) => {
+        const { libro } = request.params;
+        let query = 'select co_tipo_entidad "codigo", de_tipo_entidad "descripcion" from table(pack_new_conta_voucher.f_list_tipo_enti_voucher(:p_libro))';
+        let params = [
+            { name: 'p_libro', io: 'in', value: libro }
+        ];
+        let result = await db.select(query, params);
+        let options = [];
+        for (let row of result.rows) {
+            options.push({
+                value: row.codigo + '',
+                text: {
+                    descripcion: row.descripcion,
+                    codigo: row.codigo + ''
+                }
+            });
+        }
+        let out = {
+            template: {
+                input: "#descripcion#",
+                columns: [
+                    { header: "Tipo Entidad", width: 160, css: "descripcion", option: "#descripcion#" },
+                    { header: "ID", width: 40, css: "codigo", option: "#codigo#" }
+                ]
+            },
+            options: options
+        };
+        response.json(out);
+    },
+    ComboTipoDocIden: async (request, response) => {
+        const { libro } = request.params;
+        let query = 'select co_tipo_docu_ide "value", de_tipo_docu_ide "text" from table(pack_new_conta_voucher.f_list_tipo_docu_enti)';
+        let params = [];
+        let result = await db.select(query, params);
+        response.json({
+            options: result.rows
+        });
+    },
+    ValidaNuevoVoucher: async (request, response) => {
+        const { empresa, usuario, periodo, libro } = request.body;
+        let query = "call pack_new_conta_voucher.sp_new_voucher_valid(:empresa, :usuario, :periodo, :libro, :o_codigo, :o_mensaje)";
+        let params = [
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'usuario', io: 'in', value: usuario },
+            { name: 'periodo', io: 'in', value: periodo },
+            { name: 'libro', io: 'in', value: libro },
+            { name: 'o_codigo', io: 'out', type: 'number' },
+            { name: 'o_mensaje', io: 'out', type: 'string' }
+        ];
+        let result = await db.statement(query, params);
+        if (result.o_codigo == 0) {
+            return response.json({
+                error: result.o_mensaje
+            });
+        }
+        query = "select * from table(pack_new_conta_voucher.f_list_new_vouch_param(:empresa,:usuario,:periodo,:libro))";
+        params = [
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'usuario', io: 'in', value: usuario },
+            { name: 'periodo', io: 'in', value: periodo },
+            { name: 'libro', io: 'in', value: libro }
+        ];
+        result = await db.select(query, params);
+        if (result.rows.length == 0) {
+            return response.json({
+                error: 'No existen valores válidos para su solicitud'
+            });
+        }
+        return response.json({
+            data: result.rows[0]
+        });
+    },
+    GrabarVoucher: async (request, response) => {
+        let { empresa, usuario, periodo, libro, voucher, accion, tpdocadmin, coserie, deserie, numero, documento, fingreso, moneda, tpcambio, vigencia,
+            fvencimiento, tpentidad, catalenti, formato, ctadocumento, esgasto, coingasto, categingasto, cuentagasto, catalpres, glosa, imtotal, iminafecto,
+            esbanco, cobanco, copais, coctacte, cotrsbancaria, esdetraccion, docdetra, fdetra, imdetra, esccostodif, espercepcion, docpercep, porcpercep,
+            impercep } = request.body;
+        fingreso = fingreso ? fingreso : '01/01/1900';
+        if (fingreso.indexOf(' ') == -1) fingreso = fingreso + ' 00:00';
+        fvencimiento = fvencimiento ? fvencimiento : '01/01/1900';
+        if (fvencimiento.indexOf(' ') == -1) fvencimiento = fvencimiento + ' 00:00';
+        fdetra = fdetra ? fdetra : '01/01/1900';
+        if (fdetra.indexOf(' ') == -1) fdetra = fdetra + ' 00:00';
+        // elimina las comas (si las hubiera)
+        tpcambio = tpcambio.replace(/,/, '');
+        imtotal = imtotal.replace(/,/, '');
+        iminafecto = iminafecto.replace(/,/, '');
+        imdetra = imdetra.replace(/,/, '');
+        impercep = impercep.replace(/,/, '');
+        // go!
+        let query = "call pack_new_conta_voucher.sp_grabar_cab_voucher(:accion, :empresa, :usuario, :periodo, :libro_contable, :nu_voucher, :co_tipo_doc_administr, :co_serie, :de_serie, :nu_documento, :co_documento, to_date(:fe_ingreso,'dd/mm/yyyy hh24:mi'), :co_moneda, :nu_conversion_final, :es_vigencia, to_date(:fe_vencimiento,'dd/mm/yyyy hh24:mi'), :co_tipo_entidad, :co_catalogo_entidad, :st_formato, :co_cuenta_documento, :st_gasto, :co_ingreso_gasto, :co_categ_ingreso_gasto, :co_cuenta_gasto, :co_catal_prespuesto, :de_glosa, :im_importe_total, :im_inafecto, :st_banco, :co_banco, :co_pais, :co_cuenta_corriente, :co_transa_bancaria_tran, :st_detraccion, :co_documento_detraccion, to_date(:fe_documento_detraccion,'dd/mm/yyyy hh24:mi'), :im_monto_detraccion, :st_ccosto_dif, :st_percepcion, :co_documento_percepcion, :nu_porcentaje_percepcion, :im_percibido_percepcion, :o_codigo, :o_mensaje)";
+        let params = [
+            { name: 'accion', io: 'in', value: accion },
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'usuario', io: 'in', value: usuario },
+            { name: 'periodo', io: 'in', value: periodo },
+            { name: 'libro_contable', io: 'in', value: libro },
+            { name: 'nu_voucher', io: 'in', value: voucher },
+            { name: 'co_tipo_doc_administr', io: 'in', value: tpdocadmin },
+            { name: 'co_serie', io: 'in', value: coserie },
+            { name: 'de_serie', io: 'in', value: deserie },
+            { name: 'nu_documento', io: 'in', value: numero },
+            { name: 'co_documento', io: 'in', value: documento },
+            { name: 'fe_ingreso', io: 'in', value: fingreso },
+            { name: 'co_moneda', io: 'in', value: moneda },
+            { name: 'nu_conversion_final', io: 'in', value: tpcambio },
+            { name: 'es_vigencia', io: 'in', value: vigencia },
+            { name: 'fe_vencimiento', io: 'in', value: fvencimiento },
+            { name: 'co_tipo_entidad', io: 'in', value: tpentidad },
+            { name: 'co_catalogo_entidad', io: 'in', value: catalenti },
+            { name: 'st_formato', io: 'in', value: formato },
+            { name: 'co_cuenta_documento', io: 'in', value: ctadocumento },
+            { name: 'st_gasto', io: 'in', value: esgasto },
+            { name: 'co_ingreso_gasto', io: 'in', value: coingasto },
+            { name: 'co_categ_ingreso_gasto', io: 'in', value: categingasto },
+            { name: 'co_cuenta_gasto', io: 'in', value: cuentagasto },
+            { name: 'co_catal_prespuesto', io: 'in', value: catalpres },
+            { name: 'de_glosa', io: 'in', value: glosa },
+            { name: 'im_importe_total', io: 'in', value: imtotal },
+            { name: 'im_inafecto', io: 'in', value: iminafecto },
+            { name: 'st_banco', io: 'in', value: esbanco },
+            { name: 'co_banco', io: 'in', value: cobanco },
+            { name: 'co_pais', io: 'in', value: copais },
+            { name: 'co_cuenta_corriente', io: 'in', value: coctacte },
+            { name: 'co_transa_bancaria_tran', io: 'in', value: cotrsbancaria },
+            { name: 'st_detraccion', io: 'in', value: esdetraccion },
+            { name: 'co_documento_detraccion', io: 'in', value: docdetra },
+            { name: 'fe_documento_detraccion', io: 'in', value: fdetra },
+            { name: 'im_monto_detraccion', io: 'in', value: imdetra },
+            { name: 'st_ccosto_dif', io: 'in', value: esccostodif },
+            { name: 'st_percepcion', io: 'in', value: espercepcion },
+            { name: 'co_documento_percepcion', io: 'in', value: docpercep },
+            { name: 'nu_porcentaje_percepcion', io: 'in', value: porcpercep },
+            { name: 'im_percibido_percepcion', io: 'in', value: impercep },
+            { name: 'o_codigo', io: 'out', type: 'number' },
+            { name: 'o_mensaje', io: 'out', type: 'string' }
+        ];
+console.log(query);
+console.log(params);
+        let result = await db.statement(query, params);
+        console.log(result);
+        if (result.out.o_codigo == 0) {
+            response.json({
+                error: result.out.o_mensaje
+            });
+        }
+        else {
+            response.json({
+                mensaje: result.out.o_mensaje
+            });
+        }
     }
 };
 

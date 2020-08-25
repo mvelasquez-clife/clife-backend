@@ -621,11 +621,11 @@ const WsController = {
             return;
         }
         let jsparams = JSON.stringify(request.body);
-        const { cliente, direccion, fecha, factura, flete, orderid, sispago, observaciones, detalle, pagoid, fepago, deposito, comision, igv } = request.body;
+        const { cliente, direccion, fecha, factura, flete, orderid, sispago, observaciones, detalle, pagoid, fepago, deposito, comision, igv, pventa } = request.body;
         if (typeof cliente == 'undefined' || typeof direccion == 'undefined' || typeof fecha == 'undefined' || typeof factura == 'undefined' ||
             typeof flete == 'undefined' || typeof orderid == 'undefined' || typeof sispago == 'undefined' || typeof detalle == 'undefined' ||
             typeof pagoid == 'undefined' || typeof fepago == 'undefined' || typeof deposito == 'undefined' || typeof comision == 'undefined' ||
-            typeof igv == 'undefined') {
+            typeof igv == 'undefined' || typeof pventa == 'undefined') {
             response.status(401).json({
                 error: 'Parámetros incorrectos'
             });
@@ -634,7 +634,18 @@ const WsController = {
         if (typeof observaciones == 'undefined') {
             observaciones = '';
         }
+        // graba el log de la peticion
+        let query = "call pack_web_service.sp_log_request (:request, :empresa, :usuario, :json, :mensaje)";
         let params = [
+            { name: 'request', io: 'in', value: orderid },
+            { name: 'empresa', io: 'in', value: tokenData.empresa },
+            { name: 'usuario', io: 'in', value: tokenData.id },
+            { name: 'json', io: 'in', value: jsparams },
+            { name: 'mensaje', io: 'out', type: 'number' },
+        ];
+        await db.statement(query, params);
+        // genera el pedido
+        params = [
             { name: 'codigo', io: 'out', type: 'number' },
             { name: 'mensaje', io: 'out', type: 'string' },
             { name: 'cliente', io: 'in', value: cliente },
@@ -650,10 +661,12 @@ const WsController = {
             { name: 'fepago', io: 'in', value: fepago },
             { name: 'deposito', io: 'in', value: deposito },
             { name: 'comision', io: 'in', value: comision },
-            { name: 'igv', io: 'in', value: igv }
+            { name: 'igv', io: 'in', value: igv },
+            { name: 'pventa', io: 'in', value: pventa }
         ];
-        let query = 'call pack_web_service.sp_registra_pedido (:codigo, :mensaje, :cliente, :direccion, :fecha, :factura, :flete, :orderid, :sispago, :observaciones, ' +
-            ':detalle, :pagoid, :fepago, :deposito, :comision, :igv)';
+        query = 'call pack_web_service.sp_registra_pedido (:codigo, :mensaje, :cliente, :direccion, :fecha, :factura, :flete, :orderid, :sispago, :observaciones, ' +
+            ':detalle, :pagoid, :fepago, :deposito, :comision, :igv, :pventa)';
+console.log(query, params);
         let result = await db.statement(query, params);
         // listo
         if (result.error) {
@@ -668,7 +681,7 @@ const WsController = {
             });
             return;
         }
-        // grabar el log
+        // grabar el log del pedido
         let pedido = result.out.mensaje;
         query = "call pack_web_service.sp_log_pedido (:pedido, :empresa, :json, :usuario, :mensaje)";
         params = [

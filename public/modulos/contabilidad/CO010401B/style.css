@@ -34,11 +34,16 @@
     margin-right: 12px;
 }
 #dv-form-voucher .input-text {
-    background-color: #f8f8f8;
+    background-color: #ffffff;
     border: 1px solid #a4bed4;
     font-size: 11px;
     height: 16px;
     padding: 1px 3px;
+}
+#dv-form-voucher .input-text:disabled {
+    background-color: #f0f0f0;
+    color: #000000;
+    cursor: default;
 }
 .form-dhxcombo {
     display: inline-block;
@@ -55,4 +60,15 @@
     margin-left: 4px;
     position: relative;
     top: 2px;
+}
+.form-button-img {
+    display: inline-block;
+    height: 16px;
+    margin-left: 4px;
+    position: relative;
+    top: 4px;
+    width: 16px;
+}
+.form-button-img > img {
+    width: 16px;
 }
