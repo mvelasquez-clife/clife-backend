@@ -133,6 +133,11 @@ const LifeController = {
                     tipo = 'Información laboral para el trabajador';
                     codigo = '803';
                     break;
+                case 'utilidades':
+                    id = 'sidenav-utilidades';
+                    tipo = 'Utilidades/Gratificación';
+                    codigo = '804';
+                    break;
                 default: break;
             }
             let data = { sesion: sess, admin: admin, tipo: tipo, id: id, documento: codigo };

@@ -32,12 +32,11 @@
  *          
  *********************/
 var gridBusqueda, winGridBusqueda, winGridLayout, winToolbar;
-var multi, tpEnti;
+var multi;
 
 IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => {
     return new Promise(resolve => {
         multi = multiSelect;
-        tpEnti = tipoEntidad;
         if (container.dhxWins.isWindow('winGridBusqueda')) {
             winGridBusqueda.bringToTop();
         }
@@ -185,6 +184,31 @@ IniciarGridBusqueda = (tipoEntidad, multiSelect, container, extraParam = '') => 
                     gridBusqueda.setInitWidthsP('5,15,50,15,15,0');
                     gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt');
                     gridBusqueda.setColumnIds("ch,codigo,operario,tipo,vigencia,ex");
+                    break;
+                // parametros q utilizan el nuevo conector
+                case 2001:
+                    gridBusqueda.setHeader('#,Codigo,Descripcion,Moneda,Destino,Estado,CtaCte,,,,');
+                    gridBusqueda.attachHeader('#rspan,#text_filter,#text_filter,#select_filter,#select_filter,#select_filter,#select_filter,#rspan,#rspan,#rspan,#rspan');
+                    gridBusqueda.setInitWidthsP('5,10,55,10,5,10,5,0,0,0,0');
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt,rotxt,ron,ron,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,codigo,descripcion,moneda,destino,estado,ctacte,ctapadre,tpcambio,hoy,comoneda");
+                    break;
+                case 2002:
+                    gridBusqueda.setHeader('#,Código,Razón Social,Nombre Comercial,F. Registro,Estado,Tipo Enti.');
+                    gridBusqueda.attachHeader('#rspan,#text_filter,#text_filter,#text_filter,#select_filter,#select_filter');
+                    gridBusqueda.setInitWidthsP('5,10,30,30,10,8,7');
+                    gridBusqueda.setColTypes('ch,ron,rotxt,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,codigo,rsocial,ncomercial,fregistro,estado,tpentidad");
+                    break;
+                case 2003:
+                case 2004:
+                case 2005:
+                case 2006:
+                    gridBusqueda.setHeader('#,Código,Descripción,Estado,Detalle 1,Detalle 2');
+                    gridBusqueda.attachHeader('#rspan,#text_filter,#text_filter,#text_filter,#select_filter,#select_filter');
+                    gridBusqueda.setInitWidthsP('5,10,30,9,23,23');
+                    gridBusqueda.setColTypes('ch,rotxt,rotxt,rotxt,rotxt,rotxt');
+                    gridBusqueda.setColumnIds("ch,codigo,descripcion,estado,detalle1,detalle2");
                     break;
                 default:
                     break;
