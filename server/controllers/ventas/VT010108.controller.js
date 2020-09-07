@@ -14,7 +14,7 @@ const vt010108Controller = {
                res.send({ state: 'error', error_conexion: err.stack });
                return;
            }
-           const query = "    SELECT VT_CANA_VENT_M.CO_CANAL_VENTA, VT_CANA_VENT_M.DE_NOMBRE, VT_CANA_VENT_M.ES_VIGENCIA,CASE ES_VIGENCIA WHEN 'Vigente' THEN '../distribute.png'  ELSE '../none.png' END AS TNEGO,CASE ES_VIGENCIA WHEN 'Vigente' THEN '../ic-edit.png'  ELSE '../none.png' END AS EDIT, CASE ES_VIGENCIA WHEN 'Vigente' THEN '../ic-delete.png'  ELSE '../ic-add.png' END AS DELET    FROM VT_CANA_VENT_M WHERE VT_CANA_VENT_M.CO_EMPRESA = :xempresa ";
+           const query = "SELECT VT_CANA_VENT_M.CO_CANAL_VENTA, VT_CANA_VENT_M.DE_NOMBRE, VT_CANA_VENT_M.ES_VIGENCIA,CASE ES_VIGENCIA WHEN 'Vigente' THEN '../distribute.png'  ELSE '../none.png' END AS TNEGO,CASE ES_VIGENCIA WHEN 'Vigente' THEN '../ic-edit.png'  ELSE '../none.png' END AS EDIT, CASE ES_VIGENCIA WHEN 'Vigente' THEN '../ic-delete.png'  ELSE '../ic-add.png' END AS DELET    FROM VT_CANA_VENT_M WHERE VT_CANA_VENT_M.CO_EMPRESA = :xempresa ";
            const params = {xempresa : {val : emp }  };
            conn.execute(query, params, responseParams, (error, result) => {
                conn.close();

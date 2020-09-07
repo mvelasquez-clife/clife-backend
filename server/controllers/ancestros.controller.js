@@ -73,9 +73,6 @@ const ancestroController = {
                     default: break;
                 }
             }
-console.log(iparam);
-console.log(query);
-console.log(params);
             conn.execute(query, params, responseParams, (error, result) => {
                 if(error) {
                     conn.close();
@@ -83,7 +80,6 @@ console.log(params);
                         state: 'error',
                         message: error.stack
                     });
-console.error(error);
                     return;
                 }
                 res.set('Content-Type', 'text/xml');
@@ -244,7 +240,6 @@ console.error(error);
             curl.setOpt(Curl.option.VERBOSE, true);
             curl.on('end', async (statusCode, body) => {
                 // let resultado = JSON.parse(body);
-console.log(body);
                 // guardar en la bd
                 ruta_archivo = ruta_archivo.replace('/publico/document','x:');
                 ruta_archivo = ruta_archivo.replace('/','\\');

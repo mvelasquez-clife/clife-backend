@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Venta Directa </title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css"> 
+      <!--   <link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>dhtmlx/codebase/skins/<?php echo $sking ?>/base.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>dhtmlx/codebase/skins/<?php echo $sking ?>/dhtmlx.css"/>
+       <script src="<?php echo base_url(); ?>dhtmlx/codebase/dhtmlx.js" type="text/javascript"></script>  
+        <script src="<?php echo base_url(); ?>js/jquery.js"></script>
+        <script src="<?php echo base_url(); ?>js/main/grids.js"></script>
+        <script src="<?php echo base_url(); ?>js/highcharts/highcharts.js"></script>
+        <script src="<?php echo base_url(); ?>js/highcharts/modules/drilldown.js"></script>
+        <script src="<?php echo base_url(); ?>js/highcharts/modules/exporting.js"></script> -->
+
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <script src="https://code.highcharts.com/highcharts.src.js"></script>
+        <link rel="stylesheet" href="https://cdn.dhtmlx.com/spreadsheet/edge/spreadsheet.css" type="text/css"> 
+        <script src="https://cdn.dhtmlx.com/libs/excel2json/1.0/lib.wasm"></script>
+        <script src="https://cdn.dhtmlx.com/spreadsheet/edge/spreadsheet.js"></script>
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css"> <!--<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>css/pv0101/pv0101.css?v=1550"/> -->
+        <script type="text/javascript">
+            var BASE_URL = "<?php echo base_url(); ?>";
+        </script>
+       <!--  <script src="<?php echo base_url() ?>xml/pv0101/form_pv0101.js?v=01062020.1"></script> -->
+       <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!--  <script type='text/javascript' src="<?php echo base_url(); ?>xml/pv0101/printnode/printnode-ws-client.js"></script>
+        <script type='text/javascript' src="<?php echo base_url(); ?>xml/pv0101/printnode/printnode-ws-http-client.js"></script> 
+        <script type="text/javascript" src="<?php echo base_url(); ?>xml/pv0101/dependencies/rsvp-3.1.0.min.js"></script>
+        <script type="text/javascript" src="<?php echo base_url(); ?>xml/pv0101/dependencies/sha-256.min.js"></script>
+      <script type="text/javascript" src="<?php echo base_url(); ?>xml/pv0101/qz-tray.js"></script> -->
+        <script type="text/javascript" src="/assets/lib/qz-tray.js"></script>
+        <link rel="stylesheet" href="https://cdn.dhtmlx.com/vault/edge/vault.css"     type="text/css"> 
+        <script src="https://cdn.dhtmlx.com/vault/edge/vault.js"></script>
+
+        <script type="text/javascript">
+            dhtmlx.image_path="/assets/images/icons/iconsjhon/";//dhtmlx.image_path = "<?php echo base_url(); ?>dhtmlx/codebase/skins/<?php echo $sking ?>/custom/<?php echo $sking; ?>/imgs/"; //para los iconos propios de los componentes dhtmlx
+            $.ajaxSetup({
+                error: function (jqXHR, textStatus, errorThrown) {
+                    if (jqXHR.status === 0) {
+                        alert('Not connect: Verify Network.');
+                    } else if (jqXHR.status == 404) {
+                        alert('Requested page not found [404]');
+                    } else if (jqXHR.status == 500) {
+                        alert('Internal Server Error [500].');
+                    } else if (textStatus === 'parsererror') {
+                        alert('Requested JSON parse failed.');
+                    } else if (textStatus === 'timeout') {
+                        alert('Time out error.');
+                    } else if (textStatus === 'abort') {
+                        alert('Ajax request aborted.');
+                    } else {
+                        alert('Uncaught Error: ' + jqXHR.responseText);
+                    }
+                }
+            });
+            $(function () { /*evita retroceder en el navegador a excepcion dntro de un formulario*/
+                var rx = /INPUT|SELECT|TEXTAREA/i;
+                $(document).bind("keydown keypress", function (e) {
+                    if (e.which == 8) { // 8 == backspace
+                        if (!rx.test(e.target.tagName) || e.target.disabled || e.target.readOnly) {
+                            e.preventDefault();
+                        }
+                    }
+                });
+            });
+            $('#graph_rep').resize();
+
+
+form_stock = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {type: "select", offsetLeft: 8, name: "periodo_st", width: 200, label: "Periodo :", connector: BASE_URL + "xml/pv0101/combo_periodo.php"},
+    {type: "input", offsetTop: 18, name: "valminstock", label: "Val. Def.Minimo :", labelWidth: 140, inputWidth: 50, required: false, readonly: false, style: " background-color: rgba(239, 95, 11, 0.29);"}, {type: "newcolumn"},
+    {type: "input", name: "valmaxstock", label: "Val. Def.Maximo :", labelWidth: 140, inputWidth: 50, required: false, readonly: false, style: " background-color: rgba(239, 95, 11, 0.29);"}, {type: "newcolumn"},
+    {type: "button", width: 80, offsetLeft: 56, value: "Registrar", name: "reg_stock_all"}
+];
+
+form_mail = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "label", label: '*', info: true, name: "l_mail_pdf", labelWidth: 250}, {type: "newcolumn"},
+            {type: "label", label: '*', info: true, name: "l_mail_xml", labelWidth: 250}, {type: "newcolumn"},
+            {type: "input", name: "mail_cli", label: "Email :", labelWidth: 60, inputWidth: 250, required: true, readonly: false, style: " background-color: rgba(239, 95, 11, 0.29);"}, {type: "newcolumn"},
+            {type: "input", name: "telf_cli", label: "Celular :", labelWidth: 60, inputWidth: 250, required: true, readonly: false, style: " background-color: rgba(239, 95, 11, 0.29);"}, {type: "newcolumn"},
+                    //            {type: "newcolumn"}, {type: "button", width: "100", value: "Descargar", offsetTop: 2, offsetLeft: 3, name: "b_descargar"},
+                    //            {type: "newcolumn"}, {type: "button", width: "100", value: "Consultar", offsetTop: 2, offsetLeft: 3, name: "b_consultar"},
+                    //            {type: "newcolumn"}, {type: "button", width: "100", value: "Confirmar", offsetTop: 2, offsetLeft: 13, name: "b_confirmar"},
+                    //            {type: "newcolumn"}, {type: "button", width: "100", value: "Enviar", offsetTop: 2, offsetLeft: 13, name: "b_enviar"}
+        ]
+    }
+];
+ribbon_mail = {
+    items: [
+        {
+            type: 'block', text: "Guia de Salida", list: [
+                {id: "b_descargar", type: "button", text: "Descargar</br>Bol/Fac", isbig: true, img: BASE_URL + "dhtmlx/codebase/imgs/download48.png"},
+                // {id: "b_consultar", hidden:true, type: "button", text: "Consultar</br>Envío", isbig: true, img: BASE_URL + "dhtmlx/codebase/cancel_file_2.png"},
+                // {id: "b_confirmar", type: "button", text: "Confirmar</br>Correo", isbig: true, img: BASE_URL + "dhtmlx/codebase/confirm48.png"},
+                {id: "b_whasappt", type: "button", text: "Abrir</br>Whasappt", isbig: true, img: BASE_URL + "dhtmlx/codebase/imgs/whatsapp48.png"},
+                {id: "b_enviar", type: "button", text: "Enviar</br>Correo", isbig: true, img: BASE_URL + "dhtmlx/codebase/imgs/mail48.png"}
+            ]
+        },
+        {
+            type: 'block', text: "Salir", list: [
+                {id: "b_salir_mail", type: "button", text: "SALIR", isbig: true, img: BASE_URL + "/dhtmlx/codebase/imgs/out_43.png"}
+            ]
+        }
+    ]
+};
+form_amortiza = [
+    {type: "settings", position: "label-left", labelWidth: "auto"},
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "amort_doc", label: "Documento : ", labelWidth: 89, inputWidth: 120, required: true, readonly: true}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "amort_deuda", label: "Deuda :", labelWidth: 89, inputWidth: 120, value: 0, required: true, numberFormat: "000.00", readonly: true}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "select", name: "amort_pago", label: "Forma de Pago: ", labelWidth: 89, inputWidth: 110, connector: BASE_URL + "xml/pv0101/tipo_pago.php"},
+            {type: "input", name: "amort_entrega", label: "Amortización : ", labelWidth: 89, inputWidth: 110, numberFormat: "000.00", value: 0},
+            {type: "input", name: "amort_saldo", label: "Saldo : ", labelWidth: 89, inputWidth: 110, numberFormat: "000.00", readonly: true},
+            {type: "input", name: "amort_vuelto", label: "Vuelto : ", labelWidth: 89, inputWidth: 110, readonly: true}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 22},
+            {type: "button", width: 80, value: "Pagar Caja", name: "can_caja", disabled: false, offsetLeft: 50}
+        ]
+    }
+];
+form_addprinter = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "n_printer", label: "Nombre de Impresora :", labelWidth: 150, inputWidth: 150, required: true, readonly: false, style: " background-color: rgba(239, 95, 11, 0.29); background-repeat:no-repeat;  text-align: right; font-weight: bold;"},
+            {type: "newcolumn"}, {type: "button", width: 70, value: "Guardar", offsetTop: 20, offsetLeft: 103, name: "addprinter"}
+        ]
+    }
+];
+form_addrow = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "frow_cata", label: "Codigo :", labelWidth: 70, inputWidth: 150, required: true, readonly: false, style: " background-color: rgba(239, 95, 11, 0.29); background-image:url('" + BASE_URL + "dhtmlx/skins/skyblue/imgs/icons/touch_24.png'); background-repeat:no-repeat;  text-align: right; font-weight: bold;"},
+            {type: "newcolumn"}, {type: "button", width: 70, value: "Lista", offsetTop: 2, offsetLeft: 43, name: "frows_lista"}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "f_row_nombre", label: "Nombre :", labelWidth: 70, inputWidth: 291, value: "", required: true, readonly: true}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "frow_precio", label: "Precio :", labelWidth: 60, inputWidth: 110, required: true, readonly: true, numberFormat: "S/ 000.00", style: " font-size:15px;font-weight: bold; color:black;"},
+            {type: "newcolumn"},
+            {type: "input", name: "frow_stock", offsetLeft: 23, label: "Stock : ", labelWidth: 80, inputWidth: 70, required: true, readonly: true, style: " font-size:18px;font-weight: bold;"},
+            {type: "newcolumn"},
+            {type: "input", name: "frow_cant", label: "Canti :", labelWidth: 60, inputWidth: 40, required: true, value: '0', style: " font-size:18px;font-weight: bold; background-color:rgba(234,255,71,1);", validate: "ValidNumeric"}, {type: "newcolumn"},
+            {type: "input", name: "frow_cant_desc", offsetLeft: 10, label: "dscto:%", labelWidth: 55, inputWidth: 30, required: false, readonly: true}, {type: "newcolumn"},
+            {type: "input", name: "frow_pre_desc", offsetLeft: 10, label: "P Final: ", labelWidth: 80, numberFormat: "000.00", style: "background-color:rgba(234,255,71,1); font-size:15px;font-weight: bold; color:rgba(12, 19, 195, 0.74);", labelWidth: 55, inputWidth: 80, required: false, readonly: true}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 2},
+            {type: "label", label: '*', info: true, name: "frow_nom_desc", labelWidth: 350}, {type: "newcolumn"},
+            {type: "button", width: "100", value: "Agregar", name: "frows_badd", className: "button_new", disabled: false}
+        ]
+    }
+];
+form_promo = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "input", name: "rg_nro_docu", label: "prueba 1 : ", labelWidth: 89, inputWidth: 120, required: true, maxLength: 11, validate: 'ValidInteger'},
+            {type: "input", name: "rg_rsocial", label: "prueba 2 :", labelWidth: 89, inputWidth: 291, value: "", required: true},
+            {type: "combo", name: "rg_distrito", label: "prueba 3 : ", labelWidth: 89, required: true, filtering: 1, inputWidth: 450}
+        ]
+    }
+];
+form_reg_cli = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {
+        type: "block", name: "block0", inputWidth: "auto", list: [
+            {type: "radio", name: "tipo_per", value: "chek_perso", offsetLeft: 30, label: "DNI ", readonly: false, checked: false},
+            {type: "newcolumn"},
+            {type: "radio", name: "tipo_per", value: "chek_empre", offsetLeft: 85, label: "RUC ", readonly: false}, {type: "newcolumn"},
+            {type: "select", name: "rg_tipo_persona", offsetLeft: 12, label: "Tipo Contribuyente : ", hidden: true, labelWidth: 130, required: false, inputWidth: 100, connector: BASE_URL + "xml/pv0101/tipo_contribuye.php"}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", name: "block1", disabled: true, list: [
+            {type: "input", name: "rg_nro_docu", label: "Ruc / DNI : ", note: {text: "[DNI 8 DIGITOS]/ [RUC 11 DIGITOS]"}, labelWidth: 89, inputWidth: 200, required: true, maxLength: 15, validate: 'ValidInteger', style: " font-size : 14px; background-color: rgba(239, 95, 11, 0.29); background-image:url(BASE_URL + 'dhtmlx/skins/skyblue/imgs/icons/touch_24.png'); background-repeat:no-repeat;  text-align: right; font-weight: bold;"}, {type: "newcolumn"},
+            {type: "newcolumn"},
+            {type: "button", width: 70, offsetLeft: 23, offsetTop: 2, value: "BUSCAR", name: "b_actu_data", tooltip: "BUSCAR DATOS DE CLIENTE"}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", name: "block2", disabled: true, list: [
+            {type: "input", name: "rg_rsocialp", label: "Nombre y Apellidos:", labelWidth: 89, inputWidth: 180, value: "-", required: true, note: {text: "[APE. PATERNO]"}}, {type: "newcolumn"},
+            {type: "input", name: "rg_rsocialm", label: "", labelWidth: 0, inputWidth: 180, value: "-", required: true, note: {text: "[APE. MATERNO] "}}, {type: "newcolumn"},
+            {type: "input", name: "rg_rsocialnm", label: "", labelWidth: 0, inputWidth: 180, value: "-", required: true, note: {text: "[ NOMBRES ]"}}, {type: "newcolumn"},
+            {type: "input", name: "rg_rsocial_empresa", label: "Razon Social :", labelWidth: 89, inputWidth: 291, value: "-", hidden: true, required: true, note: {text: "[ RAZON SOCIAL DE LA EMPRESA ]"}}
+
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", name: "block3", disabled: true, list: [
+            {type: "calendar", name: "fec_nac", dateFormat: "%d-%m-%Y", required: true, label: "F.Nacimiento: ", style: "text-align: right; ", value: "01-01-1900", className: "my_calendar", inputWidth: 110, labelWidth: 89, note: {text: "[DD-MM-AAAA]"}}, {type: "newcolumn"},
+            {type: "select", name: "rg_estado", label: "Estado :", labelWidth: 50, offsetLeft: 15, required: false, inputWidth: 100, connector: BASE_URL + "xml/pv0101/estado_person.php"}
+        ]
+    },
+    {
+        type: "block", name: "block4", disabled: true, inputWidth: "auto", list: [
+            {type: "select", name: "rg_distrito", label: "Distrito : ", labelWidth: 89, required: true, filtering: 1, inputWidth: 545, connector: BASE_URL + "xml/pv0101/distrito.php"},
+            {type: "newcolumn"},
+            {type: "input", name: "rg_de_sunat", label: "Direccion : ", labelWidth: 89, rows: 2, required: false, inputWidth: 470, maxLength: 150, value: '', note: {text: "MAXIMO 150 CARACTERES"}}
+        ]
+    },
+    /*{
+     type: "block", name: "block4", disabled: true, inputWidth: "auto", list: [
+     {type: "select", name: "rg_distrito", label: "Distrito : ", labelWidth: 89, required: true, filtering: 1, inputWidth: 545, connector: BASE_URL + "xml/pv0101/distrito.php"},
+     {type: "newcolumn"},
+     {type: "select", name: "rg_co_av", label: "Direccion : ", labelWidth: 89, required: false, inputWidth: 210, connector: BASE_URL + "xml/pv0101/av.php"},
+     {type: "newcolumn"},
+     {type: "input", name: "rg_nom_av", required: false, inputWidth: 270, maxLength: 50, value: 'SN'},
+     {type: "newcolumn"},
+     {type: "input", name: "rg_num_av", required: false, inputWidth: 57, value: '0'}
+     ]
+     },
+     {
+     type: "block", name: "block5", disabled: true, inputWidth: "auto", list: [
+     {type: "select", offsetLeft: 89, name: "rg_co_zn", required: false, inputWidth: 220, connector: BASE_URL + "xml/pv0101/zona.php"},
+     {type: "newcolumn"},
+     {type: "input", name: "rg_de_zn", required: false, inputWidth: 320, value: '0'}
+     ]
+     },*/
+    {
+        type: "block", name: "block6", disabled: true, inputWidth: "auto", list: [
+            {type: "input", name: "rg_ref", labelWidth: 89, maxLength: 150, required: false, label: "Referencia : ", rows: 2,note: {text: "MAXIMO 150 CARACTERES"}, inputWidth: 320,  value: "-", hidden: false},
+            {type: "input", name: "rg_mail", labelWidth: 89, required: false, maxLength: 290, label: "Correo : ", inputWidth: 310, value: "-"}, {type: "newcolumn"},
+            {type: "input", name: "rg_tef", labelWidth: 75, required: false, label: "Whatsaap : ", maxLength: 10, offsetLeft: 5, inputWidth: 85, value: 0, hidden: false}, {type: "newcolumn"},
+            {type: "button", width: 60, offsetLeft: 2, offsetTop: 0, value: "Otros Contactos", name: "b_lista_contacto", disabled: false, hidden: true, tooltip: "LISTA "}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [{
+                type: "block", inputWidth: "auto", list: [{
+                        type: "fieldset", label: "Tipo Negocio", offsetTop: 10, offsetLeft: 20, inputWidth: 300, list: [
+                            {type: "settings", offsetTop: 0},
+                            {type: "select", offsetLeft: 9, name: "tipo_usu", required: false, inputWidth: 220, connector: BASE_URL + "xml/pv0101/tipo_negocio.php"}, //                            {type: "radio", name: "tipo_usu", value: "chek_consfi", offsetLeft: 0, label: "CONSUMIDOR FINAL : ", readonly: false, checked: true},
+                                    //                            {type: "newcolumn"},
+                                    //                            {type: "radio", name: "tipo_usu", value: "chek_almcae", offsetLeft: 50, label: "ALUMNO CAETEC : ", readonly: false, hidden: true},
+                                    //                            {type: "newcolumn"},
+                                    //                            {type: "radio", name: "tipo_usu", value: "chek_hanna", offsetLeft: 50, label: "CLUB HANNA : ", readonly: false, hidden: true}
+
+
+                        ]
+                    }, {type: "newcolumn"},
+                    {type: "button", width: 53, offsetLeft: 1, value: "", className: "button_registro", name: "rg_button", disabled: false, tooltip: "REGISTRAR CLIENTE"}]
+            },
+            {type: "newcolumn"},
+            {
+                type: "block", inputWidth: "auto", list: [
+                    {type: "settings", offsetTop: 12},
+                    {type: "input", name: "rg_dirfinal", labelWidth: 89, required: false, label: "", rows: 2, inputWidth: 450, readonly: true, value: "-", hidden: false}
+                ]
+            }
+        ]
+    }
+];//client_ok_48
+form_butoon_recniec = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 12},
+            {type: "button", width: "130", offsetLeft: 220, value: "reniec", name: "b_copy_reniec", disabled: false}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "container", name: "myGrid", inputWidth: 580, inputHeight: 350}
+        ]
+    }
+];
+form_CAB_ARQ = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {type: "block", inputWidth: "auto", blockOffset: 3, list: [
+            {type: "settings", offsetTop: 5},
+            {type: "input", name: "co_arq", labelWidth: 120, label: "Codigo : ", inputWidth: 90, value: "-", hidden: true},
+            {type: "block", blockOffset: 0, offsetTop: 0, inputWidth: "auto", list: [
+                    {type: "input", name: "serie_arq", labelWidth: 90, label: "Nro Arqueo : ", readonly: true, inputWidth: 90, value: "-"}, {type: "newcolumn"},
+                    {type: "input", offsetLeft: 15, name: "fe_arq", labelWidth: 50, label: "Fecha : ", readonly: true, inputWidth: 130, value: "-"}, {type: "newcolumn"}
+                ]},
+            {type: "input", name: "co_pla_arq", labelWidth: 90, label: "Planilla : ", readonly: true, inputWidth: 110, value: 0},
+            {type: "select", name: "responsable", labelWidth: 90, label: "Responsable : ", inputWidth: 280},
+            {type: "block", blockOffset: 0, offsetTop: 0, inputWidth: "auto", list: [
+                    {type: "input", name: "monto_ini_arq", labelWidth: 120, label: "Monto Inicial : ", inputWidth: 90, value: 0}, {type: "newcolumn"},
+                    {type: "button", width: 60, offsetLeft: 10, offsetTop: 0, value: "GUARDAR", name: "btn_sald_ini", tooltip: "Guarda el monto inicial del Arqueo, se puede modificar siempre y cuando el Arqueo este Abierto."}
+                ]},
+            {type: "input", name: "vta_dia_arq", labelWidth: 120, label: "Ventas en EFEC : ", readonly: true, inputWidth: 90, value: 0},
+            {type: "input", name: "depo_dia_arq", labelWidth: 120, label: "Depositos del dia : ", readonly: true, inputWidth: 90, value: 0},
+            {type: "block", blockOffset: 0, offsetTop: 0, inputWidth: "auto", list: [
+                    {type: "input", name: "egreso_arq", labelWidth: 120, label: "Egresos Otros: ", readonly: true, inputWidth: 90, value: 0}, {type: "newcolumn"},
+                    {type: "button", width: 40, offsetLeft: 10, offsetTop: 0, value: "VER", name: "btn_egotro_arq"}
+                ]},
+            {type: "input", name: "total_arq", labelWidth: 120, label: "Total Efectivo : ", readonly: true, inputWidth: 90, value: 0, tooltip: "Monto calculado con el boton ACTUALIZAR, este importe debe ser el mismo que la sumatoria del conteo de dinero.", style: " font-size:18px;font-weight: bold; background-color:rgba(234,255,71,1); text-align: right; "},
+            {type: "input", name: "saldo_arq", labelWidth: 120, label: "Saldo : ", inputWidth: 90, readonly: true, value: 0}
+        ]
+    }, {type: "block", inputWidth: "auto", blockOffset: 0, list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "observ_arq", label: "Observación : ", rows: 2, inputWidth: 280, value: "-"}
+        ]
+    }, {type: "block", inputWidth: "auto", blockOffset: 0, list: [
+            {type: "settings", offsetTop: 1},
+            {type: "button", width: "80", offsetLeft: 5, value: "GENERAR", name: "btn_nuevo_arq", disabled: false, tooltip: "Genera un nuevo Arqueo,siempre que no haya un Arqueo pendiente."}, {type: "newcolumn"},
+            {type: "button", width: "80", offsetLeft: 5, value: "ACTUALIZAR", name: "btn_actu_arq", disabled: true, tooltip: "Actualiza los montos como por ejemplo. Ventas Efectivo,Depositos."}, {type: "newcolumn"},
+            {type: "button", width: "80", offsetLeft: 5, value: "CALCULAR", name: "btn_calc_arq", disabled: true, tooltip: "Calcula el exceso o faltante de dinero, para activar el boton debe agregar el conteo de dinero en el apartado derecho de esta ventana."}, {type: "newcolumn"}
+        ]
+    }
+];
+
+form_AUDI_ARQE = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "select", name: "v_auditor", labelWidth: 90, label: "Auditor : ", inputWidth: 280}
+        ]
+    },
+    {type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 12},
+            {type: "button", width: "130", offsetLeft: 40, value: "CERRAR CAJA", name: "b_conf_aud", disabled: false}
+        ]
+    }
+];
+form_DET_ARQ = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "container", name: "myGridARQ", inputWidth: 380, inputHeight: 350}
+        ]
+    },
+    {type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 12},
+            {type: "button", width: "130", offsetLeft: 40, value: "GUARDAR CONTEO", name: "b_conteo_arq", disabled: false}, {type: "newcolumn"},
+            {type: "button", width: "130", offsetLeft: 40, value: "AUDITAR/CERRAR", name: "b_audit_arq", disabled: false, tooltip: "Permite registrar a un auditor para dar conformidad al cierre del Arqueo.\n El auditor debe pertener como vendedor al punto de venta.\n El boton se activa cuando se registra el conteo de dinero en el apartado derecho de esta ventana."}
+        ]
+    }
+];
+
+form_pemi = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {type: "label", offsetLeft: 10, offsetTop: 1, label: "Registrar documentos de contingencia - T.Kamill(230)"},
+    {type: "password", offsetLeft: 10, name: "usu_permi", label: "Contraseña : ", inputWidth: 150, value: ""},
+    {type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 10},
+            {type: "button", width: 100, value: "ACEPTAR", name: "b_acppermiso", disabled: false}, {type: "newcolumn"},
+            {type: "button", width: 100, offsetLeft: 20, value: "CANCELAR", name: "b_canpermiso", disabled: false}
+        ]
+    }
+];
+
+form_CAB_ARQE = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {type: "block", inputWidth: "auto", blockOffset: 3, list: [
+            {type: "settings", offsetTop: 5},
+            {type: "block", blockOffset: 0, offsetTop: 0, inputWidth: "auto", list: [
+                    {type: "radio", name: "ch_stado", value: "I", label: "INGRESO", checked: true}, {type: "newcolumn"},
+                    {type: "radio", name: "ch_stado", value: "E", label: "EGRESO", checked: false}
+                ]},
+            {type: "input", name: "nu_valor_aqre", labelWidth: 60, label: "Monto : ", inputWidth: 60, value: 0},
+            {type: "input", name: "de_concepto", labelWidth: 60, label: "Concepto : ", inputWidth: 220, value: 0}
+        ]
+    },
+    {type: "block", inputWidth: "auto", blockOffset: 0, list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "de_obs_aqre", label: "Observación : ", rows: 2, inputWidth: 280, value: "-"}
+        ]
+    },
+    {type: "block", inputWidth: "auto", blockOffset: 0, list: [
+            {type: "settings", offsetTop: 1},
+            {type: "button", width: "80", offsetLeft: 5, value: "GUARDAR", name: "btn_nuevo_ext", disabled: false, tooltip: "Genera un nuevo Registro Extra."}, {type: "newcolumn"},
+            {type: "button", width: "80", offsetLeft: 5, value: "BORRAR", name: "btn_borra_ext", disabled: false, tooltip: "Borra un Registro Extra."}
+        ]
+    }
+];
+
+
+formData_a = [
+    {type: "settings", position: "label-left", labelWidth: "auto", blockOffset: 2},
+    {type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "button", width: 37, offsetLeft: 0, offsetTop: 0, value: "", name: "nuevo_cliente", className: "button_cliente_nuevo", disabled: false, tooltip: "AGREGAR CLIENTE"}, {type: "newcolumn"},
+            {type: "input", name: "ruc_dni", label: "Cliente : ", offsetLeft: 3, labelWidth: 80, inputWidth: 114, readonly: true, required: true, style: " background-color: rgba(239, 95, 11, 0.29); background-image:url('" + BASE_URL + "dhtmlx/skins/skyblue/imgs/icons/touch_24.png'); background-repeat:no-repeat;  text-align: right; font-weight: bold;"},
+            {type: "newcolumn"},
+            {type: "input", name: "razonsocial", label: "Cliente :", offsetLeft: 13, labelWidth: 60, inputWidth: 280, value: "", required: true, readonly: true}
+        ]
+    }, {type: "block", inputWidth: "auto", blockOffset: 0, list: [
+            {type: "button", width: 37, offsetLeft: 0, offsetTop: 0, value: "", name: "new_de", className: "button_agregar_nuevo", disabled: false, tooltip: "AGREGAR PRODUCTO +"}, {type: "newcolumn"},
+            {type: "input", name: "cod_barrasacn", label: "", offsetLeft: 0, labelWidth: 60, inputWidth: 200, value: "", required: false, readonly: false, style: " font-size:18px;font-weight: bold; background-color:rgba(234,255,71,1); text-align: right; "}, {type: "newcolumn"},
+            {type: "label", offsetLeft: 20, offsetTop: 0, label: "****Lista de Precios****", name: "lista_precios"},
+            {type: "label", offsetLeft: 20, offsetTop: 0, label: "****Vendedor****", name: "de_vendedor"}
+        ]
+    },
+    {type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "direccion_a", label: "Dirección : ", labelWidth: 89, rows: 3, inputWidth: 490, value: "-", required: true, hidden: true}
+        ]
+    },
+    {type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "observ", label: "Observación : ", rows: 1, inputWidth: 490, required: true, value: "-", hidden: true}
+        ]
+    },
+    {type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "calendar", name: "fec", dateFormat: "%d-%m-%Y %H:%i:%s", label: "Fecha : ", className: "my_calendar", inputWidth: 120, disabled: false, labelWidth: 80, value: "", hidden: true, readonly: true, style: " font-size:18px;font-weight: bold; background-color:rgba(234,255,71,1); text-align: right; "},
+            {type: "newcolumn"},
+            {type: "input", name: "num_pedido", offsetLeft: 11, hidden: true, readonly: true, label: "Pedido : ", labelWidth: 45, inputWidth: 80, value: ".", style: " background-color: rgba(239, 95, 11, 0.29); background-image:url('" + BASE_URL + "dhtmlx/skins/skyblue/imgs/icons/touch_24.png');  background-repeat:no-repeat;  text-align: right;"},
+            {type: "newcolumn"},
+            {type: "select", name: "selec_vendedor", offsetLeft: 16, hidden: true, label: "Vendedor : ", labelWidth: 69, inputWidth: 300, style: " font-size:18px;font-weight: bold;background-color: rgba(234,255,71,1);   background-repeat:no-repeat;  text-align: right;"}
+        ]
+    },
+    {type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 1},
+            {type: "container", name: "myGrid", inputWidth: 590, inputHeight: 350}
+        ]
+    },
+    {type: "block", inputWidth: "auto", list: [
+            {type: "label", offsetLeft: 20, offsetTop: 5, label: "****Cantidad Items****", name: "cant_items"},
+        ]
+    },
+    {type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 20},
+            // {type: "button", width: 53, offsetLeft: 41, value: "", name: "nuevo_cliente", className: "button_registre", disabled: false, tooltip: "REGISTRAR CLIENTE"},
+            {type: "newcolumn"},
+            {type: "button", width: 53, offsetLeft: 41, value: "", name: "new_de", className: "button_agregar", hidden: true, disabled: false, tooltip: "AGREGAR PRODUCTO"},
+            {type: "newcolumn"},
+            {type: "button", width: 53, offsetLeft: 41, value: "", className: "button_quitar", name: "dele_det", hidden: true, disabled: false, tooltip: "QUITAR PRODUCTO"},
+            {type: "newcolumn"},
+            {type: "button", width: 500, offsetLeft: 50, offsetTop: 4, className: "button_pagofin", value: "AGREGAR PROMOCION ", name: "guardar", disabled: false, hidden: false},
+            // {type: "button", width: 53, offsetLeft: 41, value: "", className: "button_promo", name: "guardar", disabled: false, tooltip: "AGREGAR PROMOCIONES"},
+            {type: "newcolumn"},
+            {type: "button", width: 53, offsetLeft: 41, value: "", className: "button_pago", name: "regventa", hidden: true, tooltip: "REGISTRAR VENTA"}
+        ]
+    }
+];
+form_not_cred = [
+    {type: "settings", position: "label-left", labelWidth: "auto"},
+    {
+        type: "block", blockOffset: 0, list: [
+            {
+                type: "fieldset", offsetLeft: 70, width: 480, label: "DOCUMENTO A MODIFICAR", list: [
+                    {type: "settings"},
+                    {type: "input", name: "num_doc_mod", label: "Fac/Bol : ", labelWidth: 70, inputWidth: 100, readonly: true}, {type: "newcolumn"},
+                    {type: "input", offsetLeft: 12, readonly: true, name: "fec_doc_mod", label: "F. Reg.: ", inputWidth: 120, labelWidth: 70, value: ""}, {type: "newcolumn"},
+                    {type: "input", offsetLeft: 0, offsetTop: 14, name: "nom_clie", label: "Cliente : ", labelWidth: 70, inputWidth: 250, readonly: true}
+                ]
+            }, {type: "newcolumn"},
+            {
+                type: "fieldset", width: 480, offsetLeft: 10, label: "NOTA DE CREDITO", list: [
+                    {type: "input", name: "num_nota_cred", label: "N. Credito : ", labelWidth: 80, inputWidth: 100, readonly: true, style: " background-color: rgba(239, 95, 11, 0.29);text-align: right; font-weight: bold; font-size:16px;"},
+                    {type: "newcolumn"},
+                    {type: "input", name: "fec_nota", label: "F. Reg : ", offsetLeft: 12, inputWidth: 120, labelWidth: 80, value: "", readonly: true, style: " font-size:16px;font-weight: bold; background-color:rgba(234,255,71,1);"}, {type: "newcolumn"},
+                    {type: "newcolumn"}, {type: "checkbox", name: "chek_devo_efec", offsetLeft: 2, label: "Dev. Efectivo :", readonly: false, checked: false}, {type: "newcolumn"}]
+            }
+        ]
+    },
+    {
+        type: "fieldset", offsetLeft: 70, width: 770, inputWidth: "auto", label: "MOTIVOS", list: [
+            {type: "select", name: "_nota_anula", offsetLeft: 1, label: "Motivo : ", labelWidth: 59, inputWidth: 150, style: " font-size:12px;font-weight: bold;background-color: rgba(234,255,71,1);   background-repeat:no-repeat;  text-align: right;"},
+            {type: "newcolumn"},
+            {type: "input", offsetLeft: 10, name: "nc_obser", label: "Observacion: ", labelWidth: 90, inputWidth: 300, readonly: false}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "container", name: "myGridNota", inputWidth: 880, inputHeight: 300}
+        ]
+    }
+];
+
+form_passroot = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "motivo", maxLength: 30, label: "Motivo : ", labelWidth: 80, inputWidth: 180, readonly: false, required: true}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 22},
+            {type: "button", width: "60", offsetLeft: 41, value: "SIGUIENTE", name: "b_si_root", disabled: false, tooltip: "ANULAR"},
+            {type: "newcolumn"},
+            {type: "button", width: "60", offsetLeft: 41, value: "CANCELAR", name: "b_no_root", disabled: false, tooltip: "CANCELAR"}
+        ]
+    }
+];
+form_cupo = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "num_cupo", label: "Nro Cupón : ", labelWidth: 80, inputWidth: 180, readonly: false, required: true, style: " font-size: 18px; font-weight: bold; background-image:url('" + BASE_URL + "dhtmlx/skins/skyblue/imgs/icons/touch_24.png'); background-repeat:no-repeat;  font-weight: bold;"}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 22},
+            {type: "button", width: "60", offsetLeft: 41, value: "Aceptar", name: "b_si_cupo", disabled: false, tooltip: "REGISTRAR CUPON"},
+            {type: "newcolumn"},
+            {type: "button", width: "60", offsetLeft: 41, value: "Cancelar", name: "b_no_cupo", disabled: false, tooltip: "CANCELAR CUPON"}
+        ]
+    }
+];
+formData_b = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "nro_pla", label: "Nro Planilla : ", labelWidth: 95, hidden: false, inputWidth: 110, required: true, readonly: true, style: "font-weight: bold; background-color:rgba(234,255,71,1);   text-align: right; "},
+            {type: "select", name: "sel_planilla", label: "PLANILLA : ", labelWidth: 89, hidden: true, offsetLeft: 0, inputWidth: 110}, {type: "newcolumn"},
+            {type: "label", name: "lab_conti", hidden: true, label: "<span class='parpadea'>Seleccione la planilla correcta para los Doc.Contingencia </span>"}, {type: "newcolumn"},
+            {type: "newcolumn"},
+            {type: "settings", offsetTop: 8},
+            {type: "calendar", name: "fec_pla", dateFormat: "%d/%m/%Y", label: "Fecha : ", hidden: true, className: "my_calendar", inputWidth: 110, disabled: true, labelWidth: 84, offsetLeft: 25, style: "text-align: right; "},
+            {type: "newcolumn"},
+            {type: "button", width: "120", offsetLeft: 56, offsetTop: 0, value: "Abrir planilla", className: "button_new", name: "abrir_pla"}, {type: "newcolumn"},
+            {type: "button", width: "120", offsetLeft: 56, offsetTop: 0, value: "Cerrar planilla", className: "button_delete", name: "cerrar_pla"}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [{type: "settings", offsetTop: 8},
+            {type: "input", name: "impor_pla", label: "Ventas Efect  : ", labelWidth: 95, inputWidth: 110, hidden: true, disabled: true},
+            {type: "newcolumn"},
+            {type: "input", name: "tar_pla", hidden: true, label: "Ventas Visa : ", offsetLeft: 25, labelWidth: 85, inputWidth: 110, readonly: true, disabled: true},
+            {type: "newcolumn"},
+                    // {type: "button", width: "120", offsetLeft: 56, offsetTop: 0, value: "Cerrar planilla", className: "button_delete", name: "cerrar_pla"}
+        ]
+    }
+];
+formData_c = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {type: "checkbox", name: "chek_conti", offsetLeft: 5, label: "<B><font   color=\"blue\" size=\"3\"   >Doc.Contingencia </font></B> :", readonly: false, checked: false}, {type: "newcolumn"},
+
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+
+            {type: "calendar", name: "fec_doc_emi", dateFormat: "%d/%m/%Y", label: "Fecha : ", className: "my_calendar", inputWidth: 110, disabled: false, labelWidth: 89, value: "", hidden: true},
+            {type: "newcolumn"},
+            {type: "select", name: "moneda_doc_ami", label: "Moneda : ", labelWidth: 89, hidden: true, offsetLeft: 0, inputWidth: 110, connector: BASE_URL + "xml/pv0101/tipo_cambio.php"},
+            {type: "newcolumn"},
+            {type: "input", name: "cambio_doc_emi", label: "Cambio : ", readonly: false, hidden: true, labelWidth: 95, inputWidth: 81, offsetLeft: 18, value: '1.00', validate: "ValidNumeric", required: true, numberFormat: "0,000.000"}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [{type: "settings", offsetTop: 8},
+            {type: "input", name: "ruc_dni_doc_emi", label: "RUC / DNI: ", labelWidth: 89, inputWidth: 110, required: true, hidden: true},
+            {type: "newcolumn"},
+            {type: "checkbox", name: "chek_cre", offsetLeft: 0, label: "Crédito : ", readonly: false, checked: false, hidden: true},
+            {type: "newcolumn"},
+            {type: "calendar", name: "fec_vto_doc_emi", dateFormat: "%d/%m/%Y %H:%i:%s", label: "Fecha Vcto : ", className: "my_calendar", inputWidth: 110, disabled: true, labelWidth: 89, value: "", hidden: true},
+            {type: "newcolumn"},
+            {type: "input", name: "nom_doc_emi", label: "Cliente : ", labelWidth: 89, inputWidth: 350, required: true, hidden: true},
+            {type: "newcolumn"},
+            {type: "input", name: "num_pedido_atender", label: "Pedido : ", labelWidth: 89, inputWidth: 250, hidden: true, required: true, value: '.', style: " background-image:url('" + BASE_URL + "dhtmlx/skins/skyblue/imgs/icons/touch_24.png');  background-repeat:no-repeat;  text-align: right;"}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "direccion_c", label: "Dirección : ", labelWidth: 89, rows: 2, inputWidth: 490, value: ".", required: true, hidden: true}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [{type: "settings", offsetTop: 8},
+            {type: "input", name: "doc_doc_emi", label: "Numero Doc: ", style: " font-weight: bold; font-size: 18px;background-color: rgba(234,255,71,1);", labelWidth: 95, inputWidth: 200, required: true, readonly: false},
+            {type: "newcolumn"},
+            {type: "checkbox", name: "chek_man", offsetLeft: 25, label: "Manual : ", readonly: false, checked: false, hidden: true},
+            {type: "newcolumn"},
+            {type: "button", width: "24", offsetLeft: 5, value: "", className: "b_actu_serie", name: "b_actu_serie", disabled: false, tooltip: "ACTUALIZAR SERIE"},
+        ]
+    }, {type: "newcolumn"},
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "checkbox", name: "chek_fle", offsetLeft: 0, label: "<B><font   color=\"red\" size=\"3\"   >Delivery ? : </font></B> ", readonly: false, checked: false, hidden: false}, {type: "newcolumn"},
+            {type: "input", name: "import_flete", label: " <B><font   color=\"blue\" size=\"3\"   >Costo  : </font></B>", offsetLeft: 20, labelWidth: 70, readonly: false, inputWidth: 120, disabled: true, hidden: true, value: '0', style: " font-weight: bold; font-size: 14px;background-image:url('" + BASE_URL + "dhtmlx/codebase/imgs/avion_trans.png');  background-repeat:no-repeat;  text-align: right;"}
+        ]
+    }, {type: "newcolumn"},
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "input", name: "doc_not_cre", label: "N.Crédito", offsetLeft: 8, style: " font-weight: bold; font-size: 18px;background-color: rgba(0,0,0,0);", labelWidth: 70, inputWidth: 120, readonly: false}, {type: "newcolumn"},
+            {type: "checkbox", name: "chek_nota", offsetLeft: 5, label: "Aplicar NC :", readonly: false, checked: false}, {type: "newcolumn"},
+            {type: "newcolumn"},
+                    //{type: "input", name: "im_final", label: "Monto NC ", tooltip: "MONTO DE LA N.CREDITO QUE SE DESCONTARÁ EN LA NUEVA COMPRA", offsetLeft: 8, hidden: true, labelWidth: 20, inputWidth: 50, value: '0', style: " font-size: 12px;font-weight: bold; color: red;"}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "input", name: "import_doc_ami", label: "Sub total : ", labelWidth: 89, readonly: true, inputWidth: 80, hidden: true},
+            //{type: "newcolumn"},
+            {type: "input", name: "igv_doc_ami", label: "Igv : ", labelWidth: 35, readonly: true, offsetLeft: 8, inputWidth: 80, hidden: true}
+        ]
+    }, {
+        type: "block", inputWidth: "auto", list: [
+            // {type: "input", name: "total_doc_emi", label: "Total  Venta: ", hidden: false, readonly: true, labelWidth: 89, inputWidth: 120, value: '', style: " font-weight: bold; font-size: 18px;background-color: rgba(0,0,0,0);"},
+
+            {type: "newcolumn"}, {type: "input", hidden: true, name: "por_fn", label: "FN ", tooltip: "% DE DSCTO POR ONOMÁSTICO", offsetLeft: 8, readonly: true, labelWidth: 20, inputWidth: 50, value: '0', style: " font-size: 12px;font-weight: bold; color: red;"},
+            {type: "newcolumn"}, {type: "input", hidden: true, name: "por_pc", label: "PC ", tooltip: "% DE DSCTO POR PRIMERA COMPRA", offsetLeft: 8, readonly: true, labelWidth: 20, inputWidth: 50, value: '0', style: " font-size: 12px;font-weight: bold; color: red;"},
+            {type: "newcolumn"}, {type: "input", hidden: false, info: true, name: "por_blogger", label: "%Blogger :", tooltip: "% DE DSCTO POR BLOGGER - INFLUENCER", offsetLeft: 1, readonly: false, labelWidth: 90, inputWidth: 80, value: '0'}, {type: "newcolumn"},
+            {type: "checkbox", offsetLeft: 100, name: "ch_gratuita", label: "<B><font   color=\"green\" size=\"3\"   >Transf. Gratuita ? : </font></B> ", readonly: false, disabled: true, checked: false, hidden: false}, {type: "newcolumn"},
+            {type: "checkbox", offsetLeft: 50, name: "ch_aptreq", label: "<B><font   color=\"green\" size=\"3\"   >Venta c/Requerim.? : </font></B> ", readonly: false, disabled: false, checked: false, hidden: false},
+        ]
+    }, {type: "input", offsetTop: 10, label: "Lista de Precios : ", labelWidth: 89, name: 'tipo_client', inputWidth: 450, hidden: true, offsetLeft: 20, style: "color : red; font-size : 25px; font-weight: bold;", value: 'CARGANDO LISTA DE PRECIOS...', readonly: true},
+    {type: "input", offsetLeft: 0, name: "observ_venta", label: "Observación : ", value: ".", rows: 1, inputWidth: 490, required: true, hidden: true},
+    {type: "newcolumn"},
+
+    {type: "select", name: "selec_afec_igv", offsetLeft: 16, hidden: true, label: "Afectación IGV : ", labelWidth: 120, inputWidth: 300, style: " font-size:18px;font-weight: bold;background-color: rgba(234,255,71,1);   background-repeat:no-repeat;  text-align: right;"},
+];
+formData_d = [
+    {type: "settings", position: "label-left", labelWidth: "auto", offsetTop: 2},
+    {
+        type: "block", blockOffset: 4, inputWidth: "auto", list: [
+            //  {type: "settings", offsetTop: 8},
+            {
+                type: "block", blockOffset: 20, width: 250, list: [
+                    {type: "input", name: "total_doc_emi", label: "Total Venta: ", hidden: false, readonly: true, labelWidth: 85, inputWidth: 120, value: '0.00', style: " font-size: 18px; font-weight: bold;background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/card_24.png');  background-repeat:no-repeat;  text-align: right;"},
+                    {type: "input", name: "nu_ncredito", label: "Descto NC ", hidden: true, tooltip: "MONTO DE LA N.CREDITO QUE SE DESCONTARÁ EN LA NUEVA COMPRA", offsetLeft: 0, readonly: true, labelWidth: 85, inputWidth: 120, value: '0.00', style: " font-size: 18px; font-weight: bold;background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/card_24.png');  background-repeat:no-repeat;  text-align: right;"},
+                    {type: "input", name: "entreg_pago", offsetLeft: 0, label: "<B><font size=\" 2.5\">Efectivo :</font></B> ", labelWidth: 85, inputWidth: 120, disabled: false, readonly: false, required: true, numberFormat: "0,000.00", value: '0', style: " background-color: rgba(234,255,71,1);font-size: 18px; font-weight: bold; background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/cash_24.png');  background-repeat:no-repeat;  text-align: right;"},
+                    //{type: "newcolumn"},
+                    {type: "input", name: "sald_pago", label: "Saldo : ", labelWidth: 40, offsetLeft: 0, inputWidth: 70, readonly: true, value: '0.00', numberFormat: "0,000.00", hidden: true},
+                    // {type: "newcolumn"},
+                    {type: "input", name: "vuelt_pago", label: "Vuelto : ", labelWidth: 85, offsetLeft: 0, inputWidth: 120, readonly: true, value: '0.00', numberFormat: "0,000.00", style: " font-size: 18px; font-weight: bold;background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/card_24.png');  background-repeat:no-repeat;  text-align: right;"},
+                    //  {type: "newcolumn"},
+                    {type: "input", name: "valor_compro", label: "Venta POS1 :", offsetLeft: 0, labelWidth: 85, inputWidth: 120, disabled: false, readonly: true, hidden: true, required: false, numberFormat: "0,000.00", value: '0.00', style: " font-size: 18px; font-weight: bold;background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/card_24.png');  background-repeat:no-repeat;  text-align: right;"},
+                ]
+            },
+            {type: "newcolumn"},
+            {
+                type: "block", width: 480, blockOffset: 2, list: [
+                    {type: "container", name: "mygrpagos", inputWidth: 409, inputHeight: 200},
+                    {type: "newcolumn"},
+                    {type: "button", width: 37, offsetLeft: 0, offsetTop: 0, value: "", name: "new_pago", className: "button_agregar_nuevo", disabled: false, tooltip: "AGREGAR PAGO"}, {type: "newcolumn"},
+                    {type: "newcolumn"}
+                ]
+            },
+
+            {type: "newcolumn"},
+
+            {type: "button", width: "120", offsetLeft: 250, offsetTop: 4, value: "Reg Venta", className: "button_save", name: "regventa2", disabled: false, hidden: true},
+            {
+                type: "block", width: 605, list: [
+                    {type: "button", width: 600, offsetLeft: 20, offsetTop: 4, className: "button_pagofin", value: "PAGAR S/ ", name: "regventa", disabled: true, hidden: false},
+                    {type: "label", offsetLeft: 100, offsetTop: 14, label: "Version :", name: "ver__"}
+                ]
+            }
+        ]
+    }
+];
+
+form_addpago = [{type: "settings", position: "label-left", offsetLeft: 0},
+    {
+        type: "fieldset", name: "filedpagos", label: "Pago con Tarjeta", width: 350, hidden: true, offsetTop: 14, list: [
+            {type: "select", name: "select_pago", label: "Pago: ", disabled: false, labelWidth: 50, inputWidth: 135, connector: BASE_URL + "xml/pv0101/tipo_pago.php"},
+            {type: "newcolumn"},
+            {type: "select", name: "banco_pago", offsetLeft: 7, label: "Banco : ", labelWidth: 65, inputWidth: 180, disabled: false, hidden: true, connector: BASE_URL + "xml/pv0101/combo_banco.php?tipo_pago=0"},
+            {type: "newcolumn"},
+            {type: "input", name: "comproba_pago", required: true, label: "REF. : ", offsetLeft: 0, labelWidth: 50, inputWidth: 200, disabled: false, value: '.', style: " font-size: 16px; font-weight: bold;background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/card_24.png');  background-repeat:no-repeat;  text-align: right;"},
+            {type: "newcolumn"},
+            {type: "input", name: "valor_visa1", label: "Monto:", offsetLeft: 0, labelWidth: 51, inputWidth: 120, disabled: false, readonly: true, required: true, numberFormat: "0,000.00", value: '0.00', style: " font-size: 18px; font-weight: bold;background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/card_24.png');  background-repeat:no-repeat;  text-align: right;"},
+            // { type: "newcolumn" },
+            {type: "checkbox", name: "pago_visa1", offsetLeft: 0, label: "+ pagos con TC.", readonly: false, checked: false},
+        ]
+    }
+];
+form_buscar_pla = [{type: "settings", position: "label-top", offsetLeft: 0, blockOffset: 0},
+    {
+        type: "block", inputWidth: "auto", blockOffset: 1, list: [{type: "button", width: 60, value: "", tooltip: "ANULAR DOCUMENTO", name: "b_doc_elimina", className: "button_anula", hidden: true},
+            {type: "newcolumn"},
+            {type: "button", width: 60, value: "", offsetLeft: 12, name: "b_visual", tooltip: "COPIA CLIENTE", className: "button_copy", hidden: true}, {type: "newcolumn"},
+            {type: "button", width: 60, value: "", offsetLeft: 12, name: "b_excel_plani", tooltip: "EXPORTAR EXCEL", className: "button_excel", hidden: true}]
+    },
+    {
+        type: "fieldset", label: "LIQUIDAR PLANILLA", offsetTop: 0, offsetLeft: 0, blockOffset: 0, width: 200, list: [
+            {
+                type: "block", blockOffset: 0, inputWidth: "auto", list: [
+                    {type: "input", name: "plan_liqui", label: "Planilla : ", blockOffset: 0, offsetLeft: 0, required: true, labelWidth: 100, inputWidth: 100, disabled: false, readonly: true, style: "background-color: rgba(239, 95, 11, 0.29); font-size: 12px; font-weight: bold; background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/touch_24.png');  background-repeat:no-repeat;  text-align: right;"},
+                    {type: "newcolumn"},
+                    {type: "button", width: 60, value: "", offsetLeft: 2, name: "b_photo", tooltip: "SUBIR IMAGENES", className: "button_photo", hidden: false},
+                    {type: "newcolumn"},
+                    {type: "select", name: "banco_liqui", label: "Banco : ", labelWidth: 45, inputWidth: 170, disabled: false, hidden: false, connector: BASE_URL + "xml/pv0101/combo_banco_liqui.php?tipo_pago=0"},
+                    {type: "newcolumn"},
+                    {type: "checkbox", name: "che_visa", position: "label-left", offsetLeft: 0, label: "VisaNet Cierre ", readonly: false, checked: false},
+                    {type: "calendar", name: "fb_depo", position: "label-left", dateFormat: "%d-%m-%Y", label: "Fecha :", required: true, labelWidth: 60, inputWidth: 100, disabled: false, readonly: true, style: "background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/touch_24.png');  background-repeat:no-repeat;  text-align: right;"},
+                    {type: "newcolumn"},
+                    {
+                        type: "block", blockOffset: 0, offsetTop: 2, inputWidth: "auto", list: [
+                            {type: "label", label: ".", name: "label", labelWidth: 58}, {type: "newcolumn"},
+                            {type: "input", name: "ref_doc_liquida", inputWidth: 100, readonly: false, value: '.', required: true} /* label: "Ref / Lote : ",*/
+                        ]
+                    },
+                    {type: "newcolumn"},
+                    {
+                        type: "block", blockOffset: 0, inputWidth: "auto", list: [
+                            {type: "label", label: ".", name: "label2", labelWidth: 58}, {type: "newcolumn"},
+                            {type: "input", name: "impor_liquida", inputWidth: 100, readonly: false, value: '0', required: true, style: "font-size: 18px; font-weight: bold;"} /*label: "Valor Deposito / Cierre: ",*/
+                        ]
+                    },
+                    {type: "newcolumn"},
+                    {type: "button", width: 70, value: "Liquidar", name: "b_liquida"}, {type: "newcolumn"}, {type: "button", width: 7, value: "?", name: "b_liquida_info"}, {type: "newcolumn"}, {type: "button", width: 70, value: "Abono.Banca", name: "b_extracto"}
+                ]
+            }
+        ]
+    },
+    {
+        type: "fieldset", label: "RANGO DE FECHA", offsetTop: 2, offsetLeft: 5, inputWidth: 190, list: [
+            {type: "settings", offsetTop: 0},
+            {type: "calendar", name: "fb_desde", dateFormat: "%d-%m-%Y", position: "label-left", label: "Desde : ", required: true, labelWidth: 60, inputWidth: 80, disabled: false, readonly: true, style: "background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/touch_24.png');  background-repeat:no-repeat;  text-align: right;"},
+            {type: "newcolumn"},
+            {type: "calendar", dateFormat: "%d-%m-%Y", name: "fb_hasta", position: "label-left", label: "Hasta : ", required: true, labelWidth: 60, inputWidth: 80, disabled: false, readonly: true, style: "background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/touch_24.png');  background-repeat:no-repeat;  text-align: right;"},
+            {type: "newcolumn"},
+            {type: "button", width: 50, value: "Buscar", name: "fb_bus_fec"}, {type: "newcolumn"},
+            {type: "button", width: 70, offsetLeft: 5, value: "Detallado", tooltip: "Reporte Detallado por factura (Excel)", name: "b_rep_detalla"}, {type: "newcolumn"}
+        ]
+    }
+];
+form_buscar_ARQ = [{type: "settings", position: "label-left", offsetLeft: 0},
+    {type: "fieldset", label: "RANGO DE FECHA", offsetTop: 2, offsetLeft: 5, inputWidth: 190, list: [
+            {type: "settings", offsetTop: 0},
+            {type: "calendar", name: "fb_des_arq", dateFormat: "%d-%m-%Y", label: "Desde : ", required: true, labelWidth: 100, inputWidth: 170, disabled: false, readonly: true, style: "background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/touch_24.png');  background-repeat:no-repeat;  text-align: right;"},
+            {type: "newcolumn"},
+            {type: "calendar", dateFormat: "%d-%m-%Y", name: "fb_has_arq", label: "Hasta : ", required: true, labelWidth: 100, inputWidth: 170, disabled: false, readonly: true, style: "background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/touch_24.png');  background-repeat:no-repeat;  text-align: right;"},
+            {type: "newcolumn"},
+            {type: "button", width: "50", value: "Buscar", name: "fb_bus_arq"}
+        ]
+    }
+];
+form_buscar_EXT = [{type: "settings", position: "label-left", offsetLeft: 0},
+    {type: "fieldset", label: "RANGO DE FECHA", offsetTop: 2, offsetLeft: 5, inputWidth: 190, list: [
+            {type: "settings", offsetTop: 0},
+            {type: "calendar", name: "fb_des_ext", dateFormat: "%d-%m-%Y", label: "Desde : ", required: true, labelWidth: 100, inputWidth: 170, disabled: false, readonly: true, style: "background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/touch_24.png');  background-repeat:no-repeat;  text-align: right;"},
+            {type: "newcolumn"},
+            {type: "calendar", dateFormat: "%d-%m-%Y", name: "fb_has_ext", label: "Hasta : ", required: true, labelWidth: 100, inputWidth: 170, disabled: false, readonly: true, style: "background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/touch_24.png');  background-repeat:no-repeat;  text-align: right;"},
+            {type: "newcolumn"},
+            {type: "button", width: "50", value: "Buscar", name: "fb_bus_ext"}
+        ]
+    }
+];
+form_buscar_nota = [{type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {
+        type: "fieldset", label: "DOCUMENTO", offsetTop: 5, offsetLeft: 5, inputWidth: 190, list: [
+            {type: "settings", offsetTop: 0},
+            {type: "input", name: "doc_buscar_nota", label: "Fac/Bol : ", required: true, labelWidth: 100, inputWidth: 170, disabled: false, readonly: false, style: " font-weight: bold; font-size: 18px;background-color: rgba(234,255,71,1);"},
+            {type: "newcolumn"},
+            {type: "button", width: "70", value: "Buscar", offsetLeft: 30, name: "b_doc_nota"}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "button", offsetLeft: 25, width: "60", value: "", tooltip: "GENERAR NOTA DE CREDITO", disabled: true, name: "b_not_genera", className: "button_nota"}, {type: "newcolumn"},
+            {type: "button", offsetLeft: 15, width: "60", value: "", disabled: true, tooltip: "ANULAR NOTA DE CREDITO", name: "b_not_anula", className: "button_anula"}
+        ]
+    }
+];
+form_buscar_reportes = [{type: "settings", position: "label-left", labelWidth: "auto", offsetLeft: 0},
+    {
+        type: "fieldset", label: "RANGO DE FECHA", offsetTop: 2, offsetLeft: 5, inputWidth: 190, list: [
+            {type: "settings", offsetTop: 0},
+            {type: "calendar", name: "f_desde", dateFormat: "%d-%m-%Y", label: "Desde : ", required: true, labelWidth: 100, inputWidth: 170, disabled: false, readonly: true, style: "background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/touch_24.png');  background-repeat:no-repeat;  text-align: right;"},
+            {type: "newcolumn"},
+            {type: "calendar", dateFormat: "%d-%m-%Y", name: "f_hasta", label: "Hasta : ", required: true, labelWidth: 100, inputWidth: 170, disabled: false, readonly: true, style: "background-image:url('<?php echo base_url(); ?>dhtmlx/skins/skyblue/imgs/icons/touch_24.png');  background-repeat:no-repeat;  text-align: right;"},
+            {type: "newcolumn"},
+            {type: "button", width: "50", value: "Buscar", name: "b_bus_repor"}
+        ]
+    },
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "button", offsetLeft: 5, width: "60", value: "", tooltip: "EXPORTAR", name: "b_expor_excel", className: "button_excel", hidden: false},
+            {type: "newcolumn"},
+            {type: "button", width: "60", value: "", offsetLeft: 12, name: "b_expor_pdf", tooltip: "PDF", className: "button_pdf", hidden: false},
+            {type: "newcolumn"},
+            {type: "button", width: "60", value: "", offsetLeft: 12, name: "b_excel_plani", tooltip: "EXPORTAR EXCEL", className: "button_excel", hidden: true}]
+    }
+];
+form_boton_promo = [
+    {
+        type: "fieldset", label: "PROMOCIONES - COMBO", offsetLeft: 21, inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 1},
+            {type: "input", label: "# Combos", width: "40", offsetLeft: 2, offsetTop: 21, value: 0, name: "b_combo", className: "button_coupon", disabled: true, tooltip: "NRO COMBO"},
+            {type: "newcolumn"},
+            {type: "button", width: "60", offsetLeft: 2, value: "", name: "bp_new_de", className: "button_enviar", disabled: false, tooltip: "AGREGAR PROMOCION"},
+            {type: "newcolumn"},
+            {type: "button", width: "60", offsetLeft: 11, value: "", name: "bp_clos_ped", className: "b_close_pedi", disabled: false, tooltip: "RETORNAR VENTA"}
+        ]
+    }, {type: "newcolumn"},
+    {
+        type: "fieldset", label: "CUPONERA", offsetLeft: 11, inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 1},
+            {type: "button", width: "60", offsetLeft: 2, value: "", name: "bp_carg_coup", className: "button_coupon", disabled: false, tooltip: "CARGAR CUPONERA"},
+            {type: "newcolumn"},
+            {type: "button", width: "60", offsetLeft: 11, value: "", name: "bp_apli_coup", className: "button_coupon_apli", disabled: false, tooltip: "APLICAR CUPONERA"},
+            {type: "newcolumn"},
+            {type: "button", width: "60", offsetLeft: 11, value: "", name: "bp_canc_cupo", className: "button_coupon_canc", disabled: false, tooltip: "CANCELAR CUPONERA"}
+        ]
+    }
+];
+
+form_boton_pedido = [
+    {
+        type: "block", inputWidth: "auto", list: [
+            {type: "settings", offsetTop: 8},
+            {type: "button", width: "60", offsetLeft: 121, value: "", name: "bpe_new_de", className: "button_agregar", disabled: false, tooltip: "AGREGAR PRODUCTO"},
+            {type: "newcolumn"},
+            {type: "button", width: "60", offsetLeft: 81, value: "", className: "button_quitar", name: "bpe_dele_det", disabled: false, tooltip: "RETIRAR PRODUCTO"},
+            {type: "newcolumn"},
+            {type: "button", width: "60", offsetLeft: 81, value: "", className: "button_clear", name: "bpe_cle_all", disabled: false, tooltip: "BORRAR TODO"}
+        ]
+    }
+];
+
+             function decimalAdjust(type, value, exp) {
+                // Si el exp no esta definido o es cero...
+                if (typeof exp === 'undefined' || +exp === 0) {
+                    return Math[type](value);
+                }
+                value = +value;
+                exp = +exp;
+                // Si el valor no es un numero o el exp no es un entero...
+                if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
+                    return NaN;
+                }
+                // Shift
+                value = value.toString().split('e');
+                value = Math[type](+(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp)));
+                // Shift back
+                value = value.toString().split('e');
+                return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
+            }
+            function registra_errores(mensaje, funcion, stmsg, co_comprobante_doc) {
+                var data_error = {"doc": co_comprobante_doc, "mensaje": mensaje, "funcion": funcion};
+                $.ajax({type: "POST", url: '<?php echo base_url() ?>xml/pv0101/registra_errores.php', data: data_error,
+                    beforeSend: function () {
+                        if (stmsg != 'NO')
+                            dhtmlx.message({type: "error", text: "Se produjo un error, intente nuevamente. Si en problema persiste comunique al area de SISTEMAS. </br>Gracias...", expire: 5000});
+                    }, success: function (response) {
+                    }, error: function (err) {
+                        registra_errores('Line 2382 Fail ajax() ' + JSON.stringify(err, null, 2), "datapo010502:registra_errores");
+                    }});
+            }
+            Math.round10 = function (value, exp) {
+                return decimalAdjust('round', value, exp);
+            };
+            function utf8_decode(strData) { // eslint-disable-line camelcase
+                var tmpArr = []
+                var i = 0
+                var c1 = 0
+                var seqlen = 0
+
+                strData += ''
+
+                while (i < strData.length) {
+                    c1 = strData.charCodeAt(i) & 0xFF
+                    seqlen = 0
+
+                    // http://en.wikipedia.org/wiki/UTF-8#Codepage_layout
+                    if (c1 <= 0xBF) {
+                        c1 = (c1 & 0x7F)
+                        seqlen = 1
+                    } else if (c1 <= 0xDF) {
+                        c1 = (c1 & 0x1F)
+                        seqlen = 2
+                    } else if (c1 <= 0xEF) {
+                        c1 = (c1 & 0x0F)
+                        seqlen = 3
+                    } else {
+                        c1 = (c1 & 0x07)
+                        seqlen = 4
+                    }
+
+                    for (var ai = 1; ai < seqlen; ++ai) {
+                        c1 = ((c1 << 0x06) | (strData.charCodeAt(ai + i) & 0x3F))
+                    }
+
+                    if (seqlen === 4) {
+                        c1 -= 0x10000
+                        tmpArr.push(String.fromCharCode(0xD800 | ((c1 >> 10) & 0x3FF)))
+                        tmpArr.push(String.fromCharCode(0xDC00 | (c1 & 0x3FF)))
+                    } else {
+                        tmpArr.push(String.fromCharCode(c1))
+                    }
+
+                    i += seqlen
+                }
+
+                return tmpArr.join('')
+            }
+        </script>
+    </head>
+    <body onload="Inicio();">
+
+    </body>
+</html>

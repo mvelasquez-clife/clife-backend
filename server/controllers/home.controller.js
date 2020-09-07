@@ -183,7 +183,6 @@ const homeController = {
         });
     },
     update_datos: (req, res) => {
-
         const {empresa, codigo, copersona, u_tipo_doc, u_documento, u_apepat, u_apemat, u_nombres, u_sexo, u_fecnac, u_mail, u_mail_p, u_tef_c, u_tef_p} = req.body; //cuando las variables se envian por post
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
@@ -191,7 +190,6 @@ const homeController = {
                 return;
             }
             const query = "call PW_DATOS_USUARIO_LOGIN.sp_grabar_data_persona(:empresa,:co_usuario,:co_persona,:co_tipo_doc,:co_documento,:apepat,:apemat,:nombres,:sexo,:fecnac,:mailcor,:mailper,:celcor,:celper,:o_copersona,:o_result)";
-
             const params = {
                 empresa: {val: empresa},
                 co_usuario: {val: codigo},
@@ -211,8 +209,6 @@ const homeController = {
                 o_copersona: {dir: oracledb.BIND_OUT, type: oracledb.NUMBER},
                 o_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING}
             };
-
-            console.log(params);
             conn.execute(query, params, responseParams, (error, result) => {
                 if (error) {
                     conn.close();

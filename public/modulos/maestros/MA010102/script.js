@@ -24,7 +24,6 @@ onBuscaMaestro = async (name) => {
     myGrid.setColTypes('ro,ro,ro,ro,ro,ro');
     myGrid.setColumnHidden(3, true);
     myGrid.setColumnHidden(1, true);
-
     myGrid.setColumnIds("codigo,raz_social,vigencia,nom_comer,asignado,nom_vista");
     myGrid.init();
     myGrid.attachEvent("onRowSelect", function (id, ind) {

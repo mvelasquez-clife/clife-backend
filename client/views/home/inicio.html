@@ -11,7 +11,7 @@
         <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">    
         <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
         <style type="text/css">
-            html,body{  display: flex;height:100%;margin:0;padding:0;width:100%;  overflow: hidden}
+            html,body{  display: flex;height:100%;margin:0;padding:0;width:100%;  overflow: hidden;font-family: 'Lato', 'Helvetica Neue', Helvetica, sans-serif;}
             #img_fondo_{background-size:cover;height:100%;width:100%;position: absolute; }
         </style>
     </head>
@@ -23,6 +23,7 @@
         <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
         <script type="text/javascript" src="/assets/vendor/dhtmlx/sources/dhtmlxToolbar/codebase/dhtmlxtoolbar.js"></script>
         <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+       <!--  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script> -->
       <!--  <script src="/socket.io/socket.io.js"></script> -->
         <script type="text/javascript" src="/assets/js/home.js"></script>
         <script>
@@ -171,18 +172,19 @@
                     mainLayout.cells("a").setHeight(45);
                     mainLayout.cells("b").setWidth(240);
                     mainLayout.cells("b").fixSize(true, true);
-                    mainLayout.cells("b").attachHTMLString("<div id=\"dv-treeview\"></div>");
+                   // mainLayout.cells("b").attachHTMLString("<div id=\"dv-treeview\"></div>");
                     mainLayout.cells("c").hideHeader();
                     mainLayout.cells("c").attachHTMLString('<div id="img_fondo_" style=" background-size: cover;"><div class="loader-container">  <div class="progress float shadow">    <div class="progress__item"></div>  </div></div></div>');//mainLayout.cells("c").attachHTMLString("<div id=\"dv-fondo\"></div>');
-                    secLayout = new dhtmlXLayoutObject("dv-treeview", "2E");
+                    secLayout = new dhtmlXLayoutObject( mainLayout.cells("b"), "2E");// secLayout = new dhtmlXLayoutObject("dv-treeview", "2E");
                     secLayout.setSeparatorSize(0, 0);
                     secLayout.setSeparatorSize(1, 0);
                     secLayout.cells("a").hideHeader();
+                    secLayout.cells("b").hideHeader();
                     secLayout.cells("a").setHeight(150);
+                    var autoSizes = secLayout.listAutoSizes("b");
                     var Formlogo = secLayout.cells("a").attachForm();
                     Formlogo.load(form_logo, doOnload);
-                    secLayout.cells("a").fixSize(true, true);
-                    secLayout.cells("b").hideHeader();
+                   // secLayout.cells("a").fixSize(true, true);
                     mainTree = secLayout.cells("b").attachTree();
                     mainTree.setImagePath("/assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
                     mainTree.setXMLAutoLoading(BASE_URL + 'home/menu/' + usrJson.alias + '/' + usrJson.empresa);

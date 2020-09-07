@@ -10,7 +10,8 @@ const cursorParams = {
 const types = {
     number: oracledb.NUMBER,
     string: oracledb.STRING,
-    cursor: oracledb.CURSOR
+    cursor: oracledb.CURSOR,
+    date : oracledb.DATE
 };
 
 module.exports = {

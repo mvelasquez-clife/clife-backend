@@ -149,8 +149,12 @@ const loginCtrl = {
                     let p = {usua: usuario, email: '$'};
                     connection.execute("SELECT PASSWD  FROM table(PW_DATOS_USUARIO_LOGIN.F_VALIDA_MAIL(:email,:usua))  ", p, responseParams, (error, result) => {
                         connection.close();
+                       
                         if (!error)
                             bcrypt.compare(clave, result.rows[0].PASSWD, function (err, res) {
+                                bcrypt.hash(clave, saltRounds).then(function (hash) {
+                                    console.log('hash para actualizar en SG_USUA_M : ' + hash);
+                                });
                                 clave = result.rows[0].PASSWD;
                                 done(null, res === true ? '1' : '0');
                             });
@@ -186,7 +190,7 @@ const loginCtrl = {
                                 apepat: result.rows[0].DE_APELLIDO_PATERNO,
                                 ccosto: result.rows[0].CO_CENTRO_COSTO,
                                 stwap: result.rows[0].ST_ACCESO_WAP,
-                                ncosto: result.rows[0].NOM_CCOSTOS,
+                                ncosto: result.rows[0].DE_NOMBRE_COSTOS,// ncosto: result.rows[0].NOM_CCOSTOS,
                                 fregistro: result.rows[0].FE_REGISTRO,
                                 documento: result.rows[0].DE_DOCUMENTO,
                                 mailpers: result.rows[0].DE_MAIL_PERS,
@@ -196,7 +200,7 @@ const loginCtrl = {
                                 st_editotal: result.rows[0].ST_EDI_TOTAL
                               //  st_mapers : result.rows[0].ST_EXIST_MPERS
                             };
-                          console.log(user);
+                         // console.log('login.controller.js',user);
                             const token = jwt.sign(user, jwtKey.jwtkeylogin, {
                                 expiresIn: jwtKey.jwtloginexpire
                             });
