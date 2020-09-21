@@ -50,6 +50,33 @@
             </div>
         </div>
     </div>
+    <!-- modals -->
+    <div id="modal-telefono" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Teléfono no encontrado</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-1 text-danger">Tu número de teléfono no ha sido registrado. Por favor, ingresalo para continuar.</p>
+                    <form>
+                        <div class="form-group">
+                            <label for="telefono-step-1">Número de teléfono</label>
+                            <input type="number" class="form-control" id="telefono-step-1" aria-describedby="emailHelp" placeholder="Ingresa tu número aquí">
+                            <small id="emailHelp" class="form-text text-muted">Recuerda que debe ser un número celular para poder enviarte un SMS de validación.</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btn-step1-telefono-submit">Solicitar mi código de validación</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- separador de bajo presupuesto -->
     <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
     <script src="/assets/bootstrap/js/popper.min.js"></script>
@@ -59,17 +86,30 @@
         async function verificarDni () {
             $('#submit-step-1').hide();
             let dni = document.getElementById('dni').value;
+            let telefono = document.getElementById('telefono-step-1').value;
+            if (telefono != '') {
+                // validar el numero de telefono
+                if (telefono.length != 9 || isNaN(telefono)) {
+                    alert('El teléfono ingresado no es válido');
+                    return;
+                }
+                $('#modal-telefono').modal('hide');
+            }
             let result;
             try {
                 result = await $.ajax({
                     url: '/intranet/cargar-datos-dni',
                     method: 'post',
-                    data: { dni: dni },
+                    data: { dni: dni, telefono: telefono },
                     dataType: 'json'
                 });
                 if (result.error) {
                     document.getElementById('b-dni').innerHTML = dni;
                     console.error(result.error);
+                    if (result.solicitar) {
+                        $('#modal-telefono').modal('show');
+                        $('#submit-step-1').show();
+                    }
                     return;
                 }
                 rucdni = dni;
@@ -103,6 +143,7 @@
                 if (result.error) {
                     document.getElementById('fail-step-2').innerHTML = result.error;
                     $('#fail-step-2').show();
+                    $('#submit-step-2').show();
                     if (result.expira) {
                         setTimeout(3000, function () {
                             location.reload();
@@ -160,6 +201,7 @@
             $('#submit-step-1').on('click', verificarDni);
             $('#submit-step-2').on('click', verificarPin);
             $('#submit-step-3').on('click', actualizarClave);
+            $('#btn-step1-telefono-submit').on('click', verificarDni);
         }
         $(onLoad);
     </script>

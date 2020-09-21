@@ -24,6 +24,10 @@ const LifeController = require('../controllers/intra-life.controller');
     // activacion de usuarios
     router.post('/validar-dni', LifeController.VerificarDni);
     router.post('/registra-usuario', LifeController.RegistraUsuario);
+    // control documentario
+    router.get('/documentacion-tipos', LifeController.TiposDocumento);
+    router.get('/documentacion-lista', LifeController.ListaMaestra);
+    router.get('/documentacion-acuse', LifeController.AcuseDocumento);
     //
     router.post('/auth-login', LifeController.AuthLogin);
     router.post('/cargar-datos', LifeController.CargarDatosUsuario);
@@ -62,5 +66,25 @@ const LifeController = require('../controllers/intra-life.controller');
     router.post('/cargar-datos-dni', LifeController.CargaDatosDni);
     router.post('/validar-pin', LifeController.ValidarPin);
     router.post('/actualizar-clave', LifeController.ActualizarClave);
+    // documentos
+    router.post('/registra-nuevo-tipo', LifeController.RegistraNuevoTipo);
+    router.get('/lista-ctrl-tipos', LifeController.ListaCtrlTipos);
+    router.post('/datos-form-rgdocumento', LifeController.DatosFormRegistroDocumento);
+    router.post('/carga-correlativo', LifeController.CargaCorrelativo);
+    router.post('/guarda-cabecera-documento', LifeController.GuardaCabeceraDocumento);
+    router.post('/carga-lista-documentos', LifeController.CargaListaDocumentos);
+    router.post('/validar-nversion-doc', LifeController.ValidarNuevaVersionDocumento);
+    router.post('/registra-nversion-doc', LifeController.RegistraNuevaVersionDocumento);
+    router.post('/historial-versiones-documento', LifeController.CargaHistorialVersiones);
+    router.post('/validar-traspaso-doc', LifeController.ValidarTraspasoDocumento);
+    router.post('/traspaso-documento', LifeController.TraspasoDocumento);
+    router.post('/validar-anulacion-doc', LifeController.ValidarAnulacionDocumento);
+    router.post('/anular-documento', LifeController.AnularDocumento);
+    router.post('/validar-edicion-doc', LifeController.ValidarEdicionDocumento);
+    router.post('/editar-doc', LifeController.EditarDocumento);
+    router.get('/descarga-documento', LifeController.DescargaDocumento);
+    router.post('/lista-combos', LifeController.ListaCombos);
+    router.post('/acuse-documentos', LifeController.AcuseListaDocumentos);
+    router.get('/descarga-documento-acuse', LifeController.DescargaDocumentoAcuse);
 
 module.exports = router;

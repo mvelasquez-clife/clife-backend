@@ -7,12 +7,16 @@
         <!-- pinche navbar -->
         <% include _main.navbar.ejs %>
         <!-- sidenav -->
-        <% if (admin == 'S') { %>
-            <% include _main.sidenav.admin.ejs %>
-        <% } else { %>
+        <div id="sidenav" class="sidenav text-light">
             <% include _main.sidenav.ejs %>
-        <% } %>
-        <!-- body -->
+            <% if (admin[0] == 'S') { %>
+                <% include _main.sidenav.admin.ejs %>
+            <% } if (admin[1] == 'S') { %>
+                <% include _main.sidenav.documentacion.ejs %>
+            <% } %>
+            <!-- body -->
+            <% include _main.sidenav.footer.ejs %>
+        </div>
         <div id="main-content">
             <div class="container-fluid">
                 <div id="main-row" class="row mb-2">

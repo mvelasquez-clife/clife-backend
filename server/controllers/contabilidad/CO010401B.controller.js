@@ -55,7 +55,7 @@ const co010401BController = {
         response.json(out);
     },
     InfoListaVouchers: async (request, response) => {
-        const { empresa, periodo, libro } = request.body;
+        const { empresa, periodo, libro, usuario } = request.body;
         let query = 'select nu_voucher "voucher", co_documento "documento", im_importe_total "importe" from table(pack_new_conta_voucher.f_list_vouchers(:empresa, :periodo, :libro))';
         let params = [
             { name: 'empresa', value: empresa },
@@ -94,6 +94,26 @@ const co010401BController = {
             options: dataVouchers
         };
         // carga la data del ultimo voucher
+        query = "select * from table(pack_new_conta_voucher.f_lis_bloqueos_x_lc(:p_empresa,:p_usuario,:p_libro))";
+        params = [
+            { name: 'p_empresa', value: empresa },
+            { name: 'p_usuario', value: usuario },
+            { name: 'p_libro', value: libro }
+        ];
+        result = await db.select(query, params);
+        var restricciones = false;
+        if (result.rows.length > 0) {
+            restricciones = result.rows[0];
+            response.json({
+                vouchers: vouchers,
+                restricciones: restricciones
+            });
+        }
+        else {
+            response.json({
+                vouchers: vouchers
+            });
+        }
         /*
         let informacion;
         if (ulvoucher > 0) {
@@ -116,10 +136,6 @@ const co010401BController = {
             informacion = null;
         }
         */
-        response.json({
-            vouchers: vouchers/*,
-            informacion: informacion*/
-        });
     },
     InformacionVoucher: async (request, response) => {
         const { empresa, periodo, libro, voucher } = request.body;
@@ -371,7 +387,7 @@ const co010401BController = {
                 error: result.o_mensaje
             });
         }
-        query = "select * from table(pack_new_conta_voucher.f_list_new_vouch_param(:empresa,:usuario,:periodo,:libro))";
+        query = "select ST_FORMATO,NU_VOUCHER_NEXT,CO_MONEDA_EMPR,CO_CONVERSION,IM_TIPO_CAMBIO,DE_COLUMN_TIPO_DOCU_DEF,DE_COLUMN_TIPO_ENTI_DEF,DE_FOCUS_COLUMN,to_char(FE_SERVIDOR,'dd/mm/yyyy') FE_SERVIDOR from table(pack_new_conta_voucher.f_list_new_vouch_param(:empresa,:usuario,:periodo,:libro))";
         params = [
             { name: 'empresa', io: 'in', value: empresa },
             { name: 'usuario', io: 'in', value: usuario },
@@ -394,11 +410,20 @@ const co010401BController = {
             esbanco, cobanco, copais, coctacte, cotrsbancaria, esdetraccion, docdetra, fdetra, imdetra, esccostodif, espercepcion, docpercep, porcpercep,
             impercep } = request.body;
         fingreso = fingreso ? fingreso : '01/01/1900';
-        if (fingreso.indexOf(' ') == -1) fingreso = fingreso + ' 00:00';
+        if (fingreso.indexOf(' ') > -1) {
+            fingreso = fingreso.split(' ')[0];
+        }
+        // if (fingreso.indexOf(' ') == -1) fingreso = fingreso + ' 00:00';
         fvencimiento = fvencimiento ? fvencimiento : '01/01/1900';
-        if (fvencimiento.indexOf(' ') == -1) fvencimiento = fvencimiento + ' 00:00';
+        if (fvencimiento.indexOf(' ') > -1) {
+            fvencimiento = fvencimiento.split(' ')[0];
+        }
+        // if (fvencimiento.indexOf(' ') == -1) fvencimiento = fvencimiento + ' 00:00';
         fdetra = fdetra ? fdetra : '01/01/1900';
-        if (fdetra.indexOf(' ') == -1) fdetra = fdetra + ' 00:00';
+        if (fdetra.indexOf(' ') > -1) {
+            fdetra = fdetra.split(' ')[0];
+        }
+        // if (fdetra.indexOf(' ') == -1) fdetra = fdetra + ' 00:00';
         // elimina las comas (si las hubiera)
         tpcambio = tpcambio.replace(/,/, '');
         imtotal = imtotal.replace(/,/, '');
@@ -406,7 +431,7 @@ const co010401BController = {
         imdetra = imdetra.replace(/,/, '');
         impercep = impercep.replace(/,/, '');
         // go!
-        let query = "call pack_new_conta_voucher.sp_grabar_cab_voucher(:accion, :empresa, :usuario, :periodo, :libro_contable, :nu_voucher, :co_tipo_doc_administr, :co_serie, :de_serie, :nu_documento, :co_documento, to_date(:fe_ingreso,'dd/mm/yyyy hh24:mi'), :co_moneda, :nu_conversion_final, :es_vigencia, to_date(:fe_vencimiento,'dd/mm/yyyy hh24:mi'), :co_tipo_entidad, :co_catalogo_entidad, :st_formato, :co_cuenta_documento, :st_gasto, :co_ingreso_gasto, :co_categ_ingreso_gasto, :co_cuenta_gasto, :co_catal_prespuesto, :de_glosa, :im_importe_total, :im_inafecto, :st_banco, :co_banco, :co_pais, :co_cuenta_corriente, :co_transa_bancaria_tran, :st_detraccion, :co_documento_detraccion, to_date(:fe_documento_detraccion,'dd/mm/yyyy hh24:mi'), :im_monto_detraccion, :st_ccosto_dif, :st_percepcion, :co_documento_percepcion, :nu_porcentaje_percepcion, :im_percibido_percepcion, :o_codigo, :o_mensaje)";
+        let query = "call pack_new_conta_voucher.sp_grabar_cab_voucher_web(:accion, :empresa, :usuario, :periodo, :libro_contable, :nu_voucher, :co_tipo_doc_administr, :co_serie, :de_serie, :nu_documento, :co_documento, :fe_ingreso, :co_moneda, :nu_conversion_final, :es_vigencia, :fe_vencimiento, :co_tipo_entidad, :co_catalogo_entidad, :st_formato, :co_cuenta_documento, :st_gasto, :co_ingreso_gasto, :co_categ_ingreso_gasto, :co_cuenta_gasto, :co_catal_prespuesto, :de_glosa, :im_importe_total, :im_inafecto, :st_banco, :co_banco, :co_pais, :co_cuenta_corriente, :co_transa_bancaria_tran, :st_detraccion, :co_documento_detraccion, :fe_documento_detraccion, :im_monto_detraccion, :st_ccosto_dif, :st_percepcion, :co_documento_percepcion, :nu_porcentaje_percepcion, :im_percibido_percepcion, :o_codigo, :o_mensaje)";
         let params = [
             { name: 'accion', io: 'in', value: accion },
             { name: 'empresa', io: 'in', value: empresa },

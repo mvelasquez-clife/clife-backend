@@ -8,7 +8,16 @@
         <!-- pinche navbar -->
         <% include _main.navbar.ejs %>
         <!-- sidenav -->
-        <% include _main.sidenav.admin.ejs %>
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% if (admin[0] == 'S') { %>
+                <% include _main.sidenav.admin.ejs %>
+            <% } if (admin[1] == 'S') { %>
+                <% include _main.sidenav.documentacion.ejs %>
+            <% } %>
+            <!-- body -->
+            <% include _main.sidenav.footer.ejs %>
+        </div>
         <!-- body -->
         <div id="main-content">
             <div class="container-fluid">

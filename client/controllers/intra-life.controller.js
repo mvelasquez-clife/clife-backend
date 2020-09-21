@@ -9,6 +9,8 @@ const responseParams = {
     outFormat: oracledb.OBJECT
 };
 const db = require('./../../server/libs/db-oracle');
+const dir_separator = '\\';
+const base_dir = 'D:\\files\\nodejs';
 
 const LifeController = {
     Login: (request, response) => {
@@ -18,9 +20,10 @@ const LifeController = {
         }
         let data = {};
         if (request.cookies[confParams.cookieError]) {
+console.log(request.cookies[confParams.cookieError]);
             let error = request.cookies[confParams.cookieError];
             console.error(error);
-            data.eror = error;
+            data.error = error;
             response.clearCookie(confParams.cookieError, { httpOnly: true });
         }
         response.render(path.resolve('client/views/intranet/login.ejs'), data);
@@ -49,7 +52,7 @@ const LifeController = {
             let conn = await oracledb.getConnection(dbParams);
             let query = "select node_password \"hash\", st_intranet_activada \"stact\", st_verifica_mail \"stmail\", co_cliente \"codigo\", initcap(de_nombre_comercial) \"ncomercial\", " +
                 "initcap(de_razon_social) \"rsocial\", fe_suscripcion \"fsuscripcion\", de_email \"email\", de_telefono \"telefono\", st_admin \"admin\", st_tipo_usuario \"tipo\", " +
-                "co_empresa as \"empresa\" from cl_usuarios where co_cliente = :p_rucdni and co_empresa = :p_empresa";
+                "co_empresa as \"empresa\", st_admin_rrhh \"admrrhh\", st_admin_documentac \"admdoc\" from cl_usuarios where co_cliente = :p_rucdni and co_empresa = :p_empresa";
             let params = {
                 p_rucdni: { val: codigo },
                 p_empresa: { val: empresa }
@@ -104,7 +107,10 @@ const LifeController = {
     Home: (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             let sess = request.cookies[confParams.cookieIntranet];
-            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
             let data = { sesion: sess, admin: admin };
             response.render(path.resolve('client/views/intranet/home.ejs'), data);
         }
@@ -113,7 +119,10 @@ const LifeController = {
     Documentos: (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             let sess = request.cookies[confParams.cookieIntranet];
-            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
             let { tipo } = request.params;
             let id, codigo;
             // ubica el código a partir del tipo
@@ -148,7 +157,10 @@ const LifeController = {
     DatosPersonales: (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             let sess = request.cookies[confParams.cookieIntranet];
-            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
             let data = { sesion: sess, admin: admin };
             response.render(path.resolve('client/views/intranet/perfil.ejs'), data);
         }
@@ -157,7 +169,10 @@ const LifeController = {
     Personal: (request, response) => {
         if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {
             let sess = request.cookies[confParams.cookieIntranet];
-            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
             let data = { sesion: sess, admin: admin, id: 'sidenav-personal' };
             response.render(path.resolve('client/views/intranet/personal.ejs'), data);
         }
@@ -166,7 +181,10 @@ const LifeController = {
     SubirDocumentos: (request, response) => {
         if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {
             let sess = request.cookies[confParams.cookieIntranet];
-            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
             let data = { sesion: sess, admin: admin, id: 'sidenav-subirdocs' };
             response.render(path.resolve('client/views/intranet/subirdocs.ejs'), data);
         }
@@ -175,7 +193,10 @@ const LifeController = {
     EnvioMensajes: (request, response) => {
         if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {
             let sess = request.cookies[confParams.cookieIntranet];
-            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
             let data = { sesion: sess, admin: admin, id: 'sidenav-mensajes' };
             response.render(path.resolve('client/views/intranet/envio-mensajes.ejs'), data);
         }
@@ -184,7 +205,10 @@ const LifeController = {
     Eventos: (request, response) => {
         if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {
             let sess = request.cookies[confParams.cookieIntranet];
-            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
             let data = { sesion: sess, admin: admin };
             response.render(path.resolve('client/views/intranet/eventos.ejs'), data);
         }
@@ -193,7 +217,10 @@ const LifeController = {
     ReporteAcuse: (request, response) => {
         if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {
             let sess = request.cookies[confParams.cookieIntranet];
-            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
             let data = { sesion: sess, admin: admin, id: 'sidenav-reportes' };
             response.render(path.resolve('client/views/intranet/reporte-acuses.ejs'), data);
         }
@@ -594,24 +621,26 @@ const LifeController = {
                         try {
                             const conn = await oracledb.getConnection(dbParams);
                             // registra en el legajo de clientes
+                            /*
                             let query = "call pack_new_attached.sp_save_adjunto_2(:o_codigo, :o_resultado, :p_empresa, :p_usuario, :p_tipo_enti, :p_cataenti, :p_archivo, " +
                                 ":p_tipoarchivo, :p_ruta, :p_fichero, :p_extension, :p_descripcion, :p_tpdocu, :p_tipocarpeta, :p_nuitems)";
+                            */
+                            let tp_archivo = 9;
+                            let query = "call pack_new_attached.sp_save_adjunto_2_new(:o_codigo, :o_resultado, :p_empresa, :p_usuario, :p_cataenti, :p_archivo, " +
+                                ":p_tipoarchivo, :p_ruta, :p_fichero, :p_extension, :p_descripcion, :p_tpdocu)";
                             let params = {
                                 o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
                                 o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
                                 p_empresa: { val: fields.empresa },
                                 p_usuario: { val: sesion.codigo },
-                                p_tipo_enti: { val: 2 },
                                 p_cataenti: { val: codusr },
                                 p_archivo: { val: codusr },
-                                p_tipoarchivo: { val: 4 },
+                                p_tipoarchivo: { val: tp_archivo },
                                 p_ruta: { val: sPath },
                                 p_fichero: { val: sFilename },
                                 p_extension: { val: 'pdf' },
                                 p_descripcion: { val: fields.envio },
-                                p_tpdocu: { val: 639 },
-                                p_tipocarpeta: { val: 'PERSONAL' },
-                                p_nuitems: { val: 1 }
+                                p_tpdocu: { val: 639 }
                             };
 console.log(query, params);
                             let result = await conn.execute(query, params, responseParams);
@@ -631,11 +660,12 @@ console.log(query, params);
                                 p_personal: { val: codusr },
                                 p_item: { val: o_codigo },
                                 p_coarchivo: { val: codusr },
-                                p_tparchivo: { val: 4 },
+                                p_tparchivo: { val: tp_archivo },
                                 p_usuenvia: { val: sesion.codigo },
                                 o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
                                 o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
                             };
+console.log(query, params);
                             result = await conn.execute(query, params, responseParams);
                             let resDb = result.outBinds;
                             // datos del destinatario
@@ -812,7 +842,10 @@ console.log(query, params);
     NuevaPapeleta: (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             let sess = request.cookies[confParams.cookieIntranet];
-            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
             let data = { sesion: sess, admin: admin };
             response.render(path.resolve('client/views/intranet/nueva-papeleta.ejs'), data);
         }
@@ -821,7 +854,10 @@ console.log(query, params);
     ListaPapeletas: (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             let sess = request.cookies[confParams.cookieIntranet];
-            let admin = request.cookies[confParams.cookieAdmin] ? request.cookies[confParams.cookieAdmin] : 'N';
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
             let data = { sesion: sess, admin: admin };
             response.render(path.resolve('client/views/intranet/lista-papeletas.ejs'), data);
         }
@@ -831,6 +867,42 @@ console.log(query, params);
         console.log('otra ip', request.ip);
         console.log(request.headers['user-agent']);
         response.send('ola ke ase');
+    },
+    TiposDocumento: (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            let sess = request.cookies[confParams.cookieIntranet];
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
+            let data = { sesion: sess, admin: admin };
+            response.render(path.resolve('client/views/intranet/documentacion-tiposdocumento.ejs'), data);
+        }
+        else response.redirect('/intranet/login');
+    },
+    ListaMaestra: (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            let sess = request.cookies[confParams.cookieIntranet];
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
+            let data = { sesion: sess, admin: admin };
+            response.render(path.resolve('client/views/intranet/documentacion-listamaestra.ejs'), data);
+        }
+        else response.redirect('/intranet/login');
+    },
+    AcuseDocumento: (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            let sess = request.cookies[confParams.cookieIntranet];
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
+            let data = { sesion: sess, admin: admin };
+            response.render(path.resolve('client/views/intranet/documentacion-acuse.ejs'), data);
+        }
+        else response.redirect('/intranet/login');
     },
     GuardarMensaje: async (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
@@ -920,10 +992,30 @@ console.log(query, params);
                     p_codigo: { val: sesion.codigo },
                     p_tipodoc: { val: codigo }
                 };
-console.log(params);
-                const result = await conn.execute(query, params, responseParams);
+                let result = await conn.execute(query, params, responseParams);
                 const documentos = result.rows;
                 conn.close();
+                // verifica si debo agregar los nuevos documentos
+                let odocumentos = [];
+                if (codigo == 803) {
+                    query = "call pack_digitalizacion.sp_lista_documentos_usuario(:p_codigo, :p_empresa, :rs)";
+                    pdata = [
+                        { name: 'p_codigo', io: 'in', value: sesion.codigo },
+                        { name: 'p_empresa', io: 'in', value: sesion.empresa },
+                        { name: 'rs', io: 'out', type: 'cursor' }
+                    ];
+                    result = await db.resultSet(query, pdata);
+                    for (let idocumento of result.rs) {
+                        odocumentos.push({
+                            codigo: idocumento.codigo,
+                            descripcion: idocumento.nombre,
+                            periodo: idocumento.periodo,
+                            vigencia: idocumento.vigencia,
+                            key: Buffer.from([idocumento.codigo, idocumento.version, idocumento.empresa].join('|')).toString('base64')
+                        });
+                    }
+                }
+                //
                 const numDocumentos = documentos.length;
                 for (let i = 0; i < numDocumentos; i++) {
                     let cipher = crypto.createCipher(encParams.algorytm, encParams.password);
@@ -935,7 +1027,8 @@ console.log(params);
                 }
                 response.json({
                     data: {
-                        documentos: documentos
+                        documentos: documentos,
+                        otros: odocumentos
                     }
                 });
             }
@@ -1025,10 +1118,10 @@ console.log(params);
                 let { o_nombre, o_email } = result.outBinds;
                 conn.close();
                 // notifica con un email
-                const nodemailer = require('nodemailer');
+                // const nodemailer = require('nodemailer');
                 const ejs = require('ejs');
                 const smtp = require('../../server/config/smtp');
-                const transport = nodemailer.createTransport(smtp);
+                // const transport = nodemailer.createTransport(smtp);
                 const data = {
                     nombre: o_nombre,
                     solicita: sesion.rsocial,
@@ -1043,6 +1136,7 @@ console.log(params);
                     subject: 'Solicitud de permiso',
                     html: html
                 };
+                /*
                 transport.sendMail(message, function(err, info) {
                     if (err) {
                         console.log(err)
@@ -1051,6 +1145,7 @@ console.log(params);
                     }
                     response.send('Se envió el correo!');
                 });
+                */
                 // respuesta del servidor
                 if (o_codigo == 1) {
                     response.json({
@@ -1923,7 +2018,7 @@ console.log(params);
     },
     //
     CargaDatosDni: async (request, response) => {
-        const { dni } = request.body;
+        const { dni, telefono } = request.body;
         const conn = await oracledb.getConnection(dbParams);
         let query = "call pack_digitalizacion.sp_datos_dni(:p_dni, :p_empresa, :o_codigo, :o_nombre)";
         let params = {
@@ -1938,20 +2033,29 @@ console.log(params);
             // genera el pin
             const pin = Math.floor(Math.random() * (1 + 999999 - 100000)) + 100000;
             // registra la solicitud de cambio de clave
-            query = 'call pack_digitalizacion.sp_asignar_pin(:p_dni, :p_empresa, :p_pin, :o_solicitud, :o_telefono)';
+            query = 'call pack_digitalizacion.sp_asignar_pin(:p_dni, :p_empresa, :p_pin, :o_solicitud, :o_telefono, :p_telefono)';
             params = {
                 p_dni: { val: dni },
                 p_empresa: { val: 11 },
                 p_pin: { val: pin },
                 o_solicitud: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-                o_telefono: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                o_telefono: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                p_telefono: { val: telefono }
             };
             result = await conn.execute(query, params, responseParams);
+console.log(query, params);
             let { o_solicitud, o_telefono } = result.outBinds;
             conn.close();
             if (o_solicitud == 0) {
                 response.json({
                     error: o_telefono
+                });
+                return;
+            }
+            if (o_solicitud == -1) {
+                response.json({
+                    error: o_telefono,
+                    solicitar: true
                 });
                 return;
             }
@@ -2043,6 +2147,599 @@ console.log(params);
                 result: 'ok'
             });
         });
+    },
+    // control documentario
+    RegistraNuevoTipo: async (request, response) => {
+        let { nombre, abrev, metodo, codigo, empresa } = request.body;
+        //  ( in varchar2,  in varchar2,  varchar2,  in number,  in number,  out number,  out varchar2)
+        let params = [
+            { name: 'p_descripcion', io: 'in', value: nombre },
+            { name: 'p_abreviatura', io: 'in', value: abrev },
+            { name: 'p_metodo', io: 'in', value: metodo },
+            { name: 'p_codigo', io: 'in', value: codigo },
+            { name: 'p_empresa', io: 'in', value: empresa },
+            { name: 'o_codigo', io: 'out', type: 'number' },
+            { name: 'o_mensaje', io: 'out', type: 'string' }
+        ];
+        let query = 'call pack_digitalizacion.sp_registra_tipodoc (:p_descripcion, :p_abreviatura, :p_metodo, :p_codigo, :p_empresa, :o_codigo, :o_mensaje)';
+        let result = await db.statement(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.out.o_codigo == 0) {
+            response.json({
+                error: result.out.o_mensaje
+            });
+            return;
+        }
+        response.json({
+            codigo: result.out.o_codigo
+        });
+    },
+    ListaCtrlTipos: async(request, response) => {
+        let params = [
+            { name: 'rs', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_lista_tipodoc (:rs)', params);
+        response.json({
+            data: {
+                tipos: result.rs
+            }
+        });
+    },
+    DatosFormRegistroDocumento: async (request, response) => {
+        let { empresa } = request.body;
+        let params = [
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'areas', io: 'out', type: 'cursor' },
+            { name: 'tipos', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_form_registra_documento (:empresa, :areas, :tipos)', params);
+        response.json({
+            data: {
+                areas: result.areas,
+                tipos: result.tipos
+            }
+        });
+    },
+    CargaCorrelativo: async (request, response) => {
+        let { area, tipodoc, empresa } = request.body;
+        let params = [
+            { name: 'area', io: 'in', value: area },
+            { name: 'tipodoc', io: 'in', value: tipodoc },
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'correlativo', io: 'out', type: 'number' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_carga_correlativo (:area, :tipodoc, :empresa, :correlativo)', params);
+        response.json({
+            data: {
+                correlativo: result.correlativo
+            }
+        });
+    },
+    GuardaCabeceraDocumento: async (request, response) => {
+        const mv = require('mv');
+        const formidable = require('formidable');
+        const form = new formidable.IncomingForm();
+        form.parse(request, async function (err, fields, files) {
+            if (err) {
+                console.log('form.parse', err);
+                response.json({
+                    error: err
+                });
+                return;
+            }
+            // recupera la extension del archivo
+            let extension = files.archivo.name.split('.');
+            extension = extension[extension.length - 1];
+            // almacena en la bd
+            let { tipodoc, area, resguardo, correlativo, version, nombre, fregistro, fvence, fisico, digital, usuario, empresa } = fields;
+            let params = [
+                { name: 'tipodoc', io: 'in', value: tipodoc },
+                { name: 'area', io: 'in', value: area },
+                { name: 'resguardo', io: 'in', value: resguardo },
+                { name: 'correlativo', io: 'in', value: correlativo },
+                { name: 'version', io: 'in', value: version },
+                { name: 'nombre', io: 'in', value: nombre },
+                { name: 'fregistro', io: 'in', value: fregistro },
+                { name: 'fvence', io: 'in', value: fvence },
+                { name: 'fisico', io: 'in', value: fisico },
+                { name: 'digital', io: 'in', value: digital },
+                { name: 'usuario', io: 'in', value: usuario },
+                { name: 'empresa', io: 'in', value: empresa },
+                { name: 'extension', io: 'in', value: extension },
+                { name: 'ocodigo', io: 'out', type: 'number' },
+                { name: 'omensaje', io: 'out', type: 'string' }
+            ];
+            let result = await db.statement('call pack_digitalizacion.sp_registra_documento (:tipodoc, :area, :resguardo, :correlativo, :version, :nombre, :fregistro, :fvence, :fisico, :digital, :usuario, :empresa, :extension, :ocodigo, :omensaje)', params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            if (result.out.ocodigo == 0) {
+                response.json({
+                    error: result.out.omensaje
+                });
+                return;
+            }
+            let fname = result.out.omensaje;
+            // mueve el archivo a la carpeta correspondiente
+            let oldpath = files.archivo.path;
+            let newpath = [base_dir, empresa, resguardo, area].join(dir_separator);
+            // crea el directorio
+            const fs = require('fs');
+            if (!fs.existsSync(newpath)) {
+                // crear recursivamente
+                fs.mkdirSync(newpath, { recursive: true });
+            }
+            // copia el archivo
+            let fullfname = newpath + dir_separator + fname;
+            mv(oldpath, fullfname, function (err) {
+                if (err) {
+                    console.log('mv', err);
+                    response.json({
+                        codigo: fname,
+                        alert: 'Se registró el documento, pero hubo un problema al guardar el archivo. Por favor, cargue nuevamente el archivo.'
+                    });
+                    return;
+                }
+                response.json({
+                    codigo: fname
+                });
+            });
+        });
+    },
+    RegistraNuevaVersionDocumento: async (request, response) => {
+        const mv = require('mv');
+        const formidable = require('formidable');
+        const form = new formidable.IncomingForm();
+        form.parse(request, async function (err, fields, files) {
+            if (err) {
+                console.log('form.parse', err);
+                response.json({
+                    error: err
+                });
+                return;
+            }
+            // recupera la extension del archivo
+            let extension = files.archivo.name.split('.');
+            extension = extension[extension.length - 1];
+            // almacena en la bd
+            let { key, nversion, fregistro, fvence, fisico, electronico, usuario, empresa } = fields;
+            let params = [
+                { name: 'key', io: 'in', value: key },
+                { name: 'nversion', io: 'in', value: nversion },
+                { name: 'fregistro', io: 'in', value: fregistro },
+                { name: 'fvence', io: 'in', value: fvence },
+                { name: 'fisico', io: 'in', value: fisico },
+                { name: 'electronico', io: 'in', value: electronico },
+                { name: 'usuario', io: 'in', value: usuario },
+                { name: 'extension', io: 'in', value: extension },
+                { name: 'codigo', io: 'out', type: 'number' },
+                { name: 'resultado', io: 'out', type: 'string' }
+            ];
+            let result = await db.resultSet('call pack_digitalizacion.sp_registra_nversion_documento(:key, :nversion, :fregistro, :fvence, :fisico, :electronico, :usuario, :extension, :codigo, :resultado)', params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            let sout = result.resultado.split('|');
+            let fname = sout[0];
+            let resguardo = sout[1];
+            let area = sout[2];
+            // mueve el archivo a la carpeta correspondiente
+            let oldpath = files.archivo.path;
+            let newpath = [base_dir, empresa, resguardo, area].join(dir_separator);
+            // crea el directorio
+            const fs = require('fs');
+            if (!fs.existsSync(newpath)) {
+                // crear recursivamente
+                fs.mkdirSync(newpath, { recursive: true });
+            }
+            // copia el archivo
+            let fullfname = newpath + dir_separator + fname;
+            mv(oldpath, fullfname, function (err) {
+                if (err) {
+                    console.log('mv', err);
+                    response.json({
+                        codigo: fname,
+                        alert: 'Se registró el documento, pero hubo un problema al guardar el archivo. Por favor, cargue nuevamente el archivo.'
+                    });
+                    return;
+                }
+                response.json({
+                    data: {
+                        codigo: result.codigo,
+                        resultado: fname
+                    }
+                });
+            });
+        });
+    },
+    CargaListaDocumentos: async (request, response) => {
+        let { resguardo, area, empresa, ordarea } = request.body;
+        if (typeof ordarea == 'undefined') ordarea = 0;
+        let params = [
+            { name: 'resguardo', io: 'in', value: resguardo },
+            { name: 'area', io: 'in', value: area },
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'rs', io: 'out', type: 'cursor' },
+            { name: 'ordarea', io: 'in', value: ordarea }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_lista_documentos (:resguardo, :area, :empresa, :rs, :ordarea)', params);
+        response.json({
+            data: {
+                documentos: result.rs
+            }
+        });
+    },
+    ValidarNuevaVersionDocumento: async (request, response) => {
+        let { codigo, empresa } = request.body;
+        let params = [
+            { name: 'documento', io: 'in', value: codigo },
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'codigo', io: 'out', type: 'number' },
+            { name: 'resultado', io: 'out', type: 'string' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_valida_nversion_documento (:documento, :empresa, :codigo, :resultado)', params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        response.json({
+            data: {
+                codigo: result.codigo,
+                resultado: result.resultado
+            }
+        });
+    },
+    CargaHistorialVersiones: async (request, response) => {
+        let { codigo, empresa } = request.body;
+        let params = [
+            { name: 'codigo', io: 'in', value: codigo },
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'nombre', io: 'out', type: 'string' },
+            { name: 'rs', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_documento_versiones (:codigo, :empresa, :nombre, :rs)', params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        response.json({
+            data: {
+                nombre: result.nombre,
+                versiones: result.rs
+            }
+        });
+    },
+    ValidarTraspasoDocumento: async (request, response) => {
+        let { codigo, empresa } = request.body;
+        let params = [
+            { name: 'codigo', io: 'in', value: codigo },
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'ocodigo', io: 'out', type: 'number' },
+            { name: 'omensaje', io: 'out', type: 'string' },
+            { name: 'rs', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_valida_traslado_documento (:codigo, :empresa, :ocodigo, :omensaje, :rs)', params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.ocodigo == 0) {
+            response.json({
+                error: result.omensaje
+            });
+            return;
+        }
+        response.json({
+            data: {
+                out: result.omensaje,
+                areas: result.rs
+            }
+        });
+    },
+    TraspasoDocumento: async (request, response) => {
+        let { key, tpdestino, destino, usuario } = request.body;
+        let params = [
+            { name: 'key', io: 'in', value: key },
+            { name: 'tpdestino', io: 'in', value: tpdestino },
+            { name: 'destino', io: 'in', value: destino },
+            { name: 'usuario', io: 'in', value: usuario },
+            { name: 'ocodigo', io: 'out', type: 'number' },
+            { name: 'oresultado', io: 'out', type: 'string' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_traslado_documento (:key, :tpdestino, :destino, :usuario, :ocodigo, :oresultado)', params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.ocodigo == 0) {
+            response.json({
+                error: result.omensaje
+            });
+            return;
+        }
+        response.json({
+            success: 'ok'
+        });
+    },
+    ValidarAnulacionDocumento: async (request, response) => {
+        let { codigo, empresa } = request.body;
+        let params = [
+            { name: 'codigo', io: 'in', value: codigo },
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'ocodigo', io: 'out', type: 'number' },
+            { name: 'omensaje', io: 'out', type: 'string' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_valida_anulacion_documento (:codigo, :empresa, :ocodigo, :omensaje)', params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.ocodigo == 0) {
+            response.json({
+                error: result.omensaje
+            });
+            return;
+        }
+        response.json({
+            data: {
+                out: result.omensaje
+            }
+        });
+    },
+    AnularDocumento: async (request, response) => {
+        let { key, usuario } = request.body;
+        let params = [
+            { name: 'key', io: 'in', value: key },
+            { name: 'usuario', io: 'in', value: usuario },
+            { name: 'ocodigo', io: 'out', type: 'number' },
+            { name: 'omensaje', io: 'out', type: 'string' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_anulacion_documento (:key, :usuario, :ocodigo, :omensaje)', params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.ocodigo == 0) {
+            response.json({
+                error: result.omensaje
+            });
+            return;
+        }
+        response.json({
+            result: 'ok'
+        });
+    },
+    ValidarEdicionDocumento: async (request, response) => {
+        let { codigo, empresa } = request.body;
+        let params = [
+            { name: 'codigo', io: 'in', value: codigo },
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'ocodigo', io: 'out', type: 'number' },
+            { name: 'omensaje', io: 'out', type: 'string' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_valida_edicion_documento (:codigo, :empresa, :ocodigo, :omensaje)', params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.ocodigo == 0) {
+            response.json({
+                error: result.omensaje
+            });
+            return;
+        }
+        response.json({
+            data: {
+                resultado: result.omensaje
+            }
+        });
+    },
+    EditarDocumento: async (request, response) => {
+        let { key, usuario, nombre, fregistro, fvence, fisico, electronico } = request.body;
+// p_key in varchar2, p_usuario in number, p_nombre varchar2, p_fregistro varchar2, p_fvence varchar2, p_fisico varchar2, p_electronico
+        let params = [
+            { name: 'key', io: 'in', value: key },
+            { name: 'usuario', io: 'in', value: usuario },
+            { name: 'nombre', io: 'in', value: nombre },
+            { name: 'fregistro', io: 'in', value: fregistro },
+            { name: 'fvence', io: 'in', value: fvence },
+            { name: 'fisico', io: 'in', value: fisico },
+            { name: 'electronico', io: 'in', value: electronico },
+            { name: 'ocodigo', io: 'out', type: 'number' },
+            { name: 'omensaje', io: 'out', type: 'string' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_edicion_documento (:key, :usuario, :nombre, :fregistro, :fvence, :fisico, :electronico, :ocodigo, :omensaje)', params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.ocodigo == 0) {
+            response.json({
+                error: result.omensaje
+            });
+            return;
+        }
+        response.json({
+            data: {
+                resultado: result.omensaje
+            }
+        });
+    },
+    DescargaDocumento: async (request, response) => {
+        const { ref } = request.query;
+        const decodedKey = Buffer.from(ref, 'base64').toString('utf-8');
+        const params = decodedKey.split('|');
+        let codigo = params[0];
+        let version = params[1];
+        let empresa = params[2];
+        let pdata = [
+            { name: 'codigo', io: 'in', value: codigo },
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'version', io: 'in', value: version },
+            { name: 'ocodigo', io: 'out', type: 'number' },
+            { name: 'oresguardo', io: 'out', type: 'string' },
+            { name: 'oarea', io: 'out', type: 'number' },
+            { name: 'oarhcivo', io: 'out', type: 'string' }
+        ];
+        let query = 'call pack_digitalizacion.sp_path_documento_version (:codigo, :empresa, :version, :ocodigo, :oresguardo, :oarea, :oarhcivo)';
+        let result = await db.resultSet(query, pdata);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.ocodigo == 0) {
+            response.json({
+                error2: result.omensaje
+            });
+            return;
+        }
+        const path = [base_dir, empresa, result.oresguardo, result.oarea, result.oarhcivo].join(dir_separator);
+        // descargar el archivo
+        const fs = require('fs');
+        var stream = fs.ReadStream(path);
+        response.setHeader('Content-type', 'application/octet-stream');
+        response.setHeader('Content-Disposition', 'attachment; filename="' + result.oarhcivo + '"');
+        stream.pipe(response);
+    },
+    ListaCombos: async (request, response) => {
+        let { empresa, area, combo } = request.body;
+        let params = [
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'area', io: 'in', value: area },
+            { name: 'combo', io: 'in', value: combo },
+            { name: 'ocodigo', io: 'out', type: 'number' },
+            { name: 'rs', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_combo_acuse_docs (:empresa, :area, :combo, :ocodigo, :rs)', params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.ocodigo == 0) {
+            response.json({
+                error: 'No hay datos para mostrar'
+            });
+            return;
+        }
+        response.json({
+            options: result.rs
+        });
+    },
+    AcuseListaDocumentos: async (request, response) => {
+        let { empresa, area, documento } = request.body;
+        let params = [
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'documento', io: 'in', value: documento },
+            { name: 'area', io: 'in', value: area },
+            { name: 'ocodigo', io: 'out', type: 'number' },
+            { name: 'omensaje', io: 'out', type: 'string' },
+            { name: 'rs', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet('call pack_digitalizacion.sp_acuse_docs (:empresa, :documento, :area, :ocodigo, :omensaje, :rs)', params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.ocodigo == 0) {
+            response.json({
+                error: result.omensaje
+            });
+            return;
+        }
+        response.json({
+            reporte: result.rs
+        });
+    },
+    DescargaDocumentoAcuse: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const jsSession = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            const { ref } = request.query;
+            const decodedKey = Buffer.from(ref, 'base64').toString('utf-8');
+            const params = decodedKey.split('|');
+            let codigo = params[0];
+            let version = params[1];
+            let empresa = params[2];
+            // verifica los permisos y genera el acuse
+            let infoEquipo = 'IP: ' + request.ip + ' | Browser: ' + request.headers['user-agent'];
+            let pdata = [
+                { name: 'empresa', io: 'in', value: empresa },
+                { name: 'documento', io: 'in', value: codigo },
+                { name: 'version', io: 'in', value: version },
+                { name: 'personal', io: 'in', value: jsSession.codigo },
+                { name: 'detalle', io: 'in', value: infoEquipo },
+                { name: 'ocodigo', io: 'out', type: 'number' },
+                { name: 'omensaje', io: 'out', type: 'string' }
+            ];
+            let query = 'call pack_digitalizacion.sp_check_acuse_doc (:empresa, :documento, :version, :personal, :detalle, :ocodigo, :omensaje)';
+            let result = await db.resultSet(query, pdata);
+            if (result.error) {
+                response.send(result.error);
+                return;
+            }
+            //
+            pdata = [
+                { name: 'codigo', io: 'in', value: codigo },
+                { name: 'empresa', io: 'in', value: empresa },
+                { name: 'version', io: 'in', value: version },
+                { name: 'ocodigo', io: 'out', type: 'number' },
+                { name: 'oresguardo', io: 'out', type: 'string' },
+                { name: 'oarea', io: 'out', type: 'number' },
+                { name: 'oarhcivo', io: 'out', type: 'string' }
+            ];
+            query = 'call pack_digitalizacion.sp_path_documento_version (:codigo, :empresa, :version, :ocodigo, :oresguardo, :oarea, :oarhcivo)';
+            result = await db.resultSet(query, pdata);
+            if (result.error) {
+                response.send(result.error);
+                return;
+            }
+            if (result.ocodigo == 0) {
+                response.send(result.omensaje);
+                return;
+            }
+            const path = [base_dir, empresa, result.oresguardo, result.oarea, result.oarhcivo].join(dir_separator);
+            // descargar el archivo
+            const fs = require('fs');
+            var stream = fs.ReadStream(path);
+            response.setHeader('Content-type', 'application/octet-stream');
+            response.setHeader('Content-Disposition', 'attachment; filename="' + result.oarhcivo + '"');
+            stream.pipe(response);
+        }
+        else {
+            response.send('No tienes permisos para acceder a esta sección');
+        }
     }
 };
 

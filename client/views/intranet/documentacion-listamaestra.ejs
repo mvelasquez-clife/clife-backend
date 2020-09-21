@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            .table thead th {
+                vertical-align: middle;
+            }
+            .table-sm tbody td p {
+                font-size: 0.75rem !important;
+            }
+            input[name=rb]:checked + label {
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% include _main.sidenav.admin.ejs %>
+            <% include _main.sidenav.documentacion.ejs %>
+            <% include _main.sidenav.footer.ejs %>
+        </div>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Control documentario</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Lista maestra</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Tipos de documento</p>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex">
+                                    <p class="mb-0 align-self-center text-primary">Seleccione una opción.</p>
+                                    <!-- -->
+                                    <form class="form-inline ml-3 mr-auto">
+                                        <label for="s-resguardo" class="mr-1">Resguardo</label>
+                                        <select id="s-resguardo" class="form-control form-control-sm mr-3">
+                                            <option value="0">Todo</option>
+                                            <option value="ASC">ASC</option>
+                                            <option value="EOP">EOP</option>
+                                        </select>
+                                        <!-- -->
+                                        <label for="s-area" class="mr-1">Oficina</label>
+                                        <select id="s-area" class="form-control form-control-sm mr-3">
+                                            <option value="-1">- Seleccione -</option>
+                                        </select>
+                                    </form>
+                                    <!-- -->
+                                    <a href="#" class="btn btn-sm btn-success align-self-center" data-toggle="modal" data-target="#modal-nuevo"><i class="fa fa-plus"></i> Registrar un documento</a>
+                                </div>
+                            </li>
+                            <li id="li-container" class="list-group-item">
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <div id="modal-nuevo" class="modal fade" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Nuevo documento</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body px-4">
+                        <div class="form-group">
+                            <label for="f-codigo">Código del documento</label>
+                            <input type="text" class="form-control form-control-sm text-primary w-50" id="f-codigo" placeholder="#####-####" readonly>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-8">
+                                <label for="f-tipodoc">Tipo de documento</label>
+                                <select name="tipodoc" id="f-tipodoc" class="form-control form-control-sm">
+                                    <option value="-1">Seleccione</option>
+                                </select>
+                                <div class="form-check d-none">
+                                    <input class="form-check-input" type="checkbox" name="fisico" id="f-prefijo" checked>
+                                    <label class="form-check-label" for="f-prefijo" style="margin-top:2px;">Usar prefijo</label>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="f-resguardo">Resguardo</label>
+                                <select name="resguardo" id="f-resguardo" class="form-control form-control-sm">
+                                    <option value="-1"> - </option>
+                                    <option value="ASC">ASC</option>
+                                    <option value="EOP">EOP</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="f-area">Área</label>
+                            <select name="area" id="f-area" class="form-control form-control-sm">
+                                <option value="-1">Seleccione</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="f-correlativo">Correlativo</label>
+                                <input type="text" class="form-control form-control-sm" id="f-correlativo">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="f-version">Versión actual</label>
+                                <input type="text" class="form-control form-control-sm" id="f-version">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="f-nombre">Nombre del documento</label>
+                            <input type="text" class="form-control form-control-sm" id="f-nombre">
+                        </div>
+                        <div class="form-group">
+                            <label for="f-archivo">Seleccione archivo</label>
+                            <input type="file" class="form-control-file" id="f-archivo" accept=".pdf,.doc.,.docx">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="f-fregistro">Fecha registro</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="f-fregistro">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="f-fvence">Fecha vencimiento</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="f-fvence">
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input mb-2" type="checkbox" name="fisico" id="f-fisico" checked>
+                            <label class="form-check-label mb-2" for="f-fisico" style="margin-top:2px;">El documento tiene una versión en físico</label>
+                        </div>
+                        <div class="form-group form-check">
+                            <input class="form-check-input" type="checkbox" name="electronico" id="f-electronico" checked>
+                            <label class="form-check-label" for="f-electronico" style="margin-top:2px;">El documento tiene una versión electrónica</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="f-rgdocumento">Registrar documento</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal edicion -->
+        <div id="modal-edicion" class="modal fade" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Editar documento</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body px-4">
+                        <div class="form-group">
+                            <input type="hidden" id="upd-id">
+                            <label for="upd-documento">Código del documento</label>
+                            <input type="text" readonly class="form-control-plaintext text-success" id="upd-documento">
+                            <small id="upd-observacion" class="form-text text-danger"></small>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="upd-version">Versión actual</label>
+                                <input type="text" class="form-control form-control-sm" id="upd-version" disabled>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="upd-nombre">Nombre del documento</label>
+                            <input type="text" class="form-control form-control-sm" id="upd-nombre">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="upd-fregistro">Fecha registro</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="upd-fregistro">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="upd-fvence">Fecha vencimiento</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="upd-fvence">
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input mb-2" type="checkbox" name="fisico" id="upd-fisico" checked>
+                            <label class="form-check-label mb-2" for="upd-fisico" style="margin-top:2px;">El documento tiene una versión en físico</label>
+                        </div>
+                        <div class="form-group form-check">
+                            <input class="form-check-input" type="checkbox" name="electronico" id="upd-electronico" checked>
+                            <label class="form-check-label" for="upd-electronico" style="margin-top:2px;">El documento tiene una versión electrónica</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="upd-submit">Actualizar datos</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal nueva version -->
+        <div id="modal-nversion" class="modal fade" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Crear nueva versión</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body px-4">
+                        <input type="hidden" id="nv-id">
+                        <div class="form-group">
+                            <label for="nv-documento" class="mb-0">Código del documento</label>
+                            <input type="text" readonly class="form-control-plaintext text-success" id="nv-documento">
+                            <small id="nv-observacion" class="form-text text-danger"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="nv-archivo">Seleccione archivo</label>
+                            <input type="file" class="form-control-file" id="nv-archivo" accept=".pdf,.doc.,.docx">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="nv-version">Nro. nueva versión</label>
+                                <input type="text" class="form-control form-control-sm" id="nv-version">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="nv-fregistro">Fecha registro</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="nv-fregistro">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="nv-fvence">Fecha vencimiento</label>
+                                <input type="text" class="form-control form-control-sm datepicker" id="nv-fvence">
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input mb-2" type="checkbox" name="fisico" id="nv-fisico" checked>
+                            <label class="form-check-label mb-2" for="nv-fisico" style="margin-top:2px;">El documento tiene una versión en físico</label>
+                        </div>
+                        <div class="form-group form-check">
+                            <input class="form-check-input" type="checkbox" name="electronico" id="nv-electronico" checked>
+                            <label class="form-check-label" for="nv-electronico" style="margin-top:2px;">El documento tiene una versión electrónica</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="nv-rgversion">Registrar documento</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal historico -->
+        <div id="modal-historico" class="modal fade" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Historial de versiones</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body px-4">
+                        <input type="hidden" id="nv-id">
+                        <div class="form-group">
+                            <label for="hv-documento" class="mb-0">Documento seleccionado</label>
+                            <input type="text" readonly class="form-control-plaintext text-success" id="hv-documento">
+                        </div>
+                        <table id="hv-tabla" class="table table-sm table-striped table-hover table-responsive"></table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Cerrar historial de versiones</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal traspaso -->
+        <div id="modal-traspaso" class="modal fade" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Traslado de documento</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body px-4">
+                        <div class="alert alert-primary no-rounded mb-2">
+                            <p class="mb-0">Utilice esta opción para trasladar el documento a otra área o documento. Una vez trasladado, el documento actual se anulará.</p>
+                        </div>
+                        <input type="hidden" id="trp-id">
+                        <div class="form-group">
+                            <label for="trp-descripcion" class="mb-0">Documento seleccionado</label>
+                            <input type="text" readonly class="form-control-plaintext text-success" id="trp-descripcion">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="rb" value="A" id="rb1">
+                                    <label for="rb1" class="form-check-label" style="margin-top:1px;">Trasladar el documento a un área</label>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="rb" value="D" id="rb2">
+                                    <label for="rb2" class="form-check-label" style="margin-top:1px;">Trasladar a otro(s) documentos(s)</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-8">
+                                <div class="form-group">
+                                    <label for="trp-area">Seleccione el área destino</label>
+                                    <select class="form-control form-control-sm" id="trp-area"></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="trp-documento">Seleccione el documento</label>
+                            <select multiple class="form-control form-control-sm" id="trp-documento" size="8"></select>
+                            <span id="emailHelp" class="form-text text-muted">Utilice <i class="font-weight-bold">Ctrl + clic izquierdo</i> para seleccionar múltiples documentos.</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal" id="trp-submit">Traspasar el documento</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal anulacion -->
+        <div id="modal-anulacion" class="modal fade" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger">Anulación de documento</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body px-4">
+                        <input type="hidden" id="anula-id">
+                        <div class="form-group">
+                            <label for="anula-descripcion" class="mb-0">Documento seleccionado</label>
+                            <input type="text" readonly class="form-control-plaintext text-danger" id="anula-descripcion">
+                        </div>
+                        <p class="mb-1">¿Realmente desea anular el documento? Una vez hecho, el personal no podrá verlo ni descargarlo.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal" id="anula-submit">Si, anular documento</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            
+            function registraDocumento() {
+                $('#f-rgdocumento').hide();
+                if ($('.is-invalid').length > 0) {
+                    alert('La información proporcionada es incorrecta. Verifique antes de continuar.');
+                    $('#f-rgdocumento').show();
+                    return;
+                }
+                let fdata = new FormData();
+                    fdata.append('tipodoc', document.getElementById('f-tipodoc').value);
+                    fdata.append('area', document.getElementById('f-area').value);
+                    fdata.append('resguardo', document.getElementById('f-resguardo').value);
+                    fdata.append('correlativo', document.getElementById('f-correlativo').value);
+                    fdata.append('version', document.getElementById('f-version').value);
+                    fdata.append('nombre', document.getElementById('f-nombre').value);
+                    fdata.append('fregistro', document.getElementById('f-fregistro').value);
+                    fdata.append('fvence', document.getElementById('f-fvence').value);
+                    fdata.append('fisico', document.getElementById('f-fisico').checked ? 'S' : 'N');
+                    fdata.append('digital', document.getElementById('f-electronico').checked ? 'S' : 'N');
+                    fdata.append('usuario', sesion.codigo);
+                    fdata.append('empresa', sesion.empresa);
+                    // agrega el archivo
+                    fdata.append('archivo', document.getElementById('f-archivo').files[0]);
+                $.ajax({
+                    url: '/intranet/guarda-cabecera-documento',
+                    method: 'post',
+                    data: fdata,
+                    dataType: 'json',
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function (result, status, xhr) {
+                        $('#f-rgdocumento').show();
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        $('#modal-nuevo').modal('hide');
+                        cargaListaDocumentos();
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. su ordenador derá formateado en breve...');
+                        $('#f-rgdocumento').show();
+                    }
+                });
+            }
+            function mayusNombre() {
+                var nombre = document.getElementById('f-nombre').value;
+                document.getElementById('f-nombre').value = nombre.toUpperCase();
+            }
+            function generaCodigoDocumento() {
+                let prefijo = '';
+                let area = '';
+                if (document.getElementById('f-prefijo').checked) {
+                    prefijo = $('#f-tipodoc option:checked').data('prefix');
+                }
+                area = $('#f-area option:checked').data('prefix');
+                let correlativo = document.getElementById('f-correlativo').value;
+                if (isNaN(correlativo)) {
+                    // error pe ctv
+                    $('#f-correlativo').addClass('is-invalid');
+                }
+                else {
+                    $('#f-correlativo').removeClass('is-invalid');
+                    correlativo = correlativo.padStart(3, '0');
+                    let codigodoc;
+                    if ($('#f-tipodoc option:checked').data('metodo') == 'S') {
+                        codigodoc = prefijo + '-' + correlativo;
+                    }
+                    else {
+                        codigodoc = prefijo + '/' + area + '-' + correlativo;
+                    }
+                    document.getElementById('f-codigo').value = codigodoc;
+                }
+            }
+            function cargaCorrelativo() {
+                let area = document.getElementById('f-area').value;
+                let tipodoc = document.getElementById('f-tipodoc').value;
+                if (area != '-1' && tipodoc != '-1') {
+                    let params = {
+                        area: area,
+                        tipodoc: tipodoc,
+                        empresa: sesion.empresa
+                    };
+                    $.ajax({
+                        url: '/intranet/carga-correlativo',
+                        data: params,
+                        method: 'post',
+                        dataType: 'json',
+                        success: function (result, status, xhr) {
+                            if (result.error) {
+                                alert(result.error);
+                                return;
+                            }
+                            let correlativo = result.data.correlativo;
+                            document.getElementById('f-correlativo').value = correlativo;
+                            $('#f-correlativo').removeAttr('disabled');
+                            $('#f-version').removeAttr('disabled');
+                            generaCodigoDocumento();
+                        },
+                        error: function (xhr, status, error) {
+                            alert('error grave. su ordenador derá formateado en breve...');
+                        }
+                    });
+                }
+            }
+            function modalNuevoOnShow(event) {
+                document.getElementById('f-prefijo').checked = true;
+                document.getElementById('f-fisico').checked = true;
+                document.getElementById('f-electronico').checked = true;
+                document.getElementById('f-codigo').value = '';
+                document.getElementById('f-correlativo').value = '';
+                document.getElementById('f-version').value = '1';
+                document.getElementById('f-nombre').value = '';
+                document.getElementById('f-archivo').value = '';
+                document.getElementById('f-fvence').value = '';
+                $('#f-correlativo').prop('disabled', true);
+                $('#f-version').prop('disabled', true);
+                $('#f-area').empty();
+                $('#f-tipodoc').empty();
+                $('#f-resguardo option[value=-1]').prop('selected', true);
+                $.ajax({
+                    url: '/intranet/datos-form-rgdocumento',
+                    method: 'post',
+                    data: { empresa: sesion.empresa },
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        // llenar combo de areas
+                        let areas = result.data.areas;
+                        let numAreas = areas.length;
+                        let comboAreas = $('#f-area');
+                        comboAreas.append(
+                            $('<option>').val('-1').text('- Seleccione -').data('prefix', '-').prop('selected', true).prop('disabled', true)
+                        );
+                        for (let i = 0; i < numAreas; i++) {
+                            let area = areas[i];
+                            comboAreas.append(
+                                $('<option>').val(area.codigo).text(area.abrev + ' - ' + area.nombre).data('prefix', area.abrev).data('resguardo', area.resguardo)
+                            );
+                        }
+                        // llenar combo de tipos
+                        let tipos = result.data.tipos;
+                        let numTipos = tipos.length;
+                        let comboTipos = $('#f-tipodoc');
+                        comboTipos.append(
+                            $('<option>').val('-1').text('- Seleccione -').data('prefix', '-').prop('selected', true).prop('disabled', true)
+                        );
+                        for (let i = 0; i < numTipos; i++) {
+                            let tipo = tipos[i];
+                            if (tipo.metodo == 'S') {
+                                comboTipos.append(
+                                    $('<option>').val(tipo.codigo).text('Métodos ' + tipo.nombre).data('prefix', tipo.prefijo).data('metodo', tipo.metodo).addClass('text-primary')
+                                );
+                            }
+                            else {
+                                comboTipos.append(
+                                    $('<option>').val(tipo.codigo).text(tipo.nombre).data('prefix', tipo.prefijo).data('metodo', tipo.metodo)
+                                );
+                            }
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. su ordenador derá formateado en breve...');
+                    }
+                });
+            }
+            function areaOnChange() {
+                var resguardo = $('#f-area option:selected').data('resguardo');
+                $('#f-resguardo option[value=' + resguardo + ']').prop('selected', true);
+                cargaCorrelativo();
+            }
+            function cargarAreasEmpresa() {
+                let comboAreas = $('#s-area');
+                comboAreas.empty();
+                $.ajax({
+                    url: '/intranet/datos-form-rgdocumento',
+                    method: 'post',
+                    data: { empresa: sesion.empresa },
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        // llenar combo de areas
+                        let areas = result.data.areas;
+                        let numAreas = areas.length;
+                        comboAreas.append(
+                            $('<option>').val('-1').text('- Seleccione -').data('prefix', '-').prop('selected', true).prop('disabled', true)
+                        );
+                        for (let i = 0; i < numAreas; i++) {
+                            let area = areas[i];
+                            comboAreas.append(
+                                $('<option>').val(area.codigo).text(area.abrev + ' - ' + area.nombre).data('prefix', area.abrev).data('resguardo', area.resguardo)
+                            );
+                        }
+                        cargaListaDocumentos();
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. su ordenador derá formateado en breve...');
+                    }
+                });
+            }
+            function editarDocumento(event) {
+                event.preventDefault();
+                let a = $(this);
+                let params = {
+                    codigo: a.parent().parent().data('codigo'),
+                    empresa: sesion.empresa
+                };
+                $.ajax({
+                    url: '/intranet/validar-edicion-doc',
+                    method: 'post',
+                    data: params,
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            $('#modal-edicion').modal('hide');
+                        }
+                        // configura formulario
+                        var sresult = result.data.resultado.split('|');
+                        document.getElementById('upd-id').value = sresult[0];
+                        document.getElementById('upd-documento').value = params.codigo + ' - ' + sresult[2];
+                        document.getElementById('upd-version').value = sresult[1];
+                        document.getElementById('upd-nombre').value = sresult[2];
+                        if (sresult[3] != 'x') {
+                            document.getElementById('upd-fregistro').value = sresult[3];
+                            $('#upd-fregistro').prop('disabled', true);
+                            $('#upd-fregistro').next().children().prop('disabled', true);
+                        }
+                        else {
+                            $('#upd-fregistro').removeAttr('disabled');
+                            $('#upd-fregistro').next().children().removeAttr('disabled');
+                            document.getElementById('upd-fregistro').value = '';
+                        }
+                        if (sresult[4] != 'x') {
+                            document.getElementById('upd-fvence').value = sresult[4];
+                            $('#upd-fvence').prop('disabled', true);
+                            $('#upd-fvence').next().children().prop('disabled', true);
+                        }
+                        else {
+                            $('#upd-fvence').removeAttr('disabled');
+                            $('#upd-fvence').next().children().removeAttr('disabled');
+                            document.getElementById('upd-fvence').value = '';
+                        }
+                        document.getElementById('upd-fisico').checked = sresult[5] == 'S';
+                        document.getElementById('upd-electronico').checked = sresult[6] == 'S';
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. su ordenador derá formateado en breve...');
+                    }
+                });
+                $('#modal-edicion').modal('show');
+            }
+            function creaVersion(event) {
+                event.preventDefault();
+                let a = $(this);
+                let params = {
+                    codigo: a.parent().parent().data('codigo'),
+                    empresa: sesion.empresa
+                };
+                $.ajax({
+                    url: '/intranet/validar-nversion-doc',
+                    method: 'post',
+                    data: params,
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        // configura formulario
+                        if (result.data.codigo == -1) {
+                            document.getElementById('nv-documento').value = params.codigo;
+                            document.getElementById('nv-observacion').innerHTML = result.data.resultado;
+                        }
+                        else {
+                            // habilita todo plox
+                            var sdata = result.data.resultado.split('|');
+                            document.getElementById('nv-id').value = sdata[0];
+                            document.getElementById('nv-documento').value = params.codigo + ' - ' + sdata[2];
+                            $('#nv-rgversion').removeAttr('disabled');
+                            $('#nv-version').removeAttr('disabled').val(result.data.codigo);
+                            $('#nv-fregistro').removeAttr('disabled').val(sdata[1]);
+                            $('#nv-fvence').removeAttr('disabled').val('');
+                            $('#nv-fisico').removeAttr('disabled').prop('checked', true);
+                            $('#nv-electronico').removeAttr('disabled').prop('checked', true);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. su ordenador derá formateado en breve...');
+                    }
+                });
+                $('#modal-nversion').modal('show');
+            }
+            function muestraHistoricoVersiones(event) {
+                event.preventDefault();
+                $('#hv-tabla').empty();
+                let a = $(this);
+                let params = {
+                    codigo: a.parent().parent().data('codigo'),
+                    empresa: sesion.empresa
+                };
+                $.ajax({
+                    url: '/intranet/historial-versiones-documento',
+                    method: 'post',
+                    data: params,
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        // muestra el nombre del documento
+                        document.getElementById('hv-documento').value = params.codigo + ' - ' + result.data.nombre;
+                        // muestra el historial de versiones
+                        let versiones = result.data.versiones;
+                        let numVersiones = versiones.length;
+                        let tbody = $('<tbody>');
+                        for (let i = 0; i < numVersiones; i++) {
+                            let fila = versiones[i];
+                            tbody.append(
+                                $('<tr>').append(
+                                    $('<td>').text(fila.version).addClass('font-weight-bold')
+                                ).append(
+                                    $('<td>').append(
+                                        $('<p>').text(fila.usuregistro).addClass('mb-1')
+                                    ).append(
+                                        $('<p>').html('El día <i>' + fila.fregistro + '</i>').addClass('mb-0')
+                                    )
+                                ).append(
+                                    $('<td>').append(
+                                        $('<p>').text(fila.usuaprueba).addClass('mb-1')
+                                    ).append(
+                                        $('<p>').html(fila.faprueba ? 'El día <i>' + fila.faprueba + '</i>' : '').addClass('mb-0')
+                                    )
+                                ).append(
+                                    $('<td>').append(
+                                        $('<p>').text(fila.usuretira).addClass('mb-1')
+                                    ).append(
+                                        $('<p>').html(fila.fretira ? 'El día <i>' + fila.fretira + '</i>' : '').addClass('mb-0')
+                                    )
+                                ).append(
+                                    $('<td>').text(fila.fvence)
+                                ).append(
+                                    $('<td>').append(
+                                        $('<p>').html('Física: ' + (fila.fisico == 'S' ? '<i class="fa fa-check text-success">' : '<i class="fa fa-ban text-danger">')).addClass('mb-1')
+                                    ).append(
+                                        $('<p>').html('Electrónica: ' + (fila.electronico == 'S' ? '<i class="fa fa-check text-success">' : '<i class="fa fa-ban text-danger">')).addClass('mb-1')
+                                    )
+                                ).append(
+                                    $('<td>').text(fila.estado)
+                                ).addClass(fila.estado == 'Vigente' ? 'font-weight-bold' : '')
+                            );
+                        }
+                        $('#hv-tabla').empty().append(
+                            $('<thead>').append(
+                                $('<tr>').append(
+                                    $('<th>').text('Versión')
+                                ).append(
+                                    $('<th>').text('Registrado por')
+                                ).append(
+                                    $('<th>').text('Aprobado por')
+                                ).append(
+                                    $('<th>').text('Retirado por')
+                                ).append(
+                                    $('<th>').text('Fe.Vence')
+                                ).append(
+                                    $('<th>').text('Representaciones')
+                                ).append(
+                                    $('<th>').text('Estado')
+                                )
+                            )
+                        ).append(tbody);
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. su ordenador derá formateado en breve...');
+                    }
+                });
+                $('#modal-historico').modal('show');
+            }
+            function traspasarDocumento(event) {
+                event.preventDefault();
+                let a = $(this);
+                let params = {
+                    codigo: a.parent().parent().data('codigo'),
+                    empresa: sesion.empresa
+                };
+                $.ajax({
+                    url: '/intranet/validar-traspaso-doc',
+                    method: 'post',
+                    data: params,
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            $('#modal-traspaso').modal('hide');
+                            return;
+                        }
+                        // escribe el id y la descripcion del documento
+                        let comboAreas = $('#trp-area');
+                        let sdata = result.data.out.split('|');
+                        let areas = result.data.areas;
+                        let numAreas = areas.length;
+                        document.getElementById('trp-id').value = sdata[0];
+                        document.getElementById('trp-descripcion').value = params.codigo + ' - ' + sdata[1];
+                        // llenar el combo de areas
+                        comboAreas.append(
+                            $('<option>').val(-1).text('- Seleccione -').prop('selected', true).prop('disabled', true)
+                        );
+                        for (let i = 0; i < numAreas; i++) {
+                            let iarea = areas[i];
+                            comboAreas.append(
+                                $('<option>').val(iarea.codigo).text(iarea.abrev + ' - ' + iarea.nombre).data('abrev', iarea.abrev)
+                            );
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. su ordenador derá formateado en breve...');
+                    }
+                });
+                $('#modal-traspaso').modal('show');
+            }
+            function anularDocumento(event) {
+                event.preventDefault();
+                let a = $(this);
+                let params = {
+                    codigo: a.parent().parent().data('codigo'),
+                    empresa: sesion.empresa
+                };
+                $.ajax({
+                    url: '/intranet/validar-anulacion-doc',
+                    method: 'post',
+                    data: params,
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            $('#modal-anulacion').modal('hide');
+                            return;
+                        }
+                        // escribe el id y la descripcion del documento
+                        let sdata = result.data.out.split('|');
+                        document.getElementById('anula-id').value = sdata[0];
+                        document.getElementById('anula-descripcion').value = params.codigo + ' - ' + sdata[1];
+                        $('#anula-submit').removeAttr('disabled');
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. su ordenador derá formateado en breve...');
+                        $('#modal-anulacion').modal('hide');
+                    }
+                });
+                $('#modal-anulacion').modal('show');
+            }
+            function verDocumento(event) {
+                event.preventDefault();
+                let a = $(this);
+                let version = a.data('version');
+                let codigo = a.parent().parent().data('codigo');
+                // prepara la key
+                let key = [codigo, version, sesion.empresa].join('|');
+                let b64Key = btoa(key);
+                let encodedKey = encodeURIComponent(b64Key);
+                window.open('/intranet/descarga-documento?ref=' + encodedKey, '_blank');
+            }
+            function escribirListaDocumentos(documentos) {
+                let tbody = $('<tbody>');
+                let numDocumentos = documentos.length;
+                // controles
+                let prevResguardo = '';
+                let prevArea = '';
+                let prevTipodoc = '';
+                // variables de estado
+                let muestraResguardo = document.getElementById('s-resguardo').value == '0';
+                let muestraArea = document.getElementById('s-area').value == '-1';
+                // prepara el tbody
+                if (numDocumentos > 0) {
+                    for (let i = 0; i < numDocumentos; i++) {
+                        let iDocumento = documentos[i];
+                        // cabecera de resguardo
+                        if (muestraResguardo && prevResguardo != iDocumento.resguardo) {
+                            prevResguardo = iDocumento.resguardo;
+                            tbody.append(
+                                $('<tr>').append(
+                                    $('<td>').html('Resguardo <b>' + prevResguardo + '</b>').attr('colspan', 10)
+                                ).addClass('bg-dark text-light')
+                            );
+                        }
+                        // cabecera de areas
+                        if (muestraArea && prevArea != iDocumento.coarea) {
+                            prevArea = iDocumento.coarea;
+                            tbody.append(
+                                $('<tr>').append(
+                                    $('<td>').html('Área: <b>' + iDocumento.nomarea + '</b>').attr('colspan', 10)
+                                ).addClass('bg-primary text-light')
+                            );
+                        }
+                        // cabecera de tipo documento
+                        if (prevTipodoc != iDocumento.abrvtpdoc) {
+                            prevTipodoc = iDocumento.abrvtpdoc;
+                            tbody.append(
+                                $('<tr>').append(
+                                    $('<td>').text(iDocumento.nomtpdoc).addClass('font-weight-bold').attr('colspan', 10)
+                                ).addClass('bg-warning text-dark')
+                            );
+                        }
+                        // muestra el documento
+                        tbody.append(
+                            $('<tr>').append(
+                                $('<td>').text(iDocumento.codigo).addClass('font-weight-bold')
+                            ).append(
+                                $('<td>').text(iDocumento.documento)
+                            ).append(
+                                $('<td>').addClass('text-right').text(iDocumento.version)
+                            ).append(
+                                $('<td>').addClass('text-right').text(iDocumento.fregistro)
+                            ).append(
+                                $('<td>').addClass('text-right').text(iDocumento.fvence)
+                            ).append(
+                                $('<td>').addClass('text-center').append(
+                                    iDocumento.sfisico == 'S' ?
+                                        $('<i>').addClass('fa fa-check text-success') :
+                                        ''
+                                )
+                            ).append(
+                                $('<td>').addClass('text-center').append(
+                                    iDocumento.sdigital == 'S' ?
+                                        $('<i>').addClass('fa fa-check text-success') :
+                                        ''
+                                )
+                            ).append(
+                                $('<td>').addClass('text-center font-weight-bold ' + (iDocumento.estado == 'Vigente' ? 'text-dark' : 'text-danger')).text(iDocumento.estado)
+                            ).append(
+                                $('<td>').text(iDocumento.observaciones)
+                            ).append(
+                                $('<td>').append(
+                                    $('<div>').append(
+                                        $('<button>').append(
+                                            $('<i>').addClass('fa fa-gear')
+                                        ).addClass('btn btn-primary btn-sm dropdown-toggle').attr({
+                                            'type': 'button',
+                                            'data-toggle': 'dropdown',
+                                            'aria-haspopup': true,
+                                            'aria-expanded': false
+                                        })
+                                    ).append(
+                                        $('<div>').append(
+                                            $('<a>').text('Editar').prepend(
+                                                $('<i>').addClass('fa fa-pencil mr-2')
+                                            ).addClass('dropdown-item').attr('href', '#').on('click', editarDocumento)
+                                        ).append(
+                                            $('<a>').text('Nueva versión').prepend(
+                                                $('<i>').addClass('fa fa-plus mr-2')
+                                            ).addClass('dropdown-item').attr('href','#').on('click', creaVersion)
+                                        ).append(
+                                            $('<a>').text('Historial de versiones').prepend(
+                                                $('<i>').addClass('fa fa-history mr-2')
+                                            ).addClass('dropdown-item').attr('href', '#').on('click', muestraHistoricoVersiones)
+                                        ).append(
+                                            $('<a>').text('Traspasar este documento').prepend(
+                                                $('<i>').addClass('fa fa-exchange mr-2')
+                                            ).addClass('dropdown-item').attr('href', '#').on('click', traspasarDocumento)
+                                        ).append(
+                                            $('<a>').text('Anular documento').prepend(
+                                                $('<i>').addClass('fa fa-ban mr-2')
+                                            ).addClass('dropdown-item').attr('href', '#').on('click', anularDocumento)
+                                        ).append(
+                                            $('<a>').text('Ver documento').prepend(
+                                                $('<i>').addClass('fa fa-file-text-o mr-2')
+                                            ).addClass('dropdown-item').attr('href', '#').data('version', iDocumento.version).on('click', verDocumento)
+                                        ).addClass('dropdown-menu dropdown-menu-right')
+                                    ).data('codigo', iDocumento.codigo).addClass('dropdown')
+                                )
+                            )
+                        );
+                    }
+                }
+                else {
+                    tbody.append(
+                        $('<tr>').append(
+                            $('<td>').attr('colspan', 9).text('No se encontraron documentos')
+                        )
+                    );
+                }
+                // agrega la tabla
+                $('#li-container').empty().append(
+                    $('<table>').append(
+                        $('<thead>').append(
+                            $('<tr>').append(
+                                $('<th>').text('Código')
+                            ).append(
+                                $('<th>').text('Nombre del documento')
+                            ).append(
+                                $('<th>').text('Versión')
+                            ).append(
+                                $('<th>').text('Fe.Emisión')
+                            ).append(
+                                $('<th>').text('Fe.Vencimiento')
+                            ).append(
+                                $('<th>').text('Físico')
+                            ).append(
+                                $('<th>').text('Electrónico')
+                            ).append(
+                                $('<th>').text('Estado')
+                            ).append(
+                                $('<th>').text('')
+                            ).append(
+                                $('<th>').text('')
+                            )
+                        )
+                    ).append(tbody).addClass('table table-striped table-hover my-1')
+                ).show();
+            }
+            function cargaListaDocumentos() {
+                var li = $('#li-container');
+                li.show().empty().append(
+                    $('<p>').addClass('mb-1 text-secondary').text('Por favor, espere...')
+                );
+                let data = {
+                    resguardo: document.getElementById('s-resguardo').value,
+                    area: document.getElementById('s-area').value,
+                    empresa: sesion.empresa
+                };
+                $.ajax({
+                    url: '/intranet/carga-lista-documentos',
+                    method: 'post',
+                    data: data,
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        // recibe la lista de documentos
+                        let documentos = result.data.documentos;
+                        escribirListaDocumentos(documentos);
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. su ordenador derá formateado en breve...');
+                    }
+                });
+            }
+            function modalVersionOnShow() {
+                $('#nv-observacion').hide();
+                $('#nv-rgversion').prop('disabled', true);
+                $('#nv-version').prop('disabled', true).val('');
+                $('#nv-fregistro').prop('disabled', true).val('');
+                $('#nv-fvence').prop('disabled', true).val('');
+                $('#nv-fisico').prop('disabled', true).prop('checked', false);
+                $('#nv-electronico').prop('disabled', true).prop('checked', false);
+            }
+            function registraNuevaVersionDocumento(event) {
+                event.preventDefault();
+                $('#nv-rgversion').hide();
+                let fdata = new FormData();
+                    fdata.append('key', document.getElementById('nv-id').value);
+                    fdata.append('nversion', document.getElementById('nv-version').value);
+                    fdata.append('fregistro', document.getElementById('nv-fregistro').value);
+                    fdata.append('fvence', document.getElementById('nv-fvence').value);
+                    fdata.append('fisico', document.getElementById('nv-fisico').checked ? 'S' : 'N');
+                    fdata.append('electronico', document.getElementById('nv-electronico').checked ? 'S' : 'N');
+                    fdata.append('usuario', sesion.codigo);
+                    fdata.append('empresa', sesion.empresa);
+                    // agrega el archivo
+                    fdata.append('archivo', document.getElementById('nv-archivo').files[0]);
+                $.ajax({
+                    url: '/intranet/registra-nversion-doc',
+                    method: 'post',
+                    data: fdata,
+                    dataType: 'json',
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function (result, status, xhr) {
+                        $('#nv-rgversion').show();
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        if (result.data.codigo == 0) {
+                            alert(result.data.mensaje);
+                            return;
+                        }
+                        // ocultar el modal y recarga la lista de documentos
+                        $('#modal-nversion').modal('hide');
+                        cargaListaDocumentos();
+                    },
+                    error: function (xhr, status, error) {
+                        $('#nv-rgversion').show();
+                        alert('error grave. su ordenador derá formateado en breve...');
+                    }
+                });
+            }
+            function modalTraspasoOnShow() {
+                $('#trp-area').empty();
+                $('#trp-documento').empty();
+                document.getElementById('trp-id').value = '';
+                document.getElementById('trp-descripcion').value = '';
+                document.getElementById('rb1').checked = true;
+                $('#trp-documento').prop('disabled', true);
+            }
+            function cargaDocumentosArea() {
+                let area = document.getElementById('trp-area').value;
+                if (area != '-1') {
+                    let params = {
+                        resguardo: '0',
+                        area: area,
+                        empresa: sesion.empresa,
+                        ordarea: 1
+                    };
+                    $.ajax({
+                        url: '/intranet/carga-lista-documentos',
+                        method: 'post',
+                        data: params,
+                        dataType: 'json',
+                        success: function (result, status, xhr) {
+                            if (result.error) {
+                                alert(result.error);
+                                return;
+                            }
+                            let documentos = result.data.documentos;
+                            let numDocumentos = documentos.length;
+                            let prevTpdoc = '';
+                            let cmbdocumentos = $('#trp-documento');
+                            cmbdocumentos.empty();
+                            // llenar multiselect de documentos
+                            for (let i = 0; i < numDocumentos; i++) {
+                                let idocumento = documentos[i];
+                                if (idocumento.abrvtpdoc != prevTpdoc) {
+                                    prevTpdoc = idocumento.abrvtpdoc;
+                                    cmbdocumentos.append(
+                                        $('<option>').val(prevTpdoc).text(idocumento.nomtpdoc).prop('disabled', true).addClass('text-primary font-italic')
+                                    );
+                                }
+                                cmbdocumentos.append(
+                                    $('<option>').val(idocumento.codigo).text('-> ' + idocumento.codigo + ' - ' + idocumento.documento)
+                                );
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            alert('error grave. su ordenador derá formateado en breve...');
+                        }
+                    });
+                }
+                else {
+                    console.log('no hay area pz men...');
+                }
+            }
+            function rbOnChange() {
+                let tipo = $('input[name=rb]:checked').val();
+                if (tipo == 'A') {
+                    $('#trp-documento').empty().prop('disabled', true);
+                }
+                else {
+                    $('#trp-documento').removeAttr('disabled');
+                    cargaDocumentosArea();
+                }
+            }
+            function trpAreaOnChange() {
+                let tipo = $('input[name=rb]:checked').val();
+                if (tipo == 'D') {
+                    cargaDocumentosArea();
+                }
+            }
+            function traspasarDocumentoSubmit() {
+                $('#trp-submit').hide();
+                let tpdestino = $('input[name=rb]:checked').val();
+                let destino = '';
+                if (tpdestino == 'A') {
+                    if (document.getElementById('trp-area').value == '-1') {
+                        alert('Debe seleccionar el área destino');
+                        $('#trp-submit').show();
+                        return;
+                    }
+                    destino = $('#trp-area option:selected').data('abrev');
+                }
+                else {
+                    let slareas = $('#trp-documento').val();
+                    if (slareas.length == 0) {
+                        alert('Debe elegir al menos un documento destino');
+                        $('#trp-submit').show();
+                    }
+                    destino = slareas.join(', ');
+                }
+                let params = {
+                    key: document.getElementById('trp-id').value,
+                    tpdestino: tpdestino,
+                    destino: destino,
+                    usuario: sesion.codigo
+                };
+                $.ajax({
+                    url: '/intranet/traspaso-documento',
+                    method: 'post',
+                    data: params,
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        $('#nv-rgversion').show();
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        // ocultar el modal y recarga la lista de documentos
+                        $('#modal-traspaso').modal('hide');
+                        $('#trp-submit').show();
+                        cargaListaDocumentos();
+                    },
+                    error: function (xhr, status, error) {
+                        $('#trp-submit').show();
+                        alert('error grave. su ordenador derá formateado en breve...');
+                    }
+                });
+            }
+            function modalAnulacionOnShow() {
+                document.getElementById('anula-id').value = '';
+                document.getElementById('anula-descripcion').value = '';
+                $('#anula-submit').prop('disabled', true);
+            }
+            function anularDocumentoSubmit() {
+                $('#anula-submit').hide();
+                let params = {
+                    key: document.getElementById('anula-id').value,
+                    usuario: sesion.codigo
+                };
+                $.ajax({
+                    url: '/intranet/anular-documento',
+                    method: 'post',
+                    data: params,
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        $('#anula-submit').show();
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        // ocultar el modal y recarga la lista de documentos
+                        $('#modal-anulacion').modal('hide');
+                        $('#anula-submit').show();
+                        cargaListaDocumentos();
+                    },
+                    error: function (xhr, status, error) {
+                        $('#anula-submit').show();
+                        alert('error grave. su ordenador derá formateado en breve...');
+                    }
+                });
+            }
+            ConfiguraDatePickers = _ => {
+                $('#f-fregistro').datepicker({
+                    // locale: 'es-es',
+                    format: 'dd/mm/yyyy',
+                    datepicker: { weekStartDay: 1 },
+                    uiLibrary: 'bootstrap4',
+                    iconsLibrary: 'fontawesome'
+                });
+                $('#f-fvence').datepicker({
+                    // locale: 'es-es',
+                    format: 'dd/mm/yyyy',
+                    datepicker: { weekStartDay: 1 },
+                    uiLibrary: 'bootstrap4',
+                    iconsLibrary: 'fontawesome'
+                });
+                $('#nv-fregistro').datepicker({
+                    // locale: 'es-es',
+                    format: 'dd/mm/yyyy',
+                    datepicker: { weekStartDay: 1 },
+                    uiLibrary: 'bootstrap4',
+                    iconsLibrary: 'fontawesome'
+                });
+                $('#nv-fvence').datepicker({
+                    // locale: 'es-es',
+                    format: 'dd/mm/yyyy',
+                    datepicker: { weekStartDay: 1 },
+                    uiLibrary: 'bootstrap4',
+                    iconsLibrary: 'fontawesome'
+                });
+                $('#upd-fregistro').datepicker({
+                    // locale: 'es-es',
+                    format: 'dd/mm/yyyy',
+                    datepicker: { weekStartDay: 1 },
+                    uiLibrary: 'bootstrap4',
+                    iconsLibrary: 'fontawesome'
+                });
+                $('#upd-fvence').datepicker({
+                    // locale: 'es-es',
+                    format: 'dd/mm/yyyy',
+                    datepicker: { weekStartDay: 1 },
+                    uiLibrary: 'bootstrap4',
+                    iconsLibrary: 'fontawesome'
+                });
+            }
+            function modalEdicionOnShow() {
+                $('#upd-observacion').hide();
+            }
+            function actualizaDocumento(event) {
+                event.preventDefault();
+                $('#upd-submit').hide();
+                var params = {
+                    key: document.getElementById('upd-id').value,
+                    usuario: sesion.codigo,
+                    nombre: document.getElementById('upd-nombre').value,
+                    fregistro: document.getElementById('upd-fregistro').value,
+                    fvence: document.getElementById('upd-fvence').value,
+                    fisico: document.getElementById('upd-fisico').checked ? 'S' : 'N',
+                    electronico: document.getElementById('upd-electronico').checked ? 'S' : 'N'
+                };
+                if (params.nombre == '') {
+                    alert('Ingrese un nombre válido');
+                    return;
+                }
+                $.ajax({
+                    url: '/intranet/editar-doc',
+                    method: 'post',
+                    data: params,
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        $('#upd-submit').show();
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        // ocultar el modal y recarga la lista de documentos
+                        $('#modal-edicion').modal('hide');
+                        cargaListaDocumentos();
+                    },
+                    error: function (xhr, status, error) {
+                        $('#upd-submit').show();
+                        alert('error grave. su ordenador derá formateado en breve...');
+                    }
+                });
+            }
+            // go!
+            $(_ => {
+                $('#li-container').hide();
+                $('#menu-documentacion').collapse('show')
+                $('#documentacion-lista').addClass('active');
+                $('#modal-nuevo').on('show.bs.modal', modalNuevoOnShow);
+                $('#f-area').on('change', areaOnChange);
+                $('#f-tipodoc').on('change', cargaCorrelativo);
+                $('#f-correlativo').on('keyup', generaCodigoDocumento);
+                $('#f-rgdocumento').on('click', registraDocumento);
+                $('#f-nombre').on('keyup', mayusNombre);
+                $('#modal-nversion').on('show.bs.modal', modalVersionOnShow);
+                $('#modal-edicion').on('show.bs.modal', modalEdicionOnShow);
+                $('#upd-submit').on('click', actualizaDocumento);
+                $('#nv-rgversion').on('click', registraNuevaVersionDocumento);
+                ConfiguraDatePickers();
+                cargarAreasEmpresa();
+                $('#s-resguardo').on('change', cargaListaDocumentos);
+                $('#s-area').on('change', cargaListaDocumentos);
+                $('#modal-traspaso').on('show.bs.modal', modalTraspasoOnShow);
+                $('input[name=rb]').on('change', rbOnChange);
+                $('#trp-area').on('change', trpAreaOnChange);
+                $('#trp-submit').on('click', traspasarDocumentoSubmit);
+                $('#modal-anulacion').on('show.bs.modal', modalAnulacionOnShow);
+                $('#anula-submit').on('click', anularDocumentoSubmit);
+                $('#f-fregistro').on('change', function() {
+                    var cfecha = $('#f-fregistro').val();
+                    var vfecha = cfecha.split('/');
+                    var fanio = parseInt(vfecha[2]) + 3;
+                    cfecha = [vfecha[0], vfecha[1], fanio].join('/');
+                    $('#f-fvence').val(cfecha);
+                });
+            });
+        </script>
+    </body>
+</html>

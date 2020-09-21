@@ -83,6 +83,7 @@ const extranetController = {
             };
             result = await conn.execute(query, params, responseParams);
             result = result.rows[0];
+console.log(result);
             conn.close();
             if (result.stact == 'N') {
                 response.cookie('auth-err','Su cuenta no está ativada. Utilice el enlace proporcionado en el correo de confirmación enviado al momento de su registro.', { httpOnly: true });
@@ -211,6 +212,7 @@ console.log(params);
                 params = {
                     p_data: { val: xdata }
                 };
+console.log(query, params);
                 result = await conn.execute(query, params, responseParams);
                 let sCliente = result.rows[0].out.split('@');
 // yrazonsocial||'@'||nvl(ydisponible,0)||'@'||nvl(yimpsolicitud, 0)||'@'||nvl(ydeuda, 0)||'@'||yestado||'@'||ymensaje||'@'||ynumdirecc||'@'||ycodireccion||'@'||ycocliente;
@@ -300,6 +302,7 @@ console.log(params);
                     p_empresa: 11,
                     p_moneda: cmoneda
                 };
+console.log(query, params);
                 result = await conn.execute(query, params, responseParams);
                 sCtacte = result.rows;
                 // out
@@ -315,7 +318,7 @@ console.log(params);
             catch (err) {
                 console.error(err);
                 response.json({
-                    error: err
+                    error: err.message
                 });
                 return;
             }
@@ -340,6 +343,7 @@ console.log(params);
                     o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
                     o_pedido: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
                 };
+console.log(query, params);
                 const result = await conn.execute(query, params, responseParams);
                 const { o_resultado, o_pedido } = result.outBinds;
                 conn.close();

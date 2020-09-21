@@ -1,6 +1,7 @@
 var comboVoucherItems = 0;
 var cantNuevas = 0;
 var filasEliminar = [];
+var validaciones = null;
 
 function onLibrosComplete (response) {
     if (response.error) {
@@ -25,7 +26,98 @@ function comboPeriodosVoucherOnChange (value, text) {
     }
 }
 
+function habilitaControlesFormulario() {
+    if (validaciones != null) {
+        // banco
+        if (validaciones.ST_BANCO == 'S') {
+            $('#form-stbanco').show().prev().show();
+            $('#form-transaccion').show().prev().show();
+            $('#form-banco').show().prev().show();
+            $('#form-nroctacte').show().prev().show();
+            $('#form-ctacte').show().prev().show();
+            // $('#btn-banco').show();
+            // $('#btn-elimina-banco').show();
+        }
+        else {
+            $('#form-stbanco').hide().prev().hide();
+            $('#form-transaccion').hide().prev().hide();
+            $('#form-banco').hide().prev().hide();
+            $('#form-nroctacte').hide().prev().hide();
+            $('#form-ctacte').hide().prev().hide();
+            $('#btn-banco').remove();
+            $('#btn-elimina-banco').remove();
+        }
+        // banco
+        if (validaciones.ST_GASTO == 'S') {
+            $('#form-stgasto').show().prev().show();
+            $('#form-stctacte').show().prev().show();
+            $('#ic-fvencimiento').parent().show().prev().show().prev().show();
+            $('#form-ingasto').show().prev().show();
+            $('#form-ctagasto').show().prev().show();
+            $('#form-catalpres').show().prev().show();
+            $('#form-categ-ig').show().prev().show();
+            $('#form-id-ingasto').show().prev().show();
+            $('#form-ingasto').parent().show();
+        }
+        else {
+            $('#form-stgasto').hide().prev().hide();
+            $('#form-stctacte').hide().prev().hide();
+            $('#ic-fvencimiento').parent().hide().prev().hide().prev().hide();
+            $('#form-ingasto').hide().prev().hide();
+            $('#form-ctagasto').hide().prev().hide();
+            $('#form-catalpres').hide().prev().hide();
+            $('#form-categ-ig').hide().prev().hide();
+            $('#form-id-ingasto').hide().prev().hide();
+            $('#form-ingasto').parent().hide();
+        }
+        // banco
+        if (validaciones.ST_CTA_CTE == 'S') {
+            $('#form-stctacte').show().prev().show();
+            $('#ic-fvencimiento').parent().show().prev().show().prev().show();
+            $('#form-ctadocumento').show().prev().show();
+            $('#form-obs-ctadocumento').show().prev().show();
+            $('#form-cta-documento').show();
+            $('#form-ctadocumento').parent().show();
+        }
+        else {
+            $('#form-stctacte').hide().prev().hide();
+            $('#ic-fvencimiento').parent().hide().prev().hide().prev().hide();
+            $('#form-ctadocumento').hide().prev().hide();
+            $('#form-obs-ctadocumento').hide().prev().hide();
+            $('#form-cta-documento').hide();
+            $('#form-ctadocumento').parent().hide();
+        }
+        // banco
+        if (validaciones.ST_DETRACCION == 'S') {
+            $('#form-stdetraccion').show().prev().show();
+            $('#form-docdetraccion').show().prev().show();
+            $('#ic-fdetraccion').parent().show().prev().show().prev().show();
+            $('#form-importe-detra').show().prev().show();
+        }
+        else {
+            $('#form-stdetraccion').hide().prev().hide();
+            $('#form-docdetraccion').hide().prev().hide();
+            $('#ic-fdetraccion').parent().hide().prev().hide().prev().hide();
+            $('#form-importe-detra').hide().prev().hide();
+        }
+        // banco
+        if (validaciones.ST_PERCEPCION == 'S') {
+            $('#form-stpercepcion').show().prev().show();
+            $('#form-docpercepcion').show().prev().show();
+            $('#form-porc-percepcion').show().prev().show().prev().show();
+            $('#form-importe-percep').show().prev().show();
+        }
+        else {
+            $('#form-stpercepcion').hide().prev().hide();
+            $('#form-docpercepcion').hide().prev().hide();
+            $('#form-porc-percepcion').hide().prev().hide().prev().hide();
+            $('#form-importe-percep').hide().prev().hide();
+        }
+    }
+}
+
 function onVouchersComplete (response) {
+    validaciones = null;
     if (response.error) {
         alert(response.error);
         return;
@@ -35,6 +127,10 @@ function onVouchersComplete (response) {
     toolbarVoucher.setItemText('lblCount', comboVoucherItems);
     comboVoucher.load(vouchers);
     comboVoucher.selectOption(0);
+    // verificaciones
+    if (response.restricciones) {
+        validaciones = response.restricciones;
+    }
 }
 
 function comboLibroVoucherOnChange(value, text) {
@@ -42,7 +138,8 @@ function comboLibroVoucherOnChange(value, text) {
     var params = {
         empresa: usrJson.empresa,
         periodo: comboPeriodosVoucher.getSelectedValue(),
-        libro: value
+        libro: value,
+        usuario: usrJson.codigo
     };
     $.post('/api/CO010401B/info-lista-vouchers', params, onVouchersComplete, 'json');
     configuraGridVouchers();
@@ -589,6 +686,7 @@ function onDatosVoucherComplete(response) {
     toolbarVoucher.enableItem('nuevo');
     toolbarVoucher.enableItem('editar');
     toolbarVoucher.enableItem('anular');
+    habilitaControlesFormulario();
 }
 
 function cargarDatosVoucher(voucher) {
@@ -1239,6 +1337,7 @@ function onValidarNuevoVoucherSuccess(response) {
     document.getElementById('form-femision').value = fechaServidor;
     cmbTipodoc.selectOption(idxtipodocadmin);
     cmbTipoenti.selectOption(idxtipoenti);
+console.log(fechaServidor);
 }
 
 function validarNuevoVoucher() {
@@ -1323,7 +1422,7 @@ function grabarCabeceraVoucher() {
         glosa: document.getElementById('form-glosa').value,
         imtotal: document.getElementById('form-imtotal').value,
         iminafecto: document.getElementById('form-iminafecto').value,
-        esbanco: document.getElementById('form-stbanco').value,
+        esbanco: document.getElementById('form-stbanco').checked ? 'S' : 'N',
         cobanco: document.getElementById('form-cobanco').value,
         copais: document.getElementById('form-copais').value,
         coctacte: document.getElementById('form-nroctacte').value,
