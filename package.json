@@ -41,7 +41,7 @@
     "node-fetch": "^2.6.0",
     "nodemailer": "^5.1.1",
     "nodemailer-express-handlebars": "^3.0.0",
-    "npm": "^6.13.7",
+    "npm": "^6.14.6",
     "object-to-xml": "^2.0.0",
     "opn": "^6.0.0",
     "oracledb": "^4.2.0",
