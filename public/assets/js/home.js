@@ -14,15 +14,12 @@ dhtmlXCalendarObject.prototype.langData["pe"] = {
 };
 /*******************************/
 carga_nuevo_usuario = () => {
-
     Swal.fire({
-        title: 'Hola ' + usrJson.alias,
-        text: ' Te damos la bienvenida a nuestra Plataforma virtual Clife Cloud, a continuacion, porfavor ingrese sus datos personales para poder continuar...',
+        title: 'Hola, ' + usrJson.alias,
+        text: 'Te damos la bienvenida a nuestra Plataforma virtual CLIFE CLOUD, a continuación ingrese sus datos personales para poder continuar, por favor...',
         width: 500,
-    })
+    });
     crear_ventana(formini, 700, 500, 0);
-
-
 };
 
 
@@ -124,12 +121,14 @@ f_side_infperso = (form, st) => {
             Swal.fire({title: 'Validando DNI ingresado!', allowEscapeKey: false, html: '<h4>Permitanos completar sus datos, Un momento porfavor</h4>', timer: 0, allowOutsideClick: false, onBeforeOpen: () => {
                     Swal.showLoading();
                 }});
-            var p = {dni: form.getItemValue('u_documento')};
-            $.post(BASE_URL + "home/buscadni", p, function (res) {
-                var value = res.value.split('|');
-                form.setItemValue('u_apepat', value[0]);
-                form.setItemValue('u_apemat', value[1]);
-                form.setItemValue('u_nombres', value[2]);
+            var p = {dni: form.getItemValue('u_documento'),tipo : form.getItemValue('u_tipo_doc')};
+            $.post(BASE_URL + "home/buscadni", p, function (res) {   
+                if ((res.value).search('|') > 0){ 
+                    let value = res.value.split('|');
+                    form.setItemValue('u_apepat', value[0]);
+                    form.setItemValue('u_apemat', value[1]);
+                    form.setItemValue('u_nombres', value[2]);
+                }
                 Swal.close();
             }, "json");
 
@@ -280,19 +279,15 @@ save_infoperso = (form, st) => {
                 "st_editotal": 'N'}
             localStorage.setItem('usrjson', JSON.stringify(usernvo));
             usrJson = JSON.parse(localStorage.getItem('usrjson')) || '';
-            console.log('post');
-            console.log(usrJson);
             Swal.close();
-            Swal.fire('Bien!', res.message, 'success').then((result) => {
+            st = res.coperson;
+            Swal.fire('Bien!', res.message, 'success').then((result) => { 
                 if (result.value) {
-                    if (st === 0) {
-
+                    if (st > 0) {
                         location.href = '/';
                     }
                 }
             });
-
-
         } else
             Swal.fire({type: 'error', title: 'Algo salió mal...', text: 'No se pudo guardar sus Datos :' + res.message, footer: '<a href="#">Comuníquese con el area de Sistemas</a>'});
     }, "json");

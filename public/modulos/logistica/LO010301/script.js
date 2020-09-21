@@ -235,7 +235,6 @@ function generaGridReportesTpdoc() {
         gridRepTpdoc.setNumberFormat('0,000.00', 7);
         gridRepTpdoc.setNumberFormat('0,000.00', 8);
         gridRepTpdoc.setInitWidths('60,80,80,80,80,240,100,100,100,240,60,80,80,80,80,80,80,80,60,60');
-        //gridRepTpdoc.setColAlign('right,left,right,right,right,right,right,left,right,left,right,right');
         gridRepTpdoc.init();
     let tpdoc = document.getElementById('lbl-tpdoc-cod').innerHTML;
     let desde = encodeURIComponent(toolbarRepTpdoc.getValue('RepTpdocDesde'));
@@ -258,7 +257,6 @@ function EstructuraReportesTpdoc() {
         toolbarRepTpdoc.addButton('btTpdocFiltro', null, '', 'ic-search.svg');
         toolbarRepTpdoc.addText('ipTpdocDesc', null, '<div id="lbl-tpdoc-desc" class="dv-label" style="width:240px;"></div>');
         toolbarRepTpdoc.addButton('btTpdocBusca', null, 'Buscar', 'ic-goggles.svg', 'ic-goggles-dis.svg');
-    // colocar los calendarios
     calendarRinicio = toolbarRepTpdoc.getInput('RepTpdocDesde');
         calendarRinicio.setAttribute('readOnly', true);
         calendarRinicio.onclick = function () { setSens(calendarRepTpdoc, calendarRfin, 'max'); }

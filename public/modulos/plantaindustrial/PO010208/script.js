@@ -405,7 +405,7 @@ guardarnsoc = (nsoc,cad_cod_prod,cadena,cant_filas_guardar,fecha_ini,fecha_fin,n
         nombre: nombre_nso,
         form_cosm : form_cosm
     };
-    console.log(params);
+   // console.log(params);
     $.post(BASE_URL + "PO010208/grabar-nsoc", params, function (res) {
         console.log(res);
         if (res.state=='success'){
