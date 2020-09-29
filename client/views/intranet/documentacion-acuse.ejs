@@ -84,6 +84,36 @@
         </div>
         <!-- modals -->
         <% include _main.logout.ejs %>
+        <!-- modal historico -->
+        <div id="modal-historial" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Historial de visualizaciones</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-1">Documento: <span id="hs-documento" class="text-primary"></span></p>
+                        <p class="mb-1">Usuario: <span id="hs-usuario" class="text-primary"></span></p>
+                        <table class="table table-sm table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Versión</th>
+                                    <th>Fecha - hora</th>
+                                    <th>Detalle</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historial-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary">Cerrar reporte</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- separador de bajo presupuesto -->
         <% include _main.scripts.ejs %>
         <script>
@@ -196,6 +226,15 @@
                                 $('<td>').append(fila.fecha)
                             ).append(
                                 $('<td>').append(fila.detalle)
+                            ).append(
+                                $('<td>').append(
+                                    $('<a>').attr({
+                                        'href': '#',
+                                        'data-key': btoa([fila.dni, empresa, documento].join('|'))
+                                    }).addClass('btn btn-sm btn-success').append(
+                                        $('<i>').addClass('fa fa-eye mr-1')
+                                    ).append('Ver').on('click', cargaHistorial)
+                                )
                             )
                         );
                     }
@@ -212,6 +251,8 @@
                                     $('<th>').append('Fecha lectura')
                                 ).append(
                                     $('<th>').append('Detalle lectura')
+                                ).append(
+                                    $('<th>').append('Historial')
                                 )
                             )
                         ).append(tbody).addClass('table table-striped table.hover')
@@ -221,6 +262,53 @@
                     alert('Debe seleccionar la empresa, área y documento para generar el reporte');
                 }
             }
+            function modalHistorialOnShow() {
+                $('#historial-tbody').empty();
+            }
+            function cargaHistorial(event) {
+                var a = $(this);
+                event.preventDefault();
+                $('#modal-historial').modal('show');
+                var params = {
+                    key: a.data('key')
+                };
+                $.ajax({
+                    url: '/intranet/historial-vistas-documento',
+                    method: 'post',
+                    data: params,
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            $('#modal-historial').modal('hide');
+                            return;
+                        }
+                        // escribe los datos del reporte
+                        document.getElementById('hs-documento').innerHTML = result.data.documento;
+                        document.getElementById('hs-usuario').innerHTML = result.data.nombre;
+                        // escribe el detalle
+                        var tbody = $('#historial-tbody');
+                        var detalle = result.data.detalle;
+                        var numDetalle = detalle.length;
+                        for (var i = 0; i < numDetalle; i++) {
+                            var item = detalle[i];
+                            tbody.append(
+                                $('<tr>').append(
+                                    $('<td>').text(item.version)
+                                ).append(
+                                    $('<td>').text(item.fecha)
+                                ).append(
+                                    $('<td>').text(item.detalle)
+                                )
+                            );
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. su ordenador derá formateado en breve...');
+                        $('#modal-historial').modal('hide');
+                    }
+                });
+            }
             // go!
             $(_ => {
                 $('#menu-documentacion').collapse('show')
@@ -229,6 +317,7 @@
                 $('#rpa-empresa').on('change', CargaComboAreas);
                 $('#rpa-area').on('change', CargaComboDocumentos);
                 $('#rpa-buscar').on('click', GeneraReporte);
+                $('#modal-historial').on('show.bs.modal', modalHistorialOnShow)
             });
         </script>
     </body>

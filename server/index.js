@@ -92,7 +92,7 @@ app.use('/ws-life', require('./../client/routes/ws.routes'));
 //configura el chat
 /*io.set('origins', host.address);
 io.on('connection', chatHandler);*/
-io.ArrancarServidorChat(http);
+// io.ArrancarServidorChat(http);
 //arrancar el servidor
 app.listen(app.get('port'), () => {
     console.log("Servidor escuchando en el puerto ", app.get('port'));

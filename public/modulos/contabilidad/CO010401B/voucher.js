@@ -326,7 +326,8 @@ function registraDetalleVoucher() {
         ls_cad_haber += (validacion.haber + '@');
         ls_cad_co_voucher += (validacion.voucher + '@');
         ls_cad_glosa += (validacion.glosa + '@');
-        ls_cad_cond_trib += (validacion.condicion + '@');
+        // ls_cad_cond_trib += (validacion.condicion + '@');
+        ls_cad_cond_trib += (gridVoucher.cells(iRowId,20).getCellCombo().getSelectedValue());
         li_cant_rows++;
     }
     // prepara las filas para actualizar
@@ -403,6 +404,7 @@ function toolbarDetalleOnClick(button) {
             var newId = 'nrow_' + cantNuevas;
             gridVoucher.addRow(newId, 'ic-unchecked.gif,,ic-search.svg,,0,,,,,,');
             // cambia los tipos de celda
+            gridVoucher.setCellExcellType(newId, 1, 'edn'); //debe
             gridVoucher.setCellExcellType(newId, 4, 'edn'); //debe
             gridVoucher.setCellExcellType(newId, 5, 'edn'); //haber
             gridVoucher.setCellExcellType(newId, 6, 'img'); //cta.cte.
@@ -410,17 +412,45 @@ function toolbarDetalleOnClick(button) {
             gridVoucher.setCellExcellType(newId, 9, 'ed'); //tipodoc
             gridVoucher.setCellExcellType(newId, 14, 'edn');
             gridVoucher.setCellExcellType(newId, 15, 'ed');
-            gridVoucher.setCellExcellType(newId, 16, 'ed');
+            // gridVoucher.setCellExcellType(newId, 16, 'ed');
+            gridVoucher.setCellExcellType(newId, 16, 'combo');
             gridVoucher.setCellExcellType(newId, 17, 'ed');
             gridVoucher.setCellExcellType(newId, 18, 'ed');
             gridVoucher.setCellExcellType(newId, 19, 'ed');
-            gridVoucher.setCellExcellType(newId, 20, 'ed');
+            // gridVoucher.setCellExcellType(newId, 20, 'ed');
+            gridVoucher.setCellExcellType(newId, 20, 'combo');
             gridVoucher.cells(newId, 4).setValue(0);
             gridVoucher.cells(newId, 5).setValue(0);
             gridVoucher.cells(newId, 6).setValue('ic-unchecked.gif');
             gridVoucher.cells(newId, 13).setValue('ic-checked.gif');
             gridVoucher.cells(newId, 21).setValue(1);
             cantNuevas++;
+            // rellenar combo tipo entidad
+            var combo_tpenti = gridVoucher.cells(newId, 16).getCellCombo();
+            combo_tpenti.addOption(0, '- Seleccione -');
+            // rellenar combo condicion tributaria
+            var combo_ctrib = gridVoucher.cells(newId, 20).getCellCombo();
+            // carga datos para llenar los combos
+            $.post('/api/CO010401B/combos-detalle-voucher', { libro: comboLibroVoucher.getSelectedValue() }, function(response) {
+                if (response.error) {
+                    alert(response.error);
+                    return;
+                }
+                // llenar combo de tipos
+                var tipos = response.data.tipos;
+                var numTipos = tipos.length;
+                for (var i = 0; i < numTipos; i++) {
+                    let iTipo = tipos[i];
+                    combo_tpenti.addOption(iTipo.value, iTipo.text);
+                }
+                // llenar combo de condiciones
+                var condiciones = response.data.condiciones;
+                var numCondiciones = condiciones.length;
+                for (var i = 0; i < numCondiciones; i++) {
+                    let iCondicion = condiciones[i];
+                    combo_ctrib.addOption(iCondicion.value, iCondicion.text);
+                }
+            }, 'json');
             break;
         case 'eliminar':
             if (!iRowId.startsWith('nrow_')) {
@@ -1335,9 +1365,9 @@ function onValidarNuevoVoucherSuccess(response) {
     document.getElementById('form-nrovoucher').value = nvoucher.NU_VOUCHER_NEXT;
     document.getElementById('form-fregistro').value = fechaServidor;
     document.getElementById('form-femision').value = fechaServidor;
+    document.getElementById('form-iminafecto').value = '0.00';
     cmbTipodoc.selectOption(idxtipodocadmin);
     cmbTipoenti.selectOption(idxtipoenti);
-console.log(fechaServidor);
 }
 
 function validarNuevoVoucher() {
@@ -1448,7 +1478,8 @@ function grabarCabeceraVoucher() {
         var qparams = {
             empresa: usrJson.empresa,
             periodo: comboPeriodosVoucher.getSelectedValue(),
-            libro: params.libro
+            libro: params.libro,
+            usuario: usrJson.codigo
         };
         $.post('/api/CO010401B/info-lista-vouchers', qparams, function(qresponse) {
             if (qresponse.error) {

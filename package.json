@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon server/index.js"
+    "dev": "nodemon server/index.js --ignore \"/home/nodejs/nodehtmlx/public/assets/vendor/**\""
   },
   "keywords": [],
   "author": "",
@@ -15,7 +15,7 @@
     "atob": "^2.1.2",
     "aws-sdk": "^2.399.0",
     "base64topdf": "^1.1.8",
-    "bcrypt": "^4.0.1",
+    "bcrypt": "^5.0.0",
     "body-parser": "^1.18.3",
     "btoa": "^1.2.1",
     "buffer": "^5.6.0",
@@ -38,10 +38,10 @@
     "mongodb": "^3.5.5",
     "morgan": "^1.9.1",
     "mv": "^2.1.1",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "nodemailer": "^5.1.1",
     "nodemailer-express-handlebars": "^3.0.0",
-    "npm": "^6.13.7",
+    "npm": "^6.14.8",
     "object-to-xml": "^2.0.0",
     "opn": "^6.0.0",
     "oracledb": "^4.2.0",

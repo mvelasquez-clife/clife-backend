@@ -732,6 +732,23 @@
                                     )
                                 ).append(
                                     $('<td>').text(fila.estado)
+                                ).append(
+                                    $('<td>').append(
+                                        $('<a>').prop({
+                                            'href': '#'
+                                        }).addClass('btn btn-sm btn-success').append(
+                                            $('<i>').addClass('fa fa-download')
+                                        ).on('click', function(event) {
+                                            event.preventDefault();
+                                            let version = fila.version;
+                                            let codigo = params.codigo;
+                                            // prepara la key
+                                            let key = [codigo, version, sesion.empresa].join('|');
+                                            let b64Key = btoa(key);
+                                            let encodedKey = encodeURIComponent(b64Key);
+                                            window.open('/intranet/descarga-documento?ref=' + encodedKey, '_blank');
+                                        })
+                                    )
                                 ).addClass(fila.estado == 'Vigente' ? 'font-weight-bold' : '')
                             );
                         }
@@ -751,6 +768,8 @@
                                     $('<th>').text('Representaciones')
                                 ).append(
                                     $('<th>').text('Estado')
+                                ).append(
+                                    $('<th>').text(' ')
                                 )
                             )
                         ).append(tbody);

@@ -492,6 +492,27 @@ console.log(params);
                 mensaje: result.out.o_mensaje
             });
         }
+    },
+    CombosDetalleVoucher: async (request, response) => {
+        const { libro } = request.body;
+        let query, params, result;
+        query = 'select co_tipo_entidad "value", de_tipo_entidad "text" from table(pack_new_conta_voucher.f_list_tipo_enti_voucher(:libro))';
+        params = [
+            { name: 'libro', io: 'in', value: libro }
+        ];
+        result = await db.select(query, params);
+        let tipos = result.rows;
+        // segundo query
+        query = 'select co_cond_tributaria "value", de_cond_tributaria "text" from table(pack_new_conta_voucher.f_list_cond_tribu)';
+        params = [];
+        result = await db.select(query, params);
+        let condiciones = result.rows;
+        return response.json({
+            data: {
+                tipos: tipos,
+                condiciones: condiciones
+            }
+        });
     }
 };
 

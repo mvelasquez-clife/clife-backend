@@ -9,8 +9,8 @@ const responseParams = {
     outFormat: oracledb.OBJECT
 };
 const db = require('./../../server/libs/db-oracle');
-const dir_separator = '\\';
-const base_dir = 'D:\\files\\nodejs';
+const dir_separator = '/';
+const base_dir = '/public/files/nodejs';
 
 const LifeController = {
     Login: (request, response) => {
@@ -45,8 +45,7 @@ console.log(request.cookies[confParams.cookieError]);
         response.render('./../client/views/intranet/recupera-clave.ejs', data);
     },
     AuthLogin: async (request, response) => {
-        const { codigo, pswd } = request.body;
-        let empresa = 11;
+        const { codigo, pswd, empresa } = request.body;
         let result;
         try {
             let conn = await oracledb.getConnection(dbParams);
@@ -653,7 +652,7 @@ console.log(query, params);
                                 return;
                             }
                             // registra el envío del documento
-                            query = "call pack_digitalizacion.sp_carga_documento (:p_envio,:p_empresa,:p_personal,:p_item,:p_coarchivo,:p_tparchivo,:p_usuenvia,:o_codigo,:o_resultado)";
+                            query = "call pack_digitalizacion.sp_carga_documento (:p_envio,:p_empresa,:p_personal,:p_item,:p_coarchivo,:p_tparchivo,:p_usuenvia,:p_emprenvia,:o_codigo,:o_resultado)";
                             params = {
                                 p_envio: { val: fields.cenvio },
                                 p_empresa: { val: fields.empresa },
@@ -662,6 +661,7 @@ console.log(query, params);
                                 p_coarchivo: { val: codusr },
                                 p_tparchivo: { val: tp_archivo },
                                 p_usuenvia: { val: sesion.codigo },
+                                p_emprenvia: { val: sesion.empresa },
                                 o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
                                 o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
                             };
@@ -2740,6 +2740,38 @@ console.log(query, params);
         else {
             response.send('No tienes permisos para acceder a esta sección');
         }
+    },
+    CargaHistorialDocumento: async (request, response) => {
+        let { key } = request.body;
+        let params = [
+            { name: 'key', io: 'in', value: key },
+            { name: 'oresultado', io: 'out', type: 'number' },
+            { name: 'odocumento', io: 'out', type: 'string' },
+            { name: 'onombre', io: 'out', type: 'string' },
+            { name: 'rs', io: 'out', type: 'cursor' }
+        ];
+        let query = 'call pack_digitalizacion.sp_historial_documento (:key, :oresultado, :odocumento, :onombre, :rs)';
+        let result = await db.resultSet(query, params);
+console.log(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.oresultado == 0) {
+            response.json({
+                error: result.odocumento
+            });
+            return;
+        }
+        response.json({
+            data: {
+                documento: result.odocumento,
+                nombre: result.onombre,
+                detalle: result.rs
+            }
+        });
     }
 };
 

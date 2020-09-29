@@ -21,5 +21,6 @@ router.get('/combo-tipo-entidad/:libro', co0201Controller.ComboTipoEntidad);
 router.get('/combo-tipo-dociden', co0201Controller.ComboTipoDocIden);
 router.post('/validar-nuevo-voucher', co0201Controller.ValidaNuevoVoucher);
 router.post('/guarda-voucher', co0201Controller.GrabarVoucher);
+router.post('/combos-detalle-voucher', co0201Controller.CombosDetalleVoucher);
 
 module.exports = router;

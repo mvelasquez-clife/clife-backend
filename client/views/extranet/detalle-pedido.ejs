@@ -74,7 +74,7 @@
                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-plantilla"><i class="fa fa-upload"></i> Utilizando una plantilla</a>
                     </div>
                     <a href="#" class="btn btn-danger m-1" id="btn-eliminar"><i class="fa fa-remove"></i> Quitar productos</a>
-                    <a href="#" class="btn btn-info m-1" id="btn-itsfree"><i class="fa fa-remove"></i> Título gratuito</a>
+                    <a href="#" class="btn btn-info m-1" id="btn-itsfree" data-toggle="modal" data-target="#modal-permiso"><i class="fa fa-remove"></i> Título gratuito</a>
                     <a href="#" class="btn btn-success ml-5 mr-1" data-toggle="modal" data-target="#modal-cierre"><i class="fa fa-check"></i> Cerrar pedido</a>
                 </div>
             </div>
@@ -105,8 +105,8 @@
         </div>
     </div>
     <!-- modal lista-productos -->
-    <div id="modal-lista" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
+    <div id="modal-lista" class="modal fade bd-example-modal-xl" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title text-primary">Agregar Productos</h5>
@@ -154,7 +154,8 @@
                 </div>
             </div>
         </div>
-    </div><!-- modal plantilla -->
+    </div>
+    <!-- modal plantilla -->
     <div id="modal-cierre" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -197,6 +198,38 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-success"><i class="fa fa-check"></i> Cerrar el pedido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- modal clave titulo gratuito -->
+    <div id="modal-permiso" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-success">Se requiere una contraseña</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-3">
+                            <img src="/assets/images/icons/ic-locked.svg" class="img-fluid">
+                        </div>
+                        <div class="col-9">
+                            <form>
+                                <div class="form-group">
+                                    <label for="mp-clave">Ingrese la clave para marcar los productos seleccionados como título gratuito.</label>
+                                    <input type="password" class="form-control form-control-sm" id="mp-clave" placeholder="Ingrese la clave aquí">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="mp-submit"><i class="fa fa-upload"></i> Continuar</button>
                 </div>
             </div>
         </div>
@@ -441,6 +474,7 @@
                 let pcaja = parseFloat(ds.pcaja);
                 let stock = parseInt(ds.stock);
                 let cantidad = parseInt(scantidad);
+                let cajasnivel = parseInt(ds.cajasnivel);
                 // validaciones
                 let resto = cantidad % caja;
                 let cajas = Math.floor(cantidad / caja);
@@ -453,12 +487,17 @@
                     if (resto > 0) {
                         cajas += 1;
                         let faltante = cajas * caja;
-                        document.getElementById('alert-' + idx).innerHTML = faltante + ' para ' + cajas + ' caja(s)';
+                        document.getElementById('alert-' + idx).innerHTML = faltante + ' para completar una caja';
                     }
                     else {
                         document.getElementById('alert-' + idx).innerHTML = '';
                     }
                 }
+                document.getElementById('tcajas-' + idx).innerHTML = cajas;
+                let totalniveles = cajas / cajasnivel;
+                document.getElementById('tniveles-' + idx).innerHTML = cajas;
+                document.getElementById('tniveles-' + idx).innerHTML = cajas;
+                // tcajas, tniveles, tpallet -> cjnivel
                 let subtotal = cantidad * pventa;
                 let pallets = cajas * pcaja;
                 // actualiza array
@@ -468,7 +507,7 @@
                 catalogo[idx].pallets = pallets;
                 //
                 document.getElementById('subtotal-' + idx).innerHTML = subtotal.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                document.getElementById('pallets-' + idx).innerHTML = pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });;
+                document.getElementById('tpallets-' + idx).innerHTML = pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });;
             }
         }
         CargarCatalogoProductos = async (event) => {
@@ -503,8 +542,6 @@
                     ).append(
                         $('<td>').html(item.stock).addClass('text-right')
                     ).append(
-                        $('<td>').html(item.caja).addClass('text-right')
-                    ).append(
                         $('<td>').append(
                             $('<input>').attr({
                                 type: 'text',
@@ -514,6 +551,7 @@
                                 'data-pventa': item.pventa,
                                 'data-caja': item.caja,
                                 'data-pcaja': item.pcaja,
+                                'data-cajasnivel': item.cjnivel,
                                 'data-stock': item.stock + 50,
                                 'data-grupo': item.cogrupo
                             }).addClass('form-control form-control-sm ip-cant').on('keyup', IngresarCantidad).prop('disabled', item.stock == 0)
@@ -522,15 +560,32 @@
                         )
                     ).append(
                         $('<td>').append(
-                            $('<span>').attr('id', 'subtotal-' + j).html('0')
+                            $('<span>').attr('id', 'subtotal-' + j).html('0') // subtotal
                         ).addClass('text-right')
                     ).append(
+                        $('<td>').html(item.caja).addClass('text-right') // unidades x caja
+                    ).append(
                         $('<td>').append(
-                            $('<span>').attr('id', 'pallets-' + j).html('0')
+                            $('<span>').attr('id', 'tcajas-' + j).html('0')
+                        ).addClass('text-right') // total cajas
+                    ).append(
+                        $('<td>').html(item.cjnivel).addClass('text-right') // cajas x nivel
+                    ).append(
+                        $('<td>').html(parseInt(item.pcaja) > 0 ? (parseInt(item.pcaja) / parseInt(item.cjnivel)).toFixed(2) : item.pcaja).addClass('text-right') // nivel x palet
+                    ).append(
+                        $('<td>').html(item.pcaja).addClass('text-right') // cajas x palet
+                    ).append(
+                        $('<td>').append(
+                            $('<span>').attr('id', 'tniveles-' + j).html('0')
+                        ).addClass('text-right') // total niveles
+                    ).append(
+                        $('<td>').append(
+                            $('<span>').attr('id', 'tpallets-' + j).html('0') // total palets
                         ).addClass('text-right')
                     )
                 );
             }
+// EAN, Producto, P.Venta, Stock, Cantidad, Subtotal, Unids/ Caja, Tot.Cajas, Cajas por nivel, Tot.Niveles, Cajas por pallet, Tot.Niveles, Tot.Pallets
             $('#lista-container').append(
                 $('<table>').append(
                     $('<thead>').append(
@@ -543,13 +598,23 @@
                         ).append(
                             $('<th>').html('Stock')
                         ).append(
-                            $('<th>').html('Unids/ Caja')
-                        ).append(
                             $('<th>').html('Cantidad')
                         ).append(
                             $('<th>').html('Subtotal')
                         ).append(
-                            $('<th>').html('Pallets')
+                            $('<th>').html('Unids/ Caja')
+                        ).append(
+                            $('<th>').html('Tot.Cajas')
+                        ).append(
+                            $('<th>').html('Cajas por nivel')
+                        ).append(
+                            $('<th>').html('Niveles por palet')
+                        ).append(
+                            $('<th>').html('Cajas por palet')
+                        ).append(
+                            $('<th>').html('Tot.Niveles')
+                        ).append(
+                            $('<th>').html('Tot.Palets')
                         )
                     )
                 ).append(tbody).addClass('table table-hover table-striped')
@@ -678,42 +743,45 @@
                 console.error(err);
             }
         }
-        ObsequiarProductos = async () => {
+        ObsequiarProductos = async (event) => {
             event.preventDefault();
+            let clave = document.getElementById('mp-clave').value;
+            if (clave == '') {
+                alert('Ingrese la clave para marcar los productos como ttítulo gratuito');
+                return;
+            }
             let gratis = [];
-            if (window.confirm('¿Convertir los productos a título gratuito?')) {
-                let productos = $('.ch-producto:checked');
-                $.each(productos, function () {
-                    let chbox = $(this).val().split('@');
-                    gratis.push({
-                        tipo: chbox[0],
-                        codigo: chbox[1],
-                        difer: parseInt(chbox[2])
-                    });
+            let productos = $('.ch-producto:checked');
+            $.each(productos, function () {
+                let chbox = $(this).val().split('@');
+                gratis.push({
+                    tipo: chbox[0],
+                    codigo: chbox[1],
+                    difer: parseInt(chbox[2])
                 });
-                let result;
-                try {
-                    result = await $.ajax({
-                        url: '/extranet/obsequiar-productos',
-                        method: 'post',
-                        data: { pedido: Pedido.codigo, productos: gratis },
-                        dataType: 'json'
-                    });
-                    if (result.error) {
-                        alert(result.error);
-                        return;
-                    }
-                    let mensajes = result.mensajes;
-                    for (let mensaje of mensajes) {
-                        if (mensaje.error) alert(mensaje.error);
-                    }
-                    DetallePedido = result.detalle;
-                    $('#modal-lista').modal('hide');
-                    EscribirListaProductos();
+            });
+            let result;
+            try {
+                result = await $.ajax({
+                    url: '/extranet/obsequiar-productos',
+                    method: 'post',
+                    data: { pedido: Pedido.codigo, productos: gratis, clave: clave },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
                 }
-                catch (err) {
-                    alert(err);
+                let mensajes = result.mensajes;
+                for (let mensaje of mensajes) {
+                    if (mensaje.error) alert(mensaje.error);
                 }
+                DetallePedido = result.detalle;
+                $('#modal-lista').modal('hide');
+                EscribirListaProductos();
+            }
+            catch (err) {
+                alert(err);
             }
         }
         FormCargaMasivaSubmit = (event) => {
@@ -730,12 +798,21 @@
             );
             document.getElementById('form-carga-masiva').submit();
         }
+        ModalPermisosOnShow = (args) => {
+            document.getElementById('mp-clave').value = '';
+        }
+        ModalPermisosOnShown = (args) => {
+            if ($('.ch-producto:checked').length == 0) {
+                alert('No ha seleccionado productos para marcar como título gratuito');
+                $('#modal-permiso').modal('hide');
+            }
+            else {
+                $('#mp-clave').focus();
+            }
+        }
         // iniciar la interfaz
         if (sesdata.admin != 'S') {
             $('#btn-itsfree').remove();
-        }
-        else {
-            $('#btn-itsfree').on('click', ObsequiarProductos);
         }
         $('#btn-eliminar').on('click', EliminarProductos);
         // $('#modal-plantilla .modal-footer .btn-success').on('click', AdjuntarPlantilla);
@@ -744,6 +821,9 @@
         $('#modal-lista .modal-footer .btn-primary').on('click', AgregarProductos);
         $('#modal-cierre').on('show.bs.modal', ResumenPedido);
         $('#modal-cierre .modal-footer .btn-success').on('click', CerrarPedido);
+        $('#modal-permiso').on('show.bs.modal', ModalPermisosOnShow);
+        $('#modal-permiso').on('shown.bs.modal', ModalPermisosOnShown);
+        $('#mp-submit').on('click', ObsequiarProductos);
         CargarDatosPedido();
     </script>
 </body>

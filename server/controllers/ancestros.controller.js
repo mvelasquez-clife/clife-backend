@@ -45,47 +45,88 @@ const ancestroController = {
         });
     },
 
-    getGridPruebaData: (req, res) => {
-        oracledb.getConnection(dbParams, (err, conn) => {
-            const { id, empresa, param } = req.params;
-            let iparam = parseInt(id);
-            if(err) {
-                res.json({
-                    state: 'error',
-                    message: err.stack
-                });
-                return;
+    getGridPruebaData: async (req, res) => {
+        const { id, empresa, param } = req.params;
+        let iparam = parseInt(id);
+        if (iparam > 2000) { // usar el nuevo conector
+            const db = require('./../libs/db-oracle');
+            let params, result, split;
+            switch (iparam) {
+                case 2001:
+                    params = [
+                        { name: 'p_alias', io: 'in', value: param },
+                        { name: 'rs', io: 'out', type: 'cursor' }
+                    ];
+                    result = await db.resultSet('call pack_new_conta_voucher.sp_busca_cuenta(:p_alias,:rs)', params);
+                    res.set('Content-Type', 'text/xml');
+                    res.send(xmlParser.renderXml(result.rs));
+                    break;
+                case 2002:
+                    params = [
+                        { name: 'empresa', io: 'in', value: empresa },
+                        { name: 'tpentidad', io: 'in', value: param }
+                    ];
+                    result = await db.select('select 0,ma_cata_enti_m.co_catalogo_entidad,ma_cata_enti_m.de_razon_social,ma_cata_enti_m.de_nombre_comercial,ma_clas_enti_m.fe_sys,ma_clas_enti_m.es_vigencia,ma_tipo_enti_m.de_nombre,ma_clas_enti_m.co_clasificacion_entidad from ma_clas_enti_m join ma_tipo_enti_m on ma_tipo_enti_m.co_tipo_entidad = ma_clas_enti_m.co_tipo_entidad join ma_cata_enti_m on ma_cata_enti_m.co_catalogo_entidad = ma_clas_enti_m.co_catalogo_entidad where ma_clas_enti_m.co_empresa = :empresa and ma_clas_enti_m.co_tipo_entidad = :tpentidad', params);
+                    res.set('Content-Type', 'text/xml');
+                    res.send(xmlParser.renderXml(result.rows));
+                    break;
+                case 2003:
+                case 2004:
+                case 2005:
+                case 2006:
+                    split = param.split('|');
+                    params = [
+                        { name: 'opcion', io: 'in', value: split[0] },
+                        { name: 'empresa', io: 'in', value: empresa },
+                        { name: 'param', io: 'in', value: split[1] }
+                    ];
+                    result = await db.select('select * from table (pack_new_sources.f_list_lupa_general(:opcion,:empresa,:param))', params);
+                    res.set('Content-Type', 'text/xml');
+                    res.send(xmlParser.renderXml(result.rows));
+                    break;
             }
-            let query = "select * from table (pack_new_sources.f_list_lupa_general(:p_id, :p_empresa, :p_extra)) order by de_descripcion asc";
-            let params = {
-                p_id: { val: id },
-                p_empresa: { val: empresa },
-                p_extra: { val: param ? param : '' }
-            };
-            if (iparam > 1000) {
-                switch (iparam) {
-                    case 1001:
-                        query = "select 0,co_operario,de_operario,de_tipo_operario,es_vigencia from table(pack_new_frac_prod.f_lis_frac_oper_picking(:p_empresa))";
-                        params = {
-                            p_empresa: { val: empresa }
-                        };
-                        break;
-                    default: break;
-                }
-            }
-            conn.execute(query, params, responseParams, (error, result) => {
-                if(error) {
-                    conn.close();
+        }
+        else {
+            oracledb.getConnection(dbParams, (err, conn) => {
+                if (err) {
                     res.json({
                         state: 'error',
-                        message: error.stack
+                        message: err.stack
                     });
+console.error(error);
                     return;
                 }
-                res.set('Content-Type', 'text/xml');
-                res.send(xmlParser.renderXml(result.rows));
+            // FINNN
+            let query = "select * from table (pack_new_sources.f_list_lupa_general(:p_id, :p_empresa, :p_extra)) order by de_descripcion asc";
+                let params = {
+                    p_id: { val: id },
+                    p_empresa: { val: empresa },
+                    p_extra: { val: param ? param : '' }
+                };
+                if (iparam > 1000) {
+                    switch (iparam) {
+                        case 1001:
+                            query = "select 0,co_operario,de_operario,de_tipo_operario,es_vigencia from table(pack_new_frac_prod.f_lis_frac_oper_picking(:p_empresa))";
+                            params = {
+                                p_empresa: { val: empresa }
+                            };
+                            break;
+                    }
+                }
+                conn.execute(query, params, responseParams, (error, result) => {
+                    if (error) {
+                        conn.close();
+                        res.json({
+                            state: 'error',
+                            message: error.stack
+                        });
+                        return;
+                    }
+                    res.set('Content-Type', 'text/xml');
+                    res.send(xmlParser.renderXml(result.rows));
+                });
             });
-        });
+        }
     },
 
     validarClave: (req, res) => {

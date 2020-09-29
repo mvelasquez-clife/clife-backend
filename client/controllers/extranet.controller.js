@@ -461,8 +461,8 @@ console.log(query, params);
             const cEmpresa = sesion.tipo == 'E' ? UserExpo.empresa : UserNac.empresa;
             try {
                 const conn = await oracledb.getConnection(dbParams);
-                const query = "select codigo \"codigo\", ean \"ean\", cogrupo \"cogrupo\", initcap(nombre) \"nombre\", pvta \"pventa\", uncaja \"caja\", palletcaja \"pcaja\", " +
-                    "stock \"stock\", cantidad \"cantidad\" from table(pack_new_web_expo.f_lista_productos(:p_tipo, :p_empresa, :p_pedido))";
+                const query = "select codigo \"codigo\", ean \"ean\", cogrupo \"cogrupo\", initcap(nombre) \"nombre\", pvta \"pventa\", uncaja \"caja\", /*palletcaja*/ 100 \"pcaja\", " +
+                    "stock \"stock\", cantidad \"cantidad\", 10 \"cjnivel\" from table(pack_new_web_expo.f_lista_productos(:p_tipo, :p_empresa, :p_pedido))";
                 const params = {
                     p_tipo: { val: sesion.tipo },
                     p_empresa: { val: cEmpresa },
@@ -618,20 +618,21 @@ console.log(query, params);
     ObsequiarProducto: async (request, response) => {
         if (request.cookies[CookieId]) {
             const sesion = JSON.parse(request.cookies[CookieId]);
-            const { pedido, productos } = request.body;
+            const { pedido, productos, clave } = request.body;
             const cEmpresa = sesion.tipo == 'E' ? UserExpo.empresa : UserNac.empresa;
             try {
                 const conn = await oracledb.getConnection(dbParams);
                 let mensajes = [];
                 for (let producto of productos) {
                     //
-                    let query = "call pack_new_web_expo.sp_titulo_gratuito_expo(:p_pedido, :p_empresa, :p_producto, :p_tipo, :p_difer, :o_codigo, :o_mensaje)";
+                    let query = "call pack_new_web_expo.sp_titulo_gratuito_expo(:p_pedido, :p_empresa, :p_producto, :p_tipo, :p_difer, :p_clave, :o_codigo, :o_mensaje)";
                     let params = {
                         p_pedido: { val: pedido },
                         p_empresa: { val: cEmpresa },
                         p_producto: { val: producto.codigo },
                         p_tipo: { val: producto.tipo },
                         p_difer: { val: producto.difer },
+                        p_clave: { val: clave },
                         o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
                         o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
                     };

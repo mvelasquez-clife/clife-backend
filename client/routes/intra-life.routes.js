@@ -86,5 +86,6 @@ const LifeController = require('../controllers/intra-life.controller');
     router.post('/lista-combos', LifeController.ListaCombos);
     router.post('/acuse-documentos', LifeController.AcuseListaDocumentos);
     router.get('/descarga-documento-acuse', LifeController.DescargaDocumentoAcuse);
+    router.post('/historial-vistas-documento', LifeController.CargaHistorialDocumento);
 
 module.exports = router;
