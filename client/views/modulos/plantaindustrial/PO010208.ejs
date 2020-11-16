@@ -44,9 +44,11 @@
         <!-- scripts de la carga de la vista -->
         <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
         <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/modules/drilldown.js"></script>
         <script src="https://code.highcharts.com/modules/exporting.js"></script>
         <script src="https://code.highcharts.com/modules/export-data.js"></script>
-        <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+        <script src="https://code.highcharts.com/modules/accessibility.js"></script>        
+        <script src="http://code.highcharts.com/modules/exporting.js"></script>
         <script>
             var tabbarinicio,mainLayout_inicio;
             function Greater100(data){
@@ -89,7 +91,11 @@
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
                     { type: "input",readonly:true,labelWidth: 80,offsetLeft:0,inputWidth: 150,label:'Especificación', name: "_drt_esp"}, { type: "newcolumn" },
-                    { type: "button", name: 'buscaresp',offsetTop:1, disabled: false,  value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },
+                    //{ type: "button", name: 'buscaresp',offsetTop:1, disabled: false,  value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input",readonly:true,labelWidth: 80,offsetLeft:0,inputWidth: 50,label:'Versión', name: "_drt_vers"}, { type: "newcolumn" },
                    ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
@@ -101,29 +107,29 @@
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                    { type: "input", inputWidth: 100,disabled: false, offsetLeft: 0,required: true,labelWidth: 80,  name: "_drt_tuv_com", label: 'Tiempo de vida útil Comercial'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
                     { type: "calendar", readonly: false, offsetLeft: 0,required: true,labelWidth: 80, inputWidth: 100, name: "_drt_fechahasta", label: 'Vigencia Fin  '}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
+                // {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
+                //     { type: "checkbox", checked: false,disabled: false, offsetLeft: 0,required: true,labelWidth: 80,  name: "_drt_kit", label: 'Dejar Vencer'}, { type: "newcolumn" },
+                //     ],},
+                // { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "checkbox", checked: false,disabled: false, offsetLeft: 0,required: true,labelWidth: 80,  name: "_drt_kit", label: 'Dejar Vencer'}, { type: "newcolumn" },
+                    { type: "input", inputWidth: 100,disabled: false, offsetLeft: 0,required: true,labelWidth: 80,  name: "_drt_tuv_prod", label: 'Tiempo de vida útil Producción'}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
-                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "calendar", inputWidth: 100,disabled: false, offsetLeft: 0,required: true,labelWidth: 80,  name: "_drt_tuv_com", label: 'TVU  Comercial'}, { type: "newcolumn" },
-                    ],},
-                { type: "newcolumn" },
-                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "calendar", inputWidth: 100,disabled: false, offsetLeft: 0,required: true,labelWidth: 80,  name: "_drt_tuv_prod", label: 'TVU  Producción'}, { type: "newcolumn" },
-                    ],},
-                { type: "newcolumn" },
-                {type: "block", blockOffset: 40,  offsetTop: 20,position: "label-left", width: 400, list: [
-                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_estado", label: 'Estado  '}, { type: "newcolumn" },
-                    ],},
-                { type: "newcolumn" },
-                {type: "block", blockOffset: 40,  offsetTop: 20,position: "label-left", width: 400, list: [
-                    { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_nroregistro", label: 'Nro. Registro: '}, { type: "newcolumn" },
-                    ],},
-                { type: "newcolumn" },
+                // {type: "block", blockOffset: 40,  offsetTop: 20,position: "label-left", width: 400, list: [
+                //     { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_estado", label: 'Estado  '}, { type: "newcolumn" },
+                //     ],},
+                // { type: "newcolumn" },
+                // {type: "block", blockOffset: 40,  offsetTop: 20,position: "label-left", width: 400, list: [
+                //     { type: "input", readonly: true, offsetLeft: 0,labelWidth: 80, inputWidth: 100, name: "_drt_nroregistro", label: 'Nro. Registro: '}, { type: "newcolumn" },
+                //     ],},
+                // { type: "newcolumn" },
             ];
 
             var f_buscar_prod = [ { type: "newcolumn" },
@@ -199,11 +205,11 @@
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "calendar", inputWidth: 100,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_tuv_com", label: 'TVU Comercial: '}, { type: "newcolumn" },
+                    { type: "input", inputWidth: 100,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_tuv_com", label: 'Tiempo de vida útil Comercial: '}, { type: "newcolumn" },
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 400, list: [
-                    { type: "calendar", inputWidth: 100,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_tuv_prod", label: 'TVU Producción: '}, { type: "newcolumn" },
+                    { type: "input", inputWidth: 100,disabled: false, offsetLeft: 0,labelWidth: 80,  name: "_drt_tuv_prod", label: 'Tiempo de vida útil Producción: '}, { type: "newcolumn" },
                     ],},
                 
 
@@ -259,20 +265,35 @@
                 { type: "settings", labelWidth: 100 },
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 1300, list: [
-                    { type: "input",readonly:false,labelWidth: 110,offsetLeft:15,inputWidth: 500,rows:6,label:'<b>CARACTERÍSTICAS GENERALES</b>', name: "_ep_car_gen"}, { type: "newcolumn" },
-                    { type: "input",readonly:false,labelWidth: 120,offsetLeft:15,inputWidth: 500,rows:6,label:'<b>CONDICIONES DE ALMACENAMIENTO</b>', name: "_ep_car_alm"}, { type: "newcolumn" },
+                    { type: "input",readonly:false,labelWidth: 120,offsetLeft:15,inputWidth: 500,rows:9,label:'<b>CARACTERÍSTICAS GENERALES</b>', name: "_ep_car_gen"}, { type: "newcolumn" },
+                    { type: "input",readonly:false,labelWidth: 120,offsetLeft:15,inputWidth: 500,rows:9,label:'<b>CONDICIONES DE ALMACENAMIENTO</b>', name: "_ep_car_alm"}, { type: "newcolumn" },
                    ],},
+            ];
+
+            var form_control = [
+                { type: "settings", labelWidth: 100 },
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 1300, list: [
+                    { type: "select",disabled: false, offsetLeft: 20,labelWidth: 45, inputWidth: 150, name: "_drt_anios", label: 'Años:' ,connector: BASE_URL + 'PO010208/mostrar-anio'}, { type: "newcolumn" },
+                ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 1300, list: [
+                    { type: "button",style:"height:200px;width:200px",disabled: false, offsetTop: 0, offsetLeft: 120, name: "_drt_buscar",rows:5,labelWidth: "80", value: ' <div ><b>Buscar </b>    <img src="/assets/images/icons/ic-look.png" style="width:20px; height:20px"></div> '}, { type: "newcolumn" }
+                ],},
             ];
             
             mainLayout_inicio = new dhtmlXLayoutObject(document.body, '1C'); 
             mainLayout_inicio.cells('a').hideHeader();
             tabbarinicio = mainLayout_inicio.cells('a').attachTabbar();
             tabbarinicio.addTab('__register', 'Registrar Notificación Sanitaria', null, null, true);
-            tabbarinicio.addTab('__graf', 'Dashboard', null, null, false);
+            tabbarinicio.addTab('__drive', 'PlacentaDrive', null, null, false);
+            tabbarinicio.addTab('__reg', 'Registros', null, null, false);
+            tabbarinicio.addTab('__marca', 'Marca', null, null, false);
+            tabbarinicio.addTab('__fecven', 'Vencimiento', null, null, false);
             // tabbarinicio.addTab('__search', 'Consultar Notificación Sanitaria', null, null, false);
             // tabbarinicio.addTab('__formapr', 'Aprobación/Anulación de fórmula', null, null, false);
             tabbarinicio. attachEvent ( "onSelect" , inicioOnSelect);  
-            Inicio();            
+            Inicio_nso();            
 
             
             MuestraIndicadorCarga = _ => {

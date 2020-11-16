@@ -47,28 +47,28 @@
 
             var f_filtro_busqueda = [
                 { type: "settings", labelWidth: 100 },
+                // { type: "newcolumn" },
+                // {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
+                //     { type: "input",offsetLeft:20,inputWidth: 500,  name: "_ep_buscar"}, { type: "newcolumn" },
+                //    ],},
                 { type: "newcolumn" },
-                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
-                    { type: "input",offsetLeft:20,inputWidth: 500,  name: "_ep_buscar"}, { type: "newcolumn" },
-                   ],},
-                { type: "newcolumn" },
-                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 100, list: [
-                    { type: "button",offsetLeft: 50,  offsetTop: 1,labelWidth: 50, value:'Buscar', name: "_ep_busbut"}, { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 230, list: [
+                    { type: "checkbox",checked:false, offsetLeft: 50,  offsetTop: 5,labelWidth: 140, label:'Incluir códigos anulados', name: "_ep_chck"}, { type: "newcolumn" }
                     ],},
                 { type: "newcolumn" },
-                {type: "block", blockOffset: 0,  offsetTop: 0, position: "label-left", width: 500, list: [
-                    { type: "checkbox",checked:false, offsetLeft: 25,  offsetTop: 5,labelWidth: 140, label:'Incluir códigos anulados', name: "_ep_codan"}, { type: "newcolumn" }
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 100, list: [
+                    { type: "button",offsetLeft: 20,  offsetTop: 1,labelWidth: 50, value:'Buscar', name: "_ep_busbut"}, { type: "newcolumn" },
                     ],},
             ];
             var form_caract = [
                 { type: "settings", labelWidth: 100 },
                 { type: "newcolumn" },
-                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 800, list: [
-                    { type: "input",readonly:false,labelWidth: 300,offsetLeft:20,inputWidth: 500,rows:5,label:'<b>CARACTERÍSTICAS GENERALES</b>', name: "_ep_car_gen"}, { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 1000, list: [
+                    { type: "input",readonly:false,labelWidth: 300,offsetLeft:20,inputWidth: 800,rows:8,label:'<b>CARACTERÍSTICAS GENERALES</b>', name: "_ep_car_gen"}, { type: "newcolumn" },
                    ],},
                 { type: "newcolumn" },
-                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 800, list: [
-                    { type: "input",readonly:false,labelWidth: 300,offsetLeft:20,inputWidth: 500,rows:5,label:'<b>CONDICIONES DE ALMACENAMIENTO</b>', name: "_ep_car_alm"}, { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 1000, list: [
+                    { type: "input",readonly:false,labelWidth: 300,offsetLeft:20,inputWidth: 800,rows:8,label:'<b>CONDICIONES DE ALMACENAMIENTO</b>', name: "_ep_car_alm"}, { type: "newcolumn" },
                    ],},
             ];
             var form_especf = [
@@ -121,9 +121,35 @@
             ],}
             ];
             var f_copiaespec = [ { type: "newcolumn" },
-            {type: "block",blockOffset: 10,  offsetTop: 10, position: "label-left", width: 450, list: [
+            {type: "block",blockOffset: 10,  offsetTop: 10,offsetLeft:10, position: "label-left", width: 700, list: [
                 { type: "newcolumn" },
-                { type: "input",offsetLeft: 10,labelWidth: 150, inputWidth: 400, rows:4, name: "_et_desc", label: 'Descripción de Especificación:'}, { type: "newcolumn" },
+                    {type: "fieldset", label: "Especificación N°", offsetLeft:10, offsetTop: 10, inputWidth: 150, list:[
+                        {type: "block", blockOffset: 0, position: "label-left", width: 250, list: [  
+                            { type: "input", readonly: true,disabled: true, offsetLeft: 0,labelWidth: 0, inputWidth: 100, name: "_ep_num", label: ''}, { type: "newcolumn" }, 
+                            { type: "input", readonly: true,disabled: true, offsetLeft: 20,labelWidth: 40, inputWidth: 50, name: "_ep_ver", label: 'Versión:'}, { type: "newcolumn" },          
+                        ]}
+                ]},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 600, list: [
+                    { type: "input",readonly:true,labelWidth: 95,offsetLeft:10,inputWidth: 100,label:'Proveedor:', name: "ep_provcod"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 0,offsetLeft:5,inputWidth: 300, name: "ep_proveedor"}, { type: "newcolumn" },
+                    { type: "button", name: 'buscarprov', disabled: false, offsetLeft: 10, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" }, 
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 600, list: [
+                    { type: "input",hidden: true, readonly:true,labelWidth: 95,offsetLeft:10,inputWidth: 100,label:'Material/Producto:', name: "ep_prod"}, { type: "newcolumn" },
+                    { type: "input",hidden: true, readonly:true,labelWidth: 0,offsetLeft:5,inputWidth: 300, name: "ep_producto"}, { type: "newcolumn" },
+                    { type: "button",hidden: true, name: 'buscarprod', disabled: false, offsetLeft: 10, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" }, 
+                   ],},
+                { type: "newcolumn" },
+                { type: "input",offsetLeft: 10,labelWidth: 95, inputWidth: 420, rows:4, name: "_et_desc", label: 'Descripción:'}, { type: "newcolumn" },
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 230, list: [
+                    { type: "checkbox",checked:false, offsetLeft: 10,  offsetTop: 5,labelWidth: 95, label:'Granel', name: "ep_tipo"}, { type: "newcolumn" }
+                    ],},
+                { type: "newcolumn" },
+                { type: "input",offsetLeft: 10,hidden: true,labelWidth: 95, inputWidth: 420, rows:4, name: "_et_mot", label: 'Motivo:'}, { type: "newcolumn" },
+
 
             ],}
             ];

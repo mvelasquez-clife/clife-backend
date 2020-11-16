@@ -1,35 +1,175 @@
-var codigo,nombre, esp,desc_esp,cod_esp,version_esp,cod_form,Winidh_,Windh_,Winidt_,Windt_,Winidc_,Windc_,myToolbardatos_espec,myToolbardatos_formula,myGrid_historial,mainLayout_historial,buscar,flag,myGrid_acondic,myGrid_envasado,mainLayout_envasado,mainLayout_acondic,tabbar_formdet,tabbar_form,myFormdformu,mainLayoutform,mainLayout_aprform,tabbar,permiso_cataedit,html_general,myFormdatos_nso_esp,mainLayout_especificacion,myGrid_nso,myToolbar_nso,myGrid_ver,Winid_,Wind_,myToolbar_ver,tipo_doc,mainLayout_formula,tabbar,myToolbardatos_detalle,maingrid_search,myFormdatos_search,mainLayout_load,myToolbardatos_search,mainLayout_search,myGrid_lista,Wind_,maingrid,myFormdatos_prod,mainLayout_product,myFormdatos,myToolbardatos_register,mainLayout,myForm,myToolbardatos,mainLayout_register;
+var tree_menu,tree_tipo,tree_nom,maingrid_venc,codigo,nombre, esp,desc_esp,cod_esp,version_esp,cod_form,Winidh_,Windh_,Winidt_,Windt_,Winidc_,Windc_,myToolbardatos_espec,myToolbardatos_formula,myGrid_historial,mainLayout_historial,buscar,flag,myGrid_acondic,myGrid_envasado,mainLayout_envasado,mainLayout_acondic,tabbar_formdet,tabbar_form,myFormdformu,mainLayoutform,mainLayout_aprform,tabbar,permiso_cataedit,html_general,myFormdatos_nso_esp,mainLayout_especificacion,myGrid_nso,myToolbar_nso,myGrid_ver,Winid_,Wind_,myToolbar_ver,tipo_doc,mainLayout_formula,tabbar,myToolbardatos_detalle,maingrid_search,myFormdatos_search,mainLayout_load,myToolbardatos_search,mainLayout_search,myGrid_lista,Wind_,maingrid,myFormdatos_prod,mainLayout_product,myFormdatos,myToolbardatos_register,mainLayout,myForm,myToolbardatos,mainLayout_register;
 
+let Etiquetas_1 = [];
 let WinDocumentoViewer;
 permiso_cataedit = 'E';
+
+Inicio_nso = () => {
+    console.log('s');
+    mostrarnsocven();
+    Inicio ();
+};
+
+Inidrive = () => {
+    mainLayout_drive = tabbarinicio.cells("__drive").attachLayout('2U');
+    mainLayout_drive.cells('a').setText('Archivos');
+    mainLayout_drive.cells('b').setText('Visor');
+    mainTree = mainLayout_drive.cells("a").attachTree();
+    mainTree.setImagePath("/assets/vendor/dhtmlx/skins/web/imgs/dhxtree_web/");
+    mainTree.setXMLAutoLoading(BASE_URL + 'PO010208/mostrar-drive-marcas/' + usrJson.empresa);
+    mainTree.enableTreeLines(true);
+    mainTree.load(BASE_URL + 'PO010208/mostrar-drive-marcas/'  + usrJson.empresa + '?id=MAIN');
+    mainTree.attachEvent('onDblClick', mainTreeOnDblClick);
+    mainTree.attachEvent('onClick', function(id){
+        tree_menu = id;
+    });
+    mainLayout_drive.cells('a').setWidth(350);
+    toolbar_menu = mainLayout_drive.cells('a').attachToolbar(); 
+    toolbar_menu.setIconsPath('/assets/images/icons/');
+    toolbar_menu.addButton('subirdt',null,'Subir Archivo',"ic-upload3.png","");
+    toolbar_menu.attachEvent('onClick', mainToolbarTree);
+    toolbar_menu.setIconSize(32);
+    toolbar_drive = mainLayout_drive.cells('b').attachToolbar(); 
+    toolbar_drive.setIconsPath('/assets/images/icons/');
+    toolbar_drive.addButton('verdcto',null,'Ver Archivo',"ic-look.png","");
+    toolbar_drive.attachEvent('onClick', mainToolbarTree);
+    toolbar_drive.setIconSize(32);
+    maingrid_drive = mainLayout_drive.cells('b').attachGrid();     
+    maingrid_drive.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/");
+    maingrid_drive.setHeader('NSOC,Descripcion,Nombre Archivo,Marca,Usuario,Fecha Registro,,');
+    maingrid_drive.setInitWidths('150,300,300,100,100,100,0,0');
+    maingrid_drive.setColAlign('left,left,left,left,left,left,left,left');
+    maingrid_drive.setColumnIds('nsoc,desc,nom,marc,usu,fecha,tipo,prod');
+    maingrid_drive.attachHeader("#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter"); 
+    maingrid_drive.init(); 
+    maingrid_drive.attachEvent("onRowSelect", function (id, ind) {  
+        data = maingrid_drive.getRowData(maingrid_drive.getSelectedRowId());
+        tree_tipo=data.tipo;
+        tree_nom=data.nom;
+        tree_prod = data.prod
+    });  
+};
+
+mainToolbarTree = (id) => {
+    switch (id) { 
+        case 'subirdt': 
+            mainTreeuploadClick();    
+            break;
+        case 'verdcto': 
+            mainTreegetUrlClick();    
+            break;            
+        default:
+            null;
+            break;
+    }
+};
+
+mainTreeuploadClick = (id) => {
+    Wind_ = new dhtmlXWindows();
+    Winid_ = Wind_.createWindow("wmenu", 0, 0, 800, 500);
+    Winid_.setText("Subir Documento");
+    Wind_.window("wmenu").setModal(true);
+    Wind_.window("wmenu").denyResize();
+    Wind_.window("wmenu").center(); 
+    myGridrsdoc = Winid_.attachGrid();
+    myGridrsdoc.setHeader('NSO,Descripción,Estado,Inicio Vigenia, Fin Vigencia,TVU Comercial, TVU Producción,Nro Registro,Forma Cosmética,Cod.Espec,Descripción');
+    myGridrsdoc.attachHeader("#text_filter,#text_filter");
+    myGridrsdoc.setInitWidths('120,700,0,0,0,0,0,0,0,0,0');
+    myGridrsdoc.setColAlign('left,left,left,left,left,left,left,left,left,left,left,left');
+    myGridrsdoc.setColTypes('ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro'); 
+    myGridrsdoc.setColumnIds('cod,desc');      
+    myGridrsdoc.init(); 
+    Wind_.window("wmenu").progressOn();
+    myGridrsdoc.clearAll(); 
+    myGridrsdoc.load( BASE_URL + 'PO010208/mostrar-nso/'+ '|').then(function (text) {
+        Wind_.window("wmenu").progressOff();
+    });
+    myGridrsdoc.attachEvent("onRowSelect", function (id, ind) {  
+        data = myGridrsdoc.getRowData(myGridrsdoc.getSelectedRowId());
+        console.log(data.cod);
+        Wind_.window("wmenu").close();
+        WinContainer = new dhtmlXWindows();
+        WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 680, 280);
+        WinDocumentoViewer.keepInViewport();
+        WinDocumentoViewer.setText('Subir Documento');
+        const parametros = {
+            co_nsoc:data.cod,
+            co_menu:tree_menu
+        };
+        $.post(BASE_URL + 'PO010208/mostrar-producto-por-nsoc/', parametros, function (res) {
+            console.log(res);
+            const producto = res.data.prod;
+            const params = {
+                empresa:usrJson.empresa,
+                entidad:20,
+                tipo_doc:657,
+                producto:producto.CO_CATALOGO_PRODUCTO,
+                doc:'DIRETECN',
+                usuario:usrJson.codigo
+            };
+            $.post(BASE_URL + 'PO010208/subir-adjunto/', params, function (res) {
+                const url = res.data.url_adj; 
+                console.log(url.URL);
+                WinDocumentoViewer.attachURL(url.URL);
+            } , 'json');  
+        } , 'json');  
+     });  
+};
+
+mainTreegetUrlClick = (id) => {
+    WinContainer = new dhtmlXWindows();
+    WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 750, 600);
+    WinDocumentoViewer.keepInViewport();
+    WinDocumentoViewer.setText('Ver Documento');
+    const params = {
+        empresa:usrJson.empresa,
+        usuario:usrJson.codigo,
+        producto:tree_prod,
+        archivo:tree_nom,
+        tipo_doc:tree_tipo,
+    };
+    console.log(params);
+    $.post(BASE_URL + 'PO010208/mostrar-documento-por-producto/', params, function (res) {
+        const url = res.data.url_adj; 
+        console.log(url.URL);
+        WinDocumentoViewer.attachURL(url.URL);
+    } , 'json'); 
+};
+
+mainTreeOnDblClick = (id) => {  
+    mainLayout_drive.cells('b').progressOn();  
+    maingrid_drive.load( BASE_URL + 'PO010208/mostrar-documento-por-marca/'+tree_menu+'/'+id).then(function (text) {
+        mainLayout_drive.cells('b').progressOff();
+    });        
+};
+
 Inicio = () => {
     mainLayout = tabbarinicio.cells("__register").attachLayout('1C');
     mainLayout_register = mainLayout.cells('a').attachLayout('3J');
-    // mainLayout = tabbarinicio.tabs("__register").attachLayout('2U');
-    // mainLayout_register.cells('a').hideHeader();
-    // mainLayout_register.cells('b').hideHeader();
-    // mainLayout_register.cells('c').hideHeader();
     mainLayout_register.cells('b').setCollapsedText('<span style="color:#00796b;">Ver Notificacion Sanitaria</span>');
     mainLayout_register.cells('b').collapse();
-    mainLayout_register.cells('a').setText('');
+    mainLayout_register.cells('a').hideHeader();
     mainLayout_register.cells('b').setText('');
-    mainLayout_register.cells('c').setText('Ver NSOC');
+    mainLayout_register.cells('c').setText('Detalle Especificación');
     mainLayout_register.cells('a').attachHTMLString('<div class="div-empty div-regsant"></div>');
     myToolbardatos_register = mainLayout_register.cells('a').attachToolbar();
+    mainLayout_register.cells('c').collapse();
     myToolbardatos_register.setIconsPath('/assets/images/icons/');
-    myToolbardatos_register.addButton('__mostnso',null,'Mostrar NSOC',"ic-acept.png","");
-    myToolbardatos_register.addButton('__mostesp',null,'Mostrar Especificaciones',"ic-noacept.png","");
-    myToolbardatos_register.addButton('__nuevo',null,'Nuevo',"ic-add2.png","");
-    // myToolbardatos_register.addButton('__save',null,'Guardar',"ic-save.png","");
-    myToolbardatos_register.addButton('__nsoc',null,'Ver Registros NSOC',"ic-look.png","");
-    myToolbardatos_register.addButton('__cosm',null,'Forma Cosmética',"ic-form.png","");
-    myToolbardatos_register.addButton('__notif',null,'Notificaciones',"ic-calendar.png","");
+    myToolbardatos_register.addButton('__mostnso',null,'Mostrar NSOC',"ic-doc.png","ic-doc.png");
+    myToolbardatos_register.addButton('__mostesp',null,'Mostrar Especificaciones',"ic-register.png","ic-register.png");
+    myToolbardatos_register.addButton('__nuevo',null,'Nuevo',"ic-add2.png","ic-add2.png");
+    myToolbardatos_register.addButton('__nsoc',null,'Ver Registros NSOC',"ic-look.png","ic-look.png");
+    myToolbardatos_register.addButton('__cosm',null,'Forma Cosmética',"ic-form.png","ic-form.png");
+    myToolbardatos_register.addButton('__notif',null,'Notificaciones',"ic-calendar.png","ic-calendar.png");
     myToolbardatos_register.attachEvent('onClick', OnClicktoolbar);
     myToolbardatos_register.setIconSize(32);    
+    myToolbardatos_register.disableItem('__nsoc');
+    myToolbardatos_register.disableItem('__cosm');
+    myToolbardatos_register.disableItem('__notif');
     maingrid = mainLayout_register.cells('a').attachGrid();     
     maingrid.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/");
     maingrid.setHeader('NOMBRE ESPECIFICACIÓN, COD.ESPEC,VERSION,VIGENCIA,FEC.CREACION,FEC.REVISA,FE.APRUEBA,NOM.CREACION,NOM.REVISA,NOM.APRUEBA,NOM.PROVEEDOR');
-    maingrid.setInitWidths('700,100,100,0,150,150,0,300,300,0,0');
+    maingrid.setInitWidths('500,100,80,0,120,120,0,250,250,0,0');
     maingrid.setColAlign('left,center,center,center,center,center,center,left,left,left,left');
     maingrid.setColumnIds("despec,ccespec,version"); 
     maingrid.attachHeader("#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter"); 
@@ -38,20 +178,19 @@ Inicio = () => {
     maingrid.load( BASE_URL + 'PO010208/mostrar-especificacion/'+usrJson.empresa).then(function (text) {
         mainLayout_register.cells('a').progressOff();
     });    
-    mainLayout_register.cells('c').setHeight(200);
+    mainLayout_register.cells('c').setHeight(280);
     tabbar_det = mainLayout_register.cells('c').attachTabbar();
     tabbar_det.addTab('presp', 'Productos Espec.', null, null, true);
     tabbar_det.addTab('crt', 'Características', null, null, false);
     tabbar_det.addTab('esy', 'Ensayos', null, null, false);
-    // tabbar_det.addTab('cpto', 'Complementos', null, null, false);
-    // tabbar_det.addTab('hst', 'Historial', null, null, false);
     tabbar_det.addTab('arc', 'Archivos Adjuntos', null, null, false);
-    // tabbar_det.addTab('prod', 'Productos/SubProductos asociados', null, null, false);
     tabbar_det.attachEvent ( "onSelect" , detaOnSelect);     
     maingrid.attachEvent("onRowSelect", function (id, ind) {
+        mainLayout_register.cells('c').expand();
         data = maingrid.getRowData(maingrid.getSelectedRowId())     
         version_esp = data.version;
         cod_esp = data.ccespec;
+        codigo = data.cod_nso;
         desc_esp = data.despec;
         cargarespecProd(cod_esp,version_esp);
      });
@@ -96,7 +235,7 @@ detaOnSelect= async (id) => {
 mostrarNsoc = () =>{
     maingrid = mainLayout_register.cells('a').attachGrid();     
     maingrid.setHeader('Nro NSO,Descripción,Estado,Inicio Vigenia, Fin Vigencia,TVU Comercial, TVU Producción,Nro Registro,Forma Cosmética,Cod.Espec,Descripción');
-    maingrid.setInitWidthsP('30,30,20,20,20,20,20,30,0,30,50');
+    maingrid.setInitWidthsP('10,30,5,10,10,10,10,0,0,5,50');
     maingrid.setColTypes('ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro');
     maingrid.setColAlign("left,left,center,center,center,center,center,left,left,left,left");
     maingrid.setColumnIds("cod_nso,desc,estado,fec_ini,fec_fin,com,prod,nreg,fcos,esp,desp");
@@ -108,6 +247,7 @@ mostrarNsoc = () =>{
         mainLayout_register.cells('a').progressOff();
     });
     maingrid.attachEvent("onRowSelect", function (id, ind) {
+        mainLayout_register.cells('c').expand();
         data = maingrid.getRowData(maingrid.getSelectedRowId())     
         version_esp = 1;
         cod_esp = data.esp;
@@ -140,91 +280,292 @@ mostrarNsoc = () =>{
         
      });
 }
-Graficos = () => {
-    mainLayout_search = tabbarinicio.cells("__graf").attachLayout('1C');  
-    mainLayout_search.cells('a').attachHTMLString('<figure class="highcharts-figure"><div id="container"></div><p class="highcharts-description"></p></figure>');
+
+regAnios  = () =>{
+    mainLayout_reg = tabbarinicio.cells('__reg').attachLayout('1C');  
+    mainLayout_reg.cells('a').hideHeader();
+    mainLayout_reg.cells('a').attachHTMLString('<figure class="highcharts-figure"><div id="container"></div><p class="highcharts-description"></p></figure>');
+    Graficosporanio();
+}
+
+regMarca = () =>{
+    mainLayout_ma = tabbarinicio.cells('__marca').attachLayout('1C');  
+    mainLayout_ma.cells('a').hideHeader();
+    mainLayout_ma.cells('a').attachHTMLString('<figure class="highcharts-figure"><div id="container2"></div><p class="highcharts-description"></p></figure>');
     
-    const params = {
-    };
-    $.post(BASE_URL + 'PO010208/mostrar-report-anio/', params, function (res) {
-        const rep = res.data.rep; 
-        console.log(rep.ANIO);
-        // myFormdcaract.setItemValue('_ep_car_gen',caract.DE_CARACTERIS_GENERALES);
-        // myFormdcaract.setItemValue('_ep_car_alm',caract.DE_CONDIC_ALMACENAMIENTO);
+    Graficospormarca();
+}
+
+regVenc = () =>{
+    mainLayout_ma = tabbarinicio.cells('__fecven').attachLayout('2U');  
+    mainLayout_ma.cells('a').hideHeader();
+    mainLayout_ma.cells('b').setWidth(550);
+    mainLayout_ma.cells('b').setText('Detalle');
+    mainLayout_ma.cells('b').collapse();
+    mainLayout_ma.cells('a').attachHTMLString('<figure class="highcharts-figure"><div id="container3" style="height:70%;width:70%;margin:0 auto;padding:20px 3px;box-sizing:border-box;align:left"></div><p class="highcharts-description"></p></figure>');
+    maingrid_venc = mainLayout_ma.cells('b').attachGrid();
+    maingrid_venc.setHeader('Fec.Autorización,Fec.Vencimiento,NSO,Cod.Espec.,Nombre Producto');
+    maingrid_venc.setInitWidths('100,100,100,100,300');
+    maingrid_venc.setColAlign('center,center,left,center,left'); 
+    // maingrid_venc.setColumnIds("cod_nso,desc,estado,fec_ini,fec_fin,com,prod,nreg,fcos,esp,desp");   
+    // maingrid_venc.attachHeader("#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,,,#text_filter,#text_filter");
+    maingrid_venc.init();  
+    Graficosporvenc();
+}
+
+Graficosporanio = () => {
+    const params = {};
+    let Etiquetas = [];
+    let Valores = [];
+    let datadrill = []
+    $.post(BASE_URL + 'PO010208/mostrar-control-anio/', params, function (res) { 
+        const valor = res.data.anio;
+        console.log(valor);
+        for(let i in valor) {
+            let iPeriodo = valor[i];
+            Etiquetas.push(iPeriodo.CO_NUMERO);
+            Valores.push({'name': iPeriodo.CO_NUMERO,'y': iPeriodo.CANTIDAD, 'drilldown': iPeriodo.CO_NUMERO});
+         
+        }
+        $.post(BASE_URL + 'PO010208/mostrar-control-anio-det/', params, function (res) { 
+            datadrill = res;
+            console.log(datadrill);
+        //grafico del modal
+        $('#container').highcharts({
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Registros de NSO'
+            },
+            subtitle: {
+                text: 'Corporación Life'
+            },
+            xAxis: {
+                type: 'category'
+            },
+            yAxis: {
+                min: 0,
+                max: 100,
+                title: {
+                    text: ''
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:1f} </b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true
+            },
+            plotOptions: {
+                series: {
+                    borderWidth: 0,
+                    dataLabels: {
+                        enabled: false
+                    }
+                }
+            },
+            series: [
+                {name: 'Número de registros',
+                colorByPoint: false,
+                data: Valores}
+            ],
+            
+            drilldown: {
+                series: datadrill
+            }
+        });
+        } , 'json');  
     } , 'json');  
-    //grafico del modal
-    $('#container').highcharts({
+}
+
+Graficospormarca = () => {
+    console.log('marca')
+    const params = {};
+    let Etiquetas = [];
+    let Valores = [];
+    let datadrill = []
+    $.post(BASE_URL + 'PO010208/mostrar-control-marca/', params, function (res) { 
+        const valor = res.data.marca;
+        console.log(valor);
+        for(let i in valor) {
+            let iPeriodo = valor[i];
+            Etiquetas.push(iPeriodo.DE_NOMBRE);
+            Valores.push({'name': iPeriodo.DE_NOMBRE,'y': iPeriodo.CANTIDAD, 'drilldown': iPeriodo.DE_NOMBRE});
+         
+        }
+        $.post(BASE_URL + 'PO010208/mostrar-control-marca-det/', params, function (res) { 
+            datadrill = res;
+            console.log(datadrill);
+        // grafico del modal
+        $('#container2').highcharts({
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Registro por Marca'
+            },
+            subtitle: {
+                text: 'Corporación Life'
+            },
+            xAxis: {
+                type: 'category'
+            },
+            yAxis: {
+                min: 0,
+                max: 100,
+                title: {
+                    text: ''
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:1f} </b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true
+            },
+            plotOptions: {
+                series: {
+                    borderWidth: 0,
+                    dataLabels: {
+                        enabled: false
+                    }
+                }
+            },
+            series: [
+                {name: 'Marcas registradas',
+                colorByPoint: true,
+                data: Valores}
+            ],
+            
+            drilldown: {
+                series: datadrill
+            }
+        });
+        } , 'json');  
+    } , 'json'); 
+}
+
+Graficosporvenc = () => {
+    console.log('marca')
+    const params = {};
+    let Etiquetas = [];
+    let Valores = [];
+    $.post(BASE_URL + 'PO010208/mostrar-control-vencimiento/', params, function (res) { 
+        const valor = res.data.venc;
+        console.log(valor);
+        for(let i in valor) {
+            let iPeriodo = valor[i];
+            Etiquetas.push(iPeriodo.CO_ANIO);
+            Valores.push({'name': iPeriodo.CO_ANIO,'y': iPeriodo.CANTIDAD});
+         
+        }
+
+        $('#container3').highcharts({
+            
         chart: {
-            type: 'column'
+            zoomType: 'xy'
         },
         title: {
-            text: 'Registros NSOC'
+            text: 'Vencimiento de Registros NSO'
         },
-        subtitle: {
-            text: 'Corporación Life'
+        plotOptions: {
+            series: {
+                cursor: 'pointer',
+                point: {
+                    events: {
+                        click: function () {
+                            fecvtoporanio(this.category);
+                        }
+                    }
+                }
+            }
         },
-        xAxis: {
-            categories: [
-                'Ene',
-                'Feb',
-                'Mar',
-                'Abr',
-                'May',
-                'Jun',
-                'Jul',
-                'Ago',
-                'Sep',
-                'Oct',
-                'Nov',
-                'Dic'
-            ],
+        xAxis: [{
+            categories: Etiquetas,
             crosshair: true
-        },
-        yAxis: {
+        }],
+        yAxis: [{
             min: 0,
+            max: 100,
             title: {
                 text: ''
             }
-        },
+        }],
         tooltip: {
-            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                '<td style="padding:0"><b>{point.y:.1f} nsoc</b></td></tr>',
-            footerFormat: '</table>',
-            shared: true,
-            useHTML: true
+            shared: true
         },
-        plotOptions: {
-            column: {
-                pointPadding: 0.2,
-                borderWidth: 0
-            }
+        legend: {
+            layout: 'vertical',
+            align: 'left',
+            x: 120,
+            verticalAlign: 'top',
+            y: 100,
+            floating: true,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
         },
-        series: [{
-            name: '2015',
-            data: [49.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5]
-    
-        }, {
-            name: '2016',
-            data: [83.6, 78.8, 98.5, 93.4, 106.0, 84.5, 105.0, 104.3]
-    
-        }, {
-            name: '2017',
-            data: [48.9, 38.8, 39.3, 41.4, 47.0, 48.3, 59.0, 59.6, 52.4, 65.2, 59.3, 51.2]
-    
-        }, {
-            name: '2018',
-            data: [42.4, 33.2, 34.5, 39.7, 52.6, 75.5, 57.4, 60.4, 47.6, 39.1, 46.8, 51.1]
-    
-        }]
-    });
+        series: [
+                {name: 'Vencimiento de Registro NSO',
+                colorByPoint: true,
+                data: Valores}]
+            // chart: {
+            //     type: 'column'
+            // },
+            // title: {
+            //     text: 'Registro por Marca'
+            // },
+            // subtitle: {
+            //     text: 'Corporación Life'
+            // },
+            // xAxis: {
+            //     categories: Etiquetas,
+            // },
+            // yAxis: {
+            //     min: 0,
+            //     max: 100,
+            //     title: {
+            //         text: ''
+            //     }
+            // },
+            // tooltip: {
+            //     headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            //     pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+            //         '<td style="padding:0"><b>{point.y:1f} </b></td></tr>',
+            //     footerFormat: '</table>',
+            //     shared: true,
+            //     useHTML: true
+            // },
+            // plotOptions: {
+            //     series: {
+            //         cursor: 'pointer',
+            //         events: {
+            //             click: function (event) {
+            //                 alert('Category: ' + this.category + ', value: ' + this.y);
+            //             }
+            //         }
+            //     }
+            // },
+            // series: [
+            //     {name: 'Vencimiento de Registro NSO',
+            //     colorByPoint: true,
+            //     data: Valores}
+            // ],
+            
+            
+        });
+    } , 'json'); 
 }
+
 Buscar = () => { 
     // mainLayout_search = tabbarinicio.cells("__search").attachLayout('1C');  
-    mainLayout_detalle_sub = mainLayout_register.cells('b').attachLayout('2E');    
+    mainLayout_detalle_sub = mainLayout_register.cells('b').attachLayout('1C');    
     // mainLayout_load = mainLayout_search.cells('a').attachLayout('3J');
     // mainLayout_detalle_sub = mainLayout_load.cells('b').attachLayout('2E');
-    mainLayout_detalle_sub.cells('a').setText('Detalle NSO');
+    mainLayout_detalle_sub.cells('a').setText('Detalle NSOC');
     myFormdatos_nso = mainLayout_detalle_sub.cells("a").attachForm(f_rev_nso);
     // mainLayout_load.cells('c').setText('Notificaciones registradas');
     // mainLayout_detalle_sub.cells('a').setText('Detalle');
@@ -241,21 +582,20 @@ Buscar = () => {
     // maingrid_search.attachHeader("#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,,,#text_filter,#text_filter");
     // maingrid_search.init();  
     myToolbardatos_detalle = mainLayout_detalle_sub.cells('a').attachToolbar();
-    mainLayout_detalle_sub.cells('b').hideHeader();
-    mainLayout_detalle_sub.cells('b').setHeight(35);
-    tabbar = mainLayout_detalle_sub.cells('b').attachTabbar();
-    tabbar.addTab('s_formula', 'FÓRMULA', null, null, true);
-    tabbar.addTab('s_especificaciones', 'ESPECIFICACIONES', null, null, false);
-    tabbar.addTab('s_conreque', 'MATERIAL DE ENVASE', null, null, false);
-    tabbar.addTab('s_revdevol', 'ROTULADO', null, null, false);  
-    tabbar. attachEvent ( "onSelect" , doOnSelect ); 
+    // tabbar = mainLayout_detalle_sub.cells('b').attachTabbar();
+    // tabbar.addTab('s_formula', 'FÓRMULA', null, null, true);
+    // tabbar.addTab('s_especificaciones', 'ESPECIFICACIONES', null, null, false);
+    // tabbar.addTab('s_conreque', 'MATERIAL DE ENVASE', null, null, false);
+    // tabbar.addTab('s_revdevol', 'ROTULADO', null, null, false);  
+    // tabbar. attachEvent ( "onSelect" , doOnSelect ); 
     myToolbardatos_detalle.setIconsPath('/assets/images/icons/');
     // myToolbardatos_detalle.addButton('ver',null,'<b>Ver lista</b>',"ic-look.png","");  
-    myToolbardatos_detalle.addButton('file',null,'<b>Ver documentos</b>',"ic-file.png",""); 
+    // myToolbardatos_detalle.addButton('file',null,'<b>Ver documentos</b>',"ic-file.png",""); 
     myToolbardatos_detalle.addButton('__save',null,'Editar',"ic-edit2.png",""); 
     myToolbardatos_detalle.addButton('__save',null,'Guardar',"ic-save.png","");
+    myToolbardatos_detalle.addButton('minimizar',null,'Ocultar',"ic-hide.png","");
     myToolbardatos_detalle.attachEvent('onClick', detalleOnClick);       
-    myToolbardatos_detalle.setIconSize(32);    
+    myToolbardatos_detalle.setIconSize(18);    
     WinContainer = new dhtmlXWindows();
     // myFormdatos_search.attachEvent("onButtonClick", function (id_ind){
     //     buscar = myFormdatos_search.getItemValue('_drt_buscarnso').length>0 ? myFormdatos_search.getItemValue('_drt_buscarnso') : '|';
@@ -389,9 +729,21 @@ cargarventanaComp = async (formula,codigo,desc) => {
     Windc_.window("wcomp").center();
     myGrid_componentes = Winidc_.attachGrid();
     myGrid_componentes.setHeader('Cod.Producto,Descripción,Cant.,UM,Cod.Integral,Estado');
-    myGrid_componentes.setInitWidths('150,350,100,100,100,100');
-    myGrid_componentes.setColAlign('left,left,left,left,left,left');
+    myGrid_componentes.setInitWidths('150,350,100,50,100,100');
+    myGrid_componentes.setColAlign('left,left,right,right,left,left');
     myGrid_componentes.setColTypes('ro,ro,ro,ro,ro,ro'); 
+    myGrid_componentes.setNumberFormat("0.00",2,".",",");  
+    myGrid_componentes._in_header_stat_sum=function(tag,index,data){       
+        var calck=function(){                              
+            var sum=0;                                     
+            this.forEachRow(function(id){                   
+                sum+=this.cellById(id,index).getValue()*1;     
+            })
+        return this._aplNF(sum,0);
+        }
+        this._stat_in_header(tag,calck,index,data);            
+    }
+    myGrid_componentes.attachFooter(",TOTAL,#stat_sum,kg,,",["","","text-align:right;","text-align:right;","",""]);
     myGrid_componentes.init();     
     myGrid_componentes.clearAll(); 
     Windc_.window("wcomp").progressOn();
@@ -541,36 +893,48 @@ buscarnotificacion = async (name) => {
 
 registrarnotificacion = async (name) => {
     Wind_ = new dhtmlXWindows();
-    Winid_ = Wind_.createWindow("wbusq", 0, 0, 800, 500);
-    Wind_.window("wbusq").hideHeader();
+    Winid_ = Wind_.createWindow("wbusq", 0, 0, 1000, 500);
+    Wind_.window("wbusq").setText('Nuevo Registro');
+    // Wind_.window("wbusq").hideHeader();
     Wind_.window("wbusq").setModal(true);
     Wind_.window("wbusq").denyResize();
     Wind_.window("wbusq").center();
     myToolbar_nso = Wind_.window("wbusq").attachToolbar();
     myToolbar_nso.setIconsPath('/assets/images/icons/');
-    myToolbar_nso.addButton('b_close', null, '<i class="far fa-window-close txtred"></i> CERRAR ', null, null);
+    // myToolbar_nso.addButton('b_close', null, '<i class="far fa-window-close txtred"></i> CERRAR ', null, null);
     myToolbar_nso.addButton('__save',null,'Guardar',"ic-save.png","");
     myToolbar_nso.setIconSize(32);
-    myToolbar_nso.attachEvent("onClick", (id) => {
-        (id === 'b_close') ? Wind_.window("wbusq").close() : console.log('hola');
-    });
+    // myToolbar_nso.attachEvent("onClick", (id) => {
+    //     (id === 'b_close') ? Wind_.window("wbusq").close() : console.log('hola');
+    // });
+    
+    myToolbar_nso.attachEvent('onClick', OnClicktoolbar);
     myform_nso = Wind_.window("wbusq").attachForm(f_nuevo_registro);
     myform_nso.setItemValue('_drt_nombre',desc_esp);
     myform_nso.setItemValue('_drt_esp',cod_esp);
+    myform_nso.setItemValue('_drt_vers',version_esp);
+    
 };
 
 mostrarnsocven = async (name) => {
     Wind_ = new dhtmlXWindows();
-    Winid_ = Wind_.createWindow("wbusq", 0, 0, 650, 500);
-    Wind_.window("wbusq").setText('Registros prontos a vencer');
+    Winid_ = Wind_.createWindow("wbusq", 0, 0, 650, 250);
+    Wind_.window("wbusq").setText('Importante!');
     Wind_.window("wbusq").setModal(true);
     Wind_.window("wbusq").denyResize();
     Wind_.window("wbusq").center();
+    myToolbar_venc = Wind_.window("wbusq").attachToolbar();
+    myToolbar_venc.setIconsPath('/assets/images/icons/');
+    myToolbar_venc.addButton('_fcv',null,'<b>Registros prontos a vencer</b>',"","alerta.png");
+    myToolbar_venc.setIconSize(32);
+    myToolbar_venc.disableItem('_fcv');
     myGrid_nso = Winid_.attachGrid();
     myGrid_nso.setHeader('Nro NSO,Descripción,Fin Vigencia');
     myGrid_nso.setInitWidthsP('30,50,20');
     myGrid_nso.setColTypes('ro,ro,ro');
     myGrid_nso.setColAlign("left,left,center");
+    myGrid_nso.setColumnIds("nsoc,desc,fec");
+    myGrid_nso.setColumnColor("#d5f1ff,#d5f1ff,#FE642E");
     myGrid_nso.init();    
     Wind_.window("wbusq").progressOn();
     myGrid_nso.clearAll(); 
@@ -704,26 +1068,28 @@ OnClicktoolbar= async (id) => {
     switch (id) {
         case '__save':
         
-        var nsoc = myFormdatos.getItemValue('_drt_nrosoc');
-        var nombre_nso = myFormdatos.getItemValue('_drt_nombre');
-        var form_cosm = myFormdatos.getItemValue('_drt_formacosmetica');
-        var espec = myFormdatos.getItemValue('_drt_esp');
-        console.log(espec,nombre_nso,nsoc,form_cosm);
+        var nsoc = myform_nso.getItemValue('_drt_nrosoc');
+        var nombre_nso = myform_nso.getItemValue('_drt_nombre');
+        var form_cosm = myform_nso.getItemValue('_drt_formacosmetica');
+        var espec = myform_nso.getItemValue('_drt_esp');
+        var version = myform_nso.getItemValue('_drt_vers');
+        console.log(espec,nombre_nso,nsoc,form_cosm,version);
         
-        if (nsoc.length==0||myFormdatos.getItemValue('_drt_tuv_com')==null||myFormdatos.getItemValue('_drt_tuv_prod')==null||espec.length==0||myFormdatos.getItemValue('_drt_fechadesde')==null||myFormdatos.getItemValue('_drt_fechahasta')==null||nombre_nso.length==0||form_cosm.length==0){
+        if (nsoc.length==0||myform_nso.getItemValue('_drt_tuv_com')==null||myform_nso.getItemValue('_drt_tuv_prod')==null||espec.length==0||myform_nso.getItemValue('_drt_fechadesde')==null||myform_nso.getItemValue('_drt_fechahasta')==null||nombre_nso.length==0||form_cosm.length==0){
             
             dhtmlx.confirm("Debe llenar el formulario", function (result) {
             });
         }else{
-            var fecha_ini = myFormdatos.getItemValue('_drt_fechadesde').toLocaleDateString().replace('/', '-');
-            var fecha_fin = myFormdatos.getItemValue('_drt_fechahasta').toLocaleDateString().replace('/', '-');
-            var vu_com = myFormdatos.getItemValue('_drt_tuv_com').toLocaleDateString().replace('/', '-');
-            var tvu_prod = myFormdatos.getItemValue('_drt_tuv_prod').toLocaleDateString().replace('/', '-');
+            var fecha_ini = myform_nso.getItemValue('_drt_fechadesde').toLocaleDateString().replace('/', '-');
+            var fecha_fin = myform_nso.getItemValue('_drt_fechahasta').toLocaleDateString().replace('/', '-');
+            var vu_com = myform_nso.getItemValue('_drt_tuv_com');
+            var tvu_prod = myform_nso.getItemValue('_drt_tuv_prod');
             if(nsoc) {
                 dhtmlx.confirm("¿Está seguro de guardar?", function (result) {
                     var cadena = ''
                     if (result === Boolean(true)) {
-                            guardarnsoc(nsoc,fecha_ini,fecha_fin,nombre_nso,form_cosm,espec,vu_com,tvu_prod);
+                            console.log();
+                            guardarnsoc(nsoc,fecha_ini,fecha_fin,nombre_nso,form_cosm,espec,vu_com,tvu_prod,version);
                     }
                 });
             }
@@ -758,8 +1124,11 @@ OnClicktoolbar= async (id) => {
             Buscar();
         break;        
         case '__mostnso':
-            Buscar();
+            Inicio();
             mostrarNsoc();
+            myToolbardatos_register.enableItem('__nsoc');
+            myToolbardatos_register.enableItem('__cosm');
+            myToolbardatos_register.enableItem('__notif');
         break;    
         case '__mostesp':
             Inicio();
@@ -770,7 +1139,7 @@ OnClicktoolbar= async (id) => {
     }
 };
 
-guardarnsoc = (nsoc,fecha_ini,fecha_fin,nombre_nso,form_cosm,espec,tvu_com,tvu_prod) => {
+guardarnsoc = (nsoc,fecha_ini,fecha_fin,nombre_nso,form_cosm,espec,tvu_com,tvu_prod,version) => {
     console.log('s');
     params = {
         empresa: usrJson.empresa,
@@ -783,11 +1152,13 @@ guardarnsoc = (nsoc,fecha_ini,fecha_fin,nombre_nso,form_cosm,espec,tvu_com,tvu_p
         form_cosm : form_cosm,
         espec: espec,
         tvu_com:tvu_com,
-        tvu_prod:tvu_prod
+        tvu_prod:tvu_prod,
+        version:version
     };
     $.post(BASE_URL + "PO010208/grabar-nsoc", params, function (res) {
         if (res.state=='success'){
             Swal.fire('Bien!', res.message, 'success');
+            Inicio();
             // myFormdatos.setItemValue('_r_nroreque','N° '+res.message_co+ ' Del ' +periodo_fun);
             // myFormdatos.setItemValue('_drt_resumen',cadena);
         } else {
@@ -820,6 +1191,9 @@ guardarformcosm = (co_forma,estado,des_forma,accion) => {
 
 inicioOnSelect= async (id) => {
     switch (id) {
+        case '__drive':
+            Inidrive();
+            break;
         case '__register':
             Inicio();
             break;
@@ -829,8 +1203,14 @@ inicioOnSelect= async (id) => {
         case '__formapr':
             aprobarFormula();
             break;
-        case '__graf':
-            Graficos();
+        case '__reg':
+            regAnios();
+            break;
+        case '__marca':
+            regMarca();
+            break;
+        case '__fecven':
+            regVenc();
             break;
         default:
             null;
@@ -840,7 +1220,6 @@ inicioOnSelect= async (id) => {
 
 onClicktoolbarform= async (id) => {        
     seleccione  = myGrid_esprod.getRowData(myGrid_esprod.getSelectedRowId());
-    console.log(seleccione);
     switch (id) {
         case '__comp':   
             // cargarventanaComp(seleccione.coform,seleccione.codprod,seleccione.desc);   
@@ -850,7 +1229,7 @@ onClicktoolbarform= async (id) => {
             cargarventanaTraz(seleccione.cod,seleccione.desc); 
             break;
         case '__rep':   
-            cargarReport(codigo,nombre, esp,seleccione.marc);                
+            cargarReport(codigo,nombre, esp,seleccione.marc,version_esp);                
             break;
         // case '__fail':  
         //     aprobar(seleccione.coform,seleccione.codprod,'Observada');      
@@ -873,8 +1252,11 @@ detalleOnClick= async (id) => {
         verProductosnso();
             break;
         case 'file':
-        mainLayout_detalle_sub.cells('a').collapse();
+             mainLayout_detalle_sub.cells('a').collapse();
         break;
+        case 'minimizar':   
+            mainLayout_register.cells('b').collapse();
+        break;     
         default:
             null;
             break;
@@ -909,38 +1291,6 @@ mainToolbarOnClick= async (id) => {
             break;
     }
 };
-
-// OnclickLista = (id) => {
-//     switch (id) {
-//         case 'b_close':             
-//             mainLayout_product.cells('c').collapse();
-//             break;  
-//         case 'desmarcar':
-//             myGrid_lista.setCheckedRows(0,0);
-//         break;
-//         case 'marcar':
-//             myGrid_lista.setCheckedRows(0,1);
-//         break;        
-//         case 'eliminar':
-//             var to_fila_data_num_gri = myGrid_lista.getRowsNum();
-//             console.log(to_fila_data_num_gri);
-//             for(var i=1;i<to_fila_data_num_gri;i++){
-//                 console.log('data');
-//                 let iRowId_gri = myGrid_lista.getRowId(i);
-//                 console.log(iRowId_gri);
-//                 data = myGrid_lista.getRowData(iRowId_gri);
-//                 if (data.chk == 1) {
-//                     myGrid_lista.deleteRow(iRowId_gri);
-//                     i = i - 1;
-//                     to_fila_data_num_gri = to_fila_data_num_gri - 1;
-//                 }
-//             }
-//         break;
-//         default:
-//             null;
-//             break;
-//     }
-// };
 
 cargarFamilia = () => {
     var val_co_clase = myFormdatos_prod.getItemValue('_drt_clase');
@@ -1030,6 +1380,16 @@ cargarnso = (buscar) => {
     });
 };
 
+fecvtoporanio = (periodo) => {    
+    console.log(periodo); 
+    console.log('periodo');
+    mainLayout_ma.cells('b').expand();
+    maingrid_venc.clearAll(); 
+    mainLayout_ma.cells('b').progressOn();
+    maingrid_venc.load( BASE_URL + 'PO010208/mostrar-vencimiento-nso-por-periodo/'+ periodo).then(function (text) {
+        mainLayout_ma.cells('b').progressOff();
+    });
+};
 cargarformula = (nombre,buscar,tipo,flag) => {  
     mainLayoutFormula = tabbar_form.cells(nombre).attachLayout('1C');    
     myGrid_formula = mainLayoutFormula.cells('a').attachGrid();
@@ -1139,9 +1499,9 @@ cargarCaract = (espec,version) => {
     mainLayout_caract = tabbar_det.cells('crt').attachLayout('2E');  
     myFormdcaract = mainLayout_caract.cells('a').attachForm(form_caract);
     mainLayout_caract.cells('a').hideHeader();  
-    mainLayout_caract.cells('a').setHeight(300); 
-    mainLayout_caract.cells('b').hideHeader();
-    myFormdcaract.setFontSize("11px");
+    mainLayout_caract.cells('b').setText('Detalle');
+    mainLayout_caract.cells('a').expand();
+    myFormdcaract.setFontSize("10px");
     //CARGANDO PRIMERA PARTE DE CARACTERISTICAS
     const params = {
         empresa: usrJson.empresa,
@@ -1155,9 +1515,10 @@ cargarCaract = (espec,version) => {
     } , 'json');  
     myGrid_caract = mainLayout_caract.cells('b').attachGrid();
     myGrid_caract.setHeader(',Característica,Detalle');    
-    myGrid_caract.setInitWidths('20,200,600');
+    myGrid_caract.setInitWidths('0,200,200');
     myGrid_caract.setColAlign('left,left,left');
-    myGrid_caract.setColTypes('ro,ro,ed'); 
+    myGrid_caract.setColTypes('ro,ro,ro'); 
+    myGrid_caract.setColumnHidden(0,true);
     myGrid_caract.setColumnIds('id,desc,det'); 
     myGrid_caract.init();      
     //CARGANDO SEGUNDA PARTE DE CARACTERISTICAS
@@ -1185,12 +1546,72 @@ cargarEnsayo = (espec,version) => {
     });
 };
 
-cargarReport = async (codigo,nombre, esp,marc) => {
-    // var codigo = 'NMS001-237214';
+cargarDocumento = (espec,version) => {  
+    mainLayout_dcto = tabbar_det.cells('arc').attachLayout('1C');  
+    mainLayout_dcto.cells('a').hideHeader(); 
+    dctotoolbar = mainLayout_dcto.cells('a').attachToolbar(); 
+    dctotoolbar.setIconsPath('/assets/images/icons/');
+    dctotoolbar.addButton('verdcto',null,'Ver Archivo',"ic-look.png","");
+    dctotoolbar.attachEvent('onClick', toolbarOnadj);
+    dctotoolbar.setIconSize(32); 
+    myGrid_dcto = mainLayout_dcto.cells('a').attachGrid();
+    myGrid_dcto.setHeader(',Nombre,Descripción');    
+    myGrid_dcto.setInitWidths('0,300,600');
+    myGrid_dcto.setColAlign('left,left,left');
+    myGrid_dcto.setColTypes('ro,ro,ro'); 
+    myGrid_dcto.setColumnIds('prod,nom,desc'); 
+    myGrid_dcto.init();      
+    myGrid_dcto.clearAll(); 
+    mainLayout_dcto.cells('a').progressOn();
+    myGrid_dcto.load( BASE_URL + 'PO010410/mostrar-documento/'+usrJson.empresa+'/'+espec+'/'+version).then(function (text) {
+        mainLayout_dcto.cells('a').progressOff();
+    });
+};
+
+toolbarOnadj  = async (id) => {
+    switch (id) {
+        case 'verdcto':
+            sel_adj  = myGrid_dcto.getRowData(myGrid_dcto.getSelectedRowId());
+            verurladjunto(sel_adj.prod,sel_adj.nom);
+            break;    
+        default:
+            null;
+            break;
+    }
+};
+
+verurladjunto = async (prod,archivo) => {
+    WinContainer = new dhtmlXWindows();
+    WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 700, 800);
+    WinDocumentoViewer.keepInViewport();
+    WinDocumentoViewer.setText('Mostrando documento ');
+    const params = {
+        producto:prod,
+        archivo: archivo,
+    };
+    $.post(BASE_URL + 'PO010410/mostrar-adjunto-espec/', params, function (res) {
+        const url = res.data.url_adj; 
+        console.log(url.URL);
+        WinDocumentoViewer.attachURL(url.URL);
+    } , 'json');  
+    
+};
+
+cargarReport = async (codigo,nombre, esp,marc,version) => {
+    console.log(codigo,nombre, esp,marc,version);
+    WinContainer = new dhtmlXWindows();
+    WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 800, 600);
+    WinDocumentoViewer.center();
+    WinDocumentoViewer.keepInViewport();
+    WinDocumentoViewer.setText('Mostrando documento ');
+    WinDocumentoViewer.attachURL('/api/po010208/mostrar-reporte/'+codigo+'/'+nombre+'/'+esp+'/'+marc+'/'+version);
+};
+
+
+cargarespReport = async (esp,vers,cod,nom,fcrea,frev,fapr,crea,rev,aprob,marc,sub,prov,nsoc) => {
     WinContainer = new dhtmlXWindows();
     WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 800, 800);
-//                WinDocumentoViewer.center();
-        WinDocumentoViewer.keepInViewport();
-        WinDocumentoViewer.setText('Mostrando documento ');
-        WinDocumentoViewer.attachURL('/api/po010208/mostrar-reporte/'+codigo+'/'+nombre+'/'+esp+'/'+marc);
+    WinDocumentoViewer.keepInViewport();
+    WinDocumentoViewer.setText('Mostrando documento ');
+    WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte/'+esp+'/'+vers+'/'+cod+'/'+nom+'/'+fcrea+'/'+frev+'/'+fapr+'/'+crea+'/'+rev+'/'+aprob+'/'+marc+'/'+sub+'/'+prov+'/'+nsoc);
 };

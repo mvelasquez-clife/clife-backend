@@ -9,8 +9,8 @@ const responseParams = {
 const po010411Controller = {
     
     mostrarespecificacion: (req, res) => { 
-            
         const {empresa,grupo,flag} = req.params;  
+        console.log(empresa,grupo,flag);
         
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
@@ -35,14 +35,66 @@ const po010411Controller = {
             });
         });
     },
-    
+
+    mostrarespecDescontinuada: (req, res) => { 
+        const {empresa} = req.params;  
+        console.log('jol');
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "select de_nombre,co_especificacion,nu_version,es_vigencia,fe_creacion,fe_revisa,fe_aprueba,de_creador,de_revisado,de_aprueba,de_proveedor,co_proveedor,co_nsoc,de_nombre_registrado_nso,de_tipo from table (pack_new_especificacion.f_list_especificacion_desc(:x_empresa))";
+            
+            const params = {
+                x_empresa: {val : empresa}
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(result.rows.length > 0 ? xmlParser.renderXml(result.rows) : xmlParser.renderXml([{ DE_NOMBRE: 'No se encontraron coincidencias' }]));
+            });
+        });
+    },
+
+    mostrarespecporgrupo: (req, res) => { 
+            
+        const {empresa,grupo} = req.params;  
+        
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "select co_especificacion,de_nombre,co_espec_granel,co_nsoc,nu_version,es_vigencia,fe_creacion,fe_revisa,fe_aprueba,de_creador,de_revisado,de_aprueba,de_proveedor,co_proveedor,de_tipo from table (pack_new_especificacion.f_list_especificacion_grupo(:x_empresa,:x_grupo))";
+            
+            const params = {
+                x_empresa: {val : empresa},
+                x_grupo: {val : grupo},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(result.rows.length > 0 ? xmlParser.renderXml(result.rows) : xmlParser.renderXml([{ CO_PRODUCTO: 'No se encontraron coincidencias' }]));
+            });
+        });
+    },
+
     aprobaresp: (req, res) => {        
         const {empresa,usuario,especificacion,proveedor,version,vigencia} = req.body;  
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
                     state: 'error',
-                    message: error.Error
+                    message: err.Error
                 });
                 return;
             }

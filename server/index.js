@@ -62,6 +62,7 @@ app.use('/api/VT010101', require('./routes/ventas/VT010101.routes'));
 app.use('/api/VT010102', require('./routes/ventas/VT010102.routes'));
 app.use('/api/VT010108', require('./routes/ventas/VT010108.routes'));
 app.use('/api/VT010123', require('./routes/ventas/VT010123.routes'));
+app.use('/api/VT01040103', require('./routes/ventas/VT01040103.routes'));
 app.use('/api/CO0201', require('./routes/contabilidad/CO0201.routes'));
 app.use('/api/CO010401B', require('./routes/contabilidad/CO010401B.routes'));
 app.use('/api/SG010101', require('./routes/seguridad/SG010101.routes'));
@@ -69,6 +70,7 @@ app.use('/api/SG010203', require('./routes/seguridad/SG010203.routes'));
 app.use('/api/PO010208', require('./routes/plantaindustrial/PO010208.routes'));
 app.use('/api/PO010411', require('./routes/plantaindustrial/PO010411.routes'));
 app.use('/api/PO010410', require('./routes/plantaindustrial/PO010410.routes'));
+app.use('/api/PO01020102', require('./routes/plantaindustrial/PO01020102.routes'));
 
 //ruta del chat
 app.use('/chat', require('./routes/chat.routes'));

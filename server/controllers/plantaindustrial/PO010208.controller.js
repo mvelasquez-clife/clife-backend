@@ -3,6 +3,7 @@ const dbParams = require('../../database');
 const xmlParser = require('../../xml-parser');
 var fs = require('fs');
 const path = require('path');
+const o2x = require('object-to-xml');
 const responseParams = {
     outFormat: oracledb.OBJECT,
     autoCommit: true
@@ -188,8 +189,8 @@ const po010208Controller = {
     },
 
     grabarnsoc: (req, res) => {        
-        const {empresa,usuario,alias,num_registro_nsoc,vigencia_ini,vigencia_ter,nombre,form_cosm,espec,tvu_com,tvu_prod} = req.body;  
-        console.log(empresa,usuario,alias,num_registro_nsoc,vigencia_ini,vigencia_ter,nombre,form_cosm,espec,tvu_com,tvu_prod);
+        const {empresa,usuario,alias,num_registro_nsoc,vigencia_ini,vigencia_ter,nombre,form_cosm,espec,tvu_com,tvu_prod,version} = req.body;  
+        console.log(empresa,usuario,alias,num_registro_nsoc,vigencia_ini,vigencia_ter,nombre,form_cosm,espec,tvu_com,tvu_prod,version);
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -198,7 +199,7 @@ const po010208Controller = {
                 });
                 return;
             }
-            const query = "call PACK_NEW_DIRECCION_TECN.SP_NOTIFICACION_SANITARIA (:x_result,:x_de_result,:x_empresa,:x_usuario,:x_alias,:x_num_registro_nsoc,:x_vigencia_ini,:x_vigencia_ter,:x_nombre,:x_form_cosm,:x_co_espec,:tvu_com,:tvu_prod)";
+            const query = "call PACK_NEW_DIRECCION_TECN.SP_NOTIFICACION_SANITARIA (:x_result,:x_de_result,:x_empresa,:x_usuario,:x_alias,:x_num_registro_nsoc,:x_vigencia_ini,:x_vigencia_ter,:x_nombre,:x_form_cosm,:x_co_espec,:tvu_com,:tvu_prod,:x_version)";
             const params = { 
                 //parametros de salida
                 x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
@@ -214,7 +215,8 @@ const po010208Controller = {
                 x_form_cosm: {val:form_cosm},
                 x_co_espec: {val:espec},
                 tvu_com: {val:tvu_com},
-                tvu_prod: {val:tvu_prod}
+                tvu_prod: {val:tvu_prod},
+                x_version: {val:version}
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
@@ -491,7 +493,7 @@ const po010208Controller = {
     mostrarespecificacion: (req, res) => { 
             
         const {empresa,grupo,clase,tipo} = req.params;  
-        
+        console.log(empresa,grupo,clase,tipo);
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
@@ -541,16 +543,17 @@ const po010208Controller = {
     },
     
     aprobarform: (req, res) => {        
-        const {empresa,formula,producto,usuario,alias,vigencia} = req.body;  
+        const {empresa,formula,producto,usuario,alias,vigencia} = req.body; 
+        console.log(empresa,formula,producto,usuario,alias,vigencia); 
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
                     state: 'error',
-                    message: error.Error
+                    message: err.Error
                 });
                 return;
             }
-            const query = "call pack_new_formulacion.sp_grabar_estado_formu (:x_result,:x_de_result,:x_empresa,:x_co_formu,:x_co_prod,:x_co_usuario,:x_alias,:x_vigencia)";
+            const query = "call pack_new_formulacion.sp_grabar_estado_formu(:x_result,:x_de_result,:x_empresa,:x_co_formu,:x_co_prod,:x_co_usuario,:x_alias,:x_vigencia)";
             const params = { 
                 //parametros de salida
                 x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
@@ -566,6 +569,7 @@ const po010208Controller = {
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
                 if (error) {
+                    console(error);
                     res.send({ 'error_query': error.stack });
                     return;
                 }
@@ -685,7 +689,7 @@ const po010208Controller = {
     
     mostrarprodporesp: (req, res) => {             
         const {empresa,especificacion,version} = req.params;  
-        
+        console.log(empresa,especificacion,version);
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
@@ -787,7 +791,6 @@ const po010208Controller = {
     mostrarensayo: (req, res) => { 
             
         const {empresa,especificacion,version} = req.params;  
-        
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
@@ -813,30 +816,26 @@ const po010208Controller = {
     },
 
     mostrarespecreporte: async (request, response) => {        
-        // if (request.cookies[confParams.cookieIntranet]) {
-            const { codigo,nombre,esp,marc} = request.params;
-            // const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            const { codigo,nombre,esp,marc,version} = request.params;
             try {
                 const conn = await oracledb.getConnection(dbParams);
-                let query = "select de_metodo,de_ensayo,de_tipo_ensayo from table (pack_new_especificacion.f_list_ensayo(11,:x_espec,1))";
+                let query = "select de_metodo,de_especificaciones from table (pack_new_especificacion.f_list_ensayo(11,:x_espec,:x_vers)) where de_tipo_ensayo not in ('MICROBIOLOGICO')";
                 let params = {
                     x_espec: { val: esp },
+                    x_vers: { val: version },
                 };
                 const result = await conn.execute(query, params, responseParams);
                 const filas = result.rows;
-                // let query = "select de_nombre,nu_ruc from ma_empr_m where co_empresa = :x_empresa";
-                // let params = {
-                //     x_empresa: { val: empresa }
-                // };
-                // const result_2 = await conn.execute(query, params, responseParams);
-                // var empresa_dat;
-                // var nombre,ruc;               
-                // for(var i in result_2.rows) {
-                //     empresa_dat = result_2.rows[i];                  
-                // }
-                // nombre = empresa_dat.DE_NOMBRE;
-                // ruc = empresa_dat.NU_RUC;
-                // pinta pdf
+
+                let query_n = "select de_metodo,de_especificaciones from table (pack_new_especificacion.f_list_ensayo(11,:x_espec,:x_vers)) where de_tipo_ensayo = 'MICROBIOLOGICO'";                
+                const result_n = await conn.execute(query_n, params, responseParams);
+                const filas_n = result_n.rows;
+
+                let query_p = "select fe_creacion,de_creador,de_revisado,de_aprueba from table (pack_new_especificacion.f_list_caract_report(11,:x_espec,:x_vers))";                
+                
+                const result_p = await conn.execute(query_p, params, responseParams);
+                const filas_p = result_p.rows;
+
                 const pdfWriter = require('html-pdf');
                 const ejs = require('ejs');
                 // const d = new Date();
@@ -845,7 +844,10 @@ const po010208Controller = {
                     nombre:nombre,
                     esp:esp,
                     marc:marc,
-                    filas:filas
+                    version:version,
+                    filas:filas,
+                    filas_n:filas_n,
+                    filas_p:filas_p,
                 };
                 const html = await ejs.renderFile(path.resolve('client/views/modulos/plantaindustrial/po0102008-report1.ejs'), data);
                 const pdfOptions = {
@@ -888,8 +890,264 @@ const po010208Controller = {
     
     
     mostraranios: (req,res) =>{
-        const {} = req.body;
-        oracledb.getConnection(dbParams,(err,conn) => {
+        
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ 'error_conexion': err.stack });
+                return;
+            }
+            const query = "select '0' as value, 'TODOS' as label from dual union select to_char(fe_inicio_vigencia,'yyyy') as value,to_char(fe_inicio_vigencia,'yyyy')as label from po_regi_sani_c group by to_char(fe_inicio_vigencia,'yyyy') order by value desc";
+            const params = {                
+            };
+            conn.execute(query,params,responseParams,(error, result)=>{ 
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderSelect(result.rows, '0'));
+            });
+        });
+    },
+
+    mostrarcontrolanio: (req, res) => { 
+        const {} = req.params;  
+        
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "select co_numero,cantidad from table (pack_new_direccion_tecn.f_list_control_gen())";
+            
+            const params = { };
+            conn.execute(query,params,responseParams,(error, result)=>{                
+                
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                if(result.rows.length > 0) {                
+                    res.json({
+                        state: 'success',
+                        data: {
+                            anio: result.rows
+                        }   
+                    });       
+                }
+                
+            });
+        });
+    },
+        
+    mostrarcontrolreg: (req, res) => { 
+        const {} = req.params;  
+        
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "select co_anio,co_numero as mes,cantidad from table(pack_new_direccion_tecn.f_list_control_reg())";
+            
+            const params = { };
+            conn.execute(query,params,responseParams,(error, result)=>{   
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                let data2012 = [],  data2013 = [],  data2014 = [], data2015 = [], data2016 = [], data2017 = [], data2018 = [], data2019 = [], datatot = [];
+                for (var i in result.rows) {
+                  result.rows[i].CO_ANIO == 2012  ?  data2012.push([result.rows[i].MES,result.rows[i].CANTIDAD]) : null ;
+                  result.rows[i].CO_ANIO == 2013  ?  data2013.push([result.rows[i].MES,result.rows[i].CANTIDAD]) : null ;
+                  result.rows[i].CO_ANIO == 2014  ?  data2014.push([result.rows[i].MES,result.rows[i].CANTIDAD]) : null ;
+                  result.rows[i].CO_ANIO == 2015  ?  data2015.push([result.rows[i].MES,result.rows[i].CANTIDAD]) : null ;
+                  result.rows[i].CO_ANIO == 2016  ?  data2016.push([result.rows[i].MES,result.rows[i].CANTIDAD]) : null ;
+                  result.rows[i].CO_ANIO == 2017  ?  data2017.push([result.rows[i].MES,result.rows[i].CANTIDAD]) : null ;
+                  result.rows[i].CO_ANIO == 2018  ?  data2018.push([result.rows[i].MES,result.rows[i].CANTIDAD]) : null ;
+                  result.rows[i].CO_ANIO == 2019  ?  data2019.push([result.rows[i].MES,result.rows[i].CANTIDAD]) : null ;
+                }
+                datatot.push({ 'id': '2012', 'data': data2012 } ,
+                {'id': '2013', 'data': data2013 } ,
+                {'id': '2014', 'data': data2014 } ,
+                {'id': '2015', 'data': data2015 } ,
+                {'id': '2016', 'data': data2016 } ,
+                {'id': '2017', 'data': data2017 } ,
+                {'id': '2018', 'data': data2018 } ,
+                {'id': '2019', 'data': data2019 } 
+                );
+                res.set('Content-Type', 'application/json');
+                res.send(datatot);
+                
+            });
+        });
+    },
+
+    mostrarcontrolmarc: (req, res) => { 
+        const {} = req.params;  
+        
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "select de_nombre,cantidad from table(pack_new_direccion_tecn.f_list_control_marcas())";
+            
+            const params = {};
+            conn.execute(query,params,responseParams,(error, result)=>{                
+                
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                if(result.rows.length > 0) {                
+                    res.json({
+                        state: 'success',
+                        data: {
+                            marca: result.rows
+                        }   
+                    });       
+                }
+                
+            });
+        });
+    },
+
+    mostrarmarcporanio: (req, res) => { 
+        const {} = req.params;  
+        
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "select co_anio,co_numero,cantidad from table(pack_new_direccion_tecn.f_list_control_marcas_anio())";
+            
+            const params = { };
+            conn.execute(query,params,responseParams,(error, result)=>{   
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                let data2012 = [],  data2013 = [],  data2014 = [], data2015 = [], data2016 = [], data2017 = [], datatot = [];
+                for (var i in result.rows) {
+                  result.rows[i].CO_NUMERO == 'Hanna Caball'  ?  data2012.push([result.rows[i].CO_ANIO,result.rows[i].CANTIDAD]) : null ;
+                  result.rows[i].CO_NUMERO == 'Placenta life'  ?  data2013.push([result.rows[i].CO_ANIO,result.rows[i].CANTIDAD]) : null ;
+                  result.rows[i].CO_NUMERO == 'Placenta Life Naturals'  ?  data2014.push([result.rows[i].CO_ANIO,result.rows[i].CANTIDAD]) : null ;
+                  result.rows[i].CO_NUMERO == 'Derma Life'  ?  data2015.push([result.rows[i].CO_ANIO,result.rows[i].CANTIDAD]) : null ;
+                  result.rows[i].CO_NUMERO == 'Smoll'  ?  data2016.push([result.rows[i].CO_ANIO,result.rows[i].CANTIDAD]) : null ;
+                  result.rows[i].CO_NUMERO == 'Tonno Plus'  ?  data2017.push([result.rows[i].CO_ANIO,result.rows[i].CANTIDAD]) : null ;
+                }
+                datatot.push({ 'id': 'Hanna Caball', 'data': data2012 } ,
+                {'id': 'Placenta life', 'data': data2013 } ,
+                {'id': 'Placenta Life Naturals', 'data': data2014 } ,
+                {'id': 'Derma Life', 'data': data2015 } ,
+                {'id': 'Smoll', 'data': data2016 } ,
+                {'id': 'Tonno Plus', 'data': data2017 } 
+                );
+                res.set('Content-Type', 'application/json');
+                res.send(datatot);
+                
+            });
+        });
+    },
+
+    mostrarcontrolvenc: (req, res) => { 
+        const {} = req.params;  
+        
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "select co_anio,cantidad from table(pack_new_direccion_tecn.f_list_control_vencimiento())";
+            
+            const params = {};
+            conn.execute(query,params,responseParams,(error, result)=>{                
+                
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                if(result.rows.length > 0) {                
+                    res.json({
+                        state: 'success',
+                        data: {
+                            venc: result.rows
+                        }   
+                    });       
+                }
+                
+            });
+        });
+    },
+
+    mostrarvencporreg: (req, res) => { 
+        const {periodo} = req.params;  
+        
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "select fe_inicio_vigencia,fe_termino_vigencia,co_nsoc,co_espec_anal,de_nombre_registrado_nso from table(pack_new_direccion_tecn.f_list_reg_venc_por_anio(:x_anio))";
+            
+            const params = {
+                x_anio: {val : periodo},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(result.rows.length > 0 ? xmlParser.renderXml(result.rows) : xmlParser.renderXml([{ FE_INICIO_VIGENCIA: 'No se encontraron resultados' }]));
+            });
+        });
+    },
+
+    mostrarmarcdrive: (req, res) => { 
+        const {id} = req.query;
+        const {empresa} = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({'error_conexion': err.stack});
+                return;
+            }
+            const responseParams = {
+                outFormat: oracledb.OBJECT
+            };
+            const query2 = "SELECT co_menu_sistema as \"id\",de_nombre as \"text\",co_menu_replica \"replica\", case st_tipo when 'm' then 1 else 0 end as \"child\" from po_regi_sani_docu_menu where co_empresa = :empresa and co_antecesor = :codigo  order by de_nombre asc";
+            const params2 = { empresa: {val: empresa},codigo: {val: id}};
+            conn.execute(query2, params2, responseParams, (error, result) => {
+                if (error) {
+                    res.send({'error_query': error.stack});
+                    conn.close();
+                    return;
+                }
+                var arr = [];
+                for (var i in result.rows) {
+                    arr.push({
+                        '@': result.rows[i]
+                    });
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(o2x({
+                    '?xml version="1.0" encoding="utf-8"?': null,
+                    tree: {
+                        '@': {id: id == 'MAIN' ? 0 : id},
+                        item: arr
+                    }
+                }));
+            });
+        });
+    },
+
+    mostrarproductopornsoc: (req, res) => {        
+        const {co_nsoc,co_menu} = req.body; 
+        oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
                     state: 'error',
@@ -897,25 +1155,26 @@ const po010208Controller = {
                 });
                 return;
             }
-            const query = "SELECT to_char(fe_inicio_vigencia,'YYYY') anio ,to_char(fe_inicio_vigencia,'MM') mes,count(1) FROM PO_REGI_SANI_C where to_char(fe_inicio_vigencia,'YYYY')between 2015 and 2020 group by to_char(fe_inicio_vigencia,'YYYY'),to_char(fe_inicio_vigencia,'MM') order by to_char(fe_inicio_vigencia,'YYYY'),to_char(fe_inicio_vigencia,'MM')";
-            const params = {                
+            const query = "select co_catalogo_producto,(select co_menu_replica from po_regi_sani_docu_menu where co_menu_sistema = :x_co_menu) as tipo_doc from table(pack_new_direccion_tecn.F_GET_CATALOGO_PRODUCTO(:x_co_nsoc))";
+            const params = { 
+                x_co_nsoc:{val:co_nsoc},
+                x_co_menu:{val:co_menu},
             };
             conn.execute(query,params,responseParams,(error, result)=>{                
-                if(error) {     
-                    console.log(error);      
+                if(error) {           
                     conn.close();
                     return;
                 }
-                var rep_anio;
+                var producto;
                 for(var i in result.rows) {
-                    rep_anio = result.rows[i];                  
+                    producto = result.rows[i];                  
                 }
                 //comprobar si obtuve resultado
-                if(rep_anio) {                   
+                if(producto) {                   
                     res.json({
                         state: 'success',
                         data: {
-                            rep: rep_anio
+                            prod: producto
                         }                      
                     
                     });
@@ -929,6 +1188,129 @@ const po010208Controller = {
             });
         });
     },
+
+    subirdocadjunto: (req, res) => {        
+        const {empresa,entidad,tipo_doc,producto,doc,usuario} = req.body; 
+        console.log(empresa,entidad,tipo_doc,producto,doc,usuario);
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: error.Error
+                });
+                return;
+            }
+            const query = "select pack_new_attached.f_get_url_updload(:x_empresa,:x_entidad,:x_producto,:x_tipo_doc,:x_producto,:x_doc,:x_entidad,:x_usuario) as URL from dual";
+            const params = { 
+                x_empresa:{val:empresa},
+                x_entidad:{val:entidad},
+                x_tipo_doc:{val:tipo_doc},
+                x_producto:{val:producto},
+                x_doc:{val:doc},
+                x_usuario:{val:usuario},
+            };
+            conn.execute(query,params,responseParams,(error, result)=>{                
+                if(error) {           
+                    conn.close();
+                    return;
+                }
+                var url;
+                for(var i in result.rows) {
+                    url = result.rows[i];                  
+                }
+                //comprobar si obtuve resultado
+                if(url) {                   
+                    res.json({
+                        state: 'success',
+                        data: {
+                            url_adj: url
+                        }                      
+                    
+                    });
+                }
+                else {
+                    res.json({
+                        state: 'error',
+                        message: 'Sin registro'
+                    });
+                }
+            });
+        });
+    },
+
+    mostrardocpormarca: (req, res) => { 
+            
+        const {tipo_doc,menu} = req.params;  
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "select co_nsoc,de_nombre_nsoc,de_nombre_fichero,de_marca,de_usuario,fe_registro,nu_tipo_doc,co_catalogo_producto from table(pack_new_direccion_tecn.F_LIST_DOCU_POR_MARCA(:x_tipo_doc,:x_menu))";
+            
+            const params = {
+                x_tipo_doc: {val : tipo_doc},
+                x_menu: {val : menu},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(result.rows.length > 0 ? xmlParser.renderXml(result.rows) : 1==1);
+            });
+        });
+    },
+
+    mostraradjporprod: (req, res) => {        
+        const {empresa,usuario,producto,archivo,tipo_doc} = req.body; 
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: error.Error
+                });
+                return;
+            }
+            const query = "select pack_new_attached.f_get_url_file_prod(:x_empresa,:x_usuario,:x_prod,:x_tipo_doc,:x_arch,'') URl from dual";
+            const params = { 
+                x_empresa: {val:empresa},
+                x_usuario: {val:usuario},
+                x_prod: {val:producto},
+                x_arch: {val:archivo},
+                x_tipo_doc: {val:tipo_doc},
+            };
+            conn.execute(query,params,responseParams,(error, result)=>{                
+                if(error) {           
+                    conn.close();
+                    return;
+                }
+                var url;
+                for(var i in result.rows) {
+                    url = result.rows[i];                  
+                }
+                //comprobar si obtuve resultado
+                if(url) {                   
+                    res.json({
+                        state: 'success',
+                        data: {
+                            url_adj: url
+                        }                      
+                    
+                    });
+                }
+                else {
+                    res.json({
+                        state: 'error',
+                        message: 'Sin registro'
+                    });
+                }
+            });
+        });
+    },
+
 }
 
 module.exports = po010208Controller;
