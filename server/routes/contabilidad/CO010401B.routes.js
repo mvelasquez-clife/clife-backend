@@ -13,5 +13,14 @@ router.get('/grid-adjuntos-voucher/:empresa/:periodo/:libro', co0201Controller.G
 router.post('/combo-libros', co0201Controller.ComboLibros);
 router.post('/info-lista-vouchers', co0201Controller.InfoListaVouchers);
 router.post('/info-voucher', co0201Controller.InformacionVoucher);
+router.post('/guarda-detalle-voucher', co0201Controller.guardaDetalleVoucher);
+//
+router.get('/combo-monedas', co0201Controller.ComboMoneda);
+router.get('/combo-tipo-docadmin/:libro', co0201Controller.ComboTipoDocAdmin);
+router.get('/combo-tipo-entidad/:libro', co0201Controller.ComboTipoEntidad);
+router.get('/combo-tipo-dociden', co0201Controller.ComboTipoDocIden);
+router.post('/validar-nuevo-voucher', co0201Controller.ValidaNuevoVoucher);
+router.post('/guarda-voucher', co0201Controller.GrabarVoucher);
+router.post('/combos-detalle-voucher', co0201Controller.CombosDetalleVoucher);
 
 module.exports = router;

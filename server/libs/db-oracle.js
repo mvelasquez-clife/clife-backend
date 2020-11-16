@@ -10,7 +10,8 @@ const cursorParams = {
 const types = {
     number: oracledb.NUMBER,
     string: oracledb.STRING,
-    cursor: oracledb.CURSOR
+    cursor: oracledb.CURSOR,
+    date : oracledb.DATE
 };
 
 module.exports = {
@@ -28,16 +29,16 @@ module.exports = {
             oracledb.getConnection(dbParams, (err, conn) => {
                 if (err) {
                     console.error(err);
-                    reject({
-                        error: err
+                    resolve({
+                        error: err.message
                     });
                 }
                 conn.execute(query, parametros, responseParams, (error, result) => {
                     if (error) {
                         console.error(error);
                         if (conn) conn.close();
-                        reject({
-                            error: error
+                        resolve({
+                            error: error.message
                         });
                     }
                     conn.close();
@@ -71,22 +72,22 @@ module.exports = {
                 if (err) {
                     console.error(err);
                     if (conn) conn.close();
-                    reject({
-                        error: err
+                    resolve({
+                        error: err.message
                     });
                 }
                 conn.execute(query, parametros, responseParams, (error, result) => {
                     conn.close();
                     if (error) {
-                        console.error(error);
-                        reject({
-                            error: error
+                        resolve({
+                            error: error.message
                         });
-                        return;
                     }
-                    resolve({
-                        out: result.outBinds
-                    });
+                    else {
+                        resolve({
+                            out: result.outBinds
+                        });
+                    }
                 });
             });
         });
@@ -106,24 +107,31 @@ module.exports = {
             }
         }
         // go!
-        const connection = await oracledb.getConnection(dbParams);
-        const result = await connection.execute(query, parametros, cursorParams);
-        //
-        let outBinds = result.outBinds;
-        for (let key in outBinds) {
-            let resultSet = outBinds[key];
-            if (typeof outBinds[key] == 'object') {
-                let array = [];
-                while (fila = await resultSet.getRow()) {
-                    array.push(fila);
+        try {
+            const connection = await oracledb.getConnection(dbParams);
+            const result = await connection.execute(query, parametros, cursorParams);
+            //
+            let outBinds = result.outBinds;
+            for (let key in outBinds) {
+                let resultSet = outBinds[key];
+                if (typeof outBinds[key] == 'object') {
+                    let array = [];
+                    while (fila = await resultSet.getRow()) {
+                        array.push(fila);
+                    }
+                    output[key] = array;
                 }
-                output[key] = array;
+                else {
+                    output[key] = outBinds[key];
+                }
             }
-            else {
-                output[key] = outBinds[key];
-            }
+            connection.close();
         }
-        connection.close();
+        catch (error) {
+            output = {
+                error: error.message
+            };
+        }
         return output;
     }
 };

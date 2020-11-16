@@ -7,14 +7,19 @@
         <!-- pinche navbar -->
         <% include _main.navbar.ejs %>
         <!-- sidenav -->
-        <% if (admin == 'S') { %>
-            <% include _main.sidenav.admin.ejs %>
-        <% } else { %>
+        <div id="sidenav" class="sidenav text-light">
             <% include _main.sidenav.ejs %>
-        <% } %>
+            <% if (admin[0] == 'S') { %>
+                <% include _main.sidenav.admin.ejs %>
+            <% } if (admin[1] == 'S') { %>
+                <% include _main.sidenav.documentacion.ejs %>
+            <% } %>
+            <!-- body -->
+            <% include _main.sidenav.footer.ejs %>
+        </div>
         <!-- body -->
         <div id="main-content">
-            <div class="container-fluid">
+            <div class="container-fluid" id="dv-main-container">
                 <div class="row mb-2">
                     <div class="col">
                         <nav aria-label="breadcrumb">
@@ -33,16 +38,7 @@
                             <li class="list-group-item">
                                 <p class="text-main mb-0">Documentos del último periodo</p>
                             </li>
-                            <li id="doc-vigente-container" class="list-group-item">
-                                <!--div class="d-flex w-100 justify-content-between">
-                                    <div class="my-auto">
-                                        <p class="mb-0">Periodo anterior</p>
-                                        <p class="font-weight-bold mb-0">ENERO 2020</p>
-                                    </div>
-                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
-                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
-                                </div-->
-                            </li>
+                            <li id="doc-vigente-container" class="list-group-item"></li>
                         </ul>
                     </div>
                 </div>
@@ -53,41 +49,6 @@
                             <li class="list-group-item">
                                 <p class="text-main mb-0">Documentos anteriores</p>
                             </li>
-                            <!--li class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <p class="font-weight-bold mb-0 my-auto">DICIEMBRE 2019</p>
-                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
-                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
-                                </div>
-                            </li>
-                            <li class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <p class="font-weight-bold mb-0 my-auto">NOVIEMBRE 2019</p>
-                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
-                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
-                                </div>
-                            </li>
-                            <li class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <p class="font-weight-bold mb-0 my-auto">OCTUBRE 2019</p>
-                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
-                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
-                                </div>
-                            </li>
-                            <li class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <p class="font-weight-bold mb-0 my-auto">CTS ABR-SET 2019</p>
-                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
-                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
-                                </div>
-                            </li>
-                            <li class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <p class="font-weight-bold mb-0 my-auto">SEPTIEMBRE 2019</p>
-                                    <p class="mb-0 px-2 my-auto mr-auto">La boleta se encuentra disponible para su descarga</p>
-                                    <a href="#" class="btn btn-sm btn-danger my-auto"><i class="fa fa-download"></i> Descargar</a>
-                                </div>
-                            </li-->
                         </ul>
                     </div>
                 </div>
@@ -100,7 +61,6 @@
         <script>
             const sesion = JSON.parse('<%-sesion %>');
             const codigodoc = '<%-documento %>';
-console.log(codigodoc);
             var ListaDocumentos;
             // funciones
             EscribirListaDocumentos = _ => {
@@ -164,6 +124,39 @@ console.log(codigodoc);
                     );
                 }
             }
+            EscribirListaOtros = (odocumentos) => {
+                let ul = $('<ul>').addClass('list-group mb-2');
+                ul.append(
+                    $('<li>').append(
+                        $('<p>').text('Manuales y procedimientos').addClass('text-main mb-0')
+                    ).addClass('list-group-item')
+                );
+                for (let otro of odocumentos) {
+                    ul.append(
+                        $('<li>').append(
+                            $('<div>').append(
+                                $('<p>').text(otro.periodo).addClass('font-weight-bold mb-0 my-auto')
+                            ).append(
+                                $('<p>').append(
+                                    $('<span>').text(otro.codigo).addClass('text-primary font-italic mr-1 font-weight-bold')
+                                ).append(otro.descripcion).addClass('mb-0 px-2 my-auto mr-auto')
+                            ).append(
+                                $('<a>').attr({
+                                    href: '/intranet/descarga-documento-acuse?ref=' + encodeURIComponent(otro.key),
+                                    target: '_blank'
+                                }).append(
+                                    $('<i>').addClass('fa fa-download mr-1')
+                                ).append('Descargar').addClass('btn btn-sm btn-danger my-auto')
+                            ).addClass('d-flex w-100 justify-content-between')
+                        ).addClass('list-group-item')
+                    );
+                }
+                $('#dv-main-container').append(
+                    $('<div>').append(
+                        $('<div>').append(ul).addClass('col')
+                    ).addClass('row')
+                );
+            }
             CargarListaDocumentos = async _ => {
                 MuestraIndicadorCarga();
                 try {
@@ -175,6 +168,9 @@ console.log(codigodoc);
                     });
                     ListaDocumentos = result.data.documentos;
                     EscribirListaDocumentos();
+                    if (result.data.otros && result.data.otros.length > 0) {
+                        EscribirListaOtros(result.data.otros);
+                    }
                 }
                 catch (err) {
                     alert(JSON.stringify(err));

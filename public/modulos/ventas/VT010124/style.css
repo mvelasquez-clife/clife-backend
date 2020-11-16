@@ -1,0 +1,11 @@
+.nomcliente{
+    font-size: 2.3em;
+    font-weight: 700;
+    font-family: 'Lato', 'Helvetica Neue', Helvetica, sans-serif; /* font-family:century gothic, verdana, arial, sans-serif!important; */
+    }
+    img.one {
+        height: 3%;
+        width: 6%;
+      }
+
+    div.dhxform_item_label_left.button_pagofin div.dhxform_btn_txt {font-family: 'Google Sans',Roboto,Arial,sans-serif;height: 50px; line-height : 50px;font-size: 2em;padding-left: 0px;height : 50px;margin: -1px -10px 1px 1px;cursor: pointer;}

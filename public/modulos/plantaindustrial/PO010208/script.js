@@ -1,9 +1,6 @@
 var tree_menu,tree_tipo,tree_nom,maingrid_venc,codigo,nombre, esp,desc_esp,cod_esp,version_esp,cod_form,Winidh_,Windh_,Winidt_,Windt_,Winidc_,Windc_,myToolbardatos_espec,myToolbardatos_formula,myGrid_historial,mainLayout_historial,buscar,flag,myGrid_acondic,myGrid_envasado,mainLayout_envasado,mainLayout_acondic,tabbar_formdet,tabbar_form,myFormdformu,mainLayoutform,mainLayout_aprform,tabbar,permiso_cataedit,html_general,myFormdatos_nso_esp,mainLayout_especificacion,myGrid_nso,myToolbar_nso,myGrid_ver,Winid_,Wind_,myToolbar_ver,tipo_doc,mainLayout_formula,tabbar,myToolbardatos_detalle,maingrid_search,myFormdatos_search,mainLayout_load,myToolbardatos_search,mainLayout_search,myGrid_lista,Wind_,maingrid,myFormdatos_prod,mainLayout_product,myFormdatos,myToolbardatos_register,mainLayout,myForm,myToolbardatos,mainLayout_register;
-
-let Etiquetas_1 = [];
-let WinDocumentoViewer;
+let WinDocumentoViewer='';
 permiso_cataedit = 'E';
-
 Inicio_nso = () => {
     console.log('s');
     mostrarnsocven();

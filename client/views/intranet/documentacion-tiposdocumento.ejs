@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% if (admin[0] == 'S') { %>
+                <% include _main.sidenav.admin.ejs %>
+            <% } if (admin[1] == 'S') { %>
+                <% include _main.sidenav.documentacion.ejs %>
+            <% } %>
+            <!-- body -->
+            <% include _main.sidenav.footer.ejs %>
+        </div>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Control documentario</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Tipos de documento</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Tipos de documento</p>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex">
+                                    <p class="mb-0 mr-auto align-self-center">Seleccione una opción.</p>
+                                    <a href="#" class="btn btn-sm btn-success align-self-center" data-toggle="modal" data-target="#modal-nuevo"><i class="fa fa-plus"></i> Nuevo tipo</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <table id="tabla-tipos" class="table table-striped table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Descripción</th>
+                                            <th>Abrev.</th>
+                                            <th>¿Es método?</th>
+                                            <th>Estado</th>
+                                            <th>Fe.Registro</th>
+                                            <th>Usu.Registra</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th></th>
+                                            <th><span id="tipos-count">0</span> tipo(s) de documento registrados</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <div id="modal-nuevo" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Nuevo tipo de documento</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="f-descripcion">Descripción</label>
+                            <input type="text" class="form-control form-control-sm" name="descripcion" id="f-descripcion" placeholder="Ingrese el nombre del tipo de documento">
+                        </div>
+                        <div class="form-group">
+                            <label for="f-abrev">Abreviatura</label>
+                            <input type="text" class="form-control form-control-sm" name="abrev" id="f-abrev" style="width:120px;">
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" name="metodo" id="f-metodo">
+                            <label class="form-check-label" for="f-metodo">El nuevo tipo es un método operatorio</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="form-registro" type="button" name="submit" class="btn btn-sm btn-primary"><i class="fa fa-floppy-o"></i> Guardar</button>
+                        <a href="javascript:void(0)" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            
+            function modalNuevoOnShow(args) {
+                document.getElementById('f-descripcion').value = '';
+                document.getElementById('f-abrev').value = '';
+                document.getElementById('f-metodo').checked = false;
+            }
+            function EscribirListaTipos(tipos) {
+                var tbody = $('#tabla-tipos').children('tbody');
+                var numTipos = tipos.length;
+                tbody.empty();
+                for (var i = 0; i < numTipos; i++) {
+                    var tipo = tipos[i];
+                    tbody.append(
+                        $('<tr>').append(
+                            $('<td>').text(i + 1)
+                        ).append(
+                            $('<td>').text(tipo.nombre)
+                        ).append(
+                            $('<td>').text(tipo.abrev)
+                        ).append(
+                            $('<td>').append(tipo.esmetodo == 'S' ? $('<span>').addClass('badge badge-pill badge-success font-weight-normal').css('font-size', '11px').text('Método operatorio') : $('<span>').addClass('badge badge-pill badge-primary font-weight-normal').css('font-size', '11px').text('Documentación'))
+                        ).append(
+                            $('<td>').text(tipo.vigencia)
+                        ).append(
+                            $('<td>').text(tipo.fregistro)
+                        ).append(
+                            $('<td>').text(tipo.codigousr + ' - ' + tipo.nomusr)
+                        )
+                    );
+                }
+                document.getElementById('tipos-count').innerHTML = numTipos;
+            }
+            function CargarListaTiposDocumento() {
+                $.ajax({
+                    url: '/intranet/lista-ctrl-tipos',
+                    method: 'get',
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        EscribirListaTipos(result.data.tipos);
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. esta computadora se autodestruirá...');
+                    }
+                });
+            }
+            function onFormRegistroSubmit(event) {
+                event.preventDefault();
+                $('#form-registro').hide();
+                var data = {
+                    nombre: document.getElementById('f-descripcion').value,
+                    abrev: document.getElementById('f-abrev').value,
+                    metodo: document.getElementById('f-metodo').checked ? 'S' : 'N',
+                    codigo: sesion.codigo,
+                    empresa: sesion.empresa
+                };
+                $.ajax({
+                    url: '/intranet/registra-nuevo-tipo',
+                    method: 'post',
+                    data: data,
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        $('#form-registro').show();
+                        console.log(status, xhr);
+                        if (result.error) {
+                            console.log(result.error);
+                            alert(result.error);
+                            return;
+                        }
+                        CargarListaTiposDocumento();
+                        $('#modal-nuevo').modal('hide');
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(error);
+                        alert('error grave. esta computadora se autodestruirá...');
+                        $('#form-registro').show();
+                    }
+                });
+            }
+            // go!
+            $(function() {
+                $('#menu-documentacion').collapse('show')
+                $('#documentacion-tipos').addClass('active');
+                $('#form-registro').on('click', onFormRegistroSubmit);
+                $('#modal-nuevo').on('show.bs.modal', modalNuevoOnShow);
+                CargarListaTiposDocumento();
+            });
+        </script>
+    </body>
+</html>

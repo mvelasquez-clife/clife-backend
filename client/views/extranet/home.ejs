@@ -225,6 +225,7 @@
                         return;
                     }
                     Cliente = result.data.cliente;
+console.log(Cliente);
                     let sDisponible = Cliente.disponible.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     let sSolicita = Cliente.solicitud.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     let sDeuda = Cliente.deuda.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

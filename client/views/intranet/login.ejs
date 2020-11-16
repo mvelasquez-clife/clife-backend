@@ -6,6 +6,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link rel="stylesheet" href="/assets/intranet/css/login.css">
         <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+        <style>
+            .emp-radio{display:none;}
+        </style>
     </head>
     <body>
         <div class="container">
@@ -14,8 +17,28 @@
                     <form id="form-login" method="post" action="auth-login" class="py-5 mt-5">
                         <img src="/assets/intranet/images/clife-logo.svg" class="mx-auto mb-2 d-block" style="height:64px;" alt="Corporacion Life">
                         <h3 class="text-main text-center font-weight-light mb-3">Bienvenido</h3>
+                        <!-- empresa -->
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label text-right">Empresa</label>
+                            <div class="col-sm-8 text-left">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="lbl-empresa">Corporación Life</button>
+                                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="sr-only">Cambiar</span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <label class="dropdown-item" href="#"><span>Corporación Life</span><input type="radio" id="emp-11" name="empresa" value="11" class="emp-radio" checked/></label>
+                                        <label class="dropdown-item" href="#"><span>Inversiones 123</span><input type="radio" id="emp-16" name="empresa" value="16" class="emp-radio"/></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- fin alv -->
                         <input type="text" name="codigo" class="form-input" placeholder="Documento de Identidad">
                         <input type="password" name="pswd" class="form-input" placeholder="Contraseña">
+                        <% if (typeof error != 'undefined') { %>
+                        <p class="mb-2 text-danger"><%=error %></p>
+                        <% } %>
                         <button class="btn btn-main mt-4 mb-1 py-2">Ingresar</button>
                         <p class="text-center form-link m-0">
                             <a href="activar-cuenta">Activar cuenta</a> | <a href="recupera-clave">Olvidé mi clave</a>
@@ -28,5 +51,15 @@
         <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
         <script src="/assets/bootstrap/js/popper.min.js"></script>
         <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+        <script>
+            $(function() {
+                $('#emp-11').prop('checked', true);
+                $('.emp-radio').on('change', function() {
+                    var radio = $(this);
+                    var texto = radio.prev().text();
+                    document.getElementById('lbl-empresa').innerHTML = texto;
+                });
+            })
+        </script>
     </body>
 </html>

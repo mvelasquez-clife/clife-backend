@@ -1,3 +1,3 @@
 module.exports = {
-    stamper: 'C:\\scripts\\pdf-sign\\FirmaDigital.jar'
+    stamper: 'D:\\desarrollo\\java\\FirmaDigital\\dist\\FirmaDigital.jar'
 };
