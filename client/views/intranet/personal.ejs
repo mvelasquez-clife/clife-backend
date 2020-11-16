@@ -45,6 +45,7 @@
                                     </select>
                                     <!-- separador -->
                                     <a id="btn-carga-masiva" href="#" class="btn btn-sm btn-primary ml-lg-5 disabled" data-toggle="modal" data-target="#modal-carga-masiva"><i class="fa fa-users"></i> Carga masiva</a>
+                                    <a id="btn-xls" href="#" class="btn btn-sm btn-success ml-1 disabled" target="_blank"><i class="fa fa-file-excel-o"></i> Exportar a XLS</a>
                                     <a id="btn-retirar" href="#" class="btn btn-sm btn-danger ml-1 disabled"><i class="fa fa-remove"></i> Retirar usuarios</a>
                                 </form>
                             </li>
@@ -263,12 +264,16 @@
                     );
                 }
                 $('#combo-empresa').on('change', _ => {
-                    if (document.getElementById('combo-empresa').value != 0) {
+                    let empresa = document.getElementById('combo-empresa').value;
+                    if (empresa != 0) {
                         $('#btn-carga-masiva').removeClass('disabled');
-                        CargarPersonalEmpresa(document.getElementById('combo-empresa').value);
+                        $('#btn-xls').removeClass('disabled');
+                        CargarPersonalEmpresa(empresa);
+                        $('#btn-xls').attr('href', '/intranet/xls-reporte-usuarios/' + empresa);
                     }
                     else {
                         $('#btn-carga-masiva').addClass('disabled');
+                        $('#btn-xls').addClass('disabled');
                     }
                 });
             }

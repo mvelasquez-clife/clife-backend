@@ -99,6 +99,8 @@
         <% include _main.scripts.ejs %>
         <script>
             const sesion = JSON.parse('<%-sesion %>');
+            const codigodoc = '<%-documento %>';
+console.log(codigodoc);
             var ListaDocumentos;
             // funciones
             EscribirListaDocumentos = _ => {
@@ -168,6 +170,7 @@
                     const result = await $.ajax({
                         url: '/intranet/lista-documentos',
                         method: 'post',
+                        data: { codigo: codigodoc },
                         dataType: 'json'
                     });
                     ListaDocumentos = result.data.documentos;
@@ -185,6 +188,10 @@
                 $('#menu-docs').collapse('show')
                 $('#sidenav-documentos').addClass('active');
                 $('#<%=id%>').addClass('active');
+                if (codigodoc == '803') {
+                    $('#doc-vigente-container').parent().parent().parent().hide();
+                    $('#doc-anteriores-container').children('li').eq(0).children('p').eq(0).text('Documentos disponibles');
+                }
                 CargarListaDocumentos();
             });
         </script>

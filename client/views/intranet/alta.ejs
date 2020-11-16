@@ -44,25 +44,25 @@
                         <div class="form-group row">
                             <label for="dt-email" class="col-sm-2 col-form-label">e-mail</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control form-control-sm" id="dt-email">
+                                <input type="text" class="form-control form-control-sm" id="dt-email" placeholder="ejemplo@servidor.com">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="dt-telefono" class="col-sm-2 col-form-label">Teléfono</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control form-control-sm" id="dt-telefono">
+                                <input type="text" class="form-control form-control-sm" id="dt-telefono" placeholder="900000000 (solo números, sin guiones ni espacios)">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="dt-clave" class="col-sm-2 col-form-label">Contraseña</label>
                             <div class="col-sm-10">
-                                <input type="password" class="form-control form-control-sm" id="dt-clave">
+                                <input type="password" class="form-control form-control-sm" id="dt-clave" placeholder="Mínimo 8 caracteres, incluir letras y números">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="dt-rclave" class="col-sm-2 col-form-label">Repetir contraseña</label>
                             <div class="col-sm-10">
-                                <input type="password" class="form-control form-control-sm" id="dt-rclave">
+                                <input type="password" class="form-control form-control-sm" id="dt-rclave" placeholder="Repetir la contraseña">
                             </div>
                         </div>
                     </form>
@@ -79,6 +79,18 @@
     <script src="/assets/bootstrap/js/popper.min.js"></script>
     <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
     <script>
+        ValidarEmail = (mail) => {
+            const patron = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+            return patron.test(mail);
+        }
+        ValidarTelefono = (telefono) => {
+            const patron = /^9\d{8}$/;
+            return patron.test(telefono);
+        }
+        ValidarClave = (clave) => {
+            const patron = /^\w{8,}$/;
+            return patron.test(clave);
+        }
         ValidarDni = async event => {
             try {
                 const result = await $.ajax({
@@ -122,6 +134,22 @@
                     telefono: document.getElementById('dt-telefono').value,
                     clave: clave
                 };
+                // validar email
+                if (!ValidarEmail(params.email)) {
+                    alert('Debes ingresar una dirección de email válida');
+                    return;
+                }
+                // validar telefono
+                if (!ValidarTelefono(params.telefono)) {
+                    alert('Debes ingresar un número de celular válido');
+                    return;
+                }
+                // validar clave
+                if (!ValidarClave(params.clave)) {
+                    alert('La contraseña ingresada no es segura. Recuerde que debe contener al menos 8 caracteres entre letras y números');
+                    return;
+                }
+                //
                 try {
                     let result = await $.ajax({
                         url: '/intranet/registra-usuario',
@@ -134,8 +162,8 @@
                         return;
                     }
                     alert('Datos registrados. Ya puedes ingresar a la Intranet Life');
-                    $('#modal-confirma').modal('hide');
-                    location.redirect('/intranet/login');
+                    // $('#modal-confirma').modal('hide');
+                    location.href = '/intranet/login';
                 }
                 catch (err) {
                     alert(JSON.stringify(err));

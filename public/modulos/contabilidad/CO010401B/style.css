@@ -1,0 +1,58 @@
+.dv-combo {
+    height: 24px;
+    margin-top: -3px;
+}
+.text-left {
+    text-align: left;
+}
+.text-right {
+    text-align: right;
+}
+.text-center {
+    text-align: center;
+}
+.text-right > div > input {
+    margin-right: 16px !important;
+}
+#dv-form-voucher {
+    font-family: Tahoma, Helvetica;
+    font-size: 11px;
+    padding: 2px 16px;
+}
+#dv-form-voucher table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+}
+#dv-form-voucher td {
+    padding: 0;
+}
+#dv-form-voucher label {
+    margin-right: 4px;
+}
+.form-mr {
+    margin-right: 12px;
+}
+#dv-form-voucher .input-text {
+    background-color: #f8f8f8;
+    border: 1px solid #a4bed4;
+    font-size: 11px;
+    height: 16px;
+    padding: 1px 3px;
+}
+.form-dhxcombo {
+    display: inline-block;
+    height: 20px;
+    min-width: 60px;
+    position: relative;
+    top: 4px;
+}
+.no-controls {
+    padding-top: 3px !important;
+}
+.sp-calendar {
+    cursor: pointer;
+    margin-left: 4px;
+    position: relative;
+    top: 2px;
+}

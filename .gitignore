@@ -85,19 +85,9 @@ server/mongodb.js
 
 #bibliotecas de terceros
 public/assets/vendor
-/nbproject/private/
-/public/assets/custom_1
 *.properties
-nbproject/project.properties
+nbproject
 package-lock.json
-package.json
-package-lock.json
-.vscode/settings.json
-package-lock.json
-package.json
-.vscode/settings.json
-.vscode/settings.json
-.vscode/settings.json
-.vscode/settings.json
+.vscode
 .vscode/settings.json
 .vscode/settings.json

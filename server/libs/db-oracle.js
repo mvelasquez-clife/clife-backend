@@ -35,6 +35,7 @@ module.exports = {
                 conn.execute(query, parametros, responseParams, (error, result) => {
                     if (error) {
                         console.error(error);
+                        if (conn) conn.close();
                         reject({
                             error: error
                         });
@@ -69,6 +70,7 @@ module.exports = {
             oracledb.getConnection(dbParams, (err, conn) => {
                 if (err) {
                     console.error(err);
+                    if (conn) conn.close();
                     reject({
                         error: err
                     });
@@ -110,11 +112,16 @@ module.exports = {
         let outBinds = result.outBinds;
         for (let key in outBinds) {
             let resultSet = outBinds[key];
-            let array = [];
-            while (fila = await resultSet.getRow()) {
-                array.push(fila);
+            if (typeof outBinds[key] == 'object') {
+                let array = [];
+                while (fila = await resultSet.getRow()) {
+                    array.push(fila);
+                }
+                output[key] = array;
             }
-            output[key] = array;
+            else {
+                output[key] = outBinds[key];
+            }
         }
         connection.close();
         return output;
