@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>re</title>
+    <style>
+        html, body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+        table {
+            border-collapse:collapse;
+        }
+        th,td {
+            border: none;
+            padding: 4px 4px;
+        }
+        thead tr {
+            background-color: #FFA07A;
+            color: #ffffff;
+        }
+        tbody tr {
+            border-top: 1px solid #c0c0c0;
+        }
+        tr:nth-child(even) td {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <p style="font-size:14pt;margin-bottom:0;padding-left:15mm;width:100%;"><b><%=nombre%></b></p>
+    <p style="font-size:8pt;margin-bottom:10px;padding-left:15mm;width:100%;"><b>N° RUC:</b><b></b><%=ruc%></b></p>
+    <p style="font-size:8pt;margin-bottom:5px;padding-left:15mm;width:100%;"><b>N° Movim:</b><b></b><%=movimiento%></b></p>
+    <p style="font-size:8pt;margin-bottom:5px;padding-left:15mm;width:100%;"><b>Transacción:</b><b></b><%=transacc%></b></p>
+    <p style="font-size:8pt;margin-bottom:5px;padding-left:15mm;width:100%;"><b>Periodo:</b><b></b><%=periodo%></b></p>
+    <p style="font-size:8pt;margin-bottom:5px;padding-left:15mm;width:100%;"><b>Cod.Doc 1:</b><b></b><%=coddoc1%></b></p>
+    <!-- <p style="font-size:10pt;margin-bottom:32px;padding-left:15mm;width:100%;">N° RUC: <b><%=ruc%></b></p> -->
+
+    <div style="box-sizing:border-box;padding-left:15mm;width:100%;">
+        <table style="font-family:Arial,Verdana;font-size:7pt;width:80%;">
+            <thead>
+                <tr>
+                    <th style="text-align:center;">Producto</th>
+                    <th style="text-align:center;">Producto</th>
+                    <th style="text-align:center;">Unidad</th>
+                    <th style="text-align:center;">Lote</th>
+                    <th style="text-align:center;">Ingreso</th>
+                    <th style="text-align:center;">Egreso</th>
+                    <th style="text-align:center;">Im.Compra</th>
+                    <th style="text-align:center;">Im.Venta</th>
+                    <th style="text-align:center;">T.Cambio</th>
+                    <th style="text-align:center;">Ubicación</th>
+                </tr>
+            </thead>
+            <tbody>
+            <% filas.forEach(function(fila) { %>
+                <tr>
+                    <td style="text-align:right;"><%=fila.CO_PRODCUCTO%></td>
+                    <td style="text-align:left;"><%=fila.DE_NOMBRE%></td>
+                    <td style="text-align:left;"><%=fila.NU_UNIDAD%></td>
+                    <td style="text-align:left;"><%=fila.CO_LOTE%></td>
+                    <td style="text-align:left;"><%=fila.NU_INGRESO%></td>
+                    <td style="text-align:left;"><%=fila.NU_EGRESO%></td>
+                    <td style="text-align:left;"><%=fila.IM_COMPRA%></td>
+                    <td style="text-align:left;"><%=fila.IM_VENTA%></td>
+                    <td style="text-align:left;"><%=fila.DE_CAMBIO%></td>
+                    <td style="text-align:left;"><%=fila.DE_UBICACION%></td>
+                </tr>
+            <% }); %>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

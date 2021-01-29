@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Aprobación de Especificación de Ánalisis</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css"> -->
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">   -->
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+            integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        <!--link rel="stylesheet" href="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.css" -->
+        <link rel="stylesheet" type="text/css" href="codebase/dhtmlxtabbar.css">
+        <style type="text/css">
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                width: 100%
+            }
+
+            #dhxDesktop {
+                height: 100%;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <!-- <script src="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.js"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+        <!-- <script src="/codebase/dhtmlxtabbar.js"></script> -->
+        <!-- script propio de la ventana -->
+        <!--<script type="text/javascript" src="<%=path%>script.js"></script> -->
+        <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- ancestro de la ventana de seguridad -->
+        <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+        <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script>
+
+            var f_filtro_especificacion = [
+                { type: "settings", labelWidth: 100 },
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
+                    { type: "input",offsetLeft:20,inputWidth: 500,  name: "_fr_buscar"}, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 100, list: [
+                    { type: "button",offsetLeft: 50,  offsetTop: 1,labelWidth: 50, value:'Buscar', name: "_fr_busbut"}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 15, position: "label-left", width: 350, list: [
+                    { type: "checkbox",checked:true, offsetLeft: 100,  offsetTop: 5,labelWidth: 100, label:'Mostrar vigentes', name: "_ch_vigente"}, { type: "newcolumn" },
+                    ],},
+            ];
+            var form_caract = [
+                { type: "settings", labelWidth: 100 },
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 700, list: [
+                    { type: "input",readonly:true,labelWidth: 400,offsetLeft:20,inputWidth: 500,rows:7,label:'<b>CARACTERÍSTICAS GENERALES</b>', name: "_ep_car_gen"}, { type: "newcolumn" },
+                   ],},
+            ];
+            Inicio();    
+                  
+
+            
+        </script>
+    </body>
+</html>

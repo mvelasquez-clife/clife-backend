@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/intranet/css/login.css">
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <title>re</title> 
+    <div style="box-sizing:border-box;padding-left:15mm;width:100%;">
+        
+
+        <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;text-align:center">               
+            <thead>
+                <% filas_p.forEach(function(fila_p) { %>  
+                <tr>
+                    <th style="text-align:left;"><img src="file:///C:/clife-backend/public/assets/images/home/clife-ini.png" class="mx-auto mb-2 d-block" style="height:50px;"></th>
+                    <th style="text-align:center;font-family:Arial,Verdana;font-size:12pt;"><b>CORPORACION LIFE SAC</b></th>
+                    <th style="text-align:left;"><b>EPT N°: </b><%=esp%></th>
+                </tr>
+                <tr>
+                    <th style="text-align:left;"><b>Sustituye a:</b></th>
+                    <th style="text-align:left;font-family:Arial,Verdana;font-size:9pt;width:50%;"><b>ESPECIFICACIÓN TÉCNICA DE  PRODUCTO TERMINADO</b></th>
+                    <th style="text-align:left;"><b>N° Versión:</b><%=version%></th>
+                </tr> 
+                <tr>                   
+                    <td style="text-align:left;"><b>Vigente desde</b><%=fila_p.FE_CREACION%></td>      
+                    <td rowspan="2" style="text-align:left;"><%=nombre%></td>               
+                    <td rowspan="2" style="text-align:left;"><b>Fecha de Próxima revisión</b></td>                    
+                </tr>
+                <tr>
+                    <td colspan="1" style="text-align:left;"><b>Tecnica Propia</b></td>
+                </tr>
+                <tr>                 
+                    <td rowspan="2" style="text-align:left;"><b>Elaborado por: </b><%=fila_p.DE_CREADOR%></td>      
+                    <td rowspan="2" style="text-align:left;"><b>Revisado por: </b><%=fila_p.DE_REVISADO%></td>               
+                    <td rowspan="2" style="text-align:left;"><b>Aprobado por: </b><%=fila_p.DE_APRUEBA%></td>         
+                          
+                </tr>
+                <% }); %>   
+            </thead>
+        </table> 
+        <br>
+    </div>
+    <style>
+        html, body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+        table {
+            border-collapse:collapse;
+        }
+        th,td {
+            width: 25%;
+            text-align: left;
+            vertical-align: top;
+            border: 1px solid #000;
+            border-collapse: collapse;
+            padding: 0.3em;
+        }
+        thead tr {
+            background-color: #ffffff;
+            color:#1C1C1C;
+            border: 1px solid black;
+        }
+        tbody tr {
+            border-top: 1px solid #ffffff;
+            color:#1C1C1C;
+            border: 1px solid black;
+            padding: 4px 4px;
+        }
+        tr:nth-child(even) td {
+            background-color: #ffffff;
+            color:#1C1C1C;
+            border: 1px solid black;
+            padding: 4px 4px;
+        }
+    </style>
+</head>
+<body>    
+    <div  style="box-sizing:border-box;padding-left:25mm;width:100%;">
+            <p style="text-align:left;font-family:Arial,Verdana;font-size:9pt;">NSOC:      <%=codigo%></p>
+            <p style="text-align:left;font-family:Arial,Verdana;font-size:9pt;width:100%;">MARCA:      <%=marc%></p>
+            
+    </div>
+         
+    <div style="box-sizing:border-box;padding-left:15mm;width:100%;">
+        <p style="font-size: 9pt;text-align:left;"><b>ENSAYO FISICOQUÍMICO</b></p>
+
+    <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
+        <thead>
+            <tr>
+                <th style="text-align:center;font-size: 7pt;">Método</th>
+                <th style="text-align:center;font-size: 7pt;">Especificaciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        <% filas.forEach(function(fila) { %>
+            <tr>
+                <td style="text-align:left;font-size: 7pt;"><%=fila.DE_METODO%></td>
+                <td style="text-align:left;font-size: 7pt;"><%=fila.DE_ESPECIFICACIONES%></td>
+            </tr>
+        <% }); %>
+        </tbody>
+    </table>
+    <br>
+    
+    <p style="font-size: 9pt;text-align:left;"><b>ENSAYO MICROBIOLÓGICO</b></p>
+    <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
+        <thead>
+            <tr>
+                <th style="text-align:center;font-size: 7pt;">Método</th>
+                <th style="text-align:center;font-size: 7pt;">Especificaciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        <% filas_n.forEach(function(fila_n) { %>
+            <tr>
+                <td style="text-align:left;font-size: 7pt;"><%=fila_n.DE_METODO%></td>
+                <td style="text-align:left;font-size: 7pt;"><%=fila_n.DE_ESPECIFICACIONES%></td>
+            </tr>
+        <% }); %>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

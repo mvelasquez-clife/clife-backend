@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/intranet/css/login.css">
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <title>re</title> 
+    <!-- <img src="file:///C:/clife-backend/public/assets/images/home/clife-ini.png" class="mx-auto mb-2 d-block" style="height:64px;"> -->
+                    
+    <p style="font-size: 14pt;text-align:center;"><b>CORPORACIÓN LIFE S.A.C</b></p>
+    <br>
+    <p style="font-size: 12pt;text-align:center;">Especificaciones Organolépticas y Fisicoquímicas del producto terminado</p>
+    <br>
+    <p style="font-size: 14pt;text-align:center;"><b><%=nombre%></b></p>
+    <p style="font-size: 14pt;text-align:center;"><b>Especificaciones</b></p>
+    <div style="left: 0;display: flex;position: fixed;align-items: center;right: 10PX;left: 0;justify-content: center;width:350px;height:120PX;filter:alpha(opacity=25);-moz-opacity:.25;opacity:.25;background:url(file:///C:/clife-backend/public/assets/images/home/clife-ini.png)">
+    </div>
+    <!-- <p style="width:290px;text-align:justify;position:relative;top:-225px;color:black;">Aquí pones tu texto o algún enlace</p> -->
+    <style>
+        html, body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+        table {
+            border-collapse:collapse;
+        }
+        th,td {
+            border: none;
+            padding: 4px 4px;
+        }
+        thead tr {
+            background-color: #ffffff;
+            color: #ffffff;
+        }
+        tbody tr {
+            border-top: 1px solid #ffffff;
+        }
+        tr:nth-child(even) td {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div style="box-sizing:border-box;padding-left:15mm;width:100%;">
+        <p style="font-size: 11pt;text-align:left;"><b>ENSAYO FISICOQUÍMICO</b></p>
+
+    <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
+        <thead>
+            <tr>
+                <th style="text-align:center;font-size: 11pt;">Método</th>
+                <th style="text-align:center;font-size: 11pt;">Especificaciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        <% filas.forEach(function(fila) { %>
+            <tr>
+                <td style="text-align:left;font-size: 11pt;"><%=fila.DE_METODO%></td>
+                <td style="text-align:left;font-size: 11pt;"><%=fila.DE_ESPECIFICACIONES%></td>
+            </tr>
+        <% }); %>
+        </tbody>
+    </table>
+    <br>
+    
+    <p style="font-size: 11pt;text-align:left;"><b>ENSAYO MICROBIOLÓGICO</b></p>
+    <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
+        <thead>
+            <tr>
+                <th style="text-align:center;font-size: 11pt;">Método</th>
+                <th style="text-align:center;font-size: 11pt;">Especificaciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        <% filas_n.forEach(function(fila_n) { %>
+            <tr>
+                <td style="text-align:left;font-size: 11pt;"><%=fila_n.DE_METODO%></td>
+                <td style="text-align:left;font-size: 11pt;"><%=fila_n.DE_ESPECIFICACIONES%></td>
+            </tr>
+        <% }); %>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

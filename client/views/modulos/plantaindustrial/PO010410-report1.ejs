@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/intranet/css/login.css">
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+    <title>re</title> 
+    <div style="box-sizing:border-box;padding-left:15mm;width:100%;">
+        <!-- <img src="file:///C:/clife-backend/public/assets/images/home/clife-ini.png" class="mx-auto mb-2 d-block" style="height:50px;">
+        <p style="font-size: 12pt;text-align:center;"><b><%=nom%></b></p> -->
+        <table style="font-family:Arial,Verdana;font-size:8pt;width:100%;text-align:center">               
+            <thead>
+                <tr> 
+                    <th rowspan="2" style="width:auto; text-align:left;"><img src="file:///C:/clife-backend/public/assets/images/home/clife-ini.png" class="mx-auto mb-2 d-block" style="height:45px;"></th>
+                    <th rowspan="2" style="width:auto; font-size: 12pt;text-align:center;"><b><%=nom%></b></th>
+                    <th style="width:100px; text-align:center;"><b><%=esp%></b></th>
+                </tr>
+                <tr> 
+                    <th style="width:100px; text-align:center;">Ver.<%=vers%> </th>
+                </tr>
+            </thead>
+        </table> 
+        <br>
+        <table style="font-family:Arial,Verdana;font-size:8pt;width:100%;text-align:center">               
+            <thead>
+                <tr>
+                    <th style="width:auto; text-align:center;"><b><%=codigo%></b></th>
+                    <% filas2.forEach(function(fila) { %>
+                        <th style="width:auto; text-align:left;"><b><%=fila.DE_NOMBRE%></b></th>
+                        <% }); %>
+                </tr>
+            </thead>
+        </table> 
+        <br>
+    </div>
+    <div style="box-sizing:border-box;padding-left:15mm;width:100%;">
+        <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
+            <thead>
+                <tr>
+                    <% filas2.forEach(function(fila) { %>
+                        <th style="text-align:left;">Elaborado por: <b><%-fila.FE_CREACION%></b></th>
+                        <th style="text-align:left;">Revisado por: <b><%-fila.FE_REVISA%></b></th>
+                        <th style="text-align:left;">Aprobado por: <b><%-fila.FE_APRUEBA%></b></th>
+                    <% }); %>
+                </tr>
+            </thead>
+        </table>
+        <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
+            <thead>
+                <tr>
+                    <% filas2.forEach(function(fila) { %>
+                        <td style="text-align:left;"><b><%-fila.DE_CREADOR%></b></td>
+                        <td style="text-align:left;"><b><%-fila.DE_REVISADO%></b></td>
+                        <td style="text-align:left;"><b><%-fila.DE_APRUEBA%></b></td>
+                    <% }); %>
+                </tr>
+            </thead>
+        </table>
+        <p style="font-size: 12pt;text-align:center;"><b>DESCRIPCION</b></p>
+        <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
+            <thead>
+                <tr>
+                    <td style="text-align:left;"><b>MARCA: </b><%=marc%></th>
+                    <td style="text-align:left;"><b>SUB.Marca: </b><%=sub%></td>
+                    <% filas2.forEach(function(fila) { %>
+                        <td style="text-align:left;"><b>PROVEEDOR: </b><%-fila.DE_PROVEEDOR%></td>
+                        <td style="text-align:left;"><b>NSOC: </b><%-fila.CO_NSOC%></td>
+                    <% }); %>
+                </tr>
+            </thead>
+        </table>
+        <p style="font-size: 12pt;text-align:center;"><b>CARACTERISTICAS</b></p>
+        <table style="font-family:Arial;font-size:7pt;width:100%;">
+            <thead>
+                <tr>
+                    <% filas2.forEach(function(fila) { %>
+                        <td style="text-align:left;"><%-fila.DE_CARACTERIS_GENERALES%></td>
+                    <% }); %>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <style>
+        html, body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+        table {
+            /* border-collapse:collapse; */
+            width: 100%;
+            /* border: 1px solid #000; */
+        }
+        th,td {
+            width: 25%;
+            text-align: left;
+            vertical-align: top;
+            border: 1px solid #000;
+            border-collapse: collapse;
+            padding: 0.3em;
+        }
+        /* th,td {
+            border: black;
+            padding: 4px 4px;
+        } */
+        thead tr {
+            background-color: #ffffff;
+            color:#1C1C1C;
+            border: 1px solid black;
+        }
+        tbody tr {
+            border-top: 1px solid #c0c0c0;
+        }
+        tr:nth-child(even) td {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="col-12 col-lg-5">
+            <form id="form-login" method="post" action="auth-login" class="py-5 mt-5">
+                <br>
+                </form>
+            </div>
+            
+    <div style="box-sizing:border-box;padding-left:15mm;width:100%;">
+        <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
+            <thead>
+                <tr>
+                    <th style="text-align:center;">Método</th>
+                    <th style="text-align:center;">Ensayo</th>
+                    <th style="text-align:center;">Especificaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            <% filas.forEach(function(fila) { %>
+                <tr>
+                    <td style="text-align:left;"><%=fila.DE_METODO%></td>
+                    <td style="text-align:left;"><%=fila.DE_ENSAYO%></td>
+                    <td style="text-align:left;"><%=fila.DE_ESPECIFICACIONES%></td>
+                </tr>
+            <% }); %>
+            </tbody>
+        </table>
+        <p style="font-size: 12pt;text-align:center;">CONDICIONES DE ALMACENAMIENTO</p>
+        <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
+            <thead>
+                <tr>
+                    <% filas2.forEach(function(fila) { %>
+                    <td style="text-align:left;"><%=fila.DE_CONDIC_ALMACENAMIENTO%></td>
+                    <% }); %>
+                </tr>
+            </thead>
+        </table>
+
+    </div>
+    </div>
+
+
+</body>
+</html>

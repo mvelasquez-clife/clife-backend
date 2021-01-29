@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Mantenimiento de Especificación de Análisis</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css"> -->
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <!--   <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/sources/dhtmlxform/codebase/skins/dhtmlxform_material.css">   -->
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+            integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        <!--link rel="stylesheet" href="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.css" -->
+        <link rel="stylesheet" type="text/css" href="codebase/dhtmlxtabbar.css">
+        <style type="text/css">
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                width: 100%
+            }
+
+            #dhxDesktop {
+                height: 100%;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <!-- <script src="/assets/vendor/dhtmlx/codebase/vault/codebase/vault.js"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+        <!-- <script src="/codebase/dhtmlxtabbar.js"></script> -->
+        <!-- script propio de la ventana -->
+        <!--<script type="text/javascript" src="<%=path%>script.js"></script> -->
+        <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- ancestro de la ventana de seguridad -->
+        <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+        <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script>
+
+            var f_filtro_busqueda = [
+                { type: "settings", labelWidth: 100 },
+                // { type: "newcolumn" },
+                // {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
+                //     { type: "input",offsetLeft:20,inputWidth: 500,  name: "_ep_buscar"}, { type: "newcolumn" },
+                //    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 230, list: [
+                    { type: "checkbox",checked:false, offsetLeft: 50,  offsetTop: 5,labelWidth: 140, label:'Incluir códigos anulados', name: "_ep_chck"}, { type: "newcolumn" }
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 100, list: [
+                    { type: "button",offsetLeft: 20,  offsetTop: 1,labelWidth: 50, value:'Buscar', name: "_ep_busbut"}, { type: "newcolumn" },
+                    ],},
+            ];
+            var form_caract = [
+                { type: "settings", labelWidth: 100 },
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 1000, list: [
+                    { type: "input",readonly:false,labelWidth: 300,offsetLeft:20,inputWidth: 800,rows:8,label:'<b>CARACTERÍSTICAS GENERALES</b>', name: "_ep_car_gen"}, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 1000, list: [
+                    { type: "input",readonly:false,labelWidth: 300,offsetLeft:20,inputWidth: 800,rows:8,label:'<b>CONDICIONES DE ALMACENAMIENTO</b>', name: "_ep_car_alm"}, { type: "newcolumn" },
+                   ],},
+            ];
+            var form_especf = [
+                { type: "settings", labelWidth: 100 },
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 180, list: [
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 70,label:'Código:', name: "ep_codigo"}, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 120, list: [
+                    { type: "input",readonly:true,labelWidth: 55,offsetLeft:0,inputWidth: 40,label:'Versión:', name: "ep_version"}, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 150, list: [
+                    { type: "input",readonly:true,labelWidth: 55,offsetLeft:5,inputWidth: 80,label:'Estado:', name: "ep_estado"}, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 100,label:'Proveedor:', name: "ep_provcod"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 0,offsetLeft:5,inputWidth: 200, name: "ep_proveedor"}, { type: "newcolumn" },
+                    { type: "button", name: 'buscarprov', disabled: true, offsetLeft: 10, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" }, 
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 300,label:'Descripción:', name: "ep_desc"}, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
+                    { type: "select",hidden:true,offsetLeft: 10,labelWidth: 70,inputWidth:100, name: "ep_tipo", label: 'Tipo:',options: [ {value: "REGISTRADO", text: "REGISTRADO" } , {value: "INTERNO", text: "INTERNO" }]   }, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 400, list: [
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 200,label:'NSOC:', name: "ep_nsoc"}, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 450, list: [
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 80,label:'Creación:', name: "ep_fecc"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:2,inputWidth: 200, name: "ep_crea"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 80,label:'Revisión:', name: "ep_fecrev"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:2,inputWidth: 200, name: "ep_rev"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 80,label:'Aprobación:', name: "ep_fecapro"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:2,inputWidth: 200, name: "ep_aprob"}, { type: "newcolumn" },
+                   ],},
+            ];
+            var f_historia = [ { type: "newcolumn" },
+            {type: "block",blockOffset: 10,  offsetTop: 10, position: "label-left", width: 450, list: [
+                { type: "newcolumn" },
+                { type: "input",offsetLeft: 10,labelWidth: 150, inputWidth: 400, rows:4, name: "_et_historial", label: 'Descripción de cambios:'}, { type: "newcolumn" },
+
+            ],}
+            ];
+            var f_copiaespec = [ { type: "newcolumn" },
+            {type: "block",blockOffset: 10,  offsetTop: 10,offsetLeft:10, position: "label-left", width: 700, list: [
+                { type: "newcolumn" },
+                    {type: "fieldset", label: "Especificación N°", offsetLeft:10, offsetTop: 10, inputWidth: 150, list:[
+                        {type: "block", blockOffset: 0, position: "label-left", width: 250, list: [  
+                            { type: "input", readonly: true,disabled: true, offsetLeft: 0,labelWidth: 0, inputWidth: 100, name: "_ep_num", label: ''}, { type: "newcolumn" }, 
+                            { type: "input", readonly: true,disabled: true, offsetLeft: 20,labelWidth: 40, inputWidth: 50, name: "_ep_ver", label: 'Versión:'}, { type: "newcolumn" },          
+                        ]}
+                ]},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 600, list: [
+                    { type: "input",readonly:true,labelWidth: 95,offsetLeft:10,inputWidth: 100,label:'Proveedor:', name: "ep_provcod"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 0,offsetLeft:5,inputWidth: 300, name: "ep_proveedor"}, { type: "newcolumn" },
+                    { type: "button", name: 'buscarprov', disabled: false, offsetLeft: 10, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" }, 
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 600, list: [
+                    { type: "input",hidden: true, readonly:true,labelWidth: 95,offsetLeft:10,inputWidth: 100,label:'Material/Producto:', name: "ep_prod"}, { type: "newcolumn" },
+                    { type: "input",hidden: true, readonly:true,labelWidth: 0,offsetLeft:5,inputWidth: 300, name: "ep_producto"}, { type: "newcolumn" },
+                    { type: "button",hidden: true, name: 'buscarprod', disabled: false, offsetLeft: 10, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" }, 
+                   ],},
+                { type: "newcolumn" },
+                { type: "input",offsetLeft: 10,labelWidth: 95, inputWidth: 420, rows:4, name: "_et_desc", label: 'Descripción:'}, { type: "newcolumn" },
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 230, list: [
+                    { type: "checkbox",checked:false, offsetLeft: 10,  offsetTop: 5,labelWidth: 95, label:'Granel', name: "ep_tipo"}, { type: "newcolumn" }
+                    ],},
+                { type: "newcolumn" },
+                { type: "input",offsetLeft: 10,hidden: true,labelWidth: 95, inputWidth: 420, rows:4, name: "_et_mot", label: 'Motivo:'}, { type: "newcolumn" },
+
+
+            ],}
+            ];
+            var f_copiavers = [ { type: "newcolumn" },
+            {type: "block",blockOffset: 10,  offsetTop: 10, position: "label-left", width: 450, list: [
+                { type: "newcolumn" },
+                { type: "select",offsetLeft: 10,labelWidth: 150, inputWidth: 150, name: "_et_cod", label: 'Cod. Especificación:'}, { type: "newcolumn" },
+                { type: "newcolumn" },
+                { type: "input",offsetLeft: 10,labelWidth: 150, inputWidth: 400, rows:4, name: "_et_desc", label: 'Descripción de Especificación:'}, { type: "newcolumn" },
+
+            ],}
+            ];
+
+            Inicio();            
+
+            
+        </script>
+    </body>
+</html>

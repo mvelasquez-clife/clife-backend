@@ -2,6 +2,7 @@ const oracledb = require('oracledb');
 const dbParams = require('../../database');
 const xmlParser = require('../../xml-parser');
 var fs = require('fs');
+const path = require('path');
 const responseParams = {
     outFormat: oracledb.OBJECT,
     autoCommit: true
@@ -416,6 +417,83 @@ const lo0101030401Controller = {
                 res.send(result.rows.length > 0 ? xmlParser.renderXml(result.rows) : xmlParser.renderXml([{ de_ubicacion: 'No se encontraron coincidencias' }]));
             });
         });
+    },
+    
+    PdfReporteuno: async (request, response) => {
+        // if (request.cookies[confParams.cookieIntranet]) {
+            const { movimiento,empresa,transacc,periodo,coddoc1 } = request.params;
+            // const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            try {
+                const conn = await oracledb.getConnection(dbParams);
+                let query = "select * from table(pack_new_kardex.f_lis_lis_vt_pedi_prod(:x_movimiento))";
+                let params = {
+                    x_movimiento: { val: movimiento }
+                };
+                const result = await conn.execute(query, params, responseParams);
+                const filas = result.rows;
+                query = "select de_nombre,nu_ruc from ma_empr_m where co_empresa = :x_empresa";
+                params = {
+                    x_empresa: { val: empresa }
+                };
+                const result_2 = await conn.execute(query, params, responseParams);
+                var empresa_dat;
+                var nombre,ruc;               
+                for(var i in result_2.rows) {
+                    empresa_dat = result_2.rows[i];                  
+                }
+                nombre = empresa_dat.DE_NOMBRE;
+                ruc = empresa_dat.NU_RUC;
+                // pinta pdf
+                const pdfWriter = require('html-pdf');
+                const ejs = require('ejs');
+                // const d = new Date();
+                const data = {
+                    nombre: nombre,
+                    ruc: ruc,
+                    filas: filas,
+                    movimiento:movimiento,
+                    transacc:transacc,
+                    periodo:periodo,
+                    coddoc1:coddoc1
+                    // usuario: sesion.ncomercial
+                };
+                const html = await ejs.renderFile(path.resolve('client/views/modulos/logistica/kardex1-report-1.ejs'), data);
+                const pdfOptions = {
+                    border: {
+                        top: '0mm',
+                        right: '20mm',
+                        bottom: '0mm',
+                        left: '5mm'
+                    },
+                    footer: {
+                        height: '5mm',
+                        contents: {
+                            default: '<span style="color:#444;font-size:6px;">Página <b>{{page}}</b> de <b>{{pages}}</b></span>'
+                        }
+                    },
+                    format: 'A4',
+                    header: {
+                        height: '10mm',
+                        contents: '<span style="font-size:6px;text-align:left;vertical-align:middle;"> </span>'
+                    },
+                    orientation: 'portrait',
+                    zoomFactor: 0.5
+                };
+                pdfWriter.create(html, pdfOptions).toStream((err, stream) => {
+                    if (err) return response.end(err.stack);
+                    response.setHeader('Content-type', 'application/pdf');
+                    // response.setHeader('Content-Disposition', 'attachment; filename="reporte.pdf');
+                    stream.pipe(response);
+                });
+            }
+            catch (err) {
+                console.error(err);
+                response.json({
+                    error: err
+                });
+            }
+        // }
+        // else response.redirect('/intranet/login');
     },
 }
 
