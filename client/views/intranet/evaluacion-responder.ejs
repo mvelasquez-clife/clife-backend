@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            #sidebar-toggler {display:none}
+            .clickable {display:none}
+            .writable {position:relative;bottom:2px}
+            label{margin:0}
+            #chrono {display:none}
+            .sp-tiempo{position:relative;top:5px}
+        </style>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% include _main.sidenav.admin.ejs %>
+            <% include _main.sidenav.documentacion.ejs %>
+            <% include _main.sidenav.footer.ejs %>
+        </div>
+        <!-- content -->
+        <div id="main-content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="alert alert-light border-secondary px-4 py-3 mt-3" role="alert">
+                            <div id="dv-pregunta" class="mb-3"></div>
+                            <!-- contenido de la pregunta -->
+                            <div class="row">
+                                <div class="col">
+                                    <div id="chrono">
+                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin: auto; background-color: transparent; display: inline; background-position: initial initial; background-repeat: initial initial;" width="32px" height="32px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+                                            <defs>
+                                                <clipPath id="ldio-uxngbr1lx1j-cp">
+                                                    <rect x="0" y="0" width="100" height="50">
+                                                        <animate attributeName="y" repeatCount="indefinite" dur="2.2222222222222223s" calcMode="spline" values="0;50;0;0;0" keyTimes="0;0.4;0.5;0.9;1" keySplines="0.3 0 1 0.7;0.3 0 1 0.7;0.3 0 1 0.7;0.3 0 1 0.7"></animate>
+                                                        <animate attributeName="height" repeatCount="indefinite" dur="2.2222222222222223s" calcMode="spline" values="50;0;0;50;50" keyTimes="0;0.4;0.5;0.9;1" keySplines="0.3 0 1 0.7;0.3 0 1 0.7;0.3 0 1 0.7;0.3 0 1 0.7"></animate>
+                                                    </rect>
+                                                    <rect x="0" y="50" width="100" height="50">
+                                                        <animate attributeName="y" repeatCount="indefinite" dur="2.2222222222222223s" calcMode="spline" values="100;50;50;50;50" keyTimes="0;0.4;0.5;0.9;1" keySplines="0.3 0 1 0.7;0.3 0 1 0.7;0.3 0 1 0.7;0.3 0 1 0.7"></animate>
+                                                        <animate attributeName="height" repeatCount="indefinite" dur="2.2222222222222223s" calcMode="spline" values="0;50;50;0;0" keyTimes="0;0.4;0.5;0.9;1" keySplines="0.3 0 1 0.7;0.3 0 1 0.7;0.3 0 1 0.7;0.3 0 1 0.7"></animate>
+                                                    </rect>
+                                                </clipPath>
+                                            </defs>
+                                            <g transform="translate(50 50)">
+                                                <g transform="scale(0.9)">
+                                                    <g transform="translate(-50 -50)">
+                                                        <g>
+                                                            <animateTransform attributeName="transform" type="rotate" dur="2.2222222222222223s" repeatCount="indefinite" values="0 50 50;0 50 50;180 50 50;180 50 50;360 50 50" keyTimes="0;0.4;0.5;0.9;1"></animateTransform>
+                                                            <path clip-path="url(#ldio-uxngbr1lx1j-cp)" fill="#14a651" d="M54.864 50L54.864 50c0-1.291 0.689-2.412 1.671-2.729c9.624-3.107 17.154-12.911 19.347-25.296 c0.681-3.844-1.698-7.475-4.791-7.475H28.908c-3.093 0-5.472 3.631-4.791 7.475c2.194 12.385 9.723 22.189 19.347 25.296 c0.982 0.317 1.671 1.438 1.671 2.729v0c0 1.291-0.689 2.412-1.671 2.729C33.84 55.836 26.311 65.64 24.117 78.025 c-0.681 3.844 1.698 7.475 4.791 7.475h42.184c3.093 0 5.472-3.631 4.791-7.475C73.689 65.64 66.16 55.836 56.536 52.729 C55.553 52.412 54.864 51.291 54.864 50z"></path>
+                                                            <path fill="#215d38" d="M81 81.5h-2.724l0.091-0.578c0.178-1.122 0.17-2.243-0.022-3.333C76.013 64.42 68.103 54.033 57.703 50.483l-0.339-0.116 v-0.715l0.339-0.135c10.399-3.552 18.31-13.938 20.642-27.107c0.192-1.089 0.2-2.211 0.022-3.333L78.276 18.5H81 c2.481 0 4.5-2.019 4.5-4.5S83.481 9.5 81 9.5H19c-2.481 0-4.5 2.019-4.5 4.5s2.019 4.5 4.5 4.5h2.724l-0.092 0.578 c-0.178 1.122-0.17 2.243 0.023 3.333c2.333 13.168 10.242 23.555 20.642 27.107l0.338 0.116v0.715l-0.338 0.135 c-10.4 3.551-18.31 13.938-20.642 27.106c-0.193 1.09-0.201 2.211-0.023 3.333l0.092 0.578H19c-2.481 0-4.5 2.019-4.5 4.5 s2.019 4.5 4.5 4.5h62c2.481 0 4.5-2.019 4.5-4.5S83.481 81.5 81 81.5z M73.14 81.191L73.012 81.5H26.988l-0.128-0.309 c-0.244-0.588-0.491-1.538-0.28-2.729c2.014-11.375 8.944-20.542 17.654-23.354c2.035-0.658 3.402-2.711 3.402-5.108 c0-2.398-1.368-4.451-3.403-5.108c-8.71-2.812-15.639-11.979-17.653-23.353c-0.211-1.191 0.036-2.143 0.281-2.731l0.128-0.308 h46.024l0.128 0.308c0.244 0.589 0.492 1.541 0.281 2.731c-2.015 11.375-8.944 20.541-17.654 23.353 c-2.035 0.658-3.402 2.71-3.402 5.108c0 2.397 1.368 4.45 3.403 5.108c8.71 2.812 15.64 11.979 17.653 23.354 C73.632 79.651 73.384 80.604 73.14 81.191z"></path>
+                                                        </g>
+                                                    </g>
+                                                </g>
+                                            </g>
+                                        </svg><div id="tiempo" class="d-inline text-dark" style="font-size:1.25rem;"><span class="sp-tiempo" id="horas">00</span><span class="sp-tiempo">:</span><span class="sp-tiempo" id="minutos">00</span><span class="sp-tiempo">:</span><span class="sp-tiempo" id="segundos">00</span></div>
+                                    </div>
+                                </div>
+                                <div class="col text-right">
+                                    <a id="submit" href="#" class="btn btn-success btn-sm disabled">Avanzar<i class="fa fa-chevron-right ml-2"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4 pt-5">
+                        <img src="/assets/intranet/images/bg-avatar-pregunta.png" alt="avatar" class="img-fluid mt-5">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            //
+            var sesion = JSON.parse('<%-sesion %>');
+            var id = parseInt('<%-id %>');
+            var evaluacion = parseInt('<%-evaluacion %>');
+            var documento = '<%-documento %>';
+            var pregunta = JSON.parse('<%-pregunta %>');
+            var horas, minutos, segundos;
+            var timer;
+            
+            function actualizaReloj() {
+                if (segundos > 0) segundos--;
+                else {
+                    if (minutos > 0) {
+                        minutos--;
+                        segundos = 59;
+                    }
+                    else {
+                        if (horas > 0) {
+                            horas--;
+                            minutos = 59;
+                        }
+                        else {
+                            clearInterval(timer);
+                            var evdata = {
+                                id: id,
+                                evaluacion: evaluacion,
+                                documento: documento
+                            };
+                            $.ajax({
+                                url: '/intranet/terminar-evaluacion',
+                                method: 'post',
+                                data: evdata,
+                                dataType: 'json',
+                                success: function(result) {
+                                    if (result.error) {
+                                        alert(result.error);
+                                        return;
+                                    }
+                                    alert('El tiempo para responder esta evaluación ha terminado. La evaluación se cerrará ahora');
+                                    location.reload();
+                                },
+                                error: function(error) {
+                                    alert(error);
+                                }
+                            });
+                        }
+                    }
+                }
+                // muestra el tiempo
+                document.getElementById('horas').innerHTML = (horas < 10 ? '0' : '') + horas;
+                document.getElementById('minutos').innerHTML = (minutos < 10 ? '0' : '')  + minutos;
+                document.getElementById('segundos').innerHTML = (segundos < 10 ? '0' : '')  + segundos;
+                // aplica colores
+                if (horas == 0 && minutos < 10) $('#tiempo').removeClass('text-dark').addClass('text-danger');
+            }
+            function habilitarTemporizador() {
+                var tiempo = pregunta.datos.tiempo;
+                segundos = tiempo % 60;
+                tiempo = Math.floor(tiempo / 60);
+                minutos = tiempo % 60;
+                horas = Math.floor(tiempo / 60);
+                // actualizaReloj();
+                actualizaReloj();
+                timer = setInterval(actualizaReloj, 1000);
+                $('#chrono').show();
+            }
+            function siguiente(event) {
+                event.preventDefault();
+                $('#form-steps').carousel('next');
+            }
+            function comenzar(event) {
+                event.preventDefault();
+                var data = {
+                    id: id,
+                    evaluacion: evaluacion,
+                    documento: documento
+                };
+                $.ajax({
+                    url: '/intranet/comenzar-evaluacion',
+                    method: 'post',
+                    data: data,
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        location.reload();
+                    },
+                    error: function(error) {
+                        alert(error);
+                    }
+                });
+            }
+            function muestraPregunta() {
+                var domPregunta = $('<div>');
+                var domOpciones = $('<div>');
+                switch (pregunta.datos.cotipo) {
+                    case 1:
+                        domPregunta.append(
+                            $('<h3>').text(pregunta.datos.enunciado).addClass('text-dark font-weight-normal font-italic')
+                        );
+                        var ulsingle = $('<ul>').addClass('list-group');
+                        var numSingleOptions = pregunta.claves.length;
+                        for (var i = 0; i < numSingleOptions; i++) {
+                            var iOption = pregunta.claves[i];
+                            ulsingle.append(
+                                $('<label>').text(iOption.texto).append(
+                                    $('<input>').attr({
+                                        type: 'radio',
+                                        name: 'clave',
+                                        id: 'clave-' + i
+                                    }).val(iOption.numero).prop('checked', false).addClass('opciones clickable')
+                                ).addClass('list-group-item list-group-item-action')
+                            );
+                        }
+                        domOpciones.append(ulsingle);
+                        break;
+                    case 2:
+                        domPregunta.append(
+                            $('<h3>').text(pregunta.datos.enunciado).addClass('text-dark font-weight-normal font-italic')
+                        );
+                        var ulmultiple = $('<ul>').addClass('list-group');
+                        var numMultipleOptions = pregunta.claves.length;
+                        for (var i = 0; i < numMultipleOptions; i++) {
+                            var iOption = pregunta.claves[i];
+                            ulmultiple.append(
+                                $('<label>').text(iOption.texto).append(
+                                    $('<input>').attr({
+                                        type: 'checkbox',
+                                        id: 'clave-' + i
+                                    }).val(iOption.numero).prop('checked', false).addClass('opciones clickable')
+                                ).addClass('list-group-item list-group-item-action')
+                            );
+                        }
+                        domOpciones.append(ulmultiple).append(
+                            $('<input>').attr({
+                                type: 'hidden',
+                                id: 'txrespuesta'
+                            })
+                        );
+                        break;
+                    case 3:
+                        var bloquesTexto = pregunta.datos.enunciado.split('_');
+                        var numBloquesTexto = bloquesTexto.length;
+                        for (var i = 0; i < numBloquesTexto; i++) {
+                            if (i > 0) {
+                                domPregunta.append(
+                                    $('<input>').attr('type', 'text').addClass('form-control form-control-sm d-inline mx-2 opciones writable').css('width', '80px').data('numero', i)
+                                );
+                            }
+                            domPregunta.append(
+                                $('<h3>').text(bloquesTexto[i].trim()).addClass('text-dark d-inline mb-0')
+                            );
+                        }
+                        domOpciones.append(
+                            $('<input>').attr({
+                                type: 'hidden',
+                                id: 'txrespuesta'
+                            })
+                        );
+                        break;
+                    case 4:
+                        domPregunta.append(
+                            $('<h3>').text(pregunta.datos.enunciado).addClass('text-dark font-weight-normal font-italic')
+                        );
+                        domOpciones.append(
+                            $('<textarea>').attr({
+                                id: 'txrespuesta',
+                                rows: 4,
+                                placeholder: 'Escriba aquí su respuesta'
+                            }).addClass('form-control form-control-sm writable').css('resize', 'none')
+                        );
+                        break;
+                }
+                $('#dv-pregunta').append(
+                    $('<p>').text(pregunta.datos.nombre).addClass('text-muted mb-3')
+                ).append(
+                    $('<p>').text('Pregunta ' + pregunta.datos.numero + ' de ' + pregunta.datos.total).addClass('text-primary mb-1')
+                ).append(
+                    $('<p>').text(pregunta.datos.indicaciones).addClass('text-dark mb-3')
+                ).append(domPregunta.addClass('mb-3')).append(domOpciones);
+                $('.writable').eq(0).focus();
+                // verifica si debo añadir el cronometro
+                if (pregunta.datos.tiempo > 0) {
+                    habilitarTemporizador();
+                }
+            }
+            function checkOption() {
+                var input = $(this);
+                if (pregunta.datos.cotipo == 1) {
+                    $('label.active').removeClass('active');
+                }
+                if (input.prop('checked')) {
+                    input.parent().addClass('active');
+                }
+                else {
+                    input.parent().removeClass('active');
+                }
+                if ($('label.active').length > 0) {
+                    $('#submit').removeClass('disabled');
+                }
+                else {
+                    $('#submit').addClass('disabled');
+                }
+            }
+            function writeOption() {
+                var inputs = $('.writable');
+                var habilitar = true;
+                $.each(inputs, function() {
+                    var input = $(this);
+                    var eTexto = input.val();
+                    habilitar = habilitar && eTexto.length != 0;
+                });
+                if (habilitar) $('#submit').removeClass('disabled');
+                else $('#submit').addClass('disabled');
+            }
+            function enviaRespuesta(event) {
+                event.preventDefault();
+                $('#submit').hide();
+                // construye la respuesta
+                var respuesta = '';
+                switch (pregunta.datos.cotipo) {
+                    case 1:
+                        var radios = $('.opciones:checked');
+                        if (radios.length == 0) {
+                            alert('Seleccione una respuesta para continuar.');
+                            return;
+                        }
+                        respuesta = radios.val();
+                        break;
+                    case 2:
+                        var checks = $('.opciones:checked');
+                        if (checks.length == 0) {
+                            alert('Seleccione al menos una respuesta para continuar');
+                            return;
+                        }
+                        var respuestas = [];
+                        $.each(checks, function() {
+                            var check = $(this);
+                            respuestas.push(parseInt(check.val() + ''));
+                        });
+                        respuesta = respuestas.sort().join('|');
+                        break;
+                    case 3:
+                        var espacios = $('.opciones');
+                        var palabras = [];
+                        $.each(espacios, function() {
+                            var input = $(this);
+                            var palabra = input.val().trim();
+                            if (palabra == '' || palabra == null) {
+                                alert('Complete todos los espacios en blanco para continuar');
+                                return;
+                            }
+                            palabras.push(palabra);
+                        });
+                        respuesta = palabras.join('|');
+                        break;
+                    case 4:
+                        respuesta = document.getElementById('txrespuesta').value.trim();
+                        if (respuesta == '' || respuesta == null) {
+                            alert('Escriba la respuesta para continuar');
+                            return;
+                        }
+                        break;
+                    default: break;
+                }
+                var data = {
+                    id: id,
+                    evaluacion: evaluacion,
+                    documento: documento,
+                    numero: pregunta.datos.numero,
+                    respuesta: respuesta
+                };
+                $.ajax({
+                    url: '/intranet/guarda-respuesta',
+                    method: 'post',
+                    data: data,
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.error) {
+                            $('#submit').show();
+                            alert(result.error);
+                            return;
+                        }
+                        location.reload();
+                    },
+                    error: function(error) {
+                        alert(error);
+                        $('#submit').show();
+                        return;
+                    }
+                });
+            }
+            // go!
+            $(function() {
+                $('#menu-evaluaciones').collapse('show')
+                $('#sidenav-mis-evaluaciones').addClass('active');
+                muestraPregunta();
+                $('.clickable').on('click', checkOption);
+                $('.writable').on('keyup', writeOption);
+                $('#submit').on('click', enviaRespuesta);
+            });
+        </script>
+    </body>
+</html>

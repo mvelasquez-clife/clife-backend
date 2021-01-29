@@ -40,6 +40,7 @@ module.exports = {
                         resolve({
                             error: error.message
                         });
+                        return;
                     }
                     conn.close();
                     resolve({

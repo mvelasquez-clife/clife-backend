@@ -64,7 +64,7 @@
                                         </select>
                                     </form>
                                     <!-- -->
-                                    <a href="#" class="btn btn-sm btn-success align-self-center" data-toggle="modal" data-target="#modal-nuevo"><i class="fa fa-plus"></i> Registrar un documento</a>
+                                    <!--a href="#" class="btn btn-sm btn-success align-self-center" data-toggle="modal" data-target="#modal-nuevo"><i class="fa fa-plus"></i> Registrar un documento</a-->
                                 </div>
                             </li>
                             <li id="li-container" class="list-group-item">
@@ -380,6 +380,12 @@
                 $('#f-rgdocumento').hide();
                 if ($('.is-invalid').length > 0) {
                     alert('La información proporcionada es incorrecta. Verifique antes de continuar.');
+                    $('#f-rgdocumento').show();
+                    return;
+                }
+                var archivoNoCargado = document.getElementById('f-archivo').value == '';
+                if (archivoNoCargado) {
+                    alert('Debe cargar el archivo para continuar.');
                     $('#f-rgdocumento').show();
                     return;
                 }

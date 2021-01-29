@@ -84,7 +84,7 @@
                                 $('<a>').append(
                                     $('<i>').addClass('fa fa-download mr-1')
                                 ).append('Descargar').addClass('btn btn-sm btn-danger my-auto').attr({
-                                    href: '/intranet/ver-documento/' + documento.url,
+                                    href: (documento.EMPRESA == -1 ? '/intranet/ver-iperc/' : '/intranet/ver-documento/') + documento.url,
                                     target: '_blank'
                                 })
                             ).addClass('d-flex w-100 justify-content-between')
@@ -102,7 +102,7 @@
                                     $('<a>').append(
                                         $('<i>').addClass('fa fa-download mr-1')
                                     ).append('Descargar').addClass('btn btn-sm btn-danger my-auto').attr({
-                                        href: '/intranet/ver-documento/' + documento.url,
+                                        href: (documento.EMPRESA == -1 ? '/intranet/ver-iperc/' : '/intranet/ver-documento/') + documento.url,
                                         target: '_blank'
                                     })
                                 ).addClass('d-flex w-100 justify-content-between')
@@ -157,6 +157,29 @@
                     ).addClass('row')
                 );
             }
+            AlertaContratosAprobar = async contratos => {
+                let ul = $('<ul>').addClass('list-group mb-2');
+                ul.append(
+                    $('<li>').append(
+                        $('<p>').text('Contratos pendientes de aprobación').addClass('text-main mb-0')
+                    ).addClass('list-group-item')
+                ).append(
+                    $('<li>').append(
+                        $('<div>').append(
+                            $('<p>').text('Tiene ' + contratos + ' contratos por aprobar.').addClass('mb-0 my-auto mr-auto')
+                        ).append(
+                            $('<a>').append(
+                                $('<i>').addClass('fa fa-list mr-1')
+                            ).append('Revisar').addClass('btn btn-sm btn-danger my-auto').attr('href', '/intranet/aprobar-contratos')
+                        ).addClass('d-flex w-100 justify-content-between')
+                    ).addClass('list-group-item')
+                );
+                $('#dv-main-container').append(
+                    $('<div>').append(
+                        $('<div>').append(ul).addClass('col')
+                    ).addClass('row')
+                );
+            }
             CargarListaDocumentos = async _ => {
                 MuestraIndicadorCarga();
                 try {
@@ -170,6 +193,9 @@
                     EscribirListaDocumentos();
                     if (result.data.otros && result.data.otros.length > 0) {
                         EscribirListaOtros(result.data.otros);
+                    }
+                    if (result.data.extra) {
+                        AlertaContratosAprobar(result.data.extra);
                     }
                 }
                 catch (err) {

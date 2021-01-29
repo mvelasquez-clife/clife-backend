@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+        <style>
+            .btn-group-toggle .active {
+                background-color: #4caf50 !important;
+                color: #ffffff !important;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% if (admin[0] == 'S') { %>
+                <% include _main.sidenav.admin.ejs %>
+            <% } if (admin[1] == 'S') { %>
+                <% include _main.sidenav.documentacion.ejs %>
+            <% } %>
+            <!-- body -->
+            <% include _main.sidenav.footer.ejs %>
+        </div>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Control documentario</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Aprobación de documentos</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Documentos pendientes de aprobación</p>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">D/SIS-003</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">Manual de acceso al servidor Amazon <small class="text-success">Versión 1</small></p>
+                                    <a class="btn btn-sm btn-danger my-auto" data-toggle="modal" data-target="#modal-revision" href="#" target="_blank"><i class="fa fa-download mr-1"></i>Revisar</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">D/ASC-001</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">Análisis de requerimientos <small class="text-primary">Versión 6</small></p>
+                                    <a class="btn btn-sm btn-danger my-auto" data-toggle="modal" data-target="#modal-revision" href="#" target="_blank"><i class="fa fa-download mr-1"></i>Revisar</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">P/ALM-009</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">Procedimiento para almacenamiento de materiales peligrosos <small class="text-success">Versión 1</small></p>
+                                    <a class="btn btn-sm btn-danger my-auto" data-toggle="modal" data-target="#modal-revision" href="#" target="_blank"><i class="fa fa-download mr-1"></i>Revisar</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">P/GAF-004</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">Pago masivo telebanking <small class="text-success">Versión 2</small></p>
+                                    <a class="btn btn-sm btn-danger my-auto" data-toggle="modal" data-target="#modal-revision" href="#" target="_blank"><i class="fa fa-download mr-1"></i>Revisar</a>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="font-weight-bold mb-0 my-auto">P/GCO-003</p>
+                                    <p class="mb-0 px-2 my-auto mr-auto">Procedimiento de selección - Equipo de impulsación <small class="text-primary">Versión 4</small></p>
+                                    <a class="btn btn-sm btn-danger my-auto" data-toggle="modal" data-target="#modal-revision" href="#" target="_blank"><i class="fa fa-download mr-1"></i>Revisar</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- modal revision documento -->
+        <div id="modal-revision" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Revisión de documento</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="f-documento">Documento</label>
+                                <input type="text" readonly class="form-control-plaintext" id="f-documento" aria-describedby="emailHelp" value="D/SIS-003 Manual de acceso al servidor Amazon">
+                            </div>
+                            <div class="form-group">
+                                <label for="f-usuregistra">Registrado por</label>
+                                <input type="text" readonly class="form-control-plaintext" id="f-usuregistra" aria-describedby="emailHelp" value="Mario S Aranda Gomero">
+                            </div>
+                            <div class="form-group">
+                                <label for="f-usuregistra">Fecha/hora registro</label>
+                                <input type="text" readonly class="form-control-plaintext" id="f-usuregistra" aria-describedby="emailHelp" value="30/09/2020 16:31">
+                            </div>
+                            <div class="form-group">
+                                <label for="f-usuregistra">Documento digitalizado</label><br>
+                                <a href="#" class="btn btn-sm btn-danger"><i class="fa fa-file-pdf-o mr-2"></i>Vista previa del documento enviado</a>
+                            </div>
+                            <div class="form-group">
+                                <label for="f-usuregistra">Resultado de la revisión</label><br>
+                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                    <label class="btn btn-light active">
+                                        <input type="radio" name="options" id="option1" checked> Aprobar el documento
+                                    </label>
+                                    <label class="btn btn-light">
+                                        <input type="radio" name="options" id="option2"> Rechazar documento
+                                    </label>
+                                  </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            
+            CargaComboEmpresas = async _ => {
+                // combo empresas - busca x envio
+                let result = await $.ajax({
+                    url: '/intranet/lista-empresas',
+                    method: 'post',
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                for (let empresa of result.data.empresas) {
+                    $('#rpa-empresa').append(
+                        $('<option>').val(empresa.value).text(empresa.text)
+                    );
+                }
+                // combo tipos documento - busca x envio
+                $('#rpa-documento').empty().append(
+                    $('<option>').val(0).text('- Seleccione -')
+                );
+            }
+            CargaComboAreas = async _ => {
+                let empresa = document.getElementById('rpa-empresa').value;
+                if (empresa != 0) {
+                    $('#rpa-area').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    $('#rpa-documento').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    let result = await $.ajax({
+                        url: '/intranet/lista-combos',
+                        method: 'post',
+                        data: { empresa: empresa, area: -1, combo: 1 },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    for (let area of result.options) {
+                        $('#rpa-area').append(
+                            $('<option>').val(area.value).text(area.text)
+                        );
+                    }
+                }
+            }
+
+            // go!
+            $(function() {
+                $('#menu-documentacion').collapse('show')
+                $('#documentacion-aprobar').addClass('active');
+                //CargaComboEmpresas();
+                //$('#rpa-empresa').on('change', CargaComboAreas);
+            });
+        </script>
+    </body>
+</html>

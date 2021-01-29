@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% if (admin[0] == 'S') { %>
+                <% include _main.sidenav.admin.ejs %>
+            <% } if (admin[1] == 'S') { %>
+                <% include _main.sidenav.documentacion.ejs %>
+            <% } %>
+            <!-- body -->
+            <% include _main.sidenav.footer.ejs %>
+        </div>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Mis documentos</li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Contratos</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Aprobación de contratos</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul id="container" class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Contratos pendientes de aprobación</p>
+                            </li>
+                            <li id="doc-vigente-container" class="list-group-item">
+                                <form id="f-form" class="form-inline">
+                                    <label for="f-anio" class="mr-1">Año</label>
+                                    <select name="anio" id="f-anio" class="form-control form-control-sm mr-3" style="width:160px;"></select>
+                                    <!-- separador de bajo presupuesto -->
+                                    <label for="f-periodo" class="mr-1">Periodo</label>
+                                    <select name="periodo" id="f-periodo" class="form-control form-control-sm mr-3" style="width:400px;"></select>
+                                    <!-- separador de bajo presupuesto -->
+                                    <button type="submit" class="btn btn-primary btn-sm">Revisar contratos</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- modal previsualizacion -->
+        <div id="modal-contrato" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Vista previa del documento</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="dv-iframe"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-primary"><i class="fa fa-check mr-1"></i>Aprobar este contrato</button>
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal confirma aprobacion -->
+        <div id="modal-aprobar-masivo" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Aprobación de documentos</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Está a punto de aprobar <span id="p-modal-contratos"></span> contratos. ¿Desea continuar?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-primary"><i class="fa fa-check mr-1"></i>Si, aprobar</button>
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            // funciones
+            function cargarListaAnios() {
+                var cmbAnios = $('#f-anio');
+                $.ajax({
+                    url: '/intranet/lista-anios-tipodoc',
+                    method: 'get',
+                    data: { tipodoc: 69 },
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        //
+                        var data = result.data;
+                        var numFilas = data.length;
+                        for (var i = 0; i < numFilas; i++) {
+                            var iFila = data[i];
+                            cmbAnios.append(
+                                $('<option>').val(iFila.anio).text(iFila.anio)
+                            );
+                        }
+                        cargarPeriodosAnio();
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. qué hiciste ahora vizcarra...?');
+                    }
+                });
+            }
+            function cargarPeriodosAnio() {
+                var anio = document.getElementById('f-anio').value;
+                var cmbPeriodos = $('#f-periodo');
+                cmbPeriodos.empty().append(
+                    $('<option>').val(0).text('- Seleccione -').prop('selected', true).prop('disabled', true)
+                );
+                $.ajax({
+                    url: '/intranet/lista-periodos-tipodoc',
+                    method: 'get',
+                    data: { tipodoc: 69, anio: anio },
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        //
+                        var data = result.data;
+                        var numFilas = data.length;
+                        for (var i = 0; i < numFilas; i++) {
+                            var iFila = data[i];
+                            cmbPeriodos.append(
+                                $('<option>').val(iFila.value).text(iFila.text)
+                            );
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. qué hiciste ahora vizcarra...?');
+                    }
+                });
+            }
+            function cargaListaContratos(event) {
+                event.preventDefault();
+                if ($('#contratos').length > 0) {
+                    $('#contratos').parent().remove();
+                }
+                $.ajax({
+                    url: '/intranet/lista-documentos-aprobacion',
+                    method: 'get',
+                    data: { tipodoc: 69, periodo: document.getElementById('f-periodo').value },
+                    dataType: 'json',
+                    success: function (result, status, xhr) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        //
+                        var tbody = $('<tbody>');
+                        var data = result.data;
+                        var numFilas = data.length;
+                        for (var i = 0; i < numFilas; i++) {
+                            var iFila = data[i];
+                            var id = 'ch-aprobar-' + i;
+                            tbody.append(
+                                $('<tr>').append(
+                                    $('<td>').append(
+                                        $('<input>').attr({
+                                            id: id,
+                                            type: 'checkbox'
+                                        }).val(iFila.key).addClass('ch-contratos mb-1')
+                                    )
+                                ).append(
+                                    $('<td>').append(
+                                        $('<label>').addClass('mb-0').attr('for', id).text(iFila.usuario)
+                                    )
+                                ).append(
+                                    $('<td>').append(
+                                        $('<label>').addClass('mb-0').attr('for', id).text(iFila.area)
+                                    )
+                                ).append(
+                                    $('<td>').append(
+                                        $('<label>').addClass('mb-0').attr('for', id).text(iFila.puesto)
+                                    )
+                                ).append(
+                                    $('<td>').append(
+                                        $('<label>').addClass('mb-0').attr('for', id).text(iFila.condicion)
+                                    )
+                                ).append(
+                                    $('<td>').append(
+                                        $('<label>').addClass('mb-0').attr('for', id).text(iFila.usureg)
+                                    )
+                                ).append(
+                                    $('<td>').append(
+                                        $('<a>').append(
+                                            $('<i>').addClass('fa fa-eye mr-1')
+                                        ).attr('href', '#').data('key', iFila.key).append('Ver').addClass('btn btn-sm btn-danger').on('click', verContrato)
+                                    )
+                                )
+                            );
+                        }
+                        // agregar elemento
+                        $('#container').append(
+                            $('<li>').append(
+                                $('<table>').append(
+                                    $('<thead>').append(
+                                        $('<tr>').append(
+                                            $('<th>').text('')
+                                        ).append(
+                                            $('<th>').text('Nombre')
+                                        ).append(
+                                            $('<th>').text('Área')
+                                        ).append(
+                                            $('<th>').text('Puesto')
+                                        ).append(
+                                            $('<th>').text('Condición')
+                                        ).append(
+                                            $('<th>').text('Usu.Registra')
+                                        ).append(
+                                            $('<th>').text('')
+                                        )
+                                    )
+                                ).append(tbody).addClass('table table-striped table-hover table-responsive mt-2').attr('id', 'contratos')
+                            ).append(
+                                $('<div>').append(
+                                    $('<p>').text('Para aprobar varios contratos a la vez, selecciónelos y pulse el siguiente botón').addClass('mb-0 my-auto mr-auto')
+                                ).append(
+                                    $('<a>').attr({
+                                        'data-toggle': 'modal',
+                                        'data-target': '#modal-aprobar-masivo',
+                                        'href': '#'
+                                    }).append(
+                                        $('<i>').addClass('fa fa-check-square-o mr-1')
+                                    ).append('Aprobar documentos').addClass('btn btn-sm btn-success')
+                                ).addClass('d-flex w-100 justify-content-between')
+                            ).addClass('list-group-item')
+                        );
+                    },
+                    error: function (xhr, status, error) {
+                        alert('error grave. qué hiciste ahora vizcarra...?');
+                    }
+                });
+            }
+            function verContrato(event) {
+                event.preventDefault();
+                var key = $(this).data('key');
+                $('#dv-iframe').empty().append(
+                    $('<iframe>').attr('src', '/intranet/ver-contrato-uns/' + key).addClass('w-100').css('height', '640px')
+                ).append(
+                    $('<input>').attr({
+                        type: 'hidden',
+                        id: 'mc-key'
+                    }).data('key', key)
+                );
+                $('#modal-contrato').modal('show');
+            }
+            function muestraConfirmacionMasivo(args) {
+                var inputs = $('.ch-contratos:checked');
+                var numContratos = inputs.length;
+                if (numContratos == 0) {
+                    $('#modal-aprobar-masivo').modal('hide');
+                    alert('No ha seleccionado contratos para aprobar');
+                }
+                else {
+                    $('#p-modal-contratos').text(numContratos);
+                }
+            }
+            function apruebaContrato(event) {
+                var key = $('#mc-key').data('key');
+                $('input[value=' + key + ']').prop('checked', true);
+                aprobarDocumentos(event);
+            }
+            function aprobarDocumentos(event) {
+                event.preventDefault();
+                var inputs = $('.ch-contratos:checked');
+                var numInputs = inputs.length;
+                if (numInputs > 0) {
+                    var keys = [];
+                    for (var i = 0; i < numInputs; i++) {
+                        keys.push(inputs.eq(i).val());
+                    }
+                    $.ajax({
+                        url: '/intranet/aprobar-contratos',
+                        method: 'post',
+                        data: { keys: keys },
+                        dataType: 'json',
+                        success: function (result, status, xhr) {
+                            if (result.error) {
+                                alert(result.error);
+                                return;
+                            }
+                            cargaListaContratos(event);
+                            $('#modal-contrato').modal('hide');
+                            $('#modal-aprobar-masivo').modal('hide');
+                        },
+                        error: function (xhr, status, error) {
+                            alert('error grave. qué hiciste ahora vizcarra...?');
+                        }
+                    });
+                }
+                else alert('Seleccione al menos un contrato para aprobar');
+            }
+            // go!
+            $(_ => {
+                $('#menu-docs').collapse('show')
+                $('#sidenav-contratos').addClass('active');
+                cargarListaAnios();
+                $('#f-form').on('submit', cargaListaContratos);
+                $('#f-anio').on('change', cargarPeriodosAnio);
+                $('#modal-aprobar-masivo').on('shown.bs.modal', muestraConfirmacionMasivo);
+                $('#modal-contrato .btn-primary').on('click', apruebaContrato);
+                $('#modal-aprobar-masivo .btn-primary').on('click', aprobarDocumentos);
+            });
+        </script>
+    </body>
+</html>

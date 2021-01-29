@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            #sidebar-toggler {display:none}
+        </style>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% include _main.sidenav.admin.ejs %>
+            <% include _main.sidenav.documentacion.ejs %>
+            <% include _main.sidenav.footer.ejs %>
+        </div>
+        <!-- content -->
+        <div id="main-content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-4">
+                        <img src="/assets/intranet/images/bg-avatar-examen.png" alt="avatar" class="img-fluid">
+                    </div>
+                    <div class="col-8">
+                        <div id="form-steps" class="carousel slide" data-interval="false" data-ride="carousel" data-pause="hover">
+                            <!-- Wrapper for slides -->
+                            <div class="carousel-inner mt-3" role="listbox">
+                                <!-- paso 1 -->
+                                <div class="carousel-item active">
+                                    <div class="step-div">
+                                        <div class="alert alert-light border-secondary px-4 py-3" role="alert">
+                                            <h4 class="mb-3 text-dark">Bienvenido, <i id="nombre"></i></h4>
+                                            <p class="mb-5 text-dark">A continuación, deberás responder un breve cuestionario que hemos preparado para ti.</p>
+                                            <div class="row">
+                                                <div class="col text-right">
+                                                    <a href="#" class="btn btn-sm btn-main btn-next">Siguiente<i class="fa fa-chevron-right ml-2"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- paso 2 -->
+                                <div class="carousel-item">
+                                    <div class="step-div">
+                                        <div class="alert alert-light border-secondary px-4 py-3" role="alert">
+                                            <p class="mb-3 text-dark">El cuestionario que responderás es:</p>
+                                            <h4 id="cuestionario" class="text-primary mb-3"></h4>
+                                            <p id="detalle" class="mb-5 text-dark">Detalle del cuestionario</p>
+                                            <div class="row">
+                                                <div class="col text-right">
+                                                    <a href="#" class="btn btn-sm btn-main btn-next">Siguiente<i class="fa fa-chevron-right ml-2"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- paso 2 -->
+                                <div class="carousel-item">
+                                    <div class="step-div">
+                                        <div class="alert alert-light border-secondary px-4 py-3" role="alert">
+                                            <p class="mb-3 text-dark">Responde cada pregunta y presiona el botón "Siguiente" para avanzar a la siguiente.</p>
+                                            <p class="mb-3 text-dark">Recuerda leer detenidamente cada pregunta para responder correctamente. Cuando estés listo, presiona el botón "Comenzar ahora".</p>
+                                            <p class="mb-3 text-dark">¡Buena suerte!</p>
+                                            <div class="row">
+                                                <div class="col text-right">
+                                                    <a href="#" id="submit" class="btn btn-sm btn-primary"><i class="fa fa-play mr-2"></i>Comenzar ahora</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            var sesion = JSON.parse('<%-sesion %>');
+            var id = parseInt('<%-id %>');
+            var evaluacion = parseInt('<%-evaluacion %>');
+            var documento = '<%-documento %>';
+            
+            function siguiente(event) {
+                event.preventDefault();
+                $('#form-steps').carousel('next');
+            }
+            function comenzar(event) {
+                event.preventDefault();
+                var data = {
+                    id: id,
+                    evaluacion: evaluacion,
+                    documento: documento
+                };
+                $.ajax({
+                    url: '/intranet/comenzar-evaluacion',
+                    method: 'post',
+                    data: data,
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        location.href = 'responder?key=' + btoa([id, evaluacion, documento].join('|'));
+                    },
+                    error: function(error) {
+                        alert(error);
+                    }
+                });
+            }
+            function cargaDatosEvaluacion() {
+                var data = {
+                    evaluacion: evaluacion,
+                    documento: documento
+                };
+                $.ajax({
+                    url: '/intranet/datos-evaluacion',
+                    method: 'get',
+                    data: data,
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        var evaluacion = result.info;
+                        document.getElementById('cuestionario').innerHTML = evaluacion.nombre;
+                        if (evaluacion.duracion == 0) {
+                            document.getElementById('detalle').innerHTML = 'La evaluación no tiene límite de tiempo. Recuerda que, una vez que comiences, si cierras esta ventana podrás retomar nuevamente la evaluación en donde la dejaste.';
+                        }
+                        else {
+                            document.getElementById('detalle').innerHTML = 'La evaluación tiene un límite de <i class="text-success">' + evaluacion.duracion + '</i> minutos. Ten en cuenta que, una vez que comiences, si cierras esta ventana podrás retomar nuevamente la evaluación en donde la dejaste. Sin embargo, una vez terminado el límite de tiempo, la evaluación se cerrará y no podrás responder las preguntas que te falten.';
+                        }
+                    }
+                });
+            }
+
+            // go!
+            $(function() {
+                $('#menu-evaluaciones').collapse('show')
+                $('#sidenav-mis-evaluaciones').addClass('active');
+                $('.btn-next').on('click', siguiente);
+                $('#submit').on('click', comenzar);
+                cargaDatosEvaluacion();
+            });
+        </script>
+    </body>
+</html>

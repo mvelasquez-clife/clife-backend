@@ -10,11 +10,13 @@ module.exports = {
     password: 'desarrollo2131',
     connectString: '(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = lifeoraprd.cwweyutifkcl.us-west-2.rds.amazonaws.com)(PORT = 1521)))(CONNECT_DATA = (SID = orcl) (SERVER = DEDICATED)))'
     //
+    */ 
+    /*
     user: 'desarrollo', // produccion
     password: 'Sp343DanielaA',
-    connectString: '(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = 191.98.161.237)(PORT = 1521)))(CONNECT_DATA = (SID = orcl) (SERVER = DEDICATED)))'
-    */ 
-    user: 'desarrollo', // pruebas
-    password: 'Sp343DanielaA',
     connectString: '(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = 191.98.161.248)(PORT = 1521)))(CONNECT_DATA = (SID = orcl) (SERVER = DEDICATED)))'
+    */ 
+    user: 'desarrollo', // pruebas amazon
+    password: 'Sp343DanielaA',
+    connectString: '(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = 200.37.95.253)(PORT = 1521)))(CONNECT_DATA = (SID = orcl) (SERVER = DEDICATED)))'
 };

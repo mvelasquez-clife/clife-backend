@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            .table thead th {vertical-align: middle}
+            .table-sm tbody td p {font-size: 0.75rem !important}
+            input[name=rb]:checked + label {font-weight: bold}
+        </style>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% include _main.sidenav.admin.ejs %>
+            <% include _main.sidenav.documentacion.ejs %>
+            <% include _main.sidenav.footer.ejs %>
+        </div>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Evaluaciones</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Programación</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Evaluaciones programadas</p>
+                            </li>
+                            <li class="list-group-item">
+                                <form id="form-usuario" class="py-1">
+                                    <div class="form-group row mb-2">
+                                        <label for="rpa-empresa" class="col-sm-2 col-form-label">Empresa</label>
+                                        <div class="col-sm-6">
+                                            <select id="rpa-empresa" class="form-control form-control-sm">
+                                                <option value="0">- Seleccione -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <label for="rpa-area" class="col-sm-2 col-form-label">Área</label>
+                                        <div class="col-sm-10">
+                                            <select id="rpa-area" class="form-control form-control-sm">
+                                                <option value="0">- TODAS -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <label for="rpa-documento" class="col-sm-2 col-form-label">Documento</label>
+                                        <div class="col-sm-10">
+                                            <select id="rpa-documento" class="form-control form-control-sm">
+                                                <option value="0">- TODOS -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </li>
+                            <li class="list-group-item" id="evaluaciones-container">
+                                <div class="row">
+                                    <div class="col"></div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="d-flex">
+                                            <p class="my-auto mr-auto">Para registrar una nueva evaluación, seleccione un documento y, a continuación, pulse el botón <b>Registrar evaluación</b></p>
+                                            <a href="#" class="btn btn-sm btn-success my-auto disabled" data-toggle="modal" data-target="#modal-registro" id="rg-evaluacion"><i class="fa fa-plus mr-1"></i>Nueva evaluacíon</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- modal nuevo evaluador -->
+        <div id="modal-evaluador" class="modal fade" tabindex="-1" role="dialog" style="z-index:15000;">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Agregar evaluador</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <form>
+                                    <input type="hidden" id="ev-tipo-permiso">
+                                    <div class="form-group row">
+                                        <label for="ev-area" class="col-sm-2 col-form-label">Área</label>
+                                        <div class="col-sm-10">
+                                            <select name="area" id="ev-area" class="form-control form-control-sm"></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="ev-puesto" class="col-sm-2 col-form-label">Puesto</label>
+                                        <div class="col-sm-10">
+                                            <select name="puesto" id="ev-puesto" class="form-control form-control-sm"></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="ev-usuario" class="col-sm-2 col-form-label">Usuario</label>
+                                        <div class="col-sm-10">
+                                            <select name="usuario" id="ev-usuario" class="form-control form-control-sm"></select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-main"><i class="fa fa-check mr-1"></i>Asignar evaluador</button>
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal nueva pregunta -->
+        <div id="modal-pregunta" class="modal fade" tabindex="-1" style="z-index:15000;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Nueva evaluación</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <div>
+                                    <div class="form-group">
+                                        <label for="rp-tipopreg">Elija el tipo de pregunta</label>
+                                        <select name="tipopreg" id="rp-tipopreg" class="form-control form-control-sm"></select>
+                                    </div>
+                                    <div id="rp-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="rp-submit"><i class="fa fa-check mr-1"></i>Confirmar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal registro de evaluacion -->
+        <div id="modal-registro" class="modal fade" tabindex="-1" data-backdrop="static" style="z-index:10000;">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Nueva evaluación</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <input type="hidden" name="documento" id="rg-documento">
+                    </div>
+                    <div class="modal-body px-4">
+                        <div class="form-group">
+                            <label for="rg-desdocumento">Documento a evaluar</label>
+                            <input type="text" readonly class="form-control-plaintext text-success" id="rg-desdocumento">
+                        </div>
+                        <div class="form-group">
+                            <label for="rg-nombre">Descripción</label>
+                            <input type="text" class="form-control form-control-sm text-uppercase" id="rg-nombre" placeholder="Ingrese un nombre o descripción para la evaluación">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="rg-duracion">Duración de evaluación (minutos)</label>
+                                <input type="text" class="form-control form-control-sm" id="rg-duracion" placeholder="Ingrese el tiempo límite, en minutos">
+                                <input type="checkbox" id="rg-ilimitado"><label for="rg-ilimitado" class="ml-2">No hay límite de tiempo</label>
+                            </div>
+                        </div>
+                        <div class="form-group form-check">
+                            <input class="form-check-input" type="checkbox" name="electronico" id="rg-restringido" checked>
+                            <label class="form-check-label" for="rg-restringido" style="margin-top:2px;">Restringir la evaluación</label>
+                            <br>
+                            <small>Las evaluaciones restringidas necesitan la aprobación de un evaluador para que los usuario puedan ver y responder el cuestionario.</small>
+                        </div>
+                        <div id="rg-evaluadores" class="row mb-4" style="display:none;">
+                            <div class="col">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Área</th>
+                                            <th>Puesto</th>
+                                            <th>Nombre</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rg-tbody"></tbody>
+                                </table>
+                                <a href="#" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal-evaluador"><i class="fa fa-plus mr-2"></i>Agregar evaluador</a>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="rg-npreguntas" class="mb-0">Cuestionario</label>
+                            <input type="text" readonly class="form-control-plaintext text-success" id="rg-npreguntas">
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th width="2%">#</th>
+                                            <th width="8%">Tipo</th>
+                                            <th width="65%">Texto</th>
+                                            <th width="20%">Respuesta</th>
+                                            <th width="5%"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rg-preguntas">
+                                        <tr>
+                                            <td></td>
+                                            <td colspan="4">
+                                                <p class="mb-0">Para añadir preguntas, clic en el botón <b>Nueva pregunta</b>.</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <a href="#" class="btn btn-sm btn-success" data-toggle="modal" data-target="#modal-pregunta"><i class="fa fa-plus mr-1"></i>Nueva pregunta</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="rg-submit">Registrar evaluación</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- detalle de preguntas -->
+        <div id="modal-dpreguntas" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"></h5>
+                        <button class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                        <button class="btn btn-light btn-sm" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- detalle de evaluados -->
+        <div id="modal-devaluados" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"></h5>
+                        <button class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                        <button class="btn btn-small btn-light" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+        <script>
+            var sesion = JSON.parse('<%-sesion %>');
+            var evaluaciones;
+            var preguntas, evaluadores;
+
+            function agregaDetallePreguntaRb() {
+                $('#rp-nvo-detalle').remove();
+                $('#rp-detalle').append(
+                    $('<li>').append(
+                        $('<div>').append(
+                            $('<label>').append(
+                                $('<input>').attr({
+                                    type: 'radio',
+                                    name: 'options[]'
+                                }).addClass('rp-radio')
+                            ).addClass('my-auto')
+                        ).append(
+                            $('<input>').attr({
+                                type: 'text',
+                                placeholder: 'Escriba la respuesta'
+                            }).addClass('form-control form-control-sm mx-2 my-auto').on('keypress', function(evt) {
+                                if (evt.keyCode == 13) agregaDetallePreguntaRb();
+                                else return true;
+                            })
+                        ).append(
+                            $('<a>').attr({
+                                href: '#',
+                                id: 'rp-nvo-detalle'
+                            }).addClass('btn btn-sm btn-success my-auto').append(
+                                $('<i>').addClass('fa fa-plus')
+                            ).on('click', agregaDetallePreguntaRb)
+                        ).addClass('d-flex')
+                    ).addClass('list-group-item p-1')
+                );
+                if ($('.rp-radio').length == 1) {
+                    $('.rp-radio').eq(0).prop('checked', true);
+                }
+                $('#rp-detalle li:last-child input[type=text]').focus();
+            }
+            function agregaDetallePreguntaCh() {
+                $('#rp-nvo-detalle').remove();
+                $('#rp-detalle').append(
+                    $('<li>').append(
+                        $('<div>').append(
+                            $('<label>').append(
+                                $('<input>').attr('type', 'checkbox').addClass('rp-chbox')
+                            ).addClass('my-auto')
+                        ).append(
+                            $('<input>').attr({
+                                type: 'text',
+                                placeholder: 'Escriba la respuesta'
+                            }).addClass('form-control form-control-sm mx-2 my-auto').on('keypress', function(evt) {
+                                if (evt.keyCode == 13) agregaDetallePreguntaCh();
+                                else return true;
+                            })
+                        ).append(
+                            $('<a>').attr({
+                                href: '#',
+                                id: 'rp-nvo-detalle'
+                            }).addClass('btn btn-sm btn-success my-auto').append(
+                                $('<i>').addClass('fa fa-plus')
+                            ).on('click', agregaDetallePreguntaCh)
+                        ).addClass('d-flex')
+                    ).addClass('list-group-item p-1')
+                );
+                $('#rp-detalle li:last-child input[type=text]').focus();
+            }
+            var numPalabras;
+            function calcularPalabras() {
+                var texto = document.getElementById('rp-texto').value;
+                var palabras = texto.split('_').length - 1;
+                if (palabras != numPalabras) {
+                    var container = $('#rp-detalle');
+                    container.empty();
+                    if (palabras > 0) {
+                        for (var i = 0; i < palabras; i++) {
+                            container.append(
+                                $('<li>').append(
+                                    $('<div>').append(
+                                        $('<input>').attr({
+                                            type: 'text',
+                                            placeholder: 'Ingrese el texto # ' + (i + 1)
+                                        }).addClass('form-control form-control-sm mx-2 my-auto')
+                                    ).append(
+                                        $('<a>').attr({
+                                            href: '#',
+                                            id: 'rp-nvo-detalle'
+                                        }).addClass('btn btn-sm btn-success my-auto').append(
+                                            $('<i>').addClass('fa fa-plus')
+                                        ).on('click', agregaDetallePreguntaCh)
+                                    ).addClass('d-flex')
+                                ).addClass('list-group-item p-1')
+                            );
+                        }
+                    }
+                    else {
+                        container.append(
+                            $('<li>').append(
+                                $('<p>').html('No hay palabras para completar. Utilice un guión bajo "<b><i>_</i></b>" para agregar una palabra').addClass('mb-0')
+                            ).addClass('list-group-item')
+                        );
+                    }
+                    numPalabras = palabras;
+                }
+            }
+            function validarNuevaPregunta() {
+                var tipopreg = document.getElementById('rp-tipopreg').value;
+                // valida que el enunciado no esté vacío
+                var enunciado = document.getElementById('rp-texto').value;
+                if (enunciado.length == 0) return false;
+                // valida que las opciones no estén vacías
+                var opciones = $('#rp-detalle input[type=text]');
+                $.each(opciones, function() {
+                    var input = $(this);
+                    if (input.val() == '') return false;
+                });
+                // validación por tipo de pregunta
+                switch (tipopreg) {
+                    case '1':
+                        var radios = $('#rp-detalle input[type=radio]:checked');
+                        return radios.length == 1;
+                    case '2':
+                        var checkboxes = $('#rp-detalle input[type=checkbox]:checked');
+                        return checkboxes.length > 0;
+                    default: return true;
+                }
+            }
+            function eliminaPregunta(event) {
+                event.preventDefault();
+                var a = $(this);
+                var index = a.data('pos');
+                preguntas.splice(index, 1);
+                actualizarListaPreguntas();
+            }
+            function actualizarListaPreguntas() {
+                $('#rg-preguntas').empty();
+                var numPreguntas = preguntas.length;
+                if (numPreguntas > 0) {
+                    for (var i = 0; i < numPreguntas; i++) {
+                        var ipregunta = preguntas[i];
+                        var numOpciones = ipregunta.opciones.length;
+                        var opciones;
+                        switch (ipregunta.ctipo) {
+                            case '1':
+                            case '2':
+                                opciones = $('<ul>').addClass('mb-0 pl-2');
+                                for (var j = 0; j < numOpciones; j++) {
+                                    var jOpcion = ipregunta.opciones[j];
+                                    var jStatus = $('<li>');
+                                    if (jOpcion.correcto) {
+                                        jStatus.append(
+                                            $('<i>').addClass('fa fa-check text-success mr-1')
+                                        );
+                                    }
+                                    else {
+                                        jStatus.append(
+                                            $('<i>').addClass('fa fa-times text-danger mr-1')
+                                        );
+                                    }
+                                    opciones.append(
+                                        jStatus.append(jOpcion.texto)
+                                    );
+                                }
+                                break;
+                            case '3':
+                                opciones = $('<p>').addClass('mb-0');
+                                var ropciones = [];
+                                for (var j = 0; j < numOpciones; j++) {
+                                    ropciones.push(ipregunta.opciones[j].texto);
+                                }
+                                opciones.text(ropciones.join(', '));
+                                break;
+                            default:
+                                opciones = $('<span>').text('-');
+                                break;
+                        }
+                        $('#rg-preguntas').append(
+                            $('<tr>').append(
+                                $('<td>').text(i + 1)
+                            ).append(
+                                $('<td>').text($('#rp-tipopreg option[value=' + ipregunta.ctipo + ']').text().split(': ')[0])
+                            ).append(
+                                $('<td>').text(ipregunta.texto)
+                            ).append(
+                                $('<td>').append(opciones)
+                            ).append(
+                                $('<td>').append(
+                                    $('<a>').attr('href', '#').data('pos', i).append(
+                                        $('<i>').addClass('fa fa-remove')
+                                    ).addClass('btn btn-sm btn-danger').on('click', eliminaPregunta)
+                                )
+                            )
+                        );
+                    }
+                }
+                else {
+                    $('#rg-preguntas').append(
+                        $('<tr>').append(
+                            $('<td>')
+                        ).append(
+                            $('<td>').append(
+                                $('<p>').html('Para añadir preguntas, clic en el botón <b>Nueva pregunta</b>').addClass('mb-0')
+                            ).attr('colspan', 4)
+                        )
+                    );
+                }
+            }
+            function confirmarNuevaPregunta(event) {
+                event.preventDefault();
+                if (validarNuevaPregunta()) {
+                    var opciones = $('#rp-detalle input[type=text]');
+                    var ctipo = document.getElementById('rp-tipopreg').value;
+                    var ropciones = [];
+                    $.each(opciones, function() {
+                        var opcion = $(this);
+                        ropciones.push({
+                            texto: opcion.val(),
+                            correcto: (ctipo == 1 || ctipo == 2) ? opcion.prev().children('input').prop('checked') : true
+                        });
+                    });
+                    preguntas.push({
+                        ctipo: ctipo,
+                        texto: document.getElementById('rp-texto').value,
+                        opciones: ropciones
+                    });
+                    actualizarListaPreguntas();
+                    $('#modal-pregunta').modal('hide');
+                }
+                else {
+                    alert('Complete la pregunta correctamente');
+                }
+            }
+            function factoryPreguntas(tipopreg) {
+                var form = $('<form>');
+                switch (tipopreg) {
+                    case '1':
+                        form.append(
+                            $('<div>').append(
+                                $('<label>').text('Enunciado de la pregunta').attr('for', 'rp-texto')
+                            ).append(
+                                $('<textarea>').attr({
+                                    id: 'rp-texto',
+                                    placeholder: 'Escriba el texto de la pregunta',
+                                    rows: 3
+                                }).css('resize', 'none').addClass('form-control form-control-sm')
+                            ).addClass('form-group')
+                        ).append(
+                            $('<div>').append(
+                                $('<ul>').attr('id', 'rp-detalle').append(
+                                    $('<li>').append(
+                                        $('<p>').text('A continuación, esciba las opciones para marcar. Recuerde elegir la opción correcta antes de guardar la pregunta.').addClass('mb-0')
+                                    ).addClass('list-group-item')
+                                ).addClass('list-group')
+                            ).addClass('form-group')
+                        );
+                        setTimeout(agregaDetallePreguntaRb, 500);
+                        break;
+                    case '2':
+                        form.append(
+                            $('<div>').append(
+                                $('<label>').text('Enunciado de la pregunta').attr('for', 'rp-texto')
+                            ).append(
+                                $('<textarea>').attr({
+                                    id: 'rp-texto',
+                                    placeholder: 'Escriba el texto de la pregunta',
+                                    rows: 3
+                                }).css('resize', 'none').addClass('form-control form-control-sm')
+                            ).addClass('form-group')
+                        ).append(
+                            $('<div>').append(
+                                $('<ul>').attr('id', 'rp-detalle').append(
+                                    $('<li>').append(
+                                        $('<p>').text('A continuación, esciba las opciones para marcar. Recuerde elegir las opciones correctas antes de guardar la pregunta.').addClass('mb-0')
+                                    ).addClass('list-group-item')
+                                ).addClass('list-group')
+                            ).addClass('form-group')
+                        );
+                        setTimeout(agregaDetallePreguntaCh, 500);
+                        break;
+                    case '3':
+                        numPalabras = 0;
+                        form.append(
+                            $('<div>').append(
+                                $('<label>').text('Enunciado de la pregunta').attr('for', 'rp-texto')
+                            ).append(
+                                $('<textarea>').attr({
+                                    id: 'rp-texto',
+                                    placeholder: 'Escriba el texto de la pregunta',
+                                    rows: 3
+                                }).css('resize', 'none').addClass('form-control form-control-sm').on('keyup', calcularPalabras)
+                            ).append(
+                                $('<small>').html('Utilice un guión bajo "<b><i>_</i></b>" para indicar que se debe completar una palabra y, a continuación, escriba la(s) palabra(s) correspondientes en la lista de abajo')
+                            ).addClass('form-group')
+                        ).append(
+                            $('<div>').append(
+                                $('<ul>').attr('id', 'rp-detalle').append(
+                                    $('<li>').append(
+                                        $('<p>').html('No hay palabras para completar. Utilice un guión bajo "<b><i>_</i></b>" para agregar una palabra').addClass('mb-0')
+                                    ).addClass('list-group-item')
+                                ).addClass('list-group')
+                            ).addClass('form-group')
+                        );
+                        break;
+                    case '4':
+                        numPalabras = 0;
+                        form.append(
+                            $('<div>').append(
+                                $('<label>').text('Enunciado de la pregunta').attr('for', 'rp-texto')
+                            ).append(
+                                $('<textarea>').attr({
+                                    id: 'rp-texto',
+                                    placeholder: 'Escriba el texto de la pregunta',
+                                    rows: 3
+                                }).css('resize', 'none').addClass('form-control form-control-sm')
+                            ).append(
+                                $('<small>').html('Recuerde que esta es una pregunta abierta, por lo que no hay respuestas correctas o erradas.')
+                            ).addClass('form-group')
+                        );
+                        break;
+                    default: break;
+                }
+                return form;
+            }
+            
+            function cargaComboDocumentos() {
+                $('#rg-evaluacion').addClass('disabled');
+                var empresa = document.getElementById('rpa-empresa').value;
+                var area = document.getElementById('rpa-area').value;
+                if (empresa != 0 && area != 0) {
+                    $('#rpa-documento').empty().append(
+                        $('<option>').val(0).text('- TODOS -')
+                    );
+                    $.ajax({
+                        url: '/intranet/lista-combos',
+                        method: 'post',
+                        data: { empresa: empresa, area: area, combo: 2 },
+                        dataType: 'json',
+                        success: function (result) {
+                            if (result.error) {
+                                alert(result.error);
+                                return;
+                            }
+                            var numDocumentos = result.options.length;
+                            for (var i = 0; i < numDocumentos; i++) {
+                                var documento = result.options[i];
+                                $('#rpa-documento').append(
+                                    $('<option>').val(documento.value).text(documento.text)
+                                );
+                            }
+                        },
+                        error: function(error) {
+                            alert(error);
+                        }
+                    });
+                }
+            }
+            function cargaComboAreas() {
+                $('#rg-evaluacion').addClass('disabled');
+                var empresa = document.getElementById('rpa-empresa').value;
+                if (empresa != 0) {
+                    $('#rpa-area').empty().append(
+                        $('<option>').val(0).text('- TODAS -')
+                    );
+                    $('#rpa-documento').empty().append(
+                        $('<option>').val(0).text('- TODOS -')
+                    );
+                    $.ajax({
+                        url: '/intranet/lista-combos',
+                        method: 'post',
+                        data: { empresa: empresa, area: -1, combo: 1 },
+                        dataType: 'json',
+                        success: function(result) {
+                            if (result.error) {
+                                alert(result.error);
+                                return;
+                            }
+                            var numAreas = result.options.length;
+                            for (var i = 0; i < numAreas; i++) {
+                                var area = result.options[i];
+                                $('#rpa-area').append(
+                                    $('<option>').val(area.value).text(area.text)
+                                );
+                            }
+                        },
+                        error: function(error) {
+                            alert(error);
+                        }
+                    });
+                }
+            }
+            function cargaComboEmpresas() {
+                $('#rg-evaluacion').addClass('disabled');
+                // combo empresas - busca x envio
+                $.ajax({
+                    url: '/intranet/lista-empresas',
+                    method: 'post',
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        var numItems = result.data.empresas.length;
+                        for (var i = 0; i < numItems; i++) {
+                            let empresa = result.data.empresas[i];
+                            $('#rpa-empresa').append(
+                                $('<option>').val(empresa.value).text(empresa.text)
+                            );
+                        }
+                        // combo tipos documento - busca x envio
+                        $('#rpa-documento').empty().append(
+                            $('<option>').val(0).text('- TODOS -')
+                        );
+                    },
+                    error: function(error) {
+                        alert(error);
+                    }
+                });
+            }
+            function verPreguntas(event) {
+                event.preventDefault();
+                var a = $(this);
+                $('#modal-dpreguntas .modal-body').empty();
+                $('#modal-dpreguntas .modal-title').text(a.data('nombre'));
+                $('#modal-dpreguntas').modal('show');
+                $.ajax({
+                    url: '/intranet/evaluaciones-preguntas',
+                    method: 'get',
+                    data: {
+                        evaluacion: a.data('id'),
+                        empresa: document.getElementById('rpa-empresa').value
+                    },
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.error) {
+                            alert(result.error);
+                            $('#modal-dpreguntas').modal('hide');
+                            return;
+                        }
+                        var detalle = result.preguntas;
+                        var numDetalle = detalle.length;
+                        var tbody = $('<tbody>');
+                        for (var i = 0; i < numDetalle; i++) {
+                            var ipregunta = detalle[i];
+                            var itipo = ipregunta.ctipo;
+                            var irespuestas = ipregunta.respuestas ? ipregunta.respuestas.split(', ') : [];
+                            var iclaves = ipregunta.estados ? ipregunta.estados.split(', ') : [];
+                            var numOpciones = irespuestas.length;
+                            var claves = $('<ul>').addClass('my-o p-0 pl-2');
+                            for (var j = 0; j < numOpciones; j++) {
+                                var jli = $('<li>').text(irespuestas[j]);
+                                if (itipo == '1' || itipo == '2') {
+                                    var ji = $('<i>').addClass('fa mr-1');
+                                    if (iclaves[j] == 'S') ji.addClass('fa-check text-success');
+                                    else ji.addClass('fa-times text-danger');
+                                    jli.prepend(ji);
+                                }
+                                claves.append(jli);
+                            }
+                            tbody.append(
+                                $('<tr>').append(
+                                    $('<td>').text(ipregunta.numero)
+                                ).append(
+                                    $('<td>').text(ipregunta.ntipo)
+                                ).append(
+                                    $('<td>').text(ipregunta.enunciado)
+                                ).append(
+                                    $('<td>').append(claves)
+                                )
+                            );
+                        }
+                        $('#modal-dpreguntas .modal-body').append(
+                            $('<div>').append(
+                                $('<div>').append(
+                                    $('<table>').append(
+                                        $('<thead>').append(
+                                            $('<tr>').append(
+                                                $('<th>').text('#')
+                                            ).append(
+                                                $('<th>').text('Tipo')
+                                            ).append(
+                                                $('<th>').text('Enunciado')
+                                            ).append(
+                                                $('<th>').text('Opciones')
+                                            )
+                                        )
+                                    ).append(tbody).addClass('table table-striped table-hover')
+                                ).addClass('col')
+                            ).addClass('row')
+                        );
+                    },
+                    error: function(err) {
+                        $('#modal-dpreguntas').modal('hide');
+                        alert(err);
+                    }
+                });
+            }
+            function verEvaluados(event) {
+                event.preventDefault();
+                var a = $(this);
+console.log('Evaluados ID =', a.data('id'));
+                $('#modal-devaluados .modal-body').empty();
+                $('#modal-devaluados .modal-title').text(a.data('nombre'));
+                $('#modal-devaluados').modal('show');
+                $.ajax({
+                    url: '/intranet/lista-evaluados-evaluacion',
+                    method: 'get',
+                    data: {
+                        evaluacion: a.data('id'),
+                        empresa: document.getElementById('rpa-empresa').value
+                    },
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.error) {
+                            $('#modal-devaluados').modal('hide');
+                            alert(result.error);
+                            return;
+                        }
+                        var evaluados = result.evaluados;
+                        var numEvaluados = evaluados.length;
+                        var tbody = $('<tbody>');
+                        for (var i = 0; i < numEvaluados; i++) {
+                            var ievaluado = evaluados[i];
+                            tbody.append(
+                                $('<tr>').append(
+                                    $('<td>').text(i + 1)
+                                ).append(
+                                    $('<td>').text(ievaluado.codigo)
+                                ).append(
+                                    $('<td>').text(ievaluado.usuario)
+                                ).append(
+                                    $('<td>').text(ievaluado.area)
+                                ).append(
+                                    $('<td>').text(ievaluado.puesto)
+                                )
+                            );
+                        }
+                        $('#modal-devaluados .modal-body').append(
+                            $('<div>').append(
+                                $('<div>').append(
+                                    $('<table>').append(
+                                        $('<thead>').append(
+                                            $('<tr>').append(
+                                                $('<th>').text('#')
+                                            ).append(
+                                                $('<th>').text('Usuario').attr('colspan', 2)
+                                            ).append(
+                                                $('<th>').text('Área')
+                                            ).append(
+                                                $('<th>').text('Puesto')
+                                            )
+                                        )
+                                    ).append(tbody).addClass('table table-striped table-hover')
+                                ).addClass('col')
+                            ).addClass('row')
+                        );
+                    },
+                    error: function(err) {
+                        $('#modal-devaluados').modal('hide');
+                        alert(err);
+                    }
+                });
+            }
+            function cargaListaEvaluaciones() {
+                evaluaciones = [];
+                $('#rg-evaluacion').removeClass('disabled');
+                $('#evaluaciones-container').empty();
+                $.ajax({
+                    url: '/intranet/evaluaciones-documento',
+                    method: 'get',
+                    data: {
+                        documento: document.getElementById('rpa-documento').value,
+                        empresa: document.getElementById('rpa-empresa').value
+                    },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        evaluaciones = result.evaluaciones;
+                        var numEvaluaciones = evaluaciones.length;
+                        if (numEvaluaciones > 0) {
+                            var tbody = $('<tbody>');
+                            for (var i = 0; i < numEvaluaciones; i++) {
+                                var evaluacion = evaluaciones[i];
+                                tbody.append(
+                                    $('<tr>').append(
+                                        $('<td>').text(evaluacion.area)
+                                    ).append(
+                                        $('<td>').text(evaluacion.documento)
+                                    ).append(
+                                        $('<td>').text(evaluacion.descripcion)
+                                    ).append(
+                                        $('<td>').text(evaluacion.preguntas)
+                                    ).append(
+                                        $('<td>').text(evaluacion.duracion > 0 ? (evaluacion.duracion + ' minutos') : 'Sin límite de tiempo')
+                                    ).append(
+                                        $('<td>').append(
+                                            $('<i>').addClass('fa fa-' + (evaluacion.restringido == 'S' ? 'ban text-danger' : 'star text-success') + ' mr-1')
+                                        ).append(evaluacion.restringido == 'S' ? 'SI' : 'NO')
+                                    ).append(
+                                        $('<td>').append($('<div>').append(
+                                            $('<button>').attr({
+                                                'data-toggle': 'dropdown',
+                                                'aria-haspopup': true,
+                                                'aria-expanded': false
+                                            }).text('Ver').append($('<div>').append(
+                                                $('<a>').text('Preguntas').addClass('dropdown-item').data('id', evaluacion.id).data('nombre', evaluacion.descripcion).on('click', verPreguntas)
+                                            ).append(
+                                                $('<a>').text('Evaluados').addClass('dropdown-item').data('id', evaluacion.id).data('nombre', evaluacion.descripcion).on('click', verEvaluados)
+                                            ).addClass('dropdown-menu')).addClass('btn btn-sm btn-primary dropdown-toggle')
+                                        ).addClass('btn-group').attr('role', 'group'))
+                                    )
+                                );
+                            }
+                            $('#evaluaciones-container').append(
+                                $('<table>').append(
+                                    $('<thead>').append(
+                                        $('<tr>').append(
+                                            $('<th>').text('Área')
+                                        ).append(
+                                            $('<th>').text('Documento')
+                                        ).append(
+                                            $('<th>').text('Nombre')
+                                        ).append(
+                                            $('<th>').text('# Preguntas')
+                                        ).append(
+                                            $('<th>').text('Tiempo')
+                                        ).append(
+                                            $('<th>').text('Restringido')
+                                        ).append(
+                                            $('<th>')
+                                        )
+                                    )
+                                ).append(tbody).addClass('table table-striped table-hover table-responsive').css('min-height', '160px')
+                            );
+                        }
+                        else {
+                            $('#evaluaciones-container').append(
+                                $('<p>').text('Debe seleccionar un documento para mostrar las evaluaciones').addClass('text-secondary mb-0')
+                            );
+                        }
+                    },
+                    error: function (error) {
+                        alert(error);
+                    }
+                });
+            }
+            function modalRegistroOnShow(event) {
+                evaluadores = [];
+                document.getElementById('rg-desdocumento').value = '';
+                document.getElementById('rg-nombre').value = '';
+                document.getElementById('rg-duracion').value = 0;
+                $('#rg-restringido').prop('checked', false);
+                $('#rg-tbody').empty();
+                // recupera codigo del documento
+                var documento = document.getElementById('rpa-documento').value;
+                $.ajax({
+                    url: '/intranet/evaluacion-datos-cabecera',
+                    method: 'get',
+                    data: { documento: documento },
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        var info = result.info;
+                        document.getElementById('rg-documento').value = documento;
+                        document.getElementById('rg-desdocumento').value = info.nomdocumento;
+                        document.getElementById('rg-nombre').value = 'CONTROL DE LECTURA - ' + info.nomdocumento;
+                        document.getElementById('rg-duracion').value = 0;
+                        $('#rg-restringido').prop('checked', false);
+                        evaluadores.push({
+                            id: info.cpuesto,
+                            area: info.area,
+                            puesto: info.puesto,
+                            nombre: info.personal,
+                            master: true
+                        });
+                        actualizarListaEvaluadores();
+                        document.getElementById('rg-npreguntas').value = '0 pregunta(s) registrada(s)';
+                        // rellena los tipos de pregunta
+                        $('#rp-tipopreg').empty().append(
+                            $('<option>').val(0).text('- Seleccione -').prop('selected', true)
+                        );
+                        var tipos = result.tipos;
+                        var numTipos = tipos.length;
+                        for (var i = 0; i < numTipos; i++) {
+                            var tipo = tipos[i];
+                            $('#rp-tipopreg').append(
+                                $('<option>').val(tipo.id).text(tipo.tipo + ': ' + tipo.descripcion)
+                            );
+                        }
+                        // actualiza lista de preguntas
+                        preguntas = [];
+                        evaluadores = [];
+                        actualizarListaPreguntas();
+                    },
+                    error: function(error) {
+                        alert(error);
+                    }
+                });
+            }
+            function rgRestringidoOnClick(event) {
+                if (document.getElementById('rg-restringido').checked) {
+                    $('#rg-evaluadores').show();
+                }
+                else {
+                    $('#rg-evaluadores').hide();
+                }
+            }
+            function rgIlimitadoOnClick(event) {
+                if (document.getElementById('rg-ilimitado').checked) {
+                    $('#rg-duracion').prop('disabled', true).val(0);
+                }
+                else {
+                    $('#rg-duracion').removeAttr('disabled').focus();
+                }
+            }
+            function modalPreguntaOnShow() {
+                $('#rp-tipopreg option[value=0]').prop('selected', true);
+                $('#rp-container').empty();
+            }
+            //
+            async function CargaComboAreas() {
+                let empresa = document.getElementById('rpa-empresa').value;
+                if (empresa != 0) {
+                    $('#ev-area').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    $('#ev-puesto').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    $('#ev-usuario').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    let result = await $.ajax({
+                        url: '/intranet/lista-combos',
+                        method: 'post',
+                        data: { empresa: empresa, area: -1, combo: 1 },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    for (let area of result.options) {
+                        $('#ev-area').append(
+                            $('<option>').val(area.value).text(area.text)
+                        );
+                    }
+                }
+            }
+            function cargaPuestosEvaluador() {
+                var empresa = document.getElementById('rpa-empresa').value;
+                var area = document.getElementById('ev-area').value;
+                if (area != 0) {
+                    $('#ev-puesto').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    $('#ev-usuario').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    if (area != -1)
+                    $.ajax({
+                        url: '/intranet/combos-evaluadores',
+                        method: 'get',
+                        data: {
+                            combo: 2,
+                            empresa: empresa,
+                            area: area,
+                            puesto: -1
+                        },
+                        dataType: 'json',
+                        success: function(result) {
+                            if (result.error) {
+                                alert(result.error);
+                                return;
+                            }
+                            var puestos = result.combo;
+                            var numPuestos = puestos.length;
+                            for (var i = 0; i < numPuestos; i++) {
+                                var puesto = puestos[i];
+                                $('#ev-puesto').append(
+                                    $('<option>').val(puesto.value).text(puesto.text)
+                                );
+                            }
+                        },
+                        error: function(error) {
+                            alert(error);
+                        }
+                    });
+                }
+            }
+            function cargaUsuariosEvaluador() {
+                var empresa = document.getElementById('rpa-empresa').value;
+                var area = document.getElementById('ev-area').value;
+                var puesto = document.getElementById('ev-puesto').value;
+                if (area != 0) {
+                    $('#ev-usuario').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    if (area != -1)
+                    $.ajax({
+                        url: '/intranet/combos-evaluadores',
+                        method: 'get',
+                        data: {
+                            combo: 3,
+                            empresa: empresa,
+                            area: area,
+                            puesto: puesto
+                        },
+                        dataType: 'json',
+                        success: function(result) {
+                            if (result.error) {
+                                alert(result.error);
+                                return;
+                            }
+                            var usuarios = result.combo;
+                            var numUsuarios = usuarios.length;
+                            for (var i = 0; i < numUsuarios; i++) {
+                                var usuario = usuarios[i];
+                                $('#ev-usuario').append(
+                                    $('<option>').val(usuario.value).text(usuario.text)
+                                );
+                            }
+                        },
+                        error: function(error) {
+                            alert(error);
+                        }
+                    });
+                }
+            }
+            function modalEvaluadorOnShow() {
+                CargaComboAreas();
+            }
+            function rpTipopregOnChange() {
+                var tipo = document.getElementById('rp-tipopreg').value;
+                $('#rp-container').empty().append(factoryPreguntas(tipo));
+            }
+            function registraEvaluacion(event) {
+                event.preventDefault();
+                var revaluadores = [];
+                var numEvaluadores = evaluadores.length;
+                for (var i = 0; i < numEvaluadores; i++) {
+                    var ievaluador = evaluadores[i];
+                    if (!ievaluador.master) revaluadores.push(ievaluador.id);
+                }
+                var evaluacion = {
+                    documento: document.getElementById('rg-documento').value,
+                    empresa: document.getElementById('rpa-empresa').value,
+                    descripcion: document.getElementById('rg-nombre').value,
+                    duracion: document.getElementById('rg-duracion').value,
+                    restringido: document.getElementById('rg-restringido').checked ? 'S' : 'N',
+                    evaluadores: revaluadores,
+                    preguntas: preguntas
+                };
+                $.ajax({
+                    url: '/intranet/registra-evaluacion',
+                    method: 'post',
+                    data: evaluacion,
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        alert('Evaluación registrada');
+                        $('#modal-registro').modal('hide');
+                        cargaListaEvaluaciones();
+                    },
+                    error: function(err) {
+                        alert(err);
+                    }
+                });
+            }
+            function eliminaEvaluador(event) {
+                event.preventDefault();
+                var a = $(this);
+                var pos = a.data('pos');
+            }
+            function actualizarListaEvaluadores() {
+                var numEvaluadores = evaluadores.length;
+                for (var i = 0; i < numEvaluadores; i++) {
+                    var evaluador = evaluadores[i];
+                    var boton;
+                    if (evaluador.master) {
+                        boton = '';
+                    }
+                    else {
+                        boton = $('<a>').append(
+                            $('<i>').addClass('fa fa-remove')
+                        ).data('pos', i).attr('href','#').addClass('btn btn-sm btn-danger').on('click', eliminaEvaluador);
+                    }
+                    $('#rg-tbody').append(
+                        $('<tr>').append(
+                            $('<td>').text(evaluador.area)
+                        ).append(
+                            $('<td>').text(evaluador.puesto)
+                        ).append(
+                            $('<td>').text(evaluador.nombre)
+                        ).append(
+                            $('<td>').append(boton)
+                        )
+                    );
+                }
+            }
+            function asignarEvaluador() {
+                evaluadores.push({
+                    id: document.getElementById('ev-usuario').value,
+                    area: $('#ev-area option:selected').text().split(': ')[1],
+                    puesto: $('#ev-puesto option:selected').text(),
+                    nombre: $('#ev-usuario option:selected').text(),
+                    master: false
+                });
+                $('#modal-evaluador').modal('hide');
+                actualizarListaEvaluadores();
+            }
+            // go!
+            $(function() {
+                $('#menu-evaluaciones').collapse('show')
+                $('#sidenav-programar-evaluaciones').addClass('active');
+                cargaComboEmpresas();
+                $('#rpa-empresa').on('change', cargaComboAreas);
+                $('#rpa-area').on('change', cargaComboDocumentos);
+                $('#rpa-documento').on('change', cargaListaEvaluaciones);
+                $('#modal-registro').on('show.bs.modal', modalRegistroOnShow);
+                $('#rg-restringido').on('click', rgRestringidoOnClick);
+                $('#rg-ilimitado').on('click', rgIlimitadoOnClick);
+                $('#modal-pregunta').on('show.bs.modal', modalPreguntaOnShow);
+                $('#modal-evaluador').on('show.bs.modal', modalEvaluadorOnShow);
+                $('#rp-tipopreg').on('change', rpTipopregOnChange);
+                $('#rp-submit').on('click', confirmarNuevaPregunta);
+                $('#rg-submit').on('click', registraEvaluacion);
+                $('#ev-area').on('change', cargaPuestosEvaluador);
+                $('#ev-puesto').on('change', cargaUsuariosEvaluador);
+                $('#modal-evaluador .btn-main').on('click', asignarEvaluador);
+            });
+        </script>
+    </body>
+</html>

@@ -1,11 +1,15 @@
 const express = require('express');
-const router = express.Router();
-
 const LifeController = require('../controllers/intra-life.controller');
+const DocumentacionController = require('../controllers/documentacion.controller');
+const ProgramacionController = require('./../controllers/intra-life-evaluaciones.controller');
+const EvaluacionesController = require('./../controllers/intra-life-evaluaciones.controller');
+
+const router = express.Router();
     router.get('/', LifeController.Home);
     router.get('/login', LifeController.Login);
     router.get('/logout', LifeController.Logout);
     router.get('/documentos/:tipo', LifeController.Documentos);
+    router.get('/aprobar-contratos', LifeController.AprobacionContratos);
     router.get('/activar-cuenta', LifeController.ActivarCuenta);
     router.get('/recupera-clave', LifeController.RecuperaClave);
     router.get('/datos-personales', LifeController.DatosPersonales);
@@ -13,6 +17,7 @@ const LifeController = require('../controllers/intra-life.controller');
     router.get('/subir-docs', LifeController.SubirDocumentos);
     router.get('/enviar-mensajes', LifeController.EnvioMensajes);
     router.get('/ver-documento/:hash', LifeController.DescargaPdf);
+    router.get('/ver-iperc/:hash', LifeController.DescargaPdfIperc);
     router.get('/papeletas/nueva', LifeController.NuevaPapeleta);
     router.get('/papeletas/lista', LifeController.ListaPapeletas);
     router.get('/eventos', LifeController.Eventos);
@@ -28,6 +33,39 @@ const LifeController = require('../controllers/intra-life.controller');
     router.get('/documentacion-tipos', LifeController.TiposDocumento);
     router.get('/documentacion-lista', LifeController.ListaMaestra);
     router.get('/documentacion-acuse', LifeController.AcuseDocumento);
+    router.get('/documentacion-admin', LifeController.AdministracionPermisos);
+    router.get('/documentacion-aprobar', LifeController.AprobacionDocumentos);
+    // nuevo modulo de documentacion
+    router.get('/documentacion', DocumentacionController.Home);
+    router.get('/lista-documentos-usuario', DocumentacionController.ListaDocumentosUsuario);
+    router.get('/visor-documento', DocumentacionController.VisorDocumento);
+    router.get('/revision-documento-datos', DocumentacionController.RevisionDocumentoDatos);
+    router.post('/documento-revision-actualiza', DocumentacionController.DocumentoRevisionActualiza);
+    router.get('/aprobacion-documento-datos', DocumentacionController.AprobacionDocumentoDatos);
+    router.post('/documento-aprobacion-actualiza', DocumentacionController.DocumentoAprobacionActualiza);
+    router.post('/envia-correccion-pendiente', DocumentacionController.EnviaCorreccionPendiente);
+    // nuevo modulo de evaluaciones
+    router.get('/evaluacion-datos-cabecera', EvaluacionesController.EvaluacionDatosCabecera);
+    router.post('/registra-evaluacion', EvaluacionesController.RegistraEvaluacionDocumento);
+    router.get('/evaluaciones-documento', EvaluacionesController.ListaEvaluacionesDocumento);
+    router.get('/evaluaciones-preguntas', EvaluacionesController.PreguntasEvaluacion);
+    router.get('/lista-evaluados-evaluacion', EvaluacionesController.EvaluadosEvaluacion);
+    router.get('/lista-evaluaciones-usuario', EvaluacionesController.EvaluacionesUsuario);
+    router.get('/responder', EvaluacionesController.Responder);
+    router.post('/comenzar-evaluacion', EvaluacionesController.ComenzarEvaluacion);
+    router.post('/guarda-respuesta', EvaluacionesController.GuardaRespuesta);
+    router.get('/datos-evaluacion', EvaluacionesController.DatosEvaluacion);
+    router.post('/terminar-evaluacion', EvaluacionesController.FinalizarEvaluacion);
+    router.get('/combo-evaluaciones', EvaluacionesController.ComboEvaluacionesDocumento);
+    router.get('/lista-examenes', EvaluacionesController.CargaResultadosEvaluacion);
+    router.get('/resumen-calificacion', EvaluacionesController.ResumenCalificacion);
+    router.post('/calificar-examen', EvaluacionesController.CalificarExamen);
+    router.get('/ver-calificacion-examen', EvaluacionesController.VerCalificacionExamen);
+    router.get('/combos-evaluadores', EvaluacionesController.CombosEvaluadores);
+    // vistas - modulo evaluaciones
+    router.get('/evaluaciones/programar', EvaluacionesController.Programacion);
+    router.get('/evaluaciones/resultados', EvaluacionesController.Resultados);
+    router.get('/evaluaciones', EvaluacionesController.Evaluaciones);
     //
     router.post('/auth-login', LifeController.AuthLogin);
     router.post('/cargar-datos', LifeController.CargarDatosUsuario);
@@ -39,6 +77,7 @@ const LifeController = require('../controllers/intra-life.controller');
     router.post('/registra-cabecera-envio', LifeController.RegistraCabeceraEnvio);
     router.post('/datos-cliente', LifeController.DatosCliente);
     router.post('/cargar-pdf', LifeController.CargarPdf);
+    router.post('/cargar-pdf-unsigned', LifeController.CargarPdfUnsigned);
     router.post('/enviar-mensaje', LifeController.GuardarMensaje);
     router.post('/lista-mensajes', LifeController.ListaMensajes);
     router.post('/lista-documentos', LifeController.ListaDocumentos);
@@ -87,5 +126,15 @@ const LifeController = require('../controllers/intra-life.controller');
     router.post('/acuse-documentos', LifeController.AcuseListaDocumentos);
     router.get('/descarga-documento-acuse', LifeController.DescargaDocumentoAcuse);
     router.post('/historial-vistas-documento', LifeController.CargaHistorialDocumento);
+    // contratos
+    router.get('/lista-anios-tipodoc', LifeController.ListaAnios);
+    router.get('/lista-periodos-tipodoc', LifeController.ListaPeriodos);
+    router.get('/lista-documentos-aprobacion', LifeController.ListaDocumentosAprobacion);
+    router.get('/ver-contrato-uns/:key', LifeController.VerPdfUnsigned);
+    router.post('/aprobar-contratos', LifeController.AprobarContratos);
+    router.get('/lista-permisos-documento', LifeController.ListaPermisosDocumento);
+    router.post('/combo-permisos-documento', LifeController.ListaUsuariosPermisoDocumento);
+    router.post('/asigna-permisos-documento', LifeController.AsignarPermisosDocumento);
+    router.post('/actualiza-permisos-documento', LifeController.ActualizaPermisosDocumento);
 
 module.exports = router;
