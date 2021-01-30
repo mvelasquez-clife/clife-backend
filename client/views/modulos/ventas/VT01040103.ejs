@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Requerimiento de Marketing</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
+        <link rel="stylesheet" type="text/css" href="/assets/vendor/dhtmlx/skins/skyblue/dhtmlx.css">
+        <link rel="stylesheet" type="text/css" href="<%=path%>style.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+            integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="codebase/dhtmlxtabbar.css">
+        <style type="text/css">
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                width: 100%
+            }
+
+            #dhxDesktop {
+                height: 100%;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="dhxDesktop"></div>
+        <script type="text/javascript" src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/assets/js/conf.js"></script>
+        <script type="text/javascript" src="/assets/vendor/dhtmlx/codebase/dhtmlx.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+        <script type="text/javascript" src="<%=path%>script.js"></script>
+        <!-- ancestro de la ventana de seguridad -->
+        <script type="text/javascript" src="/assets/ancestros/grid-busqueda.js"></script>
+        <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
+        <!-- scripts de la carga de la vista -->
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script>
+
+            var form_rmto_mkt = [              
+                {type: "block", blockOffset: 0,offsetLeft: 20, position: "label-left", width: 1140,offsetTop: 2, list: [                       
+                    { type: "input", name: '_co_solicita', labelWidth: 70,readonly: true, label: 'Solicita:', offsetLeft: 0, inputWidth: 100 }, { type: "newcolumn" },
+                    { type: "button", name: '__buscarsolicita', offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },   
+                    { type: "input",offsetLeft: 0,readonly: true,labelWidth: 60, inputWidth: 180, name: "_solicita"}, { type: "newcolumn" },
+                    { type: "input", name: '_ccosto', labelWidth: 50, label: 'C. Costo:', offsetLeft: 20, inputWidth: 100 }, { type: "newcolumn" },
+                    { type: "button", name: '__buscarccosto',  offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },    
+                    { type: "input", offsetLeft: 0,labelWidth: 60, inputWidth: 180, name: "_dcosto"}, { type: "newcolumn" },
+                    { type: "select",offsetLeft: 10,labelWidth: 40, inputWidth: 100, name: "_F_entidad", label: 'Moneda:',connector: BASE_URL + 'VT01040103/mostrar-moneda'}, { type: "newcolumn" },
+                    { type: "input",readonly: true, style:"background-color:rgb(234, 255, 71);width: 100px;height:30px,font-family: Arial; font-size: 9pt;",position:"input-right", offsetLeft: 18,labelWidth: 0, inputWidth: 75, name: "_r_nroreque"}, { type: "newcolumn" },
+                { type: "newcolumn" },] },  
+                {type: "block", blockOffset: 0, position: "label-left", width: 1140,offsetTop: 0, list: [
+                    { type: "input", offsetLeft: 20,labelWidth: 70, inputWidth: 100, name: "_cod_psto", label: 'Presupuesto:'}, { type: "newcolumn" },
+                    { type: "input", offsetLeft: 0,labelWidth: 60, inputWidth: 240, name: "_desc_psto"}, { type: "newcolumn" },    
+                    { type: "input", offsetLeft: 0,labelWidth: 60, inputWidth: 100,  numberFormat:"0,000.00",name: "_saldo_psto"}, { type: "newcolumn" },  
+                    { type: "calendar", readonly: true, offsetLeft: 5,labelWidth: 60, inputWidth: 80, name: "_f_registro", label: 'F.Registro.: '}, { type: "newcolumn" },
+                    { type: "calendar", readonly: true, offsetLeft: 5,labelWidth: 60, inputWidth: 80, name: "_f_entrega", label: 'F.Entrega.: '}, { type: "newcolumn" },
+                    { type: "input",disabled: true, offsetLeft: 5,labelWidth: 40, inputWidth: 80, name: "_periodo", label: 'Periodo:'}, { type: "newcolumn" },      
+                    { type: "input", offsetLeft: 10,labelWidth: 45, inputWidth: 100, name: "_pres_pto", label: 'Doc.Ref:'}, { type: "newcolumn" },                                    
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0, position: "label-left", width: 1140,offsetTop: 3, list: [                       
+                    { type: "input", name: '_r_gasto', labelWidth: 70, label: 'Ing/Gasto:', offsetLeft: 20, inputWidth: 290 }, { type: "newcolumn" },
+                    { type: "button", name: '__buscargasto',offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },    
+                    { type: "select", offsetLeft: 5,labelWidth: 40, inputWidth: 240, name: "_r_motivo_1", label: 'Motivo: '}, { type: "newcolumn" },   
+                    { type: "input", offsetLeft: 0,labelWidth: 60, inputWidth: 240, name: "_pres_pto"}, { type: "newcolumn" }, 
+                    { type: "select", offsetLeft: 10,labelWidth: 40, inputWidth: 100, name: "_estado", label: 'Estado:', options:[                
+                    {text: 'Pendiente',  offsetLeft: 0,labelWidth: 120, inputWidth: 100, value: "Pendiente"},                   
+                    {text: 'Recibido', offsetLeft: 0,labelWidth: 120, inputWidth: 100, value: "Recibido"},  
+                    {text: 'Conforme:', offsetLeft: 0,labelWidth: 60, inputWidth: 100, value: "Conforme"},  
+                    {text: 'No Conforme:', offsetLeft: 0,labelWidth: 60, inputWidth: 100, value: "No Conforme"}
+                ]}, { type: "newcolumn" },                      
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0, position: "label-left", width: 1140,offsetTop: 3, list: [   
+                    { type: "select",offsetLeft: 20,labelWidth: 70, inputWidth: 100, name: "_entidad", label: 'Tipo Entidad:',connector: BASE_URL + 'VT01040103/mostrar-tipo-entidad'}, { type: "newcolumn" },   
+                    { type: "input", offsetLeft: 0,labelWidth: 60, inputWidth: 100, name: "_enti_cod"}, { type: "newcolumn" },  
+                    { type: "button", name: '__buscarentidad',offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },    
+                    { type: "input", offsetLeft: 0,labelWidth: 60, inputWidth: 150, name: "_enti_desc"}, { type: "newcolumn" },  
+                    { type: "input", offsetLeft: 20,labelWidth: 60, inputWidth: 100, name: "_cod_dir", label: 'Dir.Entrega:'}, { type: "newcolumn" }, 
+                    { type: "button", name: '__buscardirec',offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },  
+                    { type: "input", offsetLeft: 10,labelWidth: 75, inputWidth: 285, name: "_zona", label: 'Z.Comercial:'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0, position: "label-left",offsetTop: 3, width: 1140, list: [ 
+                    { type: "input", offsetLeft: 20,labelWidth: 70, inputWidth: 250, name: "_fventa", label: 'F.Venta:'}, { type: "newcolumn" },   
+                    { type: "input", offsetLeft: 0,labelWidth: 60, inputWidth: 778, name: "_desc_dir"}, { type: "newcolumn" },      
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0, position: "label-left",offsetTop: 3, width: 1140, list: [     
+                    { type: "input", name: '_cod_vendedor',offsetLeft: 20, labelWidth: 70, readonly: true, label: 'Vendedor:', inputWidth: 100 }, { type: "newcolumn" },
+                    { type: "button",disabled:true ,name: '__buscarsolicita', offsetLeft: 1, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },   
+                    { type: "input",offsetLeft: 0,labelWidth: 60, inputWidth: 180, name: "_desc_vendedor"}, { type: "newcolumn" },
+                    { type: "input", name: '_r_solicita',offsetLeft: 10, labelWidth: 25, label: 'Obs.:', inputWidth: 525 }, { type: "newcolumn" },
+                    { type: "button",style:"background-position: 10px;height:30px;width:20px", offsetTop: 0, offsetLeft: 20, name: "_r_busc_k3",labelWidth: "50", value: ' <div><b>Grabar</b> <img src="/assets/images/icons/ic-save2.png" style="background-position: 10px;width:20px; height:20px"></div> '}, { type: "newcolumn" }   
+                    ],}, 
+            ];
+            var form_cat_ing = [      
+                {type: "block", blockOffset: 0, position: "label-left", width: 800,offsetTop: 3, list: [                       
+                    { type: "select", offsetLeft: 5,labelWidth: 40, inputWidth: 240, name: "_tipo_gasto", label: 'Motivo: ',connector: BASE_URL + 'LO0107/mostrar-ingreso/'}, { type: "newcolumn" },   
+                    { type: "input", offsetLeft: 20,labelWidth: 60, inputWidth: 400, name: "_desc_gasto", label: 'Búsqueda: ',}, { type: "newcolumn" }, 
+                    // { type: "select", offsetLeft: 10,labelWidth: 40, inputWidth: 100, name: "_estado", label: 'Estado:'}, { type: "newcolumn" },                              
+                    ],},
+            ];
+            var form_disp = [      
+                {type: "block", blockOffset: 0, position: "label-left", width: 150,offsetTop: 10, list: [                         
+                    { type: "input",style:"color:red;text-align: right; font-size: 12pt;",readonly: false, offsetLeft: 20,labelWidth: 80, inputWidth: 130, numberFormat:"0,000.00", name: "_vta_anual", label: '<b>Tot.Vta.Anual:</b> '}, { type: "newcolumn" }, 
+                    { type: "input",style:"color:red;text-align: right; font-size: 12pt;", readonly: true, offsetLeft: 20,labelWidth: 100, inputWidth: 130, numberFormat:"0,000.00", name: "_dis_tit_grat", label: '<b>Disponible Título Gratuito:</b>',}, { type: "newcolumn" }, 
+                    { type: "input",style:"color:red;text-align: right; font-size: 12pt;", readonly: true, offsetLeft: 20,labelWidth: 100, inputWidth: 130, numberFormat:"0,000.00", name: "_per_tit_grat", label: '<b>Saldo Período Título Gratuito:</b>',}, { type: "newcolumn" }, 
+                    ],},
+            ];                   
+            var f_rev_reque = [ { type: "newcolumn" },      
+            {
+                type: "block",blockOffset: 10, position: "label-left", width: 1300, list: [                                 
+                   { type: "calendar",disabled: false, offsetLeft: 20, offsetTop: 10,labelWidth: 20, inputWidth: 100, name: "_r_fech_ini", label: 'Del: '}, { type: "newcolumn" },                                 
+                   { type: "calendar",disabled: false, offsetLeft: 20, offsetTop: 10,labelWidth: 15, inputWidth: 100, name: "_r_fech_fin", label: 'Al: '}, { type: "newcolumn" },    
+
+                {type: "combo", name: "_estado_rev", label: "Estado",offsetLeft: 20,  offsetTop: 10, inputWidth: 200, comboType: "checkbox", options:[                
+                    {text: 'Pendientes/Aprobados',checked: true, selected: true,disabled: false, offsetLeft: 0,labelWidth: 120, inputWidth: 100, name: "_r_pend_apro"},                   
+                    {text: 'Anulados/Rechazados',checked: false,disabled: false, offsetLeft: 0,labelWidth: 120, inputWidth: 100, name: "_r_anu_rech"},  
+                    {text: 'Atendidos',checked: false,disabled: false, offsetLeft: 0,labelWidth: 60, inputWidth: 100, name: "_r_aten"},  
+                ]},
+                    { type: "newcolumn" },
+                    { type: "button",style:"background-position: 10px;height:30px;width:20px", offsetTop: 5, offsetLeft: 20, name: "_r_busc_k3",labelWidth: "50", value: ' <div><b>Buscar </b> <img src="/assets/images/icons/ic-look.png" style="background-position: 10px;width:20px; height:20px"></div> '}, { type: "newcolumn" }                              
+            ],                
+            }  
+            ];    
+        // variables globales
+        var mainLayout,mktLayout, tabbar,periodo,entidad,valor_tot_pedido,tabbarrev,desde,hasta;
+        mainLayout = new dhtmlXLayoutObject(document.body, '1C');
+        tabbar = mainLayout.cells('a').attachTabbar();
+        tabbar.addTab('reqmark', 'Requerimiento de Marketing', null, null, true);
+        tabbar.addTab('autorizar', 'Autorizar Requerimiento de Marketing', null, null, false);
+        tabbar.attachEvent( "onSelect" , tabbarOnSelect); 
+        IniciarComponentes();
+                  
+
+            
+        </script>
+    </body>
+</html>
+
+
+
+
+
+

@@ -93,7 +93,13 @@
         </table>
         <table style="font-family:Arial;font-size:7pt;width:100%;">
             <thead>
+                <tr>
+                    <% filas3.forEach(function(fila) { %>
+                        <td style="text-align:left;"><%-fila.DE_DETALLE_CARACT%></td>
+                    <% }); %>
+                </tr>
             <% filas3.forEach(function(fila,indice) { 
+                
                 if(fila.DE_DETALLE_CARACT=!'Sin Características'){
                 if(indice%2==0){%>
                 <tr>

@@ -1,6 +1,12 @@
 var grupo_prod,clase_grupo,tipo_bien,de_grupo,Winidc_,Windc_,mainLayout,myToolbardatos,tabbar,mainLayout_esp,myGrid_esp;
   
 Inicio = () => {
+    if (1==1){
+        dhtmlx.alert({
+            type: 'alert-error',
+            text: 'No tienes acceso. Comunicarse con Sistemas'
+        });
+    }else{
     mainLayout = new dhtmlXLayoutObject(document.body, '1C'); 
     mainLayout.cells('a').hideHeader();
     mainLayout.cells('a').setHeight(60);
@@ -26,6 +32,7 @@ Inicio = () => {
     tabbar.attachEvent ( "onSelect" , tabbarOnSelect);  
     // cargarEspec('__prodterm',4,2,10)    
     cargarEspec('__prodterm',4,2,10);
+    }
 }
 
 onClickbar= async (id) => {    

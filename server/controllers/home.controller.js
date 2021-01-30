@@ -73,6 +73,7 @@ const homeController = {
     getMenu: (req, res) => {
         const {id} = req.query;
         const {alias, empresa} = req.params;
+        console.log(id,alias, empresa);
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({'error_conexion': err.stack});

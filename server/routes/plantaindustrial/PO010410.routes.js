@@ -17,14 +17,16 @@ router.get('/mostrar-producto-por-espec/:empresa/:especificacion/:version/',po01
 router.get('/mostrar-proveedor/:empresa/:buscar/',po010410Controller.mostrarproveedor);
 router.get('/mostrar-nsoc/',po010410Controller.mostrarnsoc);
 router.post('/guardar-cabecera/',po010410Controller.guardarcabecera);
+router.post('/habilitar-acceso/',po010410Controller.habilitargrupos);
 router.get('/mostrar-lista-caract/',po010410Controller.mostrarcaractsel);
 router.get('/mostrar-ensayo-por-grupo/:grupo/',po010410Controller.mostrarensayoporgrupo);
 router.get('/mostrar-complemento-por-grupo/:grupo/:buscar/',po010410Controller.mostrarcomplporgrupo);
 router.get('/mostrar-log/:empresa/:guia/:version/',po010410Controller.mostrarlog);
-router.get('/mostrar-prod-espec-por-grupo/:empresa/:grupo/',po010410Controller.prodespecporgrupo);
+router.get('/mostrar-prod-espec-por-grupo/:empresa/:grupo/:filter/',po010410Controller.prodespecporgrupo);
 router.get('/mostrar-espec-por-producto/:empresa/:producto/:grupo/',po010410Controller.especporProducto);
 router.post('/guardar-caracteristicas/',po010410Controller.guardarcaract);
 router.post('/guardar-ensayo/',po010410Controller.guardarensayo);
+router.post('/guardar-complemento/',po010410Controller.guardarcompto);
 router.post('/guardar-historial/',po010410Controller.guardarhistorial);
 router.post('/copiar-especificacion/',po010410Controller.copiarespecificacion);
 router.post('/mostrar-especificacion-copia/',po010410Controller.mostrarespecopia);

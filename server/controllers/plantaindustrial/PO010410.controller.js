@@ -311,8 +311,8 @@ const po010410Controller = {
     },
 
     guardarcabecera: (req, res) => {        
-        const {empresa,usuario,especificacion,version,proveedor,grupo,descripcion,serie,accion,tipo} = req.body; 
-        console.log(empresa,usuario,especificacion,version,proveedor,grupo,descripcion,serie,accion);
+        const {empresa,alias,usuario,especificacion,version,proveedor,grupo,descripcion,serie,accion,tipo_material,arte,princ_activo,inci,cas,prod} = req.body; 
+        console.log('empresa',usuario,especificacion,version,proveedor,grupo,descripcion,serie,accion,prod);
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -321,13 +321,14 @@ const po010410Controller = {
                 });
                 return;
             }
-            const query = "call pack_new_especificacion.sp_grabar_especificacion(:x_result,:x_de_result,:x_empresa,:x_usuario,:x_co_especificacion,:x_version,:x_proveedor,:x_grupo_prod,:x_descripcion,:x_serie,:x_accion)";
+            const query = "call pack_new_especificacion.sp_grabar_especificacion(:x_result,:x_de_result,:x_empresa,:x_alias,:x_usuario,:x_co_especificacion,:x_version,:x_proveedor,:x_grupo_prod,:x_descripcion,:x_serie,:x_accion,:x_tipo_material,:x_arte,:x_princ_activo,:x_inci,:x_cas,:x_prod)";
             const params = { 
                 //parametros de salida
                 x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
                 x_de_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING },
                 //parametros de entrada
                 x_empresa: {val:empresa},
+                x_alias: {val:alias},
                 x_usuario: {val:usuario},
                 x_co_especificacion: {val:especificacion},
                 x_version: {val:version},
@@ -336,6 +337,12 @@ const po010410Controller = {
                 x_descripcion: {val:descripcion},
                 x_serie: {val:serie},
                 x_accion: {val:accion},
+                x_tipo_material: {val:tipo_material},
+                x_arte: {val:arte},
+                x_princ_activo: {val:princ_activo},
+                x_inci: {val:inci},
+                x_cas: {val:cas},
+                x_prod: {val:prod}
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
@@ -591,18 +598,19 @@ const po010410Controller = {
     
     prodespecporgrupo: (req, res) => { 
             
-        const {empresa,grupo} = req.params;  
+        const {empresa,grupo,filter} = req.params;  
         
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select co_producto,de_nombre,de_nombre_inci,de_codigo_cas,de_vigencia from table(pack_new_especificacion.f_list_producto_por_grupo(:x_empresa,:x_grupo))";
+            const query = "select co_producto,de_nombre,de_especificacion,de_nombre_tipo,de_principio_activo,de_nombre_inci,co_codigo_antiguo,de_vigencia from table(pack_new_especificacion.f_list_producto_por_grupo(:x_empresa,:x_grupo,:x_filter))";
             
             const params = {
                 x_empresa: {val : empresa},
                 x_grupo: {val : grupo},
+                x_filter: {val : filter}
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
@@ -692,7 +700,52 @@ const po010410Controller = {
             });
         });
     },
-
+ 
+    habilitargrupos: (req, res) => {        
+        const {empresa,usuario} = req.body; 
+        console.log(empresa,usuario);
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err.Error
+                });
+                return;
+            }
+            const query = "select nvl(rtrim (xmlagg (xmlelement (e, de_descripcion || '@')).extract ('//text()'), ',') ,'NO') as de_descripcion from table (pack_new_especificacion.F_ACCESO_POR_USUARIO(:x_usuario,:x_empresa))";
+            const params = { 
+                //parametros de entrada
+                x_empresa: {val:empresa},
+                x_usuario: {val:usuario},
+            };
+            conn.execute(query,params,responseParams,(error, result)=>{                
+                if(error) {           
+                    conn.close();
+                    return;
+                }
+                var resultado;
+                for(var i in result.rows) {
+                    resultado = result.rows[i];                  
+                }
+                //comprobar si obtuve resultado
+                if(resultado) {                   
+                    res.json({
+                        state: 'success',
+                        data: {
+                            resul: resultado
+                        }                      
+                    
+                    });
+                }
+                else {
+                    res.json({
+                        state: 'error',
+                        message: 'Sin registro'
+                    });
+                }
+            });
+        });
+    },
     guardarensayo: (req, res) => {        
         const {empresa,usuario,especificacion,version,ensayo,metodo,cadespec,limmin,limmax,cantfilas} = req.body; 
         console.log(empresa,usuario,especificacion,version,ensayo,metodo,cadespec,limmin,limmax,cantfilas); 
@@ -719,6 +772,50 @@ const po010410Controller = {
                 x_cadena_espec: {val:cadespec},
                 x_cadena_lim_min: {val:limmin},
                 x_cadena_lim_max: {val:limmax},
+                x_cant_filas: {val:cantfilas},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+    
+                const { x_result, x_de_result } = result.outBinds;
+                if(x_result == 1) res.json({
+                    state: 'success',
+                    message: x_de_result,
+                });
+                else res.json({
+                    state: 'error',
+                    message: x_de_result
+                });
+            });
+        });
+    },
+
+    guardarcompto: (req, res) => {        
+        const {empresa,especificacion,alias,version,cadena,cantfilas} = req.body;
+        console.log(empresa,especificacion,alias,version,cadena,cantfilas); 
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err.Error
+                });
+                return;
+            }
+            const query = "call pack_new_especificacion.sp_grabar_complemento(:x_result,:x_de_result,:x_empresa,:x_alias,:x_co_especificacion,:x_version,:x_cadena_cod_prod,:x_cant_filas)";
+            const params = { 
+                //parametros de salida
+                x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                x_de_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                //parametros de entrada
+                x_empresa: {val:empresa},
+                x_co_especificacion: {val:especificacion},
+                x_alias: {val:alias},
+                x_version: {val:version},
+                x_cadena_cod_prod: {val:cadena},  
                 x_cant_filas: {val:cantfilas},
             };
             conn.execute(query, params, responseParams, (error, result) => {
@@ -785,8 +882,8 @@ const po010410Controller = {
     },
 
     copiarespecificacion: (req, res) => {        
-        const {accion,empresa,espec_orig,grupo_prod,version_orig,co_espec_nue,proveedor,desc,usuregistra,alias,tipo_version,catalogo_prod} = req.body; 
-        console.log(accion,empresa,espec_orig,grupo_prod,version_orig,co_espec_nue,proveedor,desc,usuregistra,alias,tipo_version,catalogo_prod);
+        const {accion,empresa,espec_orig,grupo_prod,version_orig,co_espec_nue,proveedor,desc,usuregistra,alias,tipo_version,catalogo_prod,observacion} = req.body; 
+        console.log(accion,empresa,espec_orig,grupo_prod,version_orig,co_espec_nue,proveedor,desc,usuregistra,alias,tipo_version,catalogo_prod,observacion);
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -795,7 +892,7 @@ const po010410Controller = {
                 });
                 return;
             }
-            const query = "call pack_new_especificacion.sp_copia_espec_tecnica (:x_result,:x_de_result,:p_accion,:p_empresa,:p_espec_orig,:p_grupo_prod,:p_version_orig,:p_co_espec_nue,:p_proveedor,:p_desc,:p_usuregistra,:p_alias,:p_tipo_version,:p_catalogo_prod)";
+            const query = "call pack_new_especificacion.sp_copia_espec_tecnica (:x_result,:x_de_result,:p_accion,:p_empresa,:p_espec_orig,:p_grupo_prod,:p_version_orig,:p_co_espec_nue,:p_proveedor,:p_desc,:p_usuregistra,:p_alias,:p_tipo_version,:p_catalogo_prod,:p_observacion)";
             const params = { 
                 //parametros de salida
                 x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
@@ -813,6 +910,7 @@ const po010410Controller = {
                 p_alias: {val:alias},
                 p_tipo_version: {val:tipo_version},
                 p_catalogo_prod: {val:catalogo_prod},
+                p_observacion: {val:observacion},
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
@@ -1040,6 +1138,7 @@ const po010410Controller = {
 
 mostrarespecreporten2: async (request, response) => {       
     const {esp,vers,codigo,marc,sub,nom,tipo,arte} = request.params;
+    console.log(esp,vers,codigo,marc,sub,nom,tipo,arte);
     try {
         const conn = await oracledb.getConnection(dbParams);
         let query = "select de_metodo,de_ensayo,de_especificaciones,de_abreviatura from table (pack_new_especificacion.f_list_ensayo_report(11,:x_espec,:x_version))";
@@ -1066,6 +1165,7 @@ mostrarespecreporten2: async (request, response) => {
         query = "select de_detalle_caract from table (pack_new_especificacion.f_list_caract_detalle_report(:x_empresa,:x_espec,:x_version))";
         const result3 = await conn.execute(query, params2, responseParams);
         const filas3 = result3.rows;
+        console.log(filas3);
         query = "select de_nombre from table (pack_new_especificacion.f_list_producto(:x_empresa,:x_espec,:x_version))";
         const result4 = await conn.execute(query, params2, responseParams);
         const filas4 = result4.rows;        
@@ -1135,6 +1235,7 @@ mostrarespecreporten2: async (request, response) => {
                 return;
             }
             const query = "select pack_new_attached.f_get_url_updload_new(11,19,20123487541,'601',:x_prod,'ESPECPROD',19,:x_usuario,:x_cad_esp) as URL from dual";
+            //const query = "select pack_new_attached.f_get_url_updload_new(11,19,20123487541,'601','80701680700344','ESPECPROD',19,:x_usuario,'ETMP-602_1') as URL from dual";
             const params = { 
                 x_prod:{val:prod},
                 x_usuario:{val:usuario},
