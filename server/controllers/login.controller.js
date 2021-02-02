@@ -165,7 +165,8 @@ const loginCtrl = {
                            done(null, '1');
                     });
                 });
-            }, function (state, done) {
+            }, 
+            function (state, done) {              
                 if (state === '1') {
                     oracledb.getConnection(dbParams, (err, connection) => {
                         if (err) {

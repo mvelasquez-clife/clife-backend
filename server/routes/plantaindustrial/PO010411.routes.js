@@ -7,5 +7,6 @@ router.get('/mostrar-especificacion/:empresa/:grupo/:flag/',po010411Controller.m
 router.get('/mostrar-especificacion-descontinuada/:empresa/',po010411Controller.mostrarespecDescontinuada);
 router.get('/mostrar-especificacion-grupo/:empresa/:grupo/',po010411Controller.mostrarespecporgrupo);
 router.post('/aprobar-especificacion/',po010411Controller.aprobaresp);
+router.post('/validad-permiso/',po010411Controller.validaraccion);
 
 module.exports = router;

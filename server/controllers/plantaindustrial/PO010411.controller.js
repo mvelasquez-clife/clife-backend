@@ -130,6 +130,52 @@ const po010411Controller = {
             });
         });
     },
+    validaraccion: (req, res) => {        
+        const {empresa,usuario,serie} = req.body; 
+        console.log(empresa,usuario);
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err.Error
+                });
+                return;
+            }
+            const query = "select  nvl(rtrim (xmlagg (xmlelement (e, co_operacion || '@')).extract ('//text()'), ',') ,'NO') as de_descripcion from SG_usuarios_autoriza_serie where co_usuario = :x_usuario and co_empresa= :x_empresa and co_serie = :x_serie and CO_OPERACION in ('REVISA','APRUEBA') and co_tipo_doc_administr = 601";
+            const params = { 
+                //parametros de entrada
+                x_empresa: {val:empresa},
+                x_usuario: {val:usuario},
+                x_serie: {val:serie},
+            };
+            conn.execute(query,params,responseParams,(error, result)=>{                
+                if(error) {           
+                    conn.close();
+                    return;
+                }
+                var resultado;
+                for(var i in result.rows) {
+                    resultado = result.rows[i];                  
+                }
+                //comprobar si obtuve resultado
+                if(resultado) {                   
+                    res.json({
+                        state: 'success',
+                        data: {
+                            resul: resultado
+                        }                      
+                    
+                    });
+                }
+                else {
+                    res.json({
+                        state: 'error',
+                        message: 'Sin registro'
+                    });
+                }
+            });
+        });
+    },
 
 }
 

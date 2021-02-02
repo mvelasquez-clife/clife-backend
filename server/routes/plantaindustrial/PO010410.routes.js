@@ -11,7 +11,7 @@ router.get('/mostrar-complemento/:empresa/:especificacion/:version/',po010410Con
 router.get('/mostrar-historial/:empresa/:especificacion/:version/',po010410Controller.mostrarhistorial);
 router.get('/mostrar-documento/:empresa/:especificacion/:version/',po010410Controller.mostrararchivos);
 router.get('/mostrar-producto-por-grupo/:nva_clase/:buscar/',po010410Controller.mostrarprodporgrupo);
-router.get('/mostrar-version/:empresa/:especificacion/',po010410Controller.mostrarversion);
+router.get('/mostrar-version/:empresa/:especificacion/:flag/',po010410Controller.mostrarversion);
 router.post('/guardar-productos/',po010410Controller.guardarproductos);
 router.get('/mostrar-producto-por-espec/:empresa/:especificacion/:version/',po010410Controller.mostrarprodporesp);
 router.get('/mostrar-proveedor/:empresa/:buscar/',po010410Controller.mostrarproveedor);
@@ -23,7 +23,7 @@ router.get('/mostrar-ensayo-por-grupo/:grupo/',po010410Controller.mostrarensayop
 router.get('/mostrar-complemento-por-grupo/:grupo/:buscar/',po010410Controller.mostrarcomplporgrupo);
 router.get('/mostrar-log/:empresa/:guia/:version/',po010410Controller.mostrarlog);
 router.get('/mostrar-prod-espec-por-grupo/:empresa/:grupo/:filter/',po010410Controller.prodespecporgrupo);
-router.get('/mostrar-espec-por-producto/:empresa/:producto/:grupo/',po010410Controller.especporProducto);
+router.get('/mostrar-espec-por-producto/:empresa/:producto/:grupo/:flag/',po010410Controller.especporProducto);
 router.post('/guardar-caracteristicas/',po010410Controller.guardarcaract);
 router.post('/guardar-ensayo/',po010410Controller.guardarensayo);
 router.post('/guardar-complemento/',po010410Controller.guardarcompto);
@@ -38,5 +38,6 @@ router.post('/mostrar-adjunto-espec/',po010410Controller.mostraradjporprod);
 router.post('/mostrar-nueva-espec/',po010410Controller.mostrarnuevaEspec);
 router.post('/mostrar-subir-adjunto/',po010410Controller.mostrarsubiradj);
 router.post('/mostrar-producto-por-espec-adj/',po010410Controller.mostrarproducporespec);
+router.post('/vincular-especificacion/',po010410Controller.vincularEPT);
 
 module.exports = router;
