@@ -1131,7 +1131,7 @@ const po010410Controller = {
                 filas2: filas2,
                 nom:nom,
             };
-            const html = await ejs.renderFile(path.resolve('client/views/modulos/plantaindustrial/po010410-report1.ejs'), data);
+            const html = await ejs.renderFile(path.resolve('client/views/modulos/plantaindustrial/PO010410-report1.ejs'), data);
             const pdfOptions = {
                 border: {
                     top: '0mm',
@@ -1218,7 +1218,7 @@ mostrarespecreporten2: async (request, response) => {
             filas4:filas4,
             nom:nom,
         };
-        const html = await ejs.renderFile(path.resolve('client/views/modulos/plantaindustrial/po010410-report2.ejs'), data);
+        const html = await ejs.renderFile(path.resolve('client/views/modulos/plantaindustrial/PO010410-report2.ejs'), data);
         const pdfOptions = {
             border: {
                 top: '0mm',
