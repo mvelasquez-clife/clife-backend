@@ -169,7 +169,7 @@ const loginCtrl = {
                             return res.json({state: 'error', message: err.stack});
                         }
                         let responseParams = {outFormat: oracledb.OBJECT, maxRows: 1};
-                        let p = {usuario: {val: usua}, clave: {val: clave}};
+                        let p = {usuario: {val: usuario}, clave: {val: clave}};
                         connection.execute("SELECT CO_PERSONA,NVL(DE_ALIAS,'-') as DE_ALIAS,CO_EMPRESA_USUARIO,CO_USUARIO,NVL(CO_TIPO_DOC_IDE,'1') AS CO_TIPO_DOC_IDE,NVL(DE_NOMBRES,'-') AS DE_NOMBRES,DE_SEXO,FE_NACIMIENTO,ST_ADMIN,NVL(DE_APELLIDO_PATERNO,'-') as DE_APELLIDO_PATERNO,NVL(DE_APELLIDO_MATERNO,'-') as DE_APELLIDO_MATERNO,CO_CENTRO_COSTO,ST_ACCESO_WAP,NVL(DE_NOMBRE_COSTOS,'-') AS DE_NOMBRE_COSTOS,FE_REGISTRO,NVL(DE_DOCUMENTO,'0') AS DE_DOCUMENTO,DE_MAIL_PERS,DE_TELEFONO_PERS,DE_MAIL_CORPO,DE_TELEFONO_CORPO,NVL(ST_EDI_TOTAL,'S') AS ST_EDI_TOTAL FROM TABLE(PW_DATOS_USUARIO_LOGIN.F_DATOS_USUARIO_LOGIN(:usuario,:clave))",
                                 p, responseParams, (error, result) => {
                             connection.close();
