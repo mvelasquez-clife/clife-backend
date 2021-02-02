@@ -149,7 +149,8 @@ const loginCtrl = {
                     let p = {usua: usuario, email: '$'};
                     connection.execute("SELECT PASSWD  FROM table(PW_DATOS_USUARIO_LOGIN.F_VALIDA_MAIL(:email,:usua))  ", p, responseParams, (error, result) => {
                         connection.close();
-                        if (!error)
+                       
+/*                        if (!error)
                             bcrypt.compare(clave, result.rows[0].PASSWD, function (err, res) {
                                 bcrypt.hash(clave, saltRounds).then(function (hash) {
                                     console.log('hash para actualizar en SG_USUA_M : ' + hash);
@@ -159,6 +160,9 @@ const loginCtrl = {
                             });
                         else
                             return res.json({state: 'error', message: error.stack});
+                            */
+                           if (error) return res.json({state: 'error', message: error.stack});
+                           done(null, '1');
                     });
                 });
             }, 
@@ -169,42 +173,47 @@ const loginCtrl = {
                             return res.json({state: 'error', message: err.stack});
                         }
                         let responseParams = {outFormat: oracledb.OBJECT, maxRows: 1};
+                        let query = "SELECT CO_PERSONA,NVL(DE_ALIAS,'-') as DE_ALIAS,CO_EMPRESA_USUARIO,CO_USUARIO,NVL(CO_TIPO_DOC_IDE,'1') AS CO_TIPO_DOC_IDE,NVL(DE_NOMBRES,'-') AS DE_NOMBRES,DE_SEXO,FE_NACIMIENTO,ST_ADMIN,NVL(DE_APELLIDO_PATERNO,'-') as DE_APELLIDO_PATERNO,NVL(DE_APELLIDO_MATERNO,'-') as DE_APELLIDO_MATERNO,CO_CENTRO_COSTO,ST_ACCESO_WAP,NVL(DE_NOMBRE_COSTOS,'-') AS DE_NOMBRE_COSTOS,FE_REGISTRO,NVL(DE_DOCUMENTO,'0') AS DE_DOCUMENTO,DE_MAIL_PERS,DE_TELEFONO_PERS,DE_MAIL_CORPO,DE_TELEFONO_CORPO,NVL(ST_EDI_TOTAL,'S') AS ST_EDI_TOTAL FROM TABLE(PW_DATOS_USUARIO_LOGIN.F_DATOS_USUARIO_LOGIN(:usuario,:clave))";
                         let p = {usuario: {val: usuario}, clave: {val: clave}};
-                        connection.execute("SELECT CO_PERSONA,NVL(DE_ALIAS,'-') as DE_ALIAS,CO_EMPRESA_USUARIO,CO_USUARIO,NVL(CO_TIPO_DOC_IDE,'1') AS CO_TIPO_DOC_IDE,NVL(DE_NOMBRES,'-') AS DE_NOMBRES,DE_SEXO,FE_NACIMIENTO,ST_ADMIN,NVL(DE_APELLIDO_PATERNO,'-') as DE_APELLIDO_PATERNO,NVL(DE_APELLIDO_MATERNO,'-') as DE_APELLIDO_MATERNO,CO_CENTRO_COSTO,ST_ACCESO_WAP,NVL(DE_NOMBRE_COSTOS,'-') AS DE_NOMBRE_COSTOS,FE_REGISTRO,NVL(DE_DOCUMENTO,'0') AS DE_DOCUMENTO,DE_MAIL_PERS,DE_TELEFONO_PERS,DE_MAIL_CORPO,DE_TELEFONO_CORPO,NVL(ST_EDI_TOTAL,'S') AS ST_EDI_TOTAL FROM TABLE(PW_DATOS_USUARIO_LOGIN.F_DATOS_USUARIO_LOGIN(:usuario,:clave))",
-                                p, responseParams, (error, result) => {
+console.log('query', query, 'p', p);
+                        connection.execute(query, p, responseParams, (error, result) => {
                             connection.close();
                             if (error) {
                                 return res.json({state: "error", err: error.stack});
                             }
-                            const user = {
-                                copersona: result.rows[0].CO_PERSONA,
-                                alias: result.rows[0].DE_ALIAS,
-                                empresa: result.rows[0].CO_EMPRESA_USUARIO,
-                                codigo: result.rows[0].CO_USUARIO,
-                                tipodoc: result.rows[0].CO_TIPO_DOC_IDE,
-                                nombre: result.rows[0].DE_NOMBRES,
-                                sexo: result.rows[0].DE_SEXO,
-                                fecnaci: result.rows[0].FE_NACIMIENTO,
-                                stadmin: result.rows[0].ST_ADMIN,
-                                apemat: result.rows[0].DE_APELLIDO_MATERNO,
-                                apepat: result.rows[0].DE_APELLIDO_PATERNO,
-                                ccosto: result.rows[0].CO_CENTRO_COSTO,
-                                stwap: result.rows[0].ST_ACCESO_WAP,
-                                ncosto: result.rows[0].DE_NOMBRE_COSTOS,// ncosto: result.rows[0].NOM_CCOSTOS,
-                                fregistro: result.rows[0].FE_REGISTRO,
-                                documento: result.rows[0].DE_DOCUMENTO,
-                                mailpers: result.rows[0].DE_MAIL_PERS,
-                                cellpers: result.rows[0].DE_TELEFONO_PERS,
-                                mailcorpo: result.rows[0].DE_MAIL_CORPO,
-                                cellcorpo: result.rows[0].DE_TELEFONO_CORPO,
-                                st_editotal: result.rows[0].ST_EDI_TOTAL
-                              //  st_mapers : result.rows[0].ST_EXIST_MPERS
-                            };
-                         // console.log('login.controller.js',user);
-                            const token = jwt.sign(user, jwtKey.jwtkeylogin, {
-                                expiresIn: jwtKey.jwtloginexpire
-                            });
-                            return res.json({state: "success", data: {token: token, usuario: user}});
+                            if (result.rows && result.rows.length > 0) {
+console.log('result', result);
+                                const user = {
+                                    copersona: result.rows[0].CO_PERSONA,
+                                    alias: result.rows[0].DE_ALIAS,
+                                    empresa: result.rows[0].CO_EMPRESA_USUARIO,
+                                    codigo: result.rows[0].CO_USUARIO,
+                                    tipodoc: result.rows[0].CO_TIPO_DOC_IDE,
+                                    nombre: result.rows[0].DE_NOMBRES,
+                                    sexo: result.rows[0].DE_SEXO,
+                                    fecnaci: result.rows[0].FE_NACIMIENTO,
+                                    stadmin: result.rows[0].ST_ADMIN,
+                                    apemat: result.rows[0].DE_APELLIDO_MATERNO,
+                                    apepat: result.rows[0].DE_APELLIDO_PATERNO,
+                                    ccosto: result.rows[0].CO_CENTRO_COSTO,
+                                    stwap: result.rows[0].ST_ACCESO_WAP,
+                                    ncosto: result.rows[0].DE_NOMBRE_COSTOS,// ncosto: result.rows[0].NOM_CCOSTOS,
+                                    fregistro: result.rows[0].FE_REGISTRO,
+                                    documento: result.rows[0].DE_DOCUMENTO,
+                                    mailpers: result.rows[0].DE_MAIL_PERS,
+                                    cellpers: result.rows[0].DE_TELEFONO_PERS,
+                                    mailcorpo: result.rows[0].DE_MAIL_CORPO,
+                                    cellcorpo: result.rows[0].DE_TELEFONO_CORPO,
+                                    st_editotal: result.rows[0].ST_EDI_TOTAL
+                                //  st_mapers : result.rows[0].ST_EXIST_MPERS
+                                };
+                            // console.log('login.controller.js',user);
+                                const token = jwt.sign(user, jwtKey.jwtkeylogin, {
+                                    expiresIn: jwtKey.jwtloginexpire
+                                });
+                                return res.json({state: "success", data: {token: token, usuario: user}});
+                            }
+                            else res.json({state: "error", message: "Usuario y/o clave incorrectos"});
                         });
                     });
                 } else
