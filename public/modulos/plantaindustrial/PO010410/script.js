@@ -1,11 +1,12 @@
-var ind_grupo,ind_pt,message_pt,nom_report,nva_clase,varprov,version_prov,version_esp,cod_esp,win_desc,form_tipo,form_cod,form_vers,form_vig,form_codprov,form_prov,form_desc,form_fcrea,form_crea,form_frev,form_rev,form_fapr,form_aprob,form_coesp,serie,num_fila,data_n,data,cant_filas_n,cant_filas_l,de_grupo,clase_grupo,grupo_prod,tipo_bien,myGrid_version,myGrid_prod,mainLayout_prod,myGrid_hist,mainLayout_hist,myGrid_cpto,mainLayout_cpto,myGrid_ensa,mainLayout_ensa,myGrid_caract,myFormdcaract,mainLayout_caract,myFormdformu,mainLayout,tabbar,mainLayout_group,myGrid_group,tabbar_det
+var de_grupo,grupo_prod,ind_grupo,ind_pt,message_pt,nom_report,nva_clase,varprov,version_prov,version_esp,cod_esp,win_desc,form_tipo,form_cod,form_vers,form_vig,form_codprov,form_prov,form_desc,form_fcrea,form_crea,form_frev,form_rev,form_fapr,form_aprob,form_coesp,serie,num_fila,data_n,data,cant_filas_n,cant_filas_l,de_grupo,clase_grupo,grupo_prod,tipo_bien,myGrid_version,myGrid_prod,mainLayout_prod,myGrid_hist,mainLayout_hist,myGrid_cpto,mainLayout_cpto,myGrid_ensa,mainLayout_ensa,myGrid_caract,myFormdcaract,mainLayout_caract,myFormdformu,mainLayout,tabbar,mainLayout_group,myGrid_group,tabbar_det
 var st_vers,flag,permiso_cataedit = '';
 var nuev = '';
 ind_grupo ='E';
 Inicio = () => { 
     const params = {
         empresa: usrJson.empresa,
-        usuario : usrJson.codigo
+        usuario : usrJson.codigo,
+        accion: 'ELABORA'
     };
     $.post(BASE_URL + 'PO010410/habilitar-acceso/', params, function (res) { 
         const result = res.data.resul; 
@@ -20,7 +21,6 @@ Inicio = () => {
             tabbar = mainLayout.cells('a').attachTabbar();   
             var array,nombre,id,num;
             var arrayDescrip = result.DE_DESCRIPCION.split("@");
-            var grupo_prod;
             for(let i=0;i<arrayDescrip.length-1;i++){
                 array = result.DE_DESCRIPCION.split("@")[i];
                 nombre = array.split("||")[1];
@@ -46,10 +46,11 @@ Inicio = () => {
             esptoolbar.addButton('verdet',null,'Editar',"ic-buskard.png","");
             esptoolbar.addButton('copiar',null,'Nueva Versión',"ic-add2.png","");
             esptoolbar.addButton('espec',null,'Copiar Especificación',"ic-copy.png","");
-            esptoolbar.addButton('descontinuar',null,'Descontinuar',"ic-cancel.png","");
+            esptoolbar.addButton('filtrar',null,'Mostrar todo',"no-filter.png","");  
+            esptoolbar.addButton('info',null,'',"ic-info.png","");  
             esptoolbar.addButton('minimizar',null,'Ocultar',"ic-hide.png","");
             esptoolbar.addButton('maximizar',null,'Maximizar',"ic-expand.png","");
-            esptoolbar.addButton('info',null,'',"ic-info.png","");  
+            esptoolbar.addButton('descontinuar',null,'Descontinuar',"ic-cancel.png","");
             esptoolbar.attachEvent('onClick', mainToolbarOnClick);
             esptoolbar.setIconSize(18);
             myGrid_version= mainLayout_det.cells('a').attachGrid();
@@ -160,6 +161,15 @@ mainToolbarOnClick= async (id) => {
             }else{
                 var permiso_cataedit = 'E';
             }
+        case 'filtrar':
+            if(grupo_prod==5||grupo_prod==1){      
+                data = myGrid_group.getRowData(myGrid_group.getSelectedRowId())     
+                cargarespecversProducto(data.cod,grupo_prod,'S');
+            }else{
+                data = myGrid_group.getRowData(myGrid_group.getSelectedRowId());
+                cargarversiones(data.cod,'S');
+            }
+            break;
         default:
             null;
             break;
@@ -328,26 +338,26 @@ cargarespecific = (nombre,grupo) => {
     if (grupo!=2){
         mytoolbar.addButton('nuevo',null,'Nuevo',"ic-add3.png","ic-add3.png");
         mytoolbar.addButton('copiar',null,'Copiar Especificación',"ic-copy.png","");
-        mytoolbar.addButton('busca',null,'Buscar por Código',"ic-look.png","");
     };
-    mytoolbar.addButton('asignar',null,'Asignar Especificación',"ic-register.png","");
+    // mytoolbar.addButton('busca',null,'Buscar por Código',"ic-look.png","");
     mytoolbar.addButton('historial',null,'Historial de cambios',"ic-historial.png","");
     mytoolbar.addButton('print',null,'Imprimir',"print.png","");
     mytoolbar.attachEvent ( "onClick" , onClickaction); 
     mytoolbar.setIconSize(32);    
-    myGrid_group.setHeader('Cod.Espec.,Descripción,Cod.Espec. Granel,Cod.NSOC,Ver.,Estado,F.Creación,F.Revisado,F.Aprobado,Creado por:,Revisado por:,Aprobado por:,Proveedor,Cod.Proveedor,Tipo');
+    myGrid_group.setHeader('Cod.Espec.,Descripción,Espec.Vinculada,Cod.NSOC,Ver.,Estado,F.Creación,F.Revisado,F.Aprobado,Creado por:,Revisado por:,Aprobado por:,Proveedor,Cod.Proveedor,Tipo');
     myGrid_group.setInitWidths('80,400,80,150,50,80,80,80,80,200,200,200,200,0,100');
     myGrid_group.setColAlign('left,left,left,left,left,left,left,left,left,left,left,left,left,left,left,left');
     myGrid_group.setColTypes('ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro'); 
     myGrid_group.attachHeader("#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,,#text_filter,#text_filter");     
     myGrid_group.setColumnIds('cod,desc,cgranel,coesp,vers,vig,fcrea,frev,fapr,crea,rev,aprob,prov,codprov,tip');  
+    if(grupo==2){
+        mytoolbar.addButton('asignar',null,'Asignar Especificación',"ic-register.png","");
+        myGrid_group.setColumnHidden(13,true),myGrid_group.setColumnHidden(14,true);
+    }
     myGrid_group.init();      
     myGrid_group.clearAll(); 
     mainLayout_group.cells('a').progressOn();
     mainLayout.cells('b').collapse();
-    if(grupo_prod!=4){        
-        myGrid_group.setColumnHidden(2,true);
-    }
     myGrid_group.load( BASE_URL + 'PO010411/mostrar-especificacion-grupo/'+usrJson.empresa+'/'+grupo).then(function (text) {
         mainLayout_group.cells('a').progressOff();
         num_fila = myGrid_group.getRowsNum();
@@ -361,7 +371,7 @@ cargarespecific = (nombre,grupo) => {
                 if(data.vig=='Por Aprobar'||data.vig=='Revisada'){
                     myGrid_group.setRowColor(iRowId,"#F7D358");
                 }else{
-                    myGrid_group.setRowColor(iRowId,"red");
+                    myGrid_group.setRowColor(iRowId,"#f44336");
                 }
             }
         }
@@ -401,7 +411,7 @@ cargarespecific = (nombre,grupo) => {
         tabbar_det.tabs('prod').show();
         version_esp = data.vers;
         cod_esp = form_cod; 
-        cargarversiones(data.cod);    
+        cargarversiones(data.cod,'N');    
         cargarespecProd(data.cod,data.vers,form_vig);
      });
 };
@@ -420,13 +430,16 @@ cargarprodespecgrupo = (nombre,grupo) => {
     mytoolbar.addButton('filter',null,'Incluir códigos anulados/sin especificación',"filter.png","");
     mytoolbar.attachEvent ( "onClick" , onClickaction); 
     mytoolbar.setIconSize(32);    
-    myGrid_group.setHeader('Cod.Producto,Descripción,C/Especificación,Tipo Producto,Tipo Material,Cod.Antiguo,Inci,Vigencia');    
+    myGrid_group.setHeader('Cod.Producto,Descripción,C/Especificación,Tipo Producto,Tipo Material,Inci,Cod.Antiguo,Vigencia');    
     myGrid_group.setInitWidths('150,500,200,200,200,200,100,100');
     myGrid_group.setColAlign('left,left,left,left,left,left,left,left');
     myGrid_group.setColTypes('ed,ed,ro,ro,ro,ro,ro,ro'); 
     myGrid_group.attachHeader("#text_filter,#text_filter,#select_filter,#select_filter,#text_filter,#text_filter,#text_filter,#select_filter");     
-    myGrid_group.setColumnIds('cod,desc,c_esp,tprd,tmat,cant,inci,vig');  
-    myGrid_group.init();      
+    myGrid_group.setColumnIds('cod,desc,c_esp,tprd,tmat,inci,cant,vig');  
+    myGrid_group.init(); 
+    if(grupo==1){
+        myGrid_group.setColumnHidden(4,true);
+    }     
     mainLayout.cells('b').collapse();
     cargargrillaespec(grupo,1);
     myGrid_group.attachEvent("onRowSelect", function (id, ind) {            
@@ -436,7 +449,7 @@ cargarprodespecgrupo = (nombre,grupo) => {
         mainLayout_det.cells('a').setWidth(650);  
         data = myGrid_group.getRowData(myGrid_group.getSelectedRowId())     
         mainLayout_det.cells('a').setText('Descripción: '+data.desc+' ('+data.cod+')');   
-        cargarespecversProducto(data.cod,grupo);
+        cargarespecversProducto(data.cod,grupo,'N');
         iniciotabs();
         // cargarespecProd(data.cod,data.vers,form_vig);
      });
@@ -455,7 +468,7 @@ cargargrillaespec = (grupo,filter) => {
             if(data.vig=='Vigente'){
                 myGrid_group.setRowColor(iRowId,"#90EE90");
             }else{
-                    myGrid_group.setRowColor(iRowId,"red");
+                    myGrid_group.setRowColor(iRowId,"#f44336");
             }
         }
     });
@@ -524,6 +537,7 @@ toolbarOnCaract = async (id) => {
             break;     
         case 'eliminar':
             var to_fila_data_num_gri = myGrid_caract.getRowsNum();
+            console.log(to_fila_data_num_gri);
             for(var i=0;i<to_fila_data_num_gri;i++){
                 let iRowId_gri = myGrid_caract.getRowId(i);
                 data = myGrid_caract.getRowData(iRowId_gri);
@@ -540,8 +554,10 @@ toolbarOnCaract = async (id) => {
             let cadenacod = '',cadenadet='',data_grabar,caract_gen,cond_alm;            
             caract_gen = myFormdcaract.getItemValue('_ep_car_gen');
             cond_alm = myFormdcaract.getItemValue('_ep_car_alm');
+            console.log(cant_filas_guardar);
             for (let i = 0; i < cant_filas_guardar; i++) {
                 iRowId = myGrid_caract.getRowId(i);
+                console.log(iRowId);
                 data_grabar = myGrid_caract.getRowData(iRowId);
                 cadenacod += data_grabar.id +'@';
                 cadenadet += data_grabar.det +'@';
@@ -880,6 +896,9 @@ onClickaction = async (id) => {
                 cargarReport(sel.cod,sel3.vers,sel2.cod,sel2.marc,sel2.subm,nom_report,grupo_prod);
             }
             break;  
+        case 'asignar':
+            mostrarespecPT();
+            break;
         case 'filter':            
             cargargrillaespec(grupo_prod,2);
             break;        
@@ -942,7 +961,7 @@ prodgrupoToolbar = async (id) => {
     }
 };
 
-cargarversiones = (espec) => { 
+cargarversiones = (espec,flag) => { 
     if (grupo_prod == 4){
         const params = {
             espec : espec,
@@ -997,7 +1016,7 @@ cargarversiones = (espec) => {
         cargarespecProd(form_cod,version_esp,st_vers);
      });  
     myGrid_version.clearAll(); 
-    myGrid_version.load( BASE_URL + 'PO010410/mostrar-version/'+usrJson.empresa+'/'+espec).then(function (text) {
+    myGrid_version.load( BASE_URL + 'PO010410/mostrar-version/'+usrJson.empresa+'/'+espec+'/'+flag).then(function (text) {
         mainLayout_det.cells('b').progressOff();
         num_fila_vers = myGrid_version.getRowsNum();
         let iRowId;
@@ -1010,14 +1029,14 @@ cargarversiones = (espec) => {
                 if(data.estado=='Por Aprobar'||data.estado=='Revisada'){
                     myGrid_version.setRowColor(iRowId,"#F7D358");
                 }else{
-                    myGrid_version.setRowColor(iRowId,"red");
+                    myGrid_version.setRowColor(iRowId,"#f44336");
                 }
             }
         }
     });
 };
 
-cargarespecversProducto = (prod,grupo) => {   
+cargarespecversProducto = (prod,grupo,flag) => {   
     esptoolbar.showItem('espec');
     esptoolbar.hideItem('info');
     mainLayout_det.cells('a').progressOn();
@@ -1059,7 +1078,7 @@ cargarespecversProducto = (prod,grupo) => {
         form_cas= data.cas;
         form_tmat= data.tipo; 
      }); 
-    myGrid_espvers.load( BASE_URL + 'PO010410/mostrar-espec-por-producto/'+usrJson.empresa+'/'+prod+'/'+grupo).then(function (text) {
+    myGrid_espvers.load( BASE_URL + 'PO010410/mostrar-espec-por-producto/'+usrJson.empresa+'/'+prod+'/'+grupo+'/'+flag).then(function (text) {
         mainLayout_det.cells('a').progressOff();
         num_fila_vers = myGrid_espvers.getRowsNum();
         let iRowId;
@@ -1072,7 +1091,7 @@ cargarespecversProducto = (prod,grupo) => {
                 if(data.estado=='Por Aprobar'||data.estado=='Revisada'){
                     myGrid_espvers.setRowColor(iRowId,"#F7D358");
                 }else{
-                    myGrid_espvers.setRowColor(iRowId,"red");
+                    myGrid_espvers.setRowColor(iRowId,"#f44336");
                 }
             }
         }
@@ -1308,6 +1327,66 @@ buscarprod = async (varprov) => {
             myFormespecf.setItemValue('ep_producto',prod);
         }
         Wind_.window("wbusq").close();
+    });
+};
+
+mostrarespecPT = async (varprov) => {
+    nva_clase =grupo_prod;
+    Wind_ = new dhtmlXWindows();
+    Winid_ = Wind_.createWindow("wbusq", 0, 0, 750, 500);
+    Wind_.window("wbusq").setModal(true);
+    Wind_.window("wbusq").denyResize();
+    Wind_.window("wbusq").center();
+    Winid_.setText("Especificaciones de Producto Terminado");
+    myGrid = Winid_.attachGrid();
+    myGrid.setHeader('Cod.Espec.,Descripción,Cod.Espec. Granel,Cod.NSOC,Ver.,Estado,F.Creación,F.Revisado,F.Aprobado,Creado por:,Revisado por:,Aprobado por:,Proveedor,Cod.Proveedor,Tipo');
+    myGrid.setInitWidths('80,400,80,150,50,80,80,80,80,200,200,200,200,0,100');
+    myGrid.setColAlign('left,left,left,left,left,left,left,left,left,left,left,left,left,left,left,left');
+    myGrid.setColTypes('ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro'); 
+    myGrid.attachHeader("#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,,#text_filter,#text_filter");     
+    myGrid.setColumnIds('cod,desc,cgranel,coesp,vers,vig,fcrea,frev,fapr,crea,rev,aprob,prov,codprov,tip');  
+    myGrid.init();    
+    myGrid.setColumnHidden(6,true),myGrid.setColumnHidden(7,true),myGrid.setColumnHidden(8,true),myGrid.setColumnHidden(9,true),myGrid.setColumnHidden(10,true);
+    myGrid.setColumnHidden(11,true),myGrid.setColumnHidden(12,true),myGrid.setColumnHidden(13,true),myGrid.setColumnHidden(14,true);
+    Wind_.window("wbusq").progressOn();
+    myGrid.load( BASE_URL + 'PO010411/mostrar-especificacion-grupo/'+usrJson.empresa+'/'+4).then(function (text) {
+        Wind_.window("wbusq").progressOff();
+        num_fila = myGrid.getRowsNum();
+        let iRowId;
+        for(let i=0;i<num_fila;i++){
+            iRowId = myGrid.getRowId(i);
+            data = myGrid.getRowData(iRowId);
+            if(data.vig=='Vigente'){
+                myGrid.setRowColor(iRowId,"#90EE90");
+            }else{
+                if(data.vig=='Por Aprobar'||data.vig=='Revisada'){
+                    myGrid.setRowColor(iRowId,"#F7D358");
+                }else{
+                    myGrid.setRowColor(iRowId,"#f44336");
+                }
+            }
+        }
+    });   
+    myGrid.attachEvent("onRowSelect", function (id, ind) {
+        data = myGrid.getRowData(myGrid.getSelectedRowId())
+        cod = data.cod;  
+        cod_gran = myGrid_group.getSelectedRowId();
+        sel_gran = myGrid_group.getRowData(cod_gran);
+        params = {
+            codigo_pt: cod,
+            codigo: sel_gran.cod,
+        };    
+        console.log(params);
+        $.post(BASE_URL + "PO010410/vincular-especificacion", params, function (res) {
+            if (res.state=='success'){
+                Swal.fire('Bien!', res.message, 'success');  
+                Wind_.window("wbusq").close();   
+                cargarespecific(de_grupo,grupo_prod);
+            } else {
+                Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'No se guardo el registro :' });
+            }
+        }, "json");
+
     });
 };
 

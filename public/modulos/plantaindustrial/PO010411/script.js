@@ -1,58 +1,113 @@
-var grupo_prod,clase_grupo,tipo_bien,de_grupo,Winidc_,Windc_,mainLayout,myToolbardatos,tabbar,mainLayout_esp,myGrid_esp;
+var co_serie,grupo_prod,clase_grupo,tipo_bien,de_grupo,Winidc_,Windc_,mainLayout,myToolbardatos,tabbar,mainLayout_esp,myGrid_esp;
   
-Inicio = () => {
-    if (1==1){
-        dhtmlx.alert({
-            type: 'alert-error',
-            text: 'No tienes acceso. Comunicarse con Sistemas'
-        });
+Inicio = () => { 
+    const params = {
+    empresa: usrJson.empresa,
+    usuario : usrJson.codigo,
+    accion: 'ELABORA'
+    };
+    $.post(BASE_URL + 'PO010410/habilitar-acceso/', params, function (res) { 
+        const result = res.data.resul; 
+        if (result.DE_DESCRIPCION=='NO'){
+            dhtmlx.alert({
+                type: 'alert-error',
+                text: 'No tienes acceso. Comunicarse con Sistemas'
+            });
     }else{
-    mainLayout = new dhtmlXLayoutObject(document.body, '1C'); 
-    mainLayout.cells('a').hideHeader();
-    mainLayout.cells('a').setHeight(60);
-    myToolbardatos = mainLayout.cells('a').attachToolbar();
-    myToolbardatos.setIconsPath('/assets/images/icons/');
-    myToolbardatos.addButton('__detalle','right','Detalle',"ic-buskard.png",null);
-    myToolbardatos.addButton('__print',null,'Imprimir',"print.png",null);
-    myToolbardatos.addButton('__rev',null,'Revisar',"ic-buscar.png",null);
-    myToolbardatos.addButton('__pass',null,'Aprobar',"ic-like.png",null);
-    myToolbardatos.addButton('__fail',null,'Desaprobar',"ic-dislike.png",null);
-    myToolbardatos.addButton('__inactive',null,'Anular',"ic-cancel-cd.png",null);
-    // myToolbardatos.addButton('__pass',null,'Continuar Especificación',"ic-like.png.png",null);
-    myToolbardatos.setAlign("left");
-    myToolbardatos.setIconSize(32);
-    myToolbardatos.attachEvent('onClick', onClickbar);
-    tabbar = mainLayout.cells('a').attachTabbar();
-    tabbar.addTab('__gran', 'GRANEL', null, null, true);
-    tabbar.addTab('__prodterm', 'PROD.TERMINADO', null, null, true);
-    tabbar.addTab('__matempaq', 'MATERIAL DE EMPAQUE', null, null, false);
-    tabbar.addTab('__matpr', 'MATERIA PRIMA', null, null, false);
-    tabbar.addTab('__otros', 'OTROS MATERIALES', null, null, false);
-    tabbar.addTab('__descontinuados', 'ESPECIFICAIONES DESCONTINUADAS', null, null, false);
-    tabbar.attachEvent ( "onSelect" , tabbarOnSelect);  
-    // cargarEspec('__prodterm',4,2,10)    
-    cargarEspec('__prodterm',4,2,10);
-    }
+            mainLayout = new dhtmlXLayoutObject(document.body, '1C'); 
+            mainLayout.cells('a').hideHeader();
+            mainLayout.cells('a').setHeight(60);
+            myToolbardatos = mainLayout.cells('a').attachToolbar();
+            myToolbardatos.setIconsPath('/assets/images/icons/');
+            myToolbardatos.addButton('__detalle','right','Detalle',"ic-buskard.png",null);
+            // myToolbardatos.addButton('__print',null,'Imprimir',"print.png",null);
+            myToolbardatos.addButton('__rev',null,'Revisar',"ic-buscar.png","ic-buscar.png");
+            myToolbardatos.addButton('__pass',null,'Aprobar',"ic-like.png","ic-like.png");
+            myToolbardatos.addButton('__fail',null,'Desaprobar',"ic-dislike.png","ic-dislike.png");
+            myToolbardatos.addButton('__inactive',null,'Anular',"ic-cancel-cd.png","ic-cancel-cd.png");
+            myToolbardatos.addButton('filter',null,'Mostrar Vigentes',"filter.png","filter.png");            
+            myToolbardatos.disableItem('__rev');
+            myToolbardatos.disableItem('__pass');
+            myToolbardatos.disableItem('__fail');
+            myToolbardatos.disableItem('__inactive');
+            myToolbardatos.setAlign("left");
+            myToolbardatos.setIconSize(32);
+            myToolbardatos.attachEvent('onClick', onClickbar);
+            tabbar = mainLayout.cells('a').attachTabbar(); 
+            tabbar.addTab('__descontinuados', 'ESPECIFICAIONES DESCONTINUADAS', null, null, false);  
+            var array,nombre,id,num;
+            var arrayDescrip = result.DE_DESCRIPCION.split("@");
+            for(let i=0;i<arrayDescrip.length-1;i++){
+                array = result.DE_DESCRIPCION.split("@")[i];
+                nombre = array.split("||")[1];
+                id = array.split("||")[0];
+                co_serie= array.split("||")[2];
+                tabbar.addTab(id, nombre, null, null, true);
+                grupo_prod = array.split("||")[2];
+                de_grupo = id;
+            } 
+            cargarEspec(id,grupo_prod,'N');
+            validarPermisos(co_serie);
+            tabbar.attachEvent ( "onSelect" , tabbarOnSelect);
+            // cargarEspec('__prodterm',4,2,10)    
+            }
+        } , 'json');  
 }
 
+validarPermisos = (serie) => { 
+    const params = {
+        empresa: usrJson.empresa,
+        usuario : usrJson.codigo,
+        serie: serie
+        };
+        $.post(BASE_URL + 'PO010411/validad-permiso/', params, function (res) { 
+            const result = res.data.resul; 
+            if (result.DE_DESCRIPCION!='NO'){
+                var array;
+                var arrayDescrip = result.DE_DESCRIPCION.split("@");                
+                myToolbardatos.disableItem('__rev');
+                myToolbardatos.disableItem('__pass');
+                myToolbardatos.disableItem('__fail');
+                myToolbardatos.disableItem('__inactive')
+                for(let i=0;i<arrayDescrip.length-1;i++){
+                    array = result.DE_DESCRIPCION.split("@")[i];
+                    if (array == 'APRUEBA'){
+                        myToolbardatos.enableItem('__pass');
+                        myToolbardatos.enableItem('__fail');
+                        myToolbardatos.enableItem('__inactive');
+                    }
+                    if (array == 'REVISA'){
+                        myToolbardatos.enableItem('__rev');
+                    }
+                } 
+            }
+        } , 'json');  
+};
+   
 onClickbar= async (id) => {    
-    seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
-    console.log(seleccione);
     switch (id) {
         case '__detalle':
+            seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
             mostrardetalle();
             break;  
         case '__rev':
+            seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
             aprobar(seleccione.cod,seleccione.codprov,seleccione.vers,'Revisada'); 
             break;                          
         case '__fail':  
+            seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
             aprobar(seleccione.cod,seleccione.codprov,seleccione.vers,'Observada');      
         break;
-        case '__inactive':     
+        case '__inactive':  
+            seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());   
             aprobar(seleccione.cod,seleccione.codprov,seleccione.vers,'Obsoleta');  
             break;
-        case '__pass':   
+        case '__pass': 
+            seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());  
             aprobar(seleccione.cod,seleccione.codprov,seleccione.vers,'Vigente');   
+            break;
+        case 'filter':            
+            cargarEspec(de_grupo,grupo_prod,'S');
             break;
         default:
             null;
@@ -66,39 +121,49 @@ tabbarOnSelect= async (id) => {
             grupo_prod = 2;
             clase_grupo = 2;
             tipo_bien = 10; 
-            de_grupo = '__gran';     
-            cargarEspec(de_grupo,grupo_prod,clase_grupo,tipo_bien);
+            de_grupo = '__gran'; 
+            co_serie = 676; 
+            validarPermisos(co_serie);   
+            cargarEspec(de_grupo,grupo_prod,'N');
             break;   
-        case '__prodterm':
+        case '__ept':
             grupo_prod = 4;
             clase_grupo = 2;
             tipo_bien = 10; 
-            de_grupo = '__prodterm';  
-            cargarEspec(de_grupo,grupo_prod,clase_grupo,tipo_bien);
+            de_grupo = '__ept';  
+            co_serie = 675; 
+            validarPermisos(co_serie);   
+            cargarEspec(de_grupo,grupo_prod,'N');
             break;
-        case '__semi':
-            cargarEspec('__semi',3,0,0);
-            break;
-        case '__prodenv':
-            cargarEspec('__prodenv',4,2,9);
-            break;
-        case '__matempaq':
+        case '__emp':
             grupo_prod = 5;
             clase_grupo = 0;
             tipo_bien = 0; 
-            de_grupo = '__matempaq';  
-            cargarEspec(de_grupo,grupo_prod,clase_grupo,tipo_bien);
-            break;
-        case '__otros':
-            cargarEspec('__otros',6,0,0);
+            de_grupo = '__emp'; 
+            co_serie = 671; 
+            validarPermisos(co_serie);    
+            cargarEspec(de_grupo,grupo_prod,'N');
             break;
         case '__matpr':     
             grupo_prod = 1;
             clase_grupo = 0;
             tipo_bien = 0; 
-            de_grupo = '__matpr';  
-            cargarEspec(de_grupo,grupo_prod,clase_grupo,tipo_bien);
+            de_grupo = '__matpr'; 
+            co_serie = 674; 
+            validarPermisos(co_serie);    
+            cargarEspec(de_grupo,grupo_prod,'N');
             break;  
+        case '__insu':  
+            serie = 'ETII';
+            nom_report = 'ESPECIFICACIONES TECNICAS DE INSUMO INTERNO ';
+            de_grupo = '__insu';
+            grupo_prod = 3;
+            clase_grupo = 2;
+            tipo_bien = 7;    
+            co_serie = 785; 
+            validarPermisos(co_serie);   
+            cargarEspec(de_grupo,grupo_prod,'N');
+            break;
         case '__descontinuados':
             cargarEspecdescontinuada('__descontinuados');
             break;
@@ -109,7 +174,7 @@ tabbarOnSelect= async (id) => {
 };
 
 
-cargarEspec = (tab,grupo) => {       
+cargarEspec = (tab,grupo,flag) => {       
     mainLayout_esp = tabbar.cells(tab).attachLayout('1C');   
     myGrid_esp = mainLayout_esp.cells('a').attachGrid();
     mainLayout_esp.cells('a').hideHeader();
@@ -117,18 +182,13 @@ cargarEspec = (tab,grupo) => {
     myGrid_esp.setInitWidths('400,100,100,100,100,100,100,200,200,200,100,0');
     myGrid_esp.setColAlign('left,left,left,left,left,left,left,left,left,left,left,left');
     myGrid_esp.setColTypes('ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro'); 
-    myGrid_esp.attachHeader("#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter");     
+    myGrid_esp.attachHeader("#text_filter,#text_filter,#text_filter,#select_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter");     
     myGrid_esp.setColumnIds('desc,cod,vers,vig,fcrea,frev,fapr,crea,rev,aprob,prov,codprov');  
     myGrid_esp.init();    
     myGrid_esp.clearAll(); 
     mainLayout_esp.cells('a').progressOn();
-    console.log('emp');
-    console.log(usrJson.empresa);
-    myGrid_esp.load( BASE_URL + 'PO010411/mostrar-especificacion/'+usrJson.empresa+'/'+grupo+'/'+'N').then(function (text) {
+    myGrid_esp.load( BASE_URL + 'PO010411/mostrar-especificacion/'+usrJson.empresa+'/'+grupo+'/'+flag).then(function (text) {
         mainLayout_esp.cells('a').progressOff();
-        myToolbardatos.enableItem('__fail');
-        myToolbardatos.enableItem('__rev');
-        myToolbardatos.enableItem('__inactive');
     });
 };
 
@@ -145,8 +205,6 @@ cargarEspecdescontinuada = (tab) => {
     myGrid_esp.init();    
     myGrid_esp.clearAll(); 
     mainLayout_esp.cells('a').progressOn();
-    console.log('empqq');
-    console.log(usrJson.empresa);
     myGrid_esp.load( BASE_URL + 'PO010411/mostrar-especificacion-descontinuada/'+usrJson.empresa).then(function (text) {
         mainLayout_esp.cells('a').progressOff();
         myToolbardatos.disableItem('__fail');
@@ -176,7 +234,6 @@ mostrardetalle = async () => {
 
 detaOnSelect= async (id) => {
     sel  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
-    console.log(sel);
     switch (id) {
         case 'presp':
             cargarespecProd(sel.cod,sel.vers);
@@ -231,7 +288,6 @@ cargarCaract = (espec,version) => {
         especificacion : espec,
         version : version
     };
-    console.log(params);
     $.post(BASE_URL + 'PO010410/mostrar-caract-general/', params, function (res) {
         const caract = res.data.caract; 
         myFormdcaract.setItemValue('_ep_car_gen',caract.DE_CARACTERIS_GENERALES);
@@ -353,7 +409,6 @@ verurladjunto = async (prod,archivo,indicador) => {
     };
     $.post(BASE_URL + 'PO010410/mostrar-adjunto-espec/', params, function (res) {
         const url = res.data.url_adj; 
-        console.log(url.URL);
         WinDocumentoViewer.attachURL(url.URL);
     } , 'json');  
     
@@ -371,10 +426,9 @@ aprobar = (especificacion,proveedor,version,vigencia) => {
     dhtmlx.confirm("¿Está seguro?", function (result) {
         if (result === Boolean(true)) {
             $.post(BASE_URL + "PO010411/aprobar-especificacion", params, function (res) {
-                console.log(res);
                 if (res.state=='success'){
                     Swal.fire('Bien!', res.message, 'success');
-                    cargarEspec(de_grupo,grupo_prod,clase_grupo,tipo_bien);
+                    cargarEspec(de_grupo,grupo_prod,'N');
                 } else {
                     Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'No se guardo el registro :' + res.message });
                 }

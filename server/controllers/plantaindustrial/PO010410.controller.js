@@ -41,18 +41,19 @@ const po010410Controller = {
     
     mostrarversion: (req, res) => { 
             
-        const {empresa,especificacion} = req.params;  
+        const {empresa,especificacion,flag} = req.params;  
         
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select * from table (pack_new_especificacion.f_list_version(:x_empresa,:x_especificacion))";
+            const query = "select * from table (pack_new_especificacion.f_list_version(:x_empresa,:x_especificacion,:x_flag))";
             
             const params = {
                 x_empresa: {val : empresa},
-                x_especificacion: {val : especificacion}
+                x_especificacion: {val : especificacion},
+                x_flag: {val : flag}
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
@@ -626,19 +627,20 @@ const po010410Controller = {
 
     especporProducto: (req, res) => { 
             
-        const {empresa,producto,grupo} = req.params;  
+        const {empresa,producto,grupo,flag} = req.params;  
         
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select co_especificacion,de_nombre,nu_version,es_vigencia,fe_creacion,de_creador,fe_revisa,de_revisado,fe_aprueba,de_aprueba,de_proveedor,co_proveedor,de_principio_activo,co_arte,de_nombre_inci,de_codigo_cas,de_fabricante,de_origen from table(pack_new_especificacion.f_list_espec_por_producto(:x_empresa,:x_co_producto,:x_grupo))";
+            const query = "select co_especificacion,de_nombre,nu_version,es_vigencia,fe_creacion,de_creador,fe_revisa,de_revisado,fe_aprueba,de_aprueba,de_proveedor,co_proveedor,de_principio_activo,co_arte,de_nombre_inci,de_codigo_cas,de_fabricante,de_origen from table(pack_new_especificacion.f_list_espec_por_producto(:x_empresa,:x_co_producto,:x_grupo,:x_flag))";
             
             const params = {
                 x_empresa: {val : empresa},
                 x_co_producto: {val : producto},
                 x_grupo: {val : grupo},
+                x_flag: {val : flag}
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
@@ -702,7 +704,7 @@ const po010410Controller = {
     },
  
     habilitargrupos: (req, res) => {        
-        const {empresa,usuario} = req.body; 
+        const {empresa,usuario,accion} = req.body; 
         console.log(empresa,usuario);
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
@@ -712,11 +714,12 @@ const po010410Controller = {
                 });
                 return;
             }
-            const query = "select nvl(rtrim (xmlagg (xmlelement (e, de_descripcion || '@')).extract ('//text()'), ',') ,'NO') as de_descripcion from table (pack_new_especificacion.F_ACCESO_POR_USUARIO(:x_usuario,:x_empresa))";
+            const query = "select nvl(rtrim (xmlagg (xmlelement (e, de_descripcion || '@')).extract ('//text()'), ',') ,'NO') as de_descripcion from table (pack_new_especificacion.F_ACCESO_POR_USUARIO(:x_usuario,:x_empresa,:x_accion))";
             const params = { 
                 //parametros de entrada
                 x_empresa: {val:empresa},
                 x_usuario: {val:usuario},
+                x_accion: {val:accion},
             };
             conn.execute(query,params,responseParams,(error, result)=>{                
                 if(error) {           
@@ -746,6 +749,7 @@ const po010410Controller = {
             });
         });
     },
+    
     guardarensayo: (req, res) => {        
         const {empresa,usuario,especificacion,version,ensayo,metodo,cadespec,limmin,limmax,cantfilas} = req.body; 
         console.log(empresa,usuario,especificacion,version,ensayo,metodo,cadespec,limmin,limmax,cantfilas); 
@@ -837,7 +841,37 @@ const po010410Controller = {
             });
         });
     },
+ 
+    vincularEPT: (req, res) => {        
+        const {codigo_pt,codigo} = req.body;
+        console.log(codigo_pt,codigo); 
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err.Error
+                });
+                return;
+            }
+            const query = "update po_espec_anal_cab set co_espec_anal_pt = :x_codigo_pt where co_espec_anal = :x_codigo";
+            const params = { 
+                x_codigo_pt: {val:codigo_pt},
+                x_codigo: {val:codigo},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                else res.json({
+                    state: 'success'
+                });
     
+            });
+        });
+    },   
+
     guardarhistorial: (req, res) => {        
         const {empresa,usuario,especificacion,version,observacion} = req.body; 
         console.log(empresa,usuario,especificacion,version,observacion); 
@@ -1061,7 +1095,6 @@ const po010410Controller = {
 
     mostrarespecreporte: async (request, response) => {       
         const {esp,vers,codigo,marc,sub,nom} = request.params;
-        // const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
         try {
             const conn = await oracledb.getConnection(dbParams);
             let query = "select de_metodo,de_ensayo,de_tipo_ensayo,de_especificaciones,limit_min,limit_max from table (pack_new_especificacion.f_list_ensayo(11,:x_espec,:x_version))";
@@ -1088,7 +1121,6 @@ const po010410Controller = {
             });
             const pdfWriter = require('html-pdf');
             const ejs = require('ejs');
-            // const d = new Date();
             const data = {
                 codigo : codigo,
                 esp:esp,
