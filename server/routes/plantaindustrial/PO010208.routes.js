@@ -39,7 +39,7 @@ router.get('/mostrar-vencimiento-nso-por-periodo/:periodo/',po010208Controller.m
 router.get('/mostrar-drive-marcas/:empresa/',po010208Controller.mostrarmarcdrive);
 router.post('/subir-adjunto/',po010208Controller.subirdocadjunto);
 router.post('/mostrar-producto-por-nsoc/',po010208Controller.mostrarproductopornsoc);
-router.get('/mostrar-documento-por-marca/:tipo_doc/:menu',po010208Controller.mostrardocpormarca);
+router.get('/mostrar-documento-por-marca/',po010208Controller.mostrardocpormarca);
 router.post('/mostrar-documento-por-producto/',po010208Controller.mostraradjporprod)
 
 module.exports = router;
