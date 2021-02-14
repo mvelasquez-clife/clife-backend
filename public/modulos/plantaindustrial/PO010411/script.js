@@ -122,9 +122,9 @@ tabbarOnSelect= async (id) => {
             clase_grupo = 2;
             tipo_bien = 10; 
             de_grupo = '__gran'; 
-            co_serie = 676; 
-            validarPermisos(co_serie);   
+            co_serie = 676;    
             cargarEspec(de_grupo,grupo_prod,'N');
+            validarPermisos(co_serie);
             break;   
         case '__ept':
             grupo_prod = 4;
@@ -132,8 +132,8 @@ tabbarOnSelect= async (id) => {
             tipo_bien = 10; 
             de_grupo = '__ept';  
             co_serie = 675; 
-            validarPermisos(co_serie);   
             cargarEspec(de_grupo,grupo_prod,'N');
+            validarPermisos(co_serie);   
             break;
         case '__emp':
             grupo_prod = 5;
@@ -141,17 +141,17 @@ tabbarOnSelect= async (id) => {
             tipo_bien = 0; 
             de_grupo = '__emp'; 
             co_serie = 671; 
-            validarPermisos(co_serie);    
             cargarEspec(de_grupo,grupo_prod,'N');
+            validarPermisos(co_serie);    
             break;
         case '__matpr':     
             grupo_prod = 1;
             clase_grupo = 0;
             tipo_bien = 0; 
             de_grupo = '__matpr'; 
-            co_serie = 674; 
-            validarPermisos(co_serie);    
+            co_serie = 674;   
             cargarEspec(de_grupo,grupo_prod,'N');
+            validarPermisos(co_serie);  
             break;  
         case '__insu':  
             serie = 'ETII';
@@ -160,9 +160,9 @@ tabbarOnSelect= async (id) => {
             grupo_prod = 3;
             clase_grupo = 2;
             tipo_bien = 7;    
-            co_serie = 785; 
-            validarPermisos(co_serie);   
+            co_serie = 785;   
             cargarEspec(de_grupo,grupo_prod,'N');
+            validarPermisos(co_serie); 
             break;
         case '__descontinuados':
             cargarEspecdescontinuada('__descontinuados');

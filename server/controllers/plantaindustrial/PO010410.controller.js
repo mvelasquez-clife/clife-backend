@@ -284,7 +284,6 @@ const po010410Controller = {
     mostrarprodporgrupo: (req, res) => { 
             
         const {nva_clase,buscar} = req.params;  
-        console.log(nva_clase,buscar);
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
@@ -313,7 +312,6 @@ const po010410Controller = {
 
     guardarcabecera: (req, res) => {        
         const {empresa,alias,usuario,especificacion,version,proveedor,grupo,descripcion,serie,accion,tipo_material,arte,princ_activo,inci,cas,prod} = req.body; 
-        console.log('empresa',usuario,especificacion,version,proveedor,grupo,descripcion,serie,accion,prod);
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -368,7 +366,6 @@ const po010410Controller = {
 
     guardarproductos: (req, res) => {        
         const {empresa,usuario,especificacion,version,cadena,cantfilas} = req.body; 
-        console.log(empresa,usuario,especificacion,version,cadena,cantfilas) ;
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -656,7 +653,6 @@ const po010410Controller = {
 
     guardarcaract: (req, res) => {        
         const {empresa,usuario,alias,especificacion,version,cadena_cod_car,cadena_de_car,cantfilas,caract_gen,cond_alm} = req.body; 
-        console.log(empresa,usuario,alias,especificacion,version,cadena_cod_car,cadena_de_car,cantfilas,caract_gen,cond_alm);
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -705,7 +701,6 @@ const po010410Controller = {
  
     habilitargrupos: (req, res) => {        
         const {empresa,usuario,accion} = req.body; 
-        console.log(empresa,usuario);
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -752,7 +747,6 @@ const po010410Controller = {
     
     guardarensayo: (req, res) => {        
         const {empresa,usuario,especificacion,version,ensayo,metodo,cadespec,limmin,limmax,cantfilas} = req.body; 
-        console.log(empresa,usuario,especificacion,version,ensayo,metodo,cadespec,limmin,limmax,cantfilas); 
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -800,7 +794,6 @@ const po010410Controller = {
 
     guardarcompto: (req, res) => {        
         const {empresa,especificacion,alias,version,cadena,cantfilas} = req.body;
-        console.log(empresa,especificacion,alias,version,cadena,cantfilas); 
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -844,7 +837,6 @@ const po010410Controller = {
  
     vincularEPT: (req, res) => {        
         const {codigo_pt,codigo} = req.body;
-        console.log(codigo_pt,codigo); 
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -874,7 +866,6 @@ const po010410Controller = {
 
     guardarhistorial: (req, res) => {        
         const {empresa,usuario,especificacion,version,observacion} = req.body; 
-        console.log(empresa,usuario,especificacion,version,observacion); 
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -917,7 +908,6 @@ const po010410Controller = {
 
     copiarespecificacion: (req, res) => {        
         const {accion,empresa,espec_orig,grupo_prod,version_orig,co_espec_nue,proveedor,desc,usuregistra,alias,tipo_version,catalogo_prod,observacion} = req.body; 
-        console.log(accion,empresa,espec_orig,grupo_prod,version_orig,co_espec_nue,proveedor,desc,usuregistra,alias,tipo_version,catalogo_prod,observacion);
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -970,7 +960,6 @@ const po010410Controller = {
     
     mostrarespecopia: (req, res) => { 
         const {empresa,grupo,flag} = req.body; 
-        console.log(empresa,grupo,flag);
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
@@ -1004,7 +993,6 @@ const po010410Controller = {
 
     mostrarespecpt: (req, res) => { 
         const {espec,grupo} = req.body; 
-        console.log(espec,grupo);
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ 'error_conexion': err.stack });
@@ -1161,7 +1149,6 @@ const po010410Controller = {
             });
         }
         catch (err) {
-            console.error(err);
             response.json({
                 error: err
             });
@@ -1170,7 +1157,6 @@ const po010410Controller = {
 
 mostrarespecreporten2: async (request, response) => {       
     const {esp,vers,codigo,marc,sub,nom,tipo,arte} = request.params;
-    console.log(esp,vers,codigo,marc,sub,nom,tipo,arte);
     try {
         const conn = await oracledb.getConnection(dbParams);
         let query = "select de_metodo,de_ensayo,de_especificaciones,de_abreviatura from table (pack_new_especificacion.f_list_ensayo_report(11,:x_espec,:x_version))";
@@ -1197,7 +1183,6 @@ mostrarespecreporten2: async (request, response) => {
         query = "select de_detalle_caract from table (pack_new_especificacion.f_list_caract_detalle_report(:x_empresa,:x_espec,:x_version))";
         const result3 = await conn.execute(query, params2, responseParams);
         const filas3 = result3.rows;
-        console.log(filas3);
         query = "select de_nombre from table (pack_new_especificacion.f_list_producto(:x_empresa,:x_espec,:x_version))";
         const result4 = await conn.execute(query, params2, responseParams);
         const filas4 = result4.rows;        
@@ -1248,7 +1233,6 @@ mostrarespecreporten2: async (request, response) => {
         });
     }
     catch (err) {
-        console.error(err);
         response.json({
             error: err
         });
@@ -1257,7 +1241,6 @@ mostrarespecreporten2: async (request, response) => {
 
     mostrarsubiradj: (req, res) => {        
         const {prod,usuario,cad_esp} = req.body; 
-        console.log(prod,usuario,cad_esp);
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -1445,7 +1428,6 @@ mostrarespecreporten2: async (request, response) => {
             });
         }
         catch (err) {
-            console.error(err);
             response.json({
                 error: err
             });
