@@ -10,6 +10,7 @@ const router = express.Router();
     router.get('/logout', LifeController.Logout);
     router.get('/documentos/:tipo', LifeController.Documentos);
     router.get('/aprobar-contratos', LifeController.AprobacionContratos);
+    router.get('/contratos-aprobados', LifeController.RevisionContratos);
     router.get('/activar-cuenta', LifeController.ActivarCuenta);
     router.get('/recupera-clave', LifeController.RecuperaClave);
     router.get('/datos-personales', LifeController.DatosPersonales);
@@ -22,6 +23,7 @@ const router = express.Router();
     router.get('/papeletas/lista', LifeController.ListaPapeletas);
     router.get('/eventos', LifeController.Eventos);
     router.get('/reporte-acuse', LifeController.ReporteAcuse);
+    router.get('/reporte-marcaciones', LifeController.ReporteMarcaciones);
     router.get('/info-equipo', LifeController.InfoEquipo);
     router.get('/pdf-reporte-acuse/:empresa/:tipodoc/:envio/:periodo/:usuario', LifeController.PdfReporteAcuse);
     router.get('/xlsx-reporte-acuse/:empresa/:tipodoc/:envio/:periodo/:usuario', LifeController.XlsxReporteAcuse);
@@ -128,13 +130,18 @@ const router = express.Router();
     router.post('/historial-vistas-documento', LifeController.CargaHistorialDocumento);
     // contratos
     router.get('/lista-anios-tipodoc', LifeController.ListaAnios);
-    router.get('/lista-periodos-tipodoc', LifeController.ListaPeriodos);
+    router.get('/lista-periodos-tipodoc', LifeController.ListaPeriodosTipodoc);
     router.get('/lista-documentos-aprobacion', LifeController.ListaDocumentosAprobacion);
+    router.get('/lista-documentos-aprobados', LifeController.ListaDocumentosAprobados);
     router.get('/ver-contrato-uns/:key', LifeController.VerPdfUnsigned);
     router.post('/aprobar-contratos', LifeController.AprobarContratos);
     router.get('/lista-permisos-documento', LifeController.ListaPermisosDocumento);
     router.post('/combo-permisos-documento', LifeController.ListaUsuariosPermisoDocumento);
     router.post('/asigna-permisos-documento', LifeController.AsignarPermisosDocumento);
     router.post('/actualiza-permisos-documento', LifeController.ActualizaPermisosDocumento);
+    // asistencia alv
+    router.get('/asistencia-hoy', LifeController.VerificaAsistencia);
+    router.post('/registra-marcacion', LifeController.RegistraMarcacion);
+    router.get('/lista-marcaciones', LifeController.ListaMarcaciones);
 
 module.exports = router;

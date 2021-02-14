@@ -9,6 +9,7 @@ const responseParams = {
     outFormat: oracledb.OBJECT
 };
 const db = require('./../../server/libs/db-oracle');
+const { response } = require('express');
 const encargadosContratos = [7020557, 46455181];
 
 const LifeController = {
@@ -19,7 +20,6 @@ const LifeController = {
         }
         let data = {};
         if (request.cookies[confParams.cookieError]) {
-console.log(request.cookies[confParams.cookieError]);
             let error = request.cookies[confParams.cookieError];
             console.error(error);
             data.error = error;
@@ -173,6 +173,22 @@ console.log(request.cookies[confParams.cookieError]);
         }
         else response.redirect('/intranet/login');
     },
+    RevisionContratos: (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            let sess = request.cookies[confParams.cookieIntranet];
+            let jsSess = JSON.parse(sess);
+            if (encargadosContratos.indexOf(jsSess.codigo) == -1) {
+                response.send('No tiene permisos para acceder aquí');
+                return;
+            }
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
+            let data = { sesion: sess, admin: admin };
+            response.render(path.resolve('client/views/intranet/revisar-contratos.ejs'), data);
+        }
+        else response.redirect('/intranet/login');
+    },
     DatosPersonales: (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             let sess = request.cookies[confParams.cookieIntranet];
@@ -242,6 +258,18 @@ console.log(request.cookies[confParams.cookieError]);
             let admin = admrrhh + admdocs;
             let data = { sesion: sess, admin: admin, id: 'sidenav-reportes' };
             response.render(path.resolve('client/views/intranet/reporte-acuses.ejs'), data);
+        }
+        else response.redirect('/intranet/login');
+    },
+    ReporteMarcaciones: (request, response) => {
+        if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {
+            let sess = request.cookies[confParams.cookieIntranet];
+            let jsSess = JSON.parse(sess);
+            let admrrhh = jsSess.admrrhh;
+            let admdocs = jsSess.admdoc;
+            let admin = admrrhh + admdocs;
+            let data = { sesion: sess, admin: admin, id: 'sidenav-reportes' };
+            response.render(path.resolve('client/views/intranet/reporte-marcaciones.ejs'), data);
         }
         else response.redirect('/intranet/login');
     },
@@ -593,7 +621,6 @@ console.log(request.cookies[confParams.cookieError]);
             var form = new formidable.IncomingForm();
             form.parse(request, async function (err, fields, files) {
                 if (err) {
-console.log('form.parse', err);
                     response.json({
                         error: err
                     });
@@ -661,7 +688,6 @@ console.log('form.parse', err);
                                 p_descripcion: { val: fields.envio },
                                 p_tpdocu: { val: 639 }
                             };
-console.log(query, params);
                             let result = await conn.execute(query, params, responseParams);
                             let { o_codigo, o_resultado } = result.outBinds;
                             if (o_codigo == 0) {
@@ -685,7 +711,6 @@ console.log(query, params);
                                 o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
                                 o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
                             };
-console.log(query, params);
                             result = await conn.execute(query, params, responseParams);
                             let resDb = result.outBinds;
                             // fin
@@ -2948,7 +2973,7 @@ console.log(query, params);
             const { tipodoc } = request.query;
             let query = 'select distinct periodo.nu_anho "anio" ' +
                 'from dg_documento_cab cabecera join ma_peri_m periodo on periodo.co_empresa = cabecera.co_empresa and periodo.co_periodo = cabecera.co_periodo ' +
-                'where cabecera.co_tipo_doc_administr = :p_tipodoc and cabecera.co_empresa = :p_empresa';
+                'where cabecera.co_tipo_doc_administr = :p_tipodoc and cabecera.co_empresa = :p_empresa order by periodo.nu_anho desc';
             let params = [
                 { name: 'p_tipodoc', io: 'in', value: tipodoc },
                 { name: 'p_empresa', io: 'in', value: jsSession.empresa }
@@ -2965,13 +2990,14 @@ console.log(query, params);
             });
         }
     },
-    ListaPeriodos: async (request, response) => {
+    ListaPeriodosTipodoc: async (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             const jsSession = JSON.parse(request.cookies[confParams.cookieIntranet]);
             const { tipodoc, anio } = request.query;
             let query = 'select distinct periodo.co_periodo "value", periodo.de_nombre "text" ' +
                 'from dg_documento_cab cabecera join ma_peri_m periodo on periodo.co_empresa = cabecera.co_empresa and periodo.co_periodo = cabecera.co_periodo ' +
-                'where cabecera.co_tipo_doc_administr = :p_tipodoc and cabecera.co_empresa = :p_empresa and periodo.nu_anho = :p_anio and periodo.nu_mes > 0';
+                'where cabecera.co_tipo_doc_administr = :p_tipodoc and cabecera.co_empresa = :p_empresa and periodo.nu_anho = :p_anio and periodo.nu_mes > 0 ' +
+                'order by periodo.co_periodo asc';
             let params = [
                 { name: 'p_tipodoc', io: 'in', value: tipodoc },
                 { name: 'p_empresa', io: 'in', value: jsSession.empresa },
@@ -2994,6 +3020,35 @@ console.log(query, params);
             const jsSession = JSON.parse(request.cookies[confParams.cookieIntranet]);
             const { tipodoc, periodo } = request.query;
             let query = 'call pack_digitalizacion.sp_documentos_aprobacion(:p_tipodoc, :p_periodo, :p_empresa, :rs)';
+            let params = [
+                { name: 'p_tipodoc', io: 'in', value: tipodoc },
+                { name: 'p_periodo', io: 'in', value: periodo },
+                { name: 'p_empresa', io: 'in', value: jsSession.empresa },
+                { name: 'rs', io: 'out', type: 'cursor' }
+            ];
+            let result = await db.resultSet(query, params);
+            let data = result.rs;
+            for (let i in data) {
+                let cipher = crypto.createCipher(encParams.algorytm, encParams.password);
+                let encrypted = cipher.update(data[i].key, encParams.charset, encParams.param);
+                encrypted += cipher.final(encParams.param);
+                data[i].key = encrypted;
+            }
+            response.json({
+                data: result.rs
+            });
+        }
+        else {
+            response.json({
+                error: 'No tienes permisos para acceder a esta sección'
+            });
+        }
+    },
+    ListaDocumentosAprobados: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const jsSession = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            const { tipodoc, periodo } = request.query;
+            let query = 'call pack_digitalizacion.sp_documentos_aprobados(:p_tipodoc, :p_periodo, :p_empresa, :rs)';
             let params = [
                 { name: 'p_tipodoc', io: 'in', value: tipodoc },
                 { name: 'p_periodo', io: 'in', value: periodo },
@@ -3237,6 +3292,105 @@ console.log(query, params);
             }
             response.json({
                 success: true
+            });
+        }
+        else {
+            response.json({
+                error: 'No tienes permisos para acceder a esta sección'
+            });
+        }
+    },
+    // ASISTENCIA ALV
+    VerificaAsistencia: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const jsSession = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            let query = 'call pack_digitalizacion.sp_info_asistencia (:p_usuario, :p_empresa, :o_codigo, :o_mensaje, :o_lista)';
+            let params = [
+                { name: 'p_usuario', io: 'in', value: jsSession.codigo },
+                { name: 'p_empresa', io: 'in', value: jsSession.empresa },
+                { name: 'o_codigo', io: 'out', type: 'number' },
+                { name: 'o_mensaje', io: 'out', type: 'string' },
+                { name: 'o_lista', io: 'out', type: 'cursor' }
+            ];
+            let result = await db.resultSet(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            if (result.o_codigo == -1) {
+                response.json({
+                    error: result.o_mensaje
+                });
+                return;
+            }
+            response.json({
+                codigo: result.o_codigo,
+                marcas: result.o_lista,
+                hora: result.o_mensaje
+            });
+        }
+        else {
+            response.json({
+                error: 'No tienes permisos para acceder a esta sección'
+            });
+        }
+    },
+    RegistraMarcacion: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const jsSession = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            const infoEquipo = 'IP: ' + request.ip + ' | Browser: ' + request.headers['user-agent'];
+            let query = 'call pack_digitalizacion.sp_registra_marcacion (:p_usuario, :p_empresa, :p_detalle, :o_codigo, :o_mensaje)';
+            let params = [
+                { name: 'p_usuario', io: 'in', value: jsSession.codigo },
+                { name: 'p_empresa', io: 'in', value: jsSession.empresa },
+                { name: 'p_detalle', io: 'in', value: infoEquipo },
+                { name: 'o_codigo', io: 'out', type: 'number' },
+                { name: 'o_mensaje', io: 'out', type: 'string' }
+            ];
+            let result = await db.resultSet(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            if (result.o_codigo == -1) {
+                response.json({
+                    error: result.o_mensaje
+                });
+                return;
+            }
+            response.json({
+                secuencia: result.o_codigo
+            });
+        }
+        else {
+            response.json({
+                error: 'No tienes permisos para acceder a esta sección'
+            });
+        }
+    },
+    ListaMarcaciones: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { desde, hasta } = request.query;
+            const jsSession = JSON.parse(request.cookies[confParams.cookieIntranet]);
+            let query = 'select * from table (pack_digitalizacion.f_reporte_marcaciones(:p_empresa, :p_desde, :p_hasta))';
+            let params = [
+                { name: 'p_empresa', io: 'in', value: jsSession.empresa },
+                { name: 'p_desde', io: 'in', value: desde },
+                { name: 'p_hasta', io: 'in', value: hasta }
+            ];
+            let result = await db.select(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            response.json({
+                marcaciones: result.rows
             });
         }
         else {

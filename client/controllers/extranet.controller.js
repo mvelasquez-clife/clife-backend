@@ -417,8 +417,8 @@ console.log('results', request.cookies['results']);
                 };
                 // carga detalle del pedido
                 query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
-                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", 100 \"pcaja\" from " + 
-                    "table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
+                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", " + 
+                    "cjsnivel \"cjsnivel\", maxniveles \"maxniveles\" from table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
                 params = {
                     p_tipo: { val: sesion.tipo },
                     p_empresa: { val: cEmpresa },
@@ -811,6 +811,7 @@ console.log('results', request.cookies['results']);
                         //
                         let mensajes = [];
                         for (let row of xlData) {
+console.log('row', row);
                             let tpingreso = row['PRICE FOB US$'] == 0 ? 'P' : 'L';
                             let query = "call pack_new_web_expo.sp_agrega_producto_expo(:p_pedido, :p_empresa, :p_producto, :p_cantidad, :p_tpventa, :p_serielista, :p_fventa, :p_listaprec, :p_pventa, :o_codigo, :o_mensaje)";
                             if (productos.has(row.CODE + '')) {
@@ -845,6 +846,7 @@ console.log(params);
                                 }*/
                             }
                             else {
+console.log('NO HAY!');
                                 mensajes.push({ error: 'No se encontró el producto ' + row.CODE, codigo: row.CODE, nombre: row.DESCRIPTION, cantidad: row.QTY, tipo: tpingreso });
                             }
                         }

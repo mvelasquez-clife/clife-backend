@@ -96,7 +96,7 @@
         <% include _main.scripts.ejs %>
         <script>
             const sesion = JSON.parse('<%-sesion %>');
-            var ListaMensajes;
+            var ListaMensajes, horas, minutos, segundos;
             // funciones
             EscribirListaMensajes = _ => {
                 const alct = $('#alertas-container');
@@ -235,11 +235,153 @@
                     alert(JSON.stringify(err));
                 }
             }
+            function RegistraMarcacion(event) {
+                event.preventDefault();
+                var a = $(this);
+                a.hide();
+                $.ajax({
+                    url: '/intranet/registra-marcacion',
+                    method: 'post',
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.error) {
+                            a.hide();
+                            alert(result.error);
+                            return;
+                        }
+                        location.reload();
+                    },
+                    error: function(error) {
+                        a.hide();
+                        alert(error);
+                    }
+                });
+            }
+            function iniciaReloj() {
+                setInterval(function() {
+                    if (segundos < 59) segundos++;
+                    else {
+                        segundos = 0;
+                        if (minutos < 59) minutos++;
+                        else {
+                            minutos = 0;
+                            if (horas < 23) horas++;
+                            else horas = 0;
+                        }
+                    }
+                    document.getElementById('reloj-horas').innerHTML = (horas + '').padStart(2,'0');
+                    document.getElementById('reloj-minutos').innerHTML = (minutos + '').padStart(2,'0');
+                    document.getElementById('reloj-segundos').innerHTML = segundos % 2 == 0 ? ':' : '&nbsp;';
+                }, 1000);
+            }
+            VerificaAsistenciaHoy = _ => {
+                var mainDiv = $('#main-row');
+                mainDiv.children().eq(2).remove();
+                mainDiv.children().eq(1).remove();
+                // carga asistencia del dia
+                $.ajax({
+                    url: '/intranet/asistencia-hoy',
+                    method: 'get',
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.error) {
+                            console.error(result.error);
+                            return;
+                        }
+                        // colocar la hora
+                        var vmensaje = result.hora.split('@');
+                        var dia = vmensaje[0];
+                        var hora = vmensaje[1].split(':');
+                        horas = parseInt(hora[0]);
+                        minutos = parseInt(hora[1]);
+                        segundos = parseInt(hora[2]);
+                        iniciaReloj();
+                        // colocar marcador
+                        if (result.codigo == 0) {
+                            mainDiv.append(
+                                $('<div>').append(
+                                    $('<div>').append(
+                                        $('<div>').append(
+                                            $('<h5>').text('No registra asistencia').addClass('mb-3')
+                                        ).append(
+                                            $('<a>').append(
+                                                $('<i>').addClass('fa fa-clock-o mr-2')
+                                            ).append('Marcar ingreso').attr({
+                                                href: '#',
+                                                id: 'btn-marcar'
+                                            }).addClass('btn btn-outline-light').on('click', RegistraMarcacion)
+                                        ).css({
+                                            /*top: '50%',
+                                            marginTop: '-20px',*/
+                                            position: 'absolute'
+                                        })
+                                    ).addClass('alert bg-danger text-light p-3 h-100').css('position', 'relative').attr('id', 'dv-marcacion')
+                                ).addClass('col-6 col-md-3')
+                            );
+                        }
+                        else {
+                            var ultima = result.marcas[0];
+                            var clase, texto, txboton;
+                            if (ultima.tipo == 'E') {
+                                clase = 'success';
+                                texto = 'Ingreso, ' + ultima.hora + ' hrs';
+                                txboton = 'Marcar salida';
+                            }
+                            else {
+                                clase = 'danger';
+                                texto = 'Salida, ' + ultima.hora + ' hrs';
+                                txboton = 'Marcar ingreso';
+                            }
+                            mainDiv.append(
+                                $('<div>').append(
+                                    $('<div>').append(
+                                        $('<div>').append(
+                                            $('<p>').text('Último registro').addClass('mb-0')
+                                        ).append(
+                                            $('<h5>').text(texto).addClass('mb-3')
+                                        ).append(
+                                            $('<a>').append(
+                                                $('<i>').addClass('fa fa-clock-o mr-2')
+                                            ).append(txboton).attr({
+                                                href: '#',
+                                                id: 'btn-marcar'
+                                            }).addClass('btn btn-outline-light').on('click', RegistraMarcacion)
+                                        ).css({
+                                            /*top: '50%',
+                                            marginTop: '-20px',*/
+                                            position: 'absolute'
+                                        })
+                                    ).addClass('alert bg-' + clase + ' text-light p-3 h-100').css('position', 'relative').attr('id', 'dv-marcacion')
+                                ).addClass('col-6 col-md-3')
+                            );
+                        }
+                        mainDiv.append(
+                            $('<div>').append(
+                                $('<div>').append(
+                                    $('<p>').text(dia).addClass('mb-1')
+                                ).append(
+                                    $('<h1>').append(
+                                        $('<span>').text((horas + '').padStart(2,'0')).attr('id','reloj-horas')
+                                    ).append(
+                                        $('<span>').html(segundos % 2 == 0 ? ':' : '&nbsp;').attr('id','reloj-segundos').css('width','10px').addClass('d-inline-block text-center')
+                                    ).append(
+                                        $('<span>').text((minutos + '').padStart(2,'0')).attr('id','reloj-minutos')
+                                    ).addClass('mb-0')
+                                ).addClass('alert bg-primary text-light text-center h-100')
+                            ).addClass('col-6 col-md-3')
+                        );
+                    },
+                    error: function (error) {
+                        console.error(error);
+                    }
+                });
+            }
             // go!
             $(_ => {
                 $('#sidenav-inicio').addClass('active');
                 CargarMensajesUsuario();
-                VerificarEventosHOy();
+                // VerificarEventosHOy();
+                VerificaAsistenciaHoy();
                 $('#modal-asistencia').on('show.bs.modal', ModalAsistenciaShow);
             });
         </script>

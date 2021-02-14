@@ -163,14 +163,28 @@
                     $('<li>').append(
                         $('<p>').text('Contratos pendientes de aprobación').addClass('text-main mb-0')
                     ).addClass('list-group-item')
-                ).append(
+                );
+                if (sesion.codigo == 7020557 || sesion.codigo == 46455181) {
+                    ul.append(
+                        $('<li>').append(
+                            $('<div>').append(
+                                $('<p>').text('Tiene ' + contratos + ' contratos por aprobar.').addClass('mb-0 my-auto mr-auto')
+                            ).append(
+                                $('<a>').append(
+                                    $('<i>').addClass('fa fa-list mr-1')
+                                ).append('Revisar').addClass('btn btn-sm btn-danger my-auto').attr('href', '/intranet/aprobar-contratos')
+                            ).addClass('d-flex w-100 justify-content-between')
+                        ).addClass('list-group-item')
+                    );
+                }
+                ul.append(
                     $('<li>').append(
                         $('<div>').append(
-                            $('<p>').text('Tiene ' + contratos + ' contratos por aprobar.').addClass('mb-0 my-auto mr-auto')
+                            $('<p>').text('Para ver la lista de contratos aprobados, utilice el siguiente botón').addClass('mb-0 my-auto mr-auto')
                         ).append(
                             $('<a>').append(
                                 $('<i>').addClass('fa fa-list mr-1')
-                            ).append('Revisar').addClass('btn btn-sm btn-danger my-auto').attr('href', '/intranet/aprobar-contratos')
+                            ).append('Ver contratos').addClass('btn btn-sm btn-success my-auto').attr('href', '/intranet/contratos-aprobados')
                         ).addClass('d-flex w-100 justify-content-between')
                     ).addClass('list-group-item')
                 );
