@@ -520,6 +520,16 @@ const WsController = {
             });
             return;
         }
+        const json = JSON.stringify(request.body);
+        // log de la direccion
+        let query = 'call pack_web_service.sp_log_direccion (:empresa, :json, :codigo, :mensaje)';
+        let params = [
+            { name: 'empresa', io: 'in', value: tokenData.empresa },
+            { name: 'json', io: 'in', value: json },
+            { name: 'codigo', io: 'out', type: 'number' },
+            { name: 'mensaje', io: 'out', type: 'string' }
+        ];
+        await db.statement(query, params);
 // ubigeo,covia,nomvia,cozona,nomzona,numero,interior,referencia,rucdni,o_codigo,o_mensaje 
         const { ubigeo, direccion, referencia, rucdni } = request.body;
         if (typeof ubigeo == 'undefined' || typeof direccion == 'undefined' || typeof referencia == 'undefined' || typeof rucdni == 'undefined') {
@@ -528,7 +538,7 @@ const WsController = {
             });
             return;
         }
-        let params = [
+        params = [
             { name: 'codigo', io: 'out', type: 'number' },
             { name: 'mensaje', io: 'out', type: 'string' },
             { name: 'ubigeo', io: 'in', value: ubigeo },
@@ -536,7 +546,7 @@ const WsController = {
             { name: 'referencia', io: 'in', value: referencia },
             { name: 'rucdni', io: 'in', value: rucdni }
         ];
-        let query = 'call pack_web_service.sp_registra_direccion (:codigo, :mensaje, :ubigeo, :direccion, :referencia, :rucdni)';
+        query = 'call pack_web_service.sp_registra_direccion (:codigo, :mensaje, :ubigeo, :direccion, :referencia, :rucdni)';
         let result = await db.statement(query, params);
         if (result.error) {
             response.json({
@@ -620,6 +630,7 @@ const WsController = {
             });
             return;
         }
+console.log('tokenData', tokenData);
         let jsparams = JSON.stringify(request.body);
         const { cliente, direccion, fecha, factura, flete, orderid, sispago, observaciones, detalle, pagoid, fepago, deposito, comision, igv, pventa } = request.body;
         if (typeof cliente == 'undefined' || typeof direccion == 'undefined' || typeof fecha == 'undefined' || typeof factura == 'undefined' ||
@@ -635,14 +646,16 @@ const WsController = {
             observaciones = '';
         }
         // graba el log de la peticion
-        let query = "call pack_web_service.sp_log_request (:request, :empresa, :usuario, :json, :mensaje)";
+        let query = "call pack_web_service.sp_log_request (:request, :empresa, :usuario, :json, :codigo, :mensaje)";
         let params = [
             { name: 'request', io: 'in', value: orderid },
             { name: 'empresa', io: 'in', value: tokenData.empresa },
-            { name: 'usuario', io: 'in', value: tokenData.id },
+            { name: 'usuario', io: 'in', value: 8 },
             { name: 'json', io: 'in', value: jsparams },
-            { name: 'mensaje', io: 'out', type: 'number' },
+            { name: 'codigo', io: 'out', type: 'number' },
+            { name: 'mensaje', io: 'out', type: 'string' }
         ];
+console.log('sp_log_request', query, params);
         await db.statement(query, params);
         // genera el pedido
         params = [
@@ -666,7 +679,7 @@ const WsController = {
         ];
         query = 'call pack_web_service.sp_registra_pedido (:codigo, :mensaje, :cliente, :direccion, :fecha, :factura, :flete, :orderid, :sispago, :observaciones, ' +
             ':detalle, :pagoid, :fepago, :deposito, :comision, :igv, :pventa)';
-console.log(query, params);
+console.log('sp_registra_pedido', query, params);
         let result = await db.statement(query, params);
         // listo
         if (result.error) {
@@ -688,7 +701,7 @@ console.log(query, params);
             { name: 'pedido', io: 'in', value: pedido },
             { name: 'empresa', io: 'in', value: tokenData.empresa },
             { name: 'json', io: 'in', value: jsparams },
-            { name: 'usuario', io: 'in', value: tokenData.id },
+            { name: 'usuario', io: 'in', value: 8 },
             { name: 'mensaje', io: 'out', type: 'number' },
         ];
         await db.statement(query, params);

@@ -33,6 +33,7 @@ module.exports = {
                         error: err.message
                     });
                 }
+console.log('db-oracle', query, parametros);
                 conn.execute(query, parametros, responseParams, (error, result) => {
                     if (error) {
                         console.error(error);
@@ -44,7 +45,7 @@ module.exports = {
                     }
                     conn.close();
                     resolve({
-                        rows: result.rows
+                        rows: result.rows ? result.rows : []
                     });
                 });
             });

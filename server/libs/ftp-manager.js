@@ -10,6 +10,10 @@ module.exports = {
         const filename = vPath[numDirs - 1];
         const rutaLocal = fupload.tmppath + filename;
         return new Promise((resolve, reject) => {
+            resolve({
+                error: 'Servidor no encontrado'
+            });
+            return;
             const c = new ftp();
             c.on('ready', () => {
                 console.log('c ready');
@@ -41,6 +45,10 @@ module.exports = {
         vPath.pop();
         const remoteFolder = vPath.join('/');
         return new Promise((resolve, reject) => {
+            resolve({
+                error: 'Servidor no encontrado'
+            });
+            return;
             const c = new ftp();
             c.on('ready', function () {
                 console.log('ready!');
@@ -74,6 +82,10 @@ module.exports = {
         vPath.pop();
         const remoteFolder = vPath.join('/');
         return new Promise((resolve, reject) => {
+            resolve({
+                error: 'Servidor no encontrado'
+            });
+            return;
             const c = new ftp();
             c.on('ready', function () {
                 console.log('ready!');
@@ -107,6 +119,10 @@ module.exports = {
         const filename = vPath[numDirs - 1];
         const rutaLocal = fupload.tmppath + filename;
         return new Promise((resolve, reject) => {
+            resolve({
+                error: 'Servidor no encontrado'
+            });
+            return;
             const c = new ftp();
             c.on('ready', () => {
                 console.log('c ready');

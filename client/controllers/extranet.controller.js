@@ -417,8 +417,8 @@ console.log('results', request.cookies['results']);
                 };
                 // carga detalle del pedido
                 query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
-                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", 100 \"pcaja\" from " + 
-                    "table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
+                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", " + 
+                    "cjsnivel \"cjsnivel\", maxniveles \"maxniveles\" from table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
                 params = {
                     p_tipo: { val: sesion.tipo },
                     p_empresa: { val: cEmpresa },
@@ -810,7 +810,10 @@ console.log('results', request.cookies['results']);
                         let { pventa, serie, lista, fventa } = result.rows[0];
                         //
                         let mensajes = [];
+                        let contadorrr = 0;
                         for (let row of xlData) {
+contadorrr++;
+console.log(contadorrr, row.CODE);
                             let tpingreso = row['PRICE FOB US$'] == 0 ? 'P' : 'L';
                             let query = "call pack_new_web_expo.sp_agrega_producto_expo(:p_pedido, :p_empresa, :p_producto, :p_cantidad, :p_tpventa, :p_serielista, :p_fventa, :p_listaprec, :p_pventa, :o_codigo, :o_mensaje)";
                             if (productos.has(row.CODE + '')) {
@@ -831,7 +834,6 @@ console.log('results', request.cookies['results']);
                                         o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
                                     };
                                     let result = await conn.execute(query, params, responseParams);
-console.log(params);
                                     const { o_codigo, o_mensaje } = result.outBinds;
                                     if (o_codigo == 1) {
                                         mensajes.push({ result: o_mensaje, codigo: row.CODE, nombre: row.DESCRIPTION, cantidad: row.QTY, tipo: tpingreso });
@@ -845,13 +847,12 @@ console.log(params);
                                 }*/
                             }
                             else {
-                                mensajes.push({ error: 'No se encontró el producto ' + row.CODE, codigo: row.CODE, nombre: row.DESCRIPTION, cantidad: row.QTY, tipo: tpingreso });
+                                let msgError = 'No se encontró el producto ' + row.CODE;
+console.log('error:', msgError);
+                                mensajes.push({ error: msgError, codigo: row.CODE, nombre: row.DESCRIPTION, cantidad: row.QTY, tipo: tpingreso });
                             }
                         }
                         conn.close();
-console.log(mensajes);
-response.cookie('results', JSON.stringify(mensajes));
-console.log('grabé la cookie');
                     }
                     catch (err) {
                         console.error(err);
