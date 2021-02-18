@@ -178,7 +178,7 @@ const po010410Controller = {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select 0,co_metodo,co_metodo_anal,de_metodo,co_ensayo,de_ensayo,de_especificaciones,de_especificaciones_ingles,limit_min,limit_max,de_tipo_ensayo,des_objetivo_ensayo from table (pack_new_especificacion.f_list_ensayo(:x_empresa,:x_espec,:x_version))";
+            const query = "select 0,co_metodo,co_metodo_anal,de_metodo,co_ensayo,de_ensayo,de_especificaciones,de_especificaciones_ingles,limit_min,limit_max,de_abreviatura,de_tipo_ensayo,des_objetivo_ensayo,de_tecn_anal from table (pack_new_especificacion.f_list_ensayo(:x_empresa,:x_espec,:x_version))";
             
             const params = {
                 x_empresa: {val : empresa},
@@ -522,7 +522,7 @@ const po010410Controller = {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select 0,co_metodo_anal,de_metodo,co_ensayo,de_ensayo,co_tipo_ensayo,de_tipo_ensayo,des_objetivo_ensayo,nu_version,co_metodo_default,co_unidad_analisis,st_obligatorio,st_declarado,st_especificacion,st_guiamanufactura,st_estado from table(pack_new_especificacion.f_list_ensayo_general(:x_grupo_prod))";
+            const query = "select 0,co_metodo_anal,de_metodo,co_ensayo,de_ensayo,co_tipo_ensayo,de_tipo_ensayo,des_objetivo_ensayo,nu_version,co_metodo_default,de_abreviatura,st_obligatorio,st_declarado,st_especificacion,st_guiamanufactura,st_estado,de_tecn_anal from table(pack_new_especificacion.f_list_ensayo_general(:x_grupo_prod))";
             
             const params = {
                 x_grupo_prod: {val : grupo}              
@@ -631,7 +631,7 @@ const po010410Controller = {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select co_especificacion,de_nombre,nu_version,es_vigencia,fe_creacion,de_creador,fe_revisa,de_revisado,fe_aprueba,de_aprueba,de_proveedor,co_proveedor,de_principio_activo,co_arte,de_nombre_inci,de_codigo_cas,de_fabricante,de_origen from table(pack_new_especificacion.f_list_espec_por_producto(:x_empresa,:x_co_producto,:x_grupo,:x_flag))";
+            const query = "select co_especificacion,de_nombre,nu_version,es_vigencia,de_proveedor,co_arte,fe_creacion,de_creador,fe_revisa,de_revisado,fe_aprueba,de_aprueba,co_proveedor,de_principio_activo,de_nombre_inci,de_codigo_cas,de_fabricante,de_origen from table(pack_new_especificacion.f_list_espec_por_producto(:x_empresa,:x_co_producto,:x_grupo,:x_flag))";
             
             const params = {
                 x_empresa: {val : empresa},
@@ -1082,10 +1082,11 @@ const po010410Controller = {
     }, 
 
     mostrarespecreporte: async (request, response) => {       
-        const {esp,vers,codigo,marc,sub,nom} = request.params;
+        const {esp,vers,codigo,marc,sub,nom,grupo} = request.params;
         try {
             const conn = await oracledb.getConnection(dbParams);
-            let query = "select de_metodo,de_ensayo,de_tipo_ensayo,de_especificaciones,limit_min,limit_max from table (pack_new_especificacion.f_list_ensayo(11,:x_espec,:x_version))";
+            //let query = "select de_metodo,de_ensayo,de_tipo_ensayo,de_especificaciones,limit_min,limit_max from table (pack_new_especificacion.f_list_ensayo(11,:x_espec,:x_version))";
+            let query = "select de_metodo,de_ensayo,de_especificaciones,de_abreviatura from table (pack_new_especificacion.f_list_ensayo_report(11,:x_espec,:x_version))";
             let params = {
                 x_espec: { val: esp },
                 x_version: { val: vers },
@@ -1118,6 +1119,7 @@ const po010410Controller = {
                 filas:filas,                
                 filas2: filas2,
                 nom:nom,
+                grupo:grupo
             };
             const html = await ejs.renderFile(path.resolve('client/views/modulos/plantaindustrial/PO010410-report1.ejs'), data);
             const pdfOptions = {
@@ -1156,7 +1158,8 @@ const po010410Controller = {
 },
 
 mostrarespecreporten2: async (request, response) => {       
-    const {esp,vers,codigo,marc,sub,nom,tipo,arte} = request.params;
+    const {esp,vers,codigo,marc,sub,nom,grupo} = request.params;
+    console.log(esp,vers,codigo,marc,sub,nom,grupo);
     try {
         const conn = await oracledb.getConnection(dbParams);
         let query = "select de_metodo,de_ensayo,de_especificaciones,de_abreviatura from table (pack_new_especificacion.f_list_ensayo_report(11,:x_espec,:x_version))";
@@ -1171,7 +1174,7 @@ mostrarespecreporten2: async (request, response) => {
             x_empresa: { val: 11 },
             x_espec: { val: esp },
             x_version: { val: vers },
-        };
+        }; 
         const result2 = await conn.execute(query, params2, responseParams);
         const filas2 = result2.rows;
         filas2.forEach(fila => {
@@ -1183,7 +1186,7 @@ mostrarespecreporten2: async (request, response) => {
         query = "select de_detalle_caract from table (pack_new_especificacion.f_list_caract_detalle_report(:x_empresa,:x_espec,:x_version))";
         const result3 = await conn.execute(query, params2, responseParams);
         const filas3 = result3.rows;
-        query = "select de_nombre from table (pack_new_especificacion.f_list_producto(:x_empresa,:x_espec,:x_version))";
+        query = "select de_nombre,de_proveedor,de_nombre_inci,de_codigo_cas,de_fabricante,de_origen,co_arte,de_principio_activo,de_nombre_prod_prov from table (pack_new_especificacion.f_list_producto(:x_empresa,:x_espec,:x_version))";
         const result4 = await conn.execute(query, params2, responseParams);
         const filas4 = result4.rows;        
         const pdfWriter = require('html-pdf');
@@ -1195,8 +1198,7 @@ mostrarespecreporten2: async (request, response) => {
             vers:vers,
             marc:marc,
             sub:sub,
-            tipo:tipo,
-            arte:arte,
+            grupo:grupo,
             filas:filas,                
             filas2:filas2,
             filas3:filas3,
@@ -1214,7 +1216,7 @@ mostrarespecreporten2: async (request, response) => {
             footer: {
                 height: '5mm',
                 contents: {
-                    default: '<span style="color:#444;font-size:8px;">Página <b>{{page}}</b> de <b>{{pages}}</b></span>'
+                    default:'<span style="color:#444;text-align:right;font-size:8px;">Página <b>{{page}}</b> de <b>{{pages}}</b></span>'
                 }
             },
             format: 'A4',

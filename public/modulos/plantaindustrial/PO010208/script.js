@@ -189,14 +189,14 @@ iniciotabs= () => {
     tabbar_det.attachEvent ( "onSelect" , detaOnSelect);  
 }
 
-cargarReportEsp = async (esp,vers,cod,marc,sub,nom_report) => {    
+cargarReportEsp = async (esp,vers,cod,marc,sub,nom_report,grupo_prod) => {    
     WinContainer = new dhtmlXWindows();
     WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 800, 600);
     WinDocumentoViewer.setModal(true);
     WinDocumentoViewer.center();    
     WinDocumentoViewer.keepInViewport();
     WinDocumentoViewer.setText('Mostrando documento ');
-        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report);  
+        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod);  
 };
 
 detaOnSelect= async (id) => {
@@ -1073,7 +1073,7 @@ onClicktoolbarform= async (id) => {
             cargarReport(codigo,nombre, cod_esp,seleccione.marc,version_esp);                
             break;
         case '__repesp': 
-            cargarReportEsp(cod_esp,version_esp,seleccione.cod,seleccione.marc,seleccione.subm,'ESPECIFICACIONES TECNICAS DE PRODUCTO TERMINADO');    
+            cargarReportEsp(cod_esp,version_esp,seleccione.cod,seleccione.marc,seleccione.subm,'ESPECIFICACIONES TECNICAS DE PRODUCTO TERMINADO',4);    
             break;
         default:
             null;
@@ -1396,11 +1396,11 @@ cargarEnsayo = (espec,version) => {
     mainLayout_ensa = tabbar_det.cells('esy').attachLayout('1C');  
     mainLayout_ensa.cells('a').hideHeader();  
     myGrid_ensa = mainLayout_ensa.cells('a').attachGrid();
-    myGrid_ensa.setHeader('Co.Método,Método,Co.Ensayo,Condiciones,Especificaciones, De, A,Tipo de Ensayo,Objetivos de la Prueba');    
-    myGrid_ensa.setInitWidths('100,200,100,400,300,100,100,300,300');
-    myGrid_ensa.setColAlign('left,left,left,left,left,left,left,left.left');
-    myGrid_ensa.setColTypes('ro,ro,ro,ro,ed,ed,ed,ro,ro'); 
-    myGrid_ensa.setColumnIds('comet,met,codens,ens,esp,min,max,tipens,objp'); 
+    myGrid_ensa.setHeader('Co.Método,Método,Co.Ensayo,Condiciones,Especificaciones, Rango/De,Rangos/A,U.M,Tipo de Ensayo,Objetivos de la Prueba');    
+    myGrid_ensa.setInitWidths('100,200,100,400,300,70,70,70,300,300');
+    myGrid_ensa.setColAlign('left,left,left,left,left,left,left,left,left.left');
+    myGrid_ensa.setColTypes('ro,ro,ro,ro,ed,ed,ed,ro,ro,ro'); 
+    myGrid_ensa.setColumnIds('comet,met,codens,ens,esp,min,max,um,tipens,objp'); 
     myGrid_ensa.init();      
     myGrid_ensa.clearAll(); 
     mainLayout_ensa.cells('a').progressOn();
@@ -1468,13 +1468,4 @@ cargarReport = async (codigo,nombre, esp,marc,version) => {
     WinDocumentoViewer.keepInViewport();
     WinDocumentoViewer.setText('Mostrando documento ');
     WinDocumentoViewer.attachURL('/api/po010208/mostrar-reporte/'+codigo+'/'+nombre+'/'+esp+'/'+marc+'/'+version);
-};
-
-
-cargarespReport = async (esp,vers,cod,nom,fcrea,frev,fapr,crea,rev,aprob,marc,sub,prov,nsoc) => {
-    WinContainer = new dhtmlXWindows();
-    WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 800, 800);
-    WinDocumentoViewer.keepInViewport();
-    WinDocumentoViewer.setText('Mostrando documento ');
-    WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte/'+esp+'/'+vers+'/'+cod+'/'+nom+'/'+fcrea+'/'+frev+'/'+fapr+'/'+crea+'/'+rev+'/'+aprob+'/'+marc+'/'+sub+'/'+prov+'/'+nsoc);
 };

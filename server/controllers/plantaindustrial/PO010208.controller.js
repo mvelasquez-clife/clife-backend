@@ -747,7 +747,7 @@ const po010208Controller = {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select co_metodo_anal,de_metodo,co_ensayo,de_ensayo,de_especificaciones,limit_min,limit_max,de_tipo_ensayo,des_objetivo_ensayo from table (pack_new_especificacion.f_list_ensayo(:x_empresa,:x_espec,:x_version))";
+            const query = "select co_metodo_anal,de_metodo,co_ensayo,de_ensayo,de_especificaciones,limit_min,limit_max,de_abreviatura,de_tipo_ensayo,des_objetivo_ensayo from table (pack_new_especificacion.f_list_ensayo(:x_empresa,:x_espec,:x_version))";
             
             const params = {
                 x_empresa: {val : empresa},
@@ -782,11 +782,17 @@ const po010208Controller = {
                 const result_n = await conn.execute(query_n, params, responseParams);
                 const filas_n = result_n.rows;
 
-                let query_p = "select fe_creacion,de_creador,de_revisado,de_aprueba from table (pack_new_especificacion.f_list_caract_report(11,:x_espec,:x_vers))";                
+                let query_p = "select fe_creacion,de_creador,de_revisado,de_aprueba,to_char(de_caracteris_generales) DE_CARACTERIS_GENERALES from table (pack_new_especificacion.f_list_caract_report(11,:x_espec,:x_vers))";                
                 
                 const result_p = await conn.execute(query_p, params, responseParams);
                 const filas_p = result_p.rows;
 
+                filas_p.forEach(fila => {
+                    let value = fila.DE_CARACTERIS_GENERALES;
+                    if (value && value.length > 0) {
+                        fila.DE_CARACTERIS_GENERALES = value.replace(/\r\n/g, '<br />');
+                    }
+                });
                 const pdfWriter = require('html-pdf');
                 const ejs = require('ejs');
                 // const d = new Date();
@@ -800,7 +806,7 @@ const po010208Controller = {
                     filas_n:filas_n,
                     filas_p:filas_p,
                 };
-                const html = await ejs.renderFile(path.resolve('client/views/modulos/plantaindustrial/po0102008-report1.ejs'), data);
+                const html = await ejs.renderFile(path.resolve('client/views/modulos/plantaindustrial/PO0102008-report1.ejs'), data);
                 const pdfOptions = {
                     border: {
                         top: '0mm',

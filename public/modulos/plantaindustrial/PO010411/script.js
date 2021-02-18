@@ -1,4 +1,4 @@
-var co_serie,grupo_prod,clase_grupo,tipo_bien,de_grupo,Winidc_,Windc_,mainLayout,myToolbardatos,tabbar,mainLayout_esp,myGrid_esp;
+var nom_report,co_serie,grupo_prod,clase_grupo,tipo_bien,de_grupo,Winidc_,Windc_,mainLayout,myToolbardatos,tabbar,mainLayout_esp,myGrid_esp;
   
 Inicio = () => { 
     const params = {
@@ -45,6 +45,7 @@ Inicio = () => {
                 tabbar.addTab(id, nombre, null, null, true);
                 grupo_prod = array.split("||")[2];
                 de_grupo = id;
+                nom_report = array.split("||")[4];
             } 
             cargarEspec(id,grupo_prod,'N');
             validarPermisos(co_serie);
@@ -84,31 +85,86 @@ validarPermisos = (serie) => {
         } , 'json');  
 };
    
-onClickbar= async (id) => {    
+onClickbar= async (id) => {  
     switch (id) {
         case '__detalle':
-            seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
-            mostrardetalle();
+            rest  = myGrid_esp.getSelectedRowId();
+            if(rest) {
+                seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
+                mostrardetalle();
+            }else{
+                dhtmlx.confirm("Debe seleccionar una especificación", function (result) {
+                });
+            } 
             break;  
         case '__rev':
-            seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
-            aprobar(seleccione.cod,seleccione.codprov,seleccione.vers,'Revisada'); 
+            rest  = myGrid_esp.getSelectedRowId();
+            if(rest) {
+                seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
+                aprobar(seleccione.cod,seleccione.codprov,seleccione.vers,'Revisada');
+            }else{
+                dhtmlx.confirm("Debe seleccionar una especificación", function (result) {
+                });
+            } 
             break;                          
         case '__fail':  
-            seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
-            aprobar(seleccione.cod,seleccione.codprov,seleccione.vers,'Observada');      
+            rest  = myGrid_esp.getSelectedRowId();
+            if(rest) {
+                seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
+                aprobar(seleccione.cod,seleccione.codprov,seleccione.vers,'Observada'); 
+            }else{
+                dhtmlx.confirm("Debe seleccionar una especificación", function (result) {
+                });
+            }      
         break;
         case '__inactive':  
-            seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());   
-            aprobar(seleccione.cod,seleccione.codprov,seleccione.vers,'Obsoleta');  
+            rest  = myGrid_esp.getSelectedRowId();
+            if(rest) {
+                seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());   
+                aprobar(seleccione.cod,seleccione.codprov,seleccione.vers,'Obsoleta'); 
+            }else{
+                dhtmlx.confirm("Debe seleccionar una especificación", function (result) {
+                });
+            }       
             break;
         case '__pass': 
-            seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());  
-            aprobar(seleccione.cod,seleccione.codprov,seleccione.vers,'Vigente');   
+            rest  = myGrid_esp.getSelectedRowId();
+            if(rest) {
+                seleccione  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());  
+                aprobar(seleccione.cod,seleccione.codprov,seleccione.vers,'Vigente');  
+            }else{
+                dhtmlx.confirm("Debe seleccionar una especificación", function (result) {
+                });
+            }         
             break;
         case 'filter':            
             cargarEspec(de_grupo,grupo_prod,'S');
             break;
+        case 'print':      
+            if(grupo_prod==1||grupo_prod==5){
+                rpt2  = myGrid_esprod.getSelectedRowId();
+                if(rpt2) {
+                        sel  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
+                        sel2  = myGrid_esprod.getRowData(myGrid_esprod.getSelectedRowId());
+                        cargarReport(sel.cod,sel.vers,sel2.cod,1,1,nom_report,grupo_prod);
+                }else{
+                    dhtmlx.confirm("Debe seleccionar un producto", function (result) {
+                    });
+                }
+            }else{
+                rpt2  = myGrid_esprod.getSelectedRowId();
+                if(rpt2) {
+                        sel  = myGrid_esp.getRowData(myGrid_esp.getSelectedRowId());
+                        sel2  = myGrid_esprod.getRowData(myGrid_esprod.getSelectedRowId());
+                        sel2.marc = sel2.marc.length==0 ? '-' : sel2.marc;
+                        sel2.subm = sel2.subm.length==0 ? '-' : sel2.subm;
+                        cargarReport(sel.cod,sel.vers,sel2.cod,sel2.marc,sel2.subm,nom_report,grupo_prod);
+                }else{
+                    dhtmlx.confirm("Debe seleccionar un producto", function (result) {
+                    });
+                }
+            }
+            break;  
         default:
             null;
             break;
@@ -124,7 +180,8 @@ tabbarOnSelect= async (id) => {
             de_grupo = '__gran'; 
             co_serie = 676;    
             cargarEspec(de_grupo,grupo_prod,'N');
-            validarPermisos(co_serie);
+            validarPermisos(co_serie);            
+            nom_report = 'ESPECIFICACIONES TECNICAS DE GRANEL';
             break;   
         case '__ept':
             grupo_prod = 4;
@@ -133,7 +190,8 @@ tabbarOnSelect= async (id) => {
             de_grupo = '__ept';  
             co_serie = 675; 
             cargarEspec(de_grupo,grupo_prod,'N');
-            validarPermisos(co_serie);   
+            validarPermisos(co_serie);  
+            nom_report = 'ESPECIFICACIONES TECNICAS DE PRODUCTO TERMINADO';
             break;
         case '__emp':
             grupo_prod = 5;
@@ -143,6 +201,7 @@ tabbarOnSelect= async (id) => {
             co_serie = 671; 
             cargarEspec(de_grupo,grupo_prod,'N');
             validarPermisos(co_serie);    
+            nom_report = 'ESPECIFICACIONES TECNICAS DEL MATERIAL DE EMPAQUE';
             break;
         case '__matpr':     
             grupo_prod = 1;
@@ -152,6 +211,7 @@ tabbarOnSelect= async (id) => {
             co_serie = 674;   
             cargarEspec(de_grupo,grupo_prod,'N');
             validarPermisos(co_serie);  
+            nom_report = 'ESPECIFICACIONES TECNICAS DE MATERIA PRIMA';
             break;  
         case '__insu':  
             serie = 'ETII';
@@ -262,6 +322,10 @@ detaOnSelect= async (id) => {
 cargarespecProd = (espec,version) => {  
     mainLayout_esprod = tabbar_det.cells('presp').attachLayout('1C');  
     mainLayout_esprod.cells('a').hideHeader();  
+    toolbar = mainLayout_esprod.cells('a').attachToolbar(); 
+    toolbar.setIconsPath('/assets/images/icons/');
+    toolbar.addButton('print',null,'Imprimir',"print.png","");
+    toolbar.attachEvent('onClick', onClickbar);
     myGrid_esprod = mainLayout_esprod.cells('a').attachGrid();
     myGrid_esprod.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/");
     myGrid_esprod.setHeader(',Código,Descripción,Marca,Submarca');    
@@ -314,10 +378,10 @@ cargarEnsayo = (espec,version) => {
     mainLayout_ensa = tabbar_det.cells('esy').attachLayout('1C');  
     mainLayout_ensa.cells('a').hideHeader();  
     myGrid_ensa = mainLayout_ensa.cells('a').attachGrid();    
-    myGrid_ensa.setHeader(',Cod.met,Co.Método,Método,Co.Ensayo,Condiciones,Especificaciones,Especificaciones(Inglés),Rango/De,Rangos/A,Tipo de Ensayo,Objetivos de la Prueba');    
-    myGrid_ensa.setInitWidths('0,0,70,200,80,200,400,400,70,70,150,300');
-    myGrid_ensa.setColAlign('left,center,left,left,left,left,left,left,left,left,left.left');
-    myGrid_ensa.setColTypes('ro,ro,ro,ro,ro,ro,ed,ed,ed,ed,ro,ro'); 
+    myGrid_ensa.setHeader(',Cod.met,Co.Método,Método,Co.Ensayo,Condiciones,Especificaciones,Especificaciones(Inglés),Rango/De,Rangos/A,U.M,Tipo de Ensayo,Objetivos de la Prueba,Técnica');    
+    myGrid_ensa.setInitWidths('0,0,70,200,80,200,400,400,70,70,70,150,300,100');
+    myGrid_ensa.setColAlign('left,center,left,left,left,left,left,left,left,left,center,left,left,left');
+    myGrid_ensa.setColTypes('ro,ro,ro,ro,ro,ro,ed,ed,ed,ed,ro,ro,ro,ro'); 
     myGrid_ensa.setColumnHidden(0,true);
     myGrid_ensa.setColumnHidden(1,true);
     myGrid_ensa.init();      
@@ -435,4 +499,18 @@ aprobar = (especificacion,proveedor,version,vigencia) => {
             }, "json");
         }
     });
-}
+};
+
+cargarReport = async (esp,vers,cod,marc,sub,nom_report,grupo_prod) => {    
+    WinContainer = new dhtmlXWindows();
+    WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 800, 600);
+    WinDocumentoViewer.setModal(true);
+    WinDocumentoViewer.center();    
+    WinDocumentoViewer.keepInViewport();
+    WinDocumentoViewer.setText('Mostrando documento ');
+    if (grupo_prod==1||grupo_prod==5){
+        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte2/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod);
+    }else{
+        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod);
+    }
+};

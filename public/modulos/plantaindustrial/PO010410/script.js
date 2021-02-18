@@ -649,11 +649,11 @@ cargarEnsayo = (espec,version,estado) => {
     enstoolbar.setIconSize(18);
      }
     myGrid_ensa = mainLayout_ensa.cells('a').attachGrid();
-    myGrid_ensa.setHeader(',Cod.met,Co.Método,Método,Co.Ensayo,Condiciones,Especificaciones,Especificaciones(Inglés),Rango/De,Rangos/A,Tipo de Ensayo,Objetivos de la Prueba');    
-    myGrid_ensa.setInitWidths('30,0,70,400,80,200,400,400,70,70,150,300');
-    myGrid_ensa.setColAlign('left,center,left,left,left,left,left,left,left,left,left.left');
-    myGrid_ensa.setColTypes('ch,ro,ro,ro,ro,ro,ed,ed,ed,ed,ro,ro'); 
-    myGrid_ensa.setColumnIds('chec,codmet,comet,met,codens,ens,esp,espin,min,max,tipens,objp'); 
+    myGrid_ensa.setHeader(',Cod.met,Co.Método,Método,Co.Ensayo,Condiciones,Especificaciones,Especificaciones(Inglés),Rango/De,Rangos/A,Unid.Análisis,Tipo de Ensayo,Objetivos de la Prueba,Técnica');    
+    myGrid_ensa.setInitWidths('30,0,70,400,80,200,400,400,70,70,70,150,300,100');
+    myGrid_ensa.setColAlign('left,center,left,left,left,left,left,left,left,left,center,left,left,left');
+    myGrid_ensa.setColTypes('ch,ro,ro,ro,ro,ro,ed,ed,ed,ed,ro,ro,ro,ro'); 
+    myGrid_ensa.setColumnIds('chec,codmet,comet,met,codens,ens,esp,espin,min,max,um,tipens,objp,tecn'); 
     myGrid_ensa.setColumnHidden(0,true);
     myGrid_ensa.init();      
     myGrid_ensa.clearAll(); 
@@ -914,9 +914,7 @@ onClickaction = async (id) => {
                     if(rp1){
                         sel  = myGrid_espvers.getRowData(myGrid_espvers.getSelectedRowId());
                         sel2  = myGrid_group.getRowData(myGrid_group.getSelectedRowId());
-                        sel.arte = sel.arte.length==0 ? '-' : sel.arte;
-                        sel.tipo = sel.tipo.length==0 ? '-' : sel.tipo;
-                        cargarReport(sel.cod,sel.vers,sel2.cod,1,1,nom_report,grupo_prod,sel.tipo,sel.arte);
+                        cargarReport(sel.cod,sel.vers,sel2.cod,1,1,nom_report,grupo_prod);
                     }else{
                         dhtmlx.confirm("Debe seleccionar una versión", function (result) {
                         });
@@ -954,7 +952,13 @@ onClickaction = async (id) => {
             }
             break;  
         case 'asignar':
-            mostrarespecPT();
+            col  = myGrid_group.getSelectedRowId();
+            if(col) {
+                mostrarespecPT();
+            }else{
+                dhtmlx.confirm("Debe seleccionar una especificación granel", function (result) {
+                });
+            }
             break;
         case 'busprod':
             buscarespProd(grupo_prod);
@@ -1153,10 +1157,10 @@ cargarespecversProducto = (prod,grupo,flag) => {
     myGrid_espvers= mainLayout_det.cells('a').attachGrid();
     myGrid_espvers.clearAll(); 
     myGrid_espvers.setSizes ("8px");
-    myGrid_espvers.setHeader('Cod.Espec,Nombre,Ver.,Estado,F.Creación,Creado por,F.Revisado,Revisado por,F.Aprobado,Aprobado por,Proveedor,Cod.Proveedor,Tipo Material,Arte,Inci,Cod.Cas,Fabricante,Origen');
-    myGrid_espvers.setInitWidths('100,200,80,80,80,200,80,200,80,200,200,0,200,100,200,100,200,100');
+    myGrid_espvers.setHeader('Cod.Espec,Nombre,Ver.,Estado,Proveedor,Arte,F.Creación,Creado por,F.Revisado,Revisado por,F.Aprobado,Aprobado por,Cod.Proveedor,Tipo Material,Inci,Cod.Cas,Fabricante,Origen');
+    myGrid_espvers.setInitWidths('100,200,80,80,200,100,80,200,80,200,80,200,0,200,200,100,200,100');
     myGrid_espvers.setColAlign('left,left,left,left,left,left,left,left,left,left,left,left,left,left,left,left,left,left');
-    myGrid_espvers.setColumnIds('cod,nom,vers,estado,cc,cp,rr,rp,ff,fp,proveedor,codprov,tipo,arte,inci,cas');
+    myGrid_espvers.setColumnIds('cod,nom,vers,estado,proveedor,arte,cc,cp,rr,rp,ff,fp,codprov,tipo,inci,cas,fab,orig');
     myGrid_espvers.setColTypes('ed,ed,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro');     
     myGrid_espvers.init();  
     myGrid_espvers.clearAll(); 
@@ -1460,7 +1464,7 @@ mostrarespecPT = async (varprov) => {
     myGrid.setColumnHidden(6,true),myGrid.setColumnHidden(7,true),myGrid.setColumnHidden(8,true),myGrid.setColumnHidden(9,true),myGrid.setColumnHidden(10,true);
     myGrid.setColumnHidden(11,true),myGrid.setColumnHidden(12,true),myGrid.setColumnHidden(13,true),myGrid.setColumnHidden(14,true);
     Wind_.window("wbusq").progressOn();
-    myGrid.load( BASE_URL + 'PO010411/mostrar-especificacion-grupo/'+usrJson.empresa+'/'+4+'/'+'N').then(function (text) {
+    myGrid.load( BASE_URL + 'PO010411/mostrar-especificacion-grupo/'+usrJson.empresa+'/'+4+'/'+'N'+'/'+'N').then(function (text) {
         Wind_.window("wbusq").progressOff();
         num_fila = myGrid.getRowsNum();
         let iRowId;
@@ -1762,12 +1766,12 @@ verensayo = async () => {
     myToolbar.attachEvent('onClick', ensayoOnToolbar);
     myGridensaysel = Winid_.attachGrid();
     myGridensaysel.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/");
-    myGridensaysel.setHeader(',Método Análisis,Método,Cod.Ensayo,Ensayo,Cod.Tipo Ensayo,Tipo Ensayo,Obj.Ensayo,Num.Versión,Cod.Método,Unid.Análisis,Obligatorio,Declarado,Para Especificación,Guía,Estado');
-    myGridensaysel.setInitWidths('50,80,200,80,200,80,200,200,0,80,0,80,80,80,80,80');
-    myGridensaysel.setColAlign('center,left,left,left,left,left,left,left,left,left,left,left,center,center,center,center,center');
-    myGridensaysel.setColTypes('ch,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro'); 
+    myGridensaysel.setHeader(',Método Análisis,Método,Cod.Ensayo,Ensayo,Cod.Tipo Ensayo,Tipo Ensayo,Obj.Ensayo,Num.Versión,Cod.Método,Unid.Análisis,Obligatorio,Declarado,Para Especificación,Guía,Estado,Técnica');
+    myGridensaysel.setInitWidths('50,80,200,80,200,0,200,200,0,0,80,80,80,80,80,80,100');
+    myGridensaysel.setColAlign('center,left,left,left,left,left,left,left,left,left,center,center,center,center,center,center,center');
+    myGridensaysel.setColTypes('ch,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro'); 
     myGridensaysel.attachHeader(",#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter");
-    myGridensaysel.setColumnIds('chec,comet,met,codens,ens,cotipo,tipens,obj,num,codmet');      
+    myGridensaysel.setColumnIds('chec,comet,met,codens,ens,cotipo,tipens,obj,num,codmet,um,,,,,,tec');      
     myGridensaysel.init();   
     myGridensaysel.clearAll(); 
     Wind_.window("wbuscar").progressOn();
@@ -2006,10 +2010,9 @@ ensayoOnToolbar = async (id) => {
             for(let i=0;i<cant_filas_l_total;i++){
                 data = myGridensaysel.getRowData(i);
                 if (data.chec == 1) {
-                    myGrid_ensa.addRow(myGrid_ensa.uid(),[0,data.codmet,data.comet,data.met,data.codens,data.ens,,,,,data.tipens,data.obj],1);
+                    myGrid_ensa.addRow(myGrid_ensa.uid(),[0,data.codmet,data.comet,data.met,data.codens,data.ens,,,,,data.um,data.tipens,data.obj,data.tec],1);
                 }      
-            }     
-
+            } 
             cant_filas_n = myGrid_ensa.getRowsNum();
             let iRowId_gri,iRowId;
             for(let n=1;n<cant_filas_n;n++){
@@ -2317,7 +2320,7 @@ cargarcmpt = (buscar) => {
     });  
 };
  
-cargarReport = async (esp,vers,cod,marc,sub,nom_report,grupo_prod,tipo,arte) => {    
+cargarReport = async (esp,vers,cod,marc,sub,nom_report,grupo_prod) => {    
     WinContainer = new dhtmlXWindows();
     WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 800, 600);
     WinDocumentoViewer.setModal(true);
@@ -2325,9 +2328,9 @@ cargarReport = async (esp,vers,cod,marc,sub,nom_report,grupo_prod,tipo,arte) => 
     WinDocumentoViewer.keepInViewport();
     WinDocumentoViewer.setText('Mostrando documento ');
     if (grupo_prod==1||grupo_prod==5){
-        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte2/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+tipo+'/'+arte);
+        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte2/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod);
     }else{
-        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report);
+        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod);
     }
 };
 

@@ -64,15 +64,31 @@
         </table>
         <table style="font-family:Arial;font-size:7pt;width:100%;">
             <thead>
-                <tr>
-                    <td style="text-align:left;"><b>Código Arte: </b><%=arte%></td>
-                    <td style="text-align:left;"><b>Material de empaque: </b><%=tipo%></td>
-                </tr>
-                <tr>
-                    <% filas2.forEach(function(fila) { %>
-                        <td colspan="2" style="text-align:left;"><b>Proveedor: </b><%-fila.DE_PROVEEDOR%></td>
-                    <% }); %>
-                </tr>
+                <%if(grupo==5){ %>
+                    <tr>                        
+                        <% filas4.forEach(function(fila) { %>
+                            <td style="text-align:left;"><b>Código Arte: </b><%=fila.CO_ARTE%></td>
+                            <td style="text-align:left;"><b>Material de empaque: </b><%=fila.DE_PRINCIPIO_ACTIVO%></td>
+                            <td colspan="2" style="text-align:left;"><b>Proveedor: </b><%=fila.DE_PROVEEDOR%></td>
+                        <% }); %>
+                    </tr>
+                <%}else{%>  
+                    <tr>              
+                        <% filas4.forEach(function(fila) { %>
+                            <td style="text-align:left;"><b>Nombre Comercial: </b><%=fila.DE_NOMBRE_PROD_PROV%></td>
+                            <td style="text-align:left;"><b>Proveedor: </b><%=fila.DE_PROVEEDOR%></td>
+                            <td colspan="2" style="text-align:left;"><b>Fabricante: </b><%=fila.DE_FABRICANTE%></td>
+                        <% }); %>
+                    </tr>
+                    <tr>   
+                        <% filas4.forEach(function(fila) { %>
+                            <td style="text-align:left;"><b>INCI: </b><%=fila.DE_NOMBRE_INCI%></td>
+                            <td style="text-align:left;"><b>CAS: </b><%=fila.DE_CODIGO_CAS%></td>
+                            <td colspan="2" style="text-align:left;"><b>Origen: </b><%=fila.DE_ORIGEN%></td>
+                        <% }); %>
+                    </tr>
+                <%};%>    
+                      
             </thead>
         </table>
         <table style="font-family:Arial;font-size:7pt;width:100%;">
@@ -166,8 +182,8 @@
         <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
             <thead>
                 <tr>
-                    <th style="text-align:center;">METODO</th>
                     <th style="text-align:center;">NOMBRE DE ANALISIS</th>
+                    <th style="text-align:center;">METODO</th>
                     <th style="text-align:center;">UNIDADES</th>
                     <th style="text-align:center;">ESPECIFICACIONES</th>
                 </tr>
@@ -175,8 +191,8 @@
             <tbody>
             <% filas.forEach(function(fila) { %>
                 <tr>
-                    <td style="text-align:left;"><%=fila.DE_METODO%></td>
                     <td style="text-align:left;"><%=fila.DE_ENSAYO%></td>
+                    <td style="text-align:left;"><%=fila.DE_METODO%></td>
                     <td style="text-align:center;"><%=fila.DE_ABREVIATURA%></td>
                     <td style="text-align:left;"><%=fila.DE_ESPECIFICACIONES%></td>
                 </tr>
@@ -196,7 +212,10 @@
 
     </div>
     </div>
-
-
 </body>
+<footer>
+    <%if(grupo==1){ %>
+        <p style="font-size: 10pt;color:black;text-align:right;"><b>F/I&D-005</b></p>
+    <%}; %>   
+</footer> 
 </html>

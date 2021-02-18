@@ -64,7 +64,6 @@
                     <td style="text-align:left;"><b>MARCA: </b><%=marc%></th>
                     <td style="text-align:left;"><b>SUB.Marca: </b><%=sub%></td>
                     <% filas2.forEach(function(fila) { %>
-                        <td style="text-align:left;"><b>PROVEEDOR: </b><%-fila.DE_PROVEEDOR%></td>
                         <td style="text-align:left;"><b>NSOC: </b><%-fila.CO_NSOC%></td>
                     <% }); %>
                 </tr>
@@ -130,16 +129,18 @@
         <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
             <thead>
                 <tr>
-                    <th style="text-align:center;">Método</th>
-                    <th style="text-align:center;">Ensayo</th>
-                    <th style="text-align:center;">Especificaciones</th>
+                    <th style="text-align:center;">ENSAYO</th>
+                    <th style="text-align:center;">METODO</th>
+                    <th style="text-align:center;">UNIDADES</th>
+                    <th style="text-align:center;">ESPECIFICACIONES</th>
                 </tr>
             </thead>
             <tbody>
             <% filas.forEach(function(fila) { %>
                 <tr>
-                    <td style="text-align:left;"><%=fila.DE_METODO%></td>
                     <td style="text-align:left;"><%=fila.DE_ENSAYO%></td>
+                    <td style="text-align:left;"><%=fila.DE_METODO%></td>
+                    <td style="text-align:center;"><%=fila.DE_ABREVIATURA%></td>
                     <td style="text-align:left;"><%=fila.DE_ESPECIFICACIONES%></td>
                 </tr>
             <% }); %>
@@ -158,7 +159,10 @@
 
     </div>
     </div>
-
-
+    <footer>
+        <%if(grupo==4){ %>
+            <p style="font-size: 10pt;color:black;text-align:right;"><b>F/DRT-015</b></p>
+        <%}; %>   
+    </footer> 
 </body>
 </html>
