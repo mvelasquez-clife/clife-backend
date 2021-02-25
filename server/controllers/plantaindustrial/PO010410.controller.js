@@ -1158,8 +1158,7 @@ const po010410Controller = {
 },
 
 mostrarespecreporten2: async (request, response) => {       
-    const {esp,vers,codigo,marc,sub,nom,grupo} = request.params;
-    console.log(esp,vers,codigo,marc,sub,nom,grupo);
+    const {empresa,usuario,esp,vers,codigo,marc,sub,nom,grupo} = request.params;
     try {
         const conn = await oracledb.getConnection(dbParams);
         let query = "select de_metodo,de_ensayo,de_especificaciones,de_abreviatura from table (pack_new_especificacion.f_list_ensayo_report(11,:x_espec,:x_version))";
@@ -1169,12 +1168,14 @@ mostrarespecreporten2: async (request, response) => {
         };
         const result = await conn.execute(query, params, responseParams);
         const filas = result.rows;
-        query = 'select to_char(de_nombre) de_nombre,fe_creacion,fe_revisa,fe_aprueba,de_creador,de_revisado,de_aprueba,de_proveedor,to_char(de_caracteris_generales) DE_CARACTERIS_GENERALES,to_char(de_condic_almacenamiento) de_condic_almacenamiento,co_nsoc from table (pack_new_especificacion.f_list_caract_report(:x_empresa,:x_espec,:x_version))';
+        query = 'select to_char(de_nombre) de_nombre,fe_creacion,fe_revisa,fe_aprueba,de_creador,de_revisado,de_aprueba,de_proveedor,to_char(de_caracteris_generales) DE_CARACTERIS_GENERALES,to_char(de_condic_almacenamiento) de_condic_almacenamiento,co_nsoc from table (pack_new_especificacion.f_list_caract_report_v2(:x_empresa,:x_usuario,:x_grupo,:x_espec,:x_version))';
         let params2 = {
-            x_empresa: { val: 11 },
+            x_empresa: { val: empresa },
+            x_usuario: { val: usuario },
+            x_grupo: { val: grupo },
             x_espec: { val: esp },
             x_version: { val: vers },
-        }; 
+        };
         const result2 = await conn.execute(query, params2, responseParams);
         const filas2 = result2.rows;
         filas2.forEach(fila => {
@@ -1184,10 +1185,15 @@ mostrarespecreporten2: async (request, response) => {
             }
         });
         query = "select de_detalle_caract from table (pack_new_especificacion.f_list_caract_detalle_report(:x_empresa,:x_espec,:x_version))";
-        const result3 = await conn.execute(query, params2, responseParams);
+        let params3 = {
+            x_empresa: { val: empresa },
+            x_espec: { val: esp },
+            x_version: { val: vers },
+        };
+        const result3 = await conn.execute(query, params3, responseParams);
         const filas3 = result3.rows;
         query = "select de_nombre,de_proveedor,de_nombre_inci,de_codigo_cas,de_fabricante,de_origen,co_arte,de_principio_activo,de_nombre_prod_prov from table (pack_new_especificacion.f_list_producto(:x_empresa,:x_espec,:x_version))";
-        const result4 = await conn.execute(query, params2, responseParams);
+        const result4 = await conn.execute(query, params3, responseParams);
         const filas4 = result4.rows;        
         const pdfWriter = require('html-pdf');
         const ejs = require('ejs');

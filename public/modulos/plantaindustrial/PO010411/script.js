@@ -509,7 +509,7 @@ cargarReport = async (esp,vers,cod,marc,sub,nom_report,grupo_prod) => {
     WinDocumentoViewer.keepInViewport();
     WinDocumentoViewer.setText('Mostrando documento ');
     if (grupo_prod==1||grupo_prod==5){
-        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte2/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod);
+        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte2/'+usrJson.empresa+'/'+usrJson.codigo+'/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod);
     }else{
         WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod);
     }
