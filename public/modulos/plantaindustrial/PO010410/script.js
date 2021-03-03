@@ -73,6 +73,7 @@ iniciotabs= () => {
     if (grupo_prod==1||grupo_prod==5){
         tabbar_det.addTab('crt', 'Características', null, null, true);
         tabbar_det.addTab('cpto', 'Complementos', null, null, false);
+        tabbar_det.addTab('prod', 'Productos/SubProductos asociados', null, null, false);
     }else{
         tabbar_det.addTab('presp', 'Productos Espec.', null, null, true);
         tabbar_det.addTab('crt', 'Características', null, null, false);
@@ -80,7 +81,6 @@ iniciotabs= () => {
     tabbar_det.addTab('esy', 'Ensayos', null, null, false);
     tabbar_det.addTab('hst', 'Historial', null, null, false);
     tabbar_det.addTab('arc', 'Archivos Adjuntos', null, null, false);
-    tabbar_det.addTab('prod', 'Productos/SubProductos asociados', null, null, false);
     tabbar_det.attachEvent ( "onSelect" , detaOnSelect); 
 }
 
@@ -257,7 +257,7 @@ detaOnSelect= async (id) => {
             case 'arcdt':     
                 cargarDocumentodt(cod_esp,version_esp,st_vers); 
                 break;          
-            case 'prod':     
+            case 'prod':    
                 cargarProducto(cod_esp,version_esp); 
                 break;        
             default:
@@ -413,8 +413,6 @@ cargarespecific = (nombre,grupo,prod,filter) => {
         tabbar_det.tabs('esy').show();
         // tabbar_det.tabs('cpto').show();
         tabbar_det.tabs('hst').show();
-        // tabbar_det.tabs('arc').show();
-        tabbar_det.tabs('prod').show();
         version_esp = data.vers;
         cod_esp = form_cod; 
         cargarversiones(data.cod,'N');    
@@ -772,6 +770,7 @@ cargarDocumentodt = () => {
     myGrid_dctodt.init();      
 };
 cargarProducto = (espec,version) => {  
+    col  = myGrid_group.getRowData(myGrid_group.getSelectedRowId());
     mainLayout_prod = tabbar_det.cells('prod').attachLayout('1C');  
     mainLayout_prod.cells('a').hideHeader();  
     prodtoolbar = mainLayout_prod.cells('a').attachToolbar(); 
@@ -780,15 +779,17 @@ cargarProducto = (espec,version) => {
     prodtoolbar.attachEvent('onClick', toolbarOnProducto);
     prodtoolbar.setIconSize(18);
     myGrid_prod = mainLayout_prod.cells('a').attachGrid();
-    myGrid_prod.setHeader('Código,Producto/Material');    
-    myGrid_prod.setInitWidths('300,600');
-    myGrid_prod.setColAlign('left,left');
-    myGrid_prod.setColumnIds('cod,desc');
-    myGrid_prod.setColTypes('ed,ed'); 
+    myGrid_prod.setHeader(',Cod.Producto,Descripción,Tipo,');    
+    myGrid_prod.setInitWidths('0,100,500,200,0');
+    myGrid_prod.setColumnHidden(0,true);
+    myGrid_prod.setColumnHidden(4,true);
+    myGrid_prod.setColAlign('left,left,left,left,left,left');
+    myGrid_prod.setColTypes('ed,ed,ed,ed,ed,ed'); 
     myGrid_prod.init();      
     myGrid_prod.clearAll(); 
     mainLayout_prod.cells('a').progressOn();
-    myGrid_prod.load( BASE_URL + 'PO010410/mostrar-productos/'+usrJson.empresa+'/'+espec+'/'+version).then(function (text) {
+    //myGrid_prod.load( BASE_URL + 'PO010410/mostrar-productos/'+usrJson.empresa+'/'+espec+'/'+version).then(function (text) {
+    myGrid_prod.load( BASE_URL + 'PO010208/mostrar-detalle-form-trazab/'+usrJson.empresa+'/'+col.cod).then(function (text) {
         mainLayout_prod.cells('a').progressOff();
     });
 
@@ -1630,6 +1631,16 @@ verdetespecif = async (condic,de_grupo) => {
         myFormespecf.setItemValue('ep_inci',form_inci); 
         myFormespecf.setItemValue('ep_arte',form_arte);
         myFormespecf.setItemValue('ep_pact',form_tmat);
+        if (de_grupo == '__matpr'||de_grupo == '__emp'){
+            col  = myGrid_group.getSelectedRowId();
+            if(col) {
+                sel  = myGrid_group.getRowData(col);
+                myFormespecf.setItemValue('cod_producto',sel.cod);
+            }else{
+                dhtmlx.confirm("Debe seleccionar un producto y especificación", function (result) {
+                });
+            }
+        }
     }else{        
         Winid_.setText('Crear nueva especificación');
         myToolbar.disableItem('edit');
@@ -2057,7 +2068,7 @@ toolbarOncmpt  = async (id) => {
             break;    
         case 'eliminar':            
             let to_fila_data_num_gri = myGrid_cpto.getRowsNum();
-            for(var i=1;i<to_fila_data_num_gri;i++){
+            for(var i=0;i<to_fila_data_num_gri;i++){
                 let iRowId_gri = myGrid_cpto.getRowId(i);
                 if(iRowId_gri){
                     data = myGrid_cpto.getRowData(iRowId_gri);
@@ -2073,22 +2084,17 @@ toolbarOncmpt  = async (id) => {
             let  cant_filas_guardar = 0,n=0;
             let data_grabar,cadena='';
             cant_filas_guardar = myGrid_cpto.getRowsNum();
-            if (cant_filas_guardar ==0){
-                dhtmlx.confirm("Sin complementos", function (result) {
-                    if (result === Boolean(true)) {  }
-                });
-            }else{
-                for (let i = 0; i < cant_filas_guardar; i++) {
-                    let iRowId = myGrid_cpto.getRowId(i);
-                    if(iRowId){
-                        data_grabar = myGrid_cpto.getRowData(iRowId);
-                        cadena += data_grabar.cod +'@';
-                        n++;
-                    }
+            for (let i = 0; i < cant_filas_guardar; i++) {
+                let iRowId = myGrid_cpto.getRowId(i);
+                if(iRowId){
+                    data_grabar = myGrid_cpto.getRowData(iRowId);
+                    cadena += data_grabar.cod +'@';
+                    n++;
+                }
             }
             cant_filas_guardar = n;
             guardarcomplemento(sel.cod,version_esp,cadena,cant_filas_guardar);
-            }
+            
             break;     
         default:
             null;
