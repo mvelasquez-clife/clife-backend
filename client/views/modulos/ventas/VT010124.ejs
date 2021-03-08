@@ -32,7 +32,7 @@
 	<script type="text/javascript" src="/assets/js/sweetalert.js"></script>
 	<!--  <script src="https://code.highcharts.com/highcharts.src.js"></script> -->
 	<script type="text/javascript">
-		var Layout, Form_busca, form_Dev, co_cliente,doc,Layoutpnc, dhxGrid_PNCred,cod_sernc,dhxWncre,de_sernc,dhxWcve,st_relaci,xtipodoc, form_NCrdto,cant_sel, myGrid, gdv_select, rowgdv_select, subtotal_n, total_n, subtotal_n, v_igv_no, dhxGrid_GNCdet, dhxGrid_Ddet, x_periodo, x_fe_venc, x_co_serie;
+		var Layout,client_b,pedido_b,WindowDventa, Form_busca,winGridBusqueda,gridBusqueda,myGrida11,Layoutlprecw,Layout1,dhxWlprec,prod_prec,nomolprod,cod_old,st_tip_vta_old,dif_old, form_Dev, co_cliente,doc,Layoutpnc, dhxGrid_PNCred,cod_sernc,dhxWncre,de_sernc,dhxWcve,st_relaci,xtipodoc, form_NCrdto,cant_sel, myGrid, gdv_select, rowgdv_select, subtotal_n, total_n, subtotal_n, v_igv_no, dhxGrid_GNCdet, dhxGrid_Ddet, x_periodo, x_fe_venc, x_co_serie;
 
 		var form_buscar = [{ type: "settings" },
 		{
@@ -70,6 +70,34 @@
 			{
 				type: "block", inputWidth: "auto", list: [
 					{ type: "container", offsetLeft: 10, name: "myGridNota", inputWidth: 710, inputHeight: 300 },
+
+				]
+			}
+		];
+		form_deva11 = [
+			{ type: "settings", position: "label-left", labelWidth: "auto" },
+			{
+				type: "fieldset", width: 700, offsetLeft: 30, label: "NRO DE PEDIDO", list: [
+					{ type: "input", name: "num_pedido", label: "Pedido : ", labelWidth: 70, inputWidth: 100, readonly: true }
+				 ]
+			},
+			{
+				type: "fieldset", offsetLeft: 20, width: 700, inputWidth: "auto", label: "OBSERVACION DE CAMBIO", list: [
+					{ type: "input", name: "_obs_cambio", offsetLeft: 1, label: "Motivo : ", labelWidth: 59, inputWidth: 150, style: "  background-color: rgba(234,255,71,1);   background-repeat:no-repeat;  " }
+				 
+				]
+			},
+			{
+				type: "block", blockOffset: 250, position: "label-left", width: 700, list: [
+					{ type: "button", width: 100, value: '<i class="fas fa-save"></i>   REGISTRAR', offsetTop: 0, offsetLeft: 7, name: "b_savedev", tooltip: "REGISTRAR CAMBIO", disabled: true }, { type: "newcolumn" },
+					{ type: "button", offsetLeft: 20, width: 120, value:'<i class="fas fa-exchange-alt"></i>   CAMBIAR POR', offsetTop: 0, offsetLeft: 7, name: "b_cambio", tooltip: "CAMBIAR POR", hidden: false }, { type: "newcolumn" },
+					{ type: "button", offsetLeft: 20, width: 130, value: '<i class="fas fa-window-close"></i>   TERMINAR CAMBIO', offsetTop: 0, offsetLeft: 7, name: "b_canceldev", tooltip: "CANCELAR CAMBIO", hidden: false }
+				]
+			},
+
+			{
+				type: "block", inputWidth: "auto", list: [
+					{ type: "container", offsetLeft: 10, name: "myGridcambio", inputWidth: 710, inputHeight: 300 }
 
 				]
 			}

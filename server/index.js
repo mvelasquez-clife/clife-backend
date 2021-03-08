@@ -62,6 +62,7 @@ app.use('/api/VT010101', require('./routes/ventas/VT010101.routes'));
 app.use('/api/VT010102', require('./routes/ventas/VT010102.routes'));
 app.use('/api/VT010108', require('./routes/ventas/VT010108.routes'));
 app.use('/api/VT010123', require('./routes/ventas/VT010123.routes'));
+app.use('/api/VT010124', require('./routes/ventas/VT010124.routes'));
 app.use('/api/CO0201', require('./routes/contabilidad/CO0201.routes'));
 app.use('/api/CO010401B', require('./routes/contabilidad/CO010401B.routes'));
 app.use('/api/SG010101', require('./routes/seguridad/SG010101.routes'));

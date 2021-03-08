@@ -7,7 +7,32 @@ const responseParams = {
 };
 
 const vt010124Controller = {
-
+    Gridctactea11: (req, res) => {
+        const { cocliente, empr } = req.params;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "SELECT T1.*,'docgdevo.png' FROM TABLE(PW_VT010124.F_DATACAMBIO(:xcliente,:xemp)) T1 "; //'redo.gif','new.gif'
+            const params = { xcliente: cocliente, xemp: empr };
+            //console.log(params);
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                if (result.rows[0].NU_PEDIDO != 0){
+                    res.set('Content-Type', 'text/xml');
+                    res.send(xmlParser.renderXml(result.rows));
+                }else{
+                    res.set('Content-Type', 'application/json');
+                    res.send({'nodata' : 'nodata'});
+                }
+            });
+        });
+    },
     Gridctacte: (req, res) => {
         const { cocliente, empr } = req.params;
         oracledb.getConnection(dbParams, (err, conn) => {
@@ -17,6 +42,7 @@ const vt010124Controller = {
             }
             const query = "SELECT T1.*,'docgdevo.png','docblue.png','upload_24.png' FROM TABLE(PW_VT010124.F_DATACTACTE(:xcliente,:xemp)) T1 "; //'redo.gif','new.gif'
             const params = { xcliente: cocliente, xemp: empr };
+            console.log(params);
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
                 if (error) {
@@ -33,11 +59,64 @@ const vt010124Controller = {
             });
         });
     },
+    Gridcliente: async (req, res) => {
+        const { xclient, xemp  } = req.params;
+        let query = " SELECT * FROM TABLE(PW_VT010124.F_CLIEN(:xclient,:xemp ))";
+        let params = [
+            { name: 'xclient', io: 'in', value: xclient }, { name: 'xemp', io: 'in', value: xemp }
+        ];
+        //console.log(query,params);
+        let result = await db.select(query, params);
+        res.set('Content-Type', 'text/xml');
+        res.send(xmlParser.renderXml(result.rows));
+    }, 
+  /*  GriCambiodet: async (req, res) => {
+        const { gdvl, empr } = req.params;
+        let query = " SELECT * FROM TABLE(PW_VT010124.F_DETAPEDI(:xemp,:gdvl))";
+        let params = [
+            { name: 'gdvl', io: 'in', value: gdvl }, { name: 'xemp', io: 'in', value: empr }
+        ];
+        console.log(query,params);
+        let result = await db.select(query, params);
+        res.set('Content-Type', 'text/xml');
+        res.send(xmlParser.renderXml(result.rows));
+    },*/
+    GriCambiodet: async (req, res) => {
+        const { gdvl, empr } = req.params;
+        let query = "  call PW_VT010124.sp_cambio_list(:xemp,:xpedido,:datagdv)";
+        let params = [
+            { name: 'xpedido', io: 'in', value: gdvl }, { name: 'xemp', io: 'in', value: empr },
+               { name: 'datagdv', io: 'out', type: 'cursor' }
+        ];
+        //console.log(query,params);
+       let result = await db.resultSet(query, params);
+        res.set('Content-Type', 'text/xml');
+        res.send(xmlParser.renderXml(result.datagdv));
+      /*  let out = [];
+        let result = await db.resultSet(query, params);
+        console.log(result.datagdv);
+        out.push(result);
+        res.json({
+            result: out
+        });*/
+    },  
     Gridetalledvl: async (req, res) => {
         const { gdvl, empr } = req.params;
         let query = " SELECT * FROM TABLE(PACK_NEW_VENTAS_NOTA_CRDB.F_LIS_GUIA_DEVO_DET(:xemp,:gdvl))";
         let params = [
             { name: 'gdvl', io: 'in', value: gdvl }, { name: 'xemp', io: 'in', value: empr }
+        ];
+        let result = await db.select(query, params);
+        res.set('Content-Type', 'text/xml');
+        res.send(xmlParser.renderXml(result.rows));
+    },
+    Gridlistprec: async (req, res) => { 
+        const { gdvl, empr,xserie,xlist,xper,xpto,xprec } = req.params;
+        let query = " SELECT 'docgdevo.png',T1.* FROM TABLE(PW_VT010124.F_LISTPE(:xemp,:gdvl,:xserie,:xlist,:xper,:xpto,:xprec)) T1";
+        let params = [
+            { name: 'gdvl', io: 'in', value: gdvl }, { name: 'xemp', io: 'in', value: empr },{ name: 'xserie', io: 'in', value: xserie },
+            { name: 'xlist', io: 'in', value: xlist },{ name: 'xper', io: 'in', value: xper },{ name: 'xpto', io: 'in', value: xpto },
+             { name: 'xprec', io: 'in', value: xprec }
         ];
         let result = await db.select(query, params);
         res.set('Content-Type', 'text/xml');
@@ -50,6 +129,7 @@ const vt010124Controller = {
             { name: 'xdoc', io: 'in', value: doc }, { name: 'xemp', io: 'in', value: empr }
         ];
         let result = await db.select(query, params);
+ 
         res.set('Content-Type', 'text/xml');
         res.send(xmlParser.renderXml(result.rows));
     },
@@ -111,6 +191,25 @@ const vt010124Controller = {
             }
         });
     },
+    Cambiprodst: async (request, response) => {
+        const { x_empresa, xprodold, xprodnew,  xpedido,xmotivo  } = request.body;
+        let query = 'call PW_VT010124.sp_cambio_prod(:x_empresa ,:x_prod_old,:x_prod_new,:x_pedido,:x_motivo,:x_de_result)';
+          let params = [
+            { name: 'x_empresa', io: 'in', value: x_empresa },
+            { name: 'x_prod_old', io: 'in', value: xprodold },
+            { name: 'x_prod_new', io: 'in', value: xprodnew },
+            { name: 'x_pedido', io: 'in', value: xpedido },
+            { name: 'x_motivo', io: 'in', value: xmotivo },
+            { name: 'x_de_result', io: 'out', type: 'string' }
+        ];
+        console.log(params);
+        //let out = []
+        let result = await db.resultSet(query, params);
+       // out.push(result.x_result);
+        //out.push(result.x_de_result);
+        response.json({result
+        });
+    },
     Creaprenotac: async (request, response) => {
         const { x_empresa, x_usuario, x_periodo,  x_guia_devo, 
             x_serie_nc, x_concepto_nc  , x_nu_items, x_cad_co_prod,  x_cad_lote_cad,x_cad_cant,x_cad_tipo_vent  ,x_cad_moti_devo,
@@ -144,7 +243,22 @@ const vt010124Controller = {
             result: out
         });
     },
-
+    Terminagdvl: async (request, response) => {
+        const { x_empresa, x_pedido} = request.body;
+        let query = 'call PW_VT010124.SP_TERMINAR_CAMBIO(:x_empresa,:xpedido,:x_de_result)';
+        let params = [
+            { name: 'x_empresa', io: 'in', value: x_empresa },
+            { name: 'xpedido', io: 'in', value: x_pedido },
+            { name: 'x_de_result', io: 'out', type: 'string' }
+        ];
+        let out = []
+        let result = await db.resultSet(query, params);
+        console.log(result,params);
+        out.push(result.x_de_result);
+        response.json({
+            result: out
+        });
+    },
     Creagdvl: async (request, response) => {
         const { x_empresa, x_usuario, x_periodo, x_co_serie,x_fe_venc,x_co_alma,x_cad_prod,x_cad_cant,x_cad_prec,x_cad_lote,x_cad_tipo,x_cant_items,x_nu_doc,x_moti_devo,x_cad_monto,x_cad_dif } = request.body;
         let query = 'call PACK_NEW_VENTAS_NOTA_CRDB.SP_GENERAR_NOTA_DEVO_V2(:x_result,:x_de_result,:x_empresa,:x_usuario,:x_periodo,:x_co_serie,:x_fe_venc,:x_co_alma,:x_cad_prod,:x_cad_cant,:x_cad_prec,:x_cad_lote,:x_cad_tipo,:x_cant_items,:x_nu_doc,:x_moti_devo,:x_cad_monto,:x_cad_dif)';
@@ -213,7 +327,23 @@ const vt010124Controller = {
         });
        // console.log(result);
     },
-
+    Datapedido: async (request, response) => {
+        const { xemp,xdoc } = request.body;
+        let query = 'CALL  PW_VT010124.F_DATAPEDI(:xemp, :xdoc,:x_ser_list,:x_list_prec,:x_periodo,:x_ptovta ) ';
+        let params = [
+            { name: 'xemp', io: 'in', value: xemp },
+            { name: 'xdoc', io: 'in', value: xdoc } ,
+            { name: 'x_ser_list', io: 'out', type: 'number' },
+            { name: 'x_list_prec', io: 'out', type: 'number' },
+            { name: 'x_periodo', io: 'out', type: 'number' },
+            { name: 'x_ptovta', io: 'out', type: 'number' }
+        ];
+        
+       // let result = await db.select(query, params);
+        let result = await db.resultSet(query, params);
+       // console.log(result);
+        response.json({result});
+    }
 };
 
 module.exports = vt010124Controller;
