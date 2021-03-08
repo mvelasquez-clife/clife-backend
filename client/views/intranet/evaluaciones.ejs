@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            .table thead th {vertical-align: middle}
+            .table-sm tbody td p {font-size: 0.75rem !important}
+            input[name=rb]:checked + label {font-weight: bold}
+        </style>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% include _main.sidenav.admin.ejs %>
+            <% include _main.sidenav.documentacion.ejs %>
+            <% include _main.sidenav.footer.ejs %>
+        </div>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Evaluaciones</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Mis evaluaciones</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul id="lista-evaluaciones" class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Cargando sus evaluaciones...</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            var sesion = JSON.parse('<%-sesion %>');
+            
+            function cargaListaEvaluaciones() {
+                var ul = $('#lista-evaluaciones');
+                $.ajax({
+                    url: '/intranet/lista-evaluaciones-usuario',
+                    method: 'get',
+                    dataType: 'json',
+                    success: function (result) {
+                        ul.empty();
+                        if (result.error) {
+                            ul.append(
+                                $('<li>').append(
+                                    $('<p>').text(result.error).addClass('mb-0 text-danger')
+                                ).addClass('list-group-item')
+                            );
+                            return;
+                        }
+                        ul.append(
+                            $('<li>').append(
+                                $('<p>').text('Evaluaciones programadas').addClass('mb-0 text-main')
+                            ).addClass('list-group-item')
+                        );
+                        var evaluaciones = result.evaluaciones;
+                        var numEvaluaciones = evaluaciones.length;
+                        for (var i = 0; i < numEvaluaciones; i++) {
+                            var iEvaluacion = evaluaciones[i];
+                            var iBoton = $('<a>');
+                            var iKey = btoa([iEvaluacion.id, iEvaluacion.evaluacion, iEvaluacion.documento].join('|'));
+                            switch (iEvaluacion.vigencia) {
+                                case 'Pendiente':
+                                    iBoton.text('Responder').addClass('btn btn-success btn-sm');
+                                    break;
+                                case 'En curso':
+                                    iBoton.text('Continuar').addClass('btn btn-primary btn-sm');
+                                    break;
+                                case 'Finalizada':
+                                    iBoton.text('Finalizada').addClass('btn btn-light btn-sm border-secondary');
+                                    break;
+                                default:
+                                    iBoton.text('Iniciar').addClass('btn btn-success btn-sm');
+                                    break;
+                            }
+                            iBoton.attr('href', 'responder?key=' + encodeURIComponent(iKey)).addClass('my-auto');
+                            // btn btn-danger btn-sm dropdown-toggle
+                            ul.append(
+                                $('<li>').append(
+                                    $('<div>').append(
+                                        $('<p>').text(iEvaluacion.documento).addClass('font-weight-bold mb-0 my-auto mr-1')
+                                    ).append(
+                                        $('<div>').append(
+                                            $('<p>').text(iEvaluacion.descripcion).addClass('mb-1 text-dark')
+                                        ).append(
+                                            $('<p>').append(
+                                                $('<b>').text('Estado:').addClass('mr-1')
+                                            ).append(
+                                                $('<i>').text(iEvaluacion.vigencia).addClass('font-italic mr-2')
+                                            ).append(
+                                                $('<b>').text('Progreso:').addClass('mr-1')
+                                            ).append(
+                                                $('<i>').text(iEvaluacion.actual + ' de ' + iEvaluacion.preguntas).addClass('font-italic')
+                                            ).addClass('mb-0')
+                                        ).addClass('mb-0 px-2 my-auto mr-auto')
+                                    ).append(iBoton).addClass('d-flex w-100 justify-content-between')
+                                ).addClass('list-group-item')
+                            );
+                        }
+                    },
+                    error: function (err) {
+                        alert(err);
+                        return;
+                    }
+                });
+            }
+            // go!
+            $(function() {
+                $('#menu-evaluaciones').collapse('show')
+                $('#sidenav-mis-evaluaciones').addClass('active');
+                cargaListaEvaluaciones();
+            });
+        </script>
+    </body>
+</html>

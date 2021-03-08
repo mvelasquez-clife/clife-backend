@@ -10,13 +10,17 @@ module.exports = {
         const filename = vPath[numDirs - 1];
         const rutaLocal = fupload.tmppath + filename;
         return new Promise((resolve, reject) => {
+            resolve({
+                error: 'Servidor no encontrado'
+            });
+            return;
             const c = new ftp();
             c.on('ready', () => {
                 console.log('c ready');
                 c.get(rutaServidor, (err, stream) => {
                     console.log('c get');
                     if (err) {
-                        reject({
+                        resolve({
                             error: err
                         });
                         return;
@@ -41,14 +45,21 @@ module.exports = {
         vPath.pop();
         const remoteFolder = vPath.join('/');
         return new Promise((resolve, reject) => {
+            resolve({
+                error: 'Servidor no encontrado'
+            });
+            return;
             const c = new ftp();
             c.on('ready', function () {
+                console.log('ready!');
                 c.mkdir(remoteFolder, true, err => {
-                    if (err) reject({
+                    if (err) resolve({
                         error: err
                     });
+                    console.log('mkdir');
                     c.put(rutaLocal, rutaServidor, function (error) {
-                        if (error) reject({
+                        console.log('put');
+                        if (error) resolve({
                             error: error
                         });
                         c.end();
@@ -56,28 +67,35 @@ module.exports = {
                 });
             });
             c.on('close', () => {
+                console.log('closed');
                 resolve({
                     success: true
                 });
             });
+            console.log('conectando con las credenciales', ftpAccess.srvclife);
             c.connect(ftpAccess.srvclife);
         });
     },
     SubirRegistro: (rutaLocal, rutaServidor) => {
-        console.log('rutaLocal');
-        console.log(rutaLocal);
+        console.log('rutaLocal', rutaLocal);
         const vPath = rutaServidor.split('/');
         vPath.pop();
         const remoteFolder = vPath.join('/');
         return new Promise((resolve, reject) => {
+            resolve({
+                error: 'Servidor no encontrado'
+            });
+            return;
             const c = new ftp();
             c.on('ready', function () {
+                console.log('ready!');
                 c.mkdir(remoteFolder, true, err => {
-                    if (err) reject({
+                    if (err) resolve({
                         error: err
                     });
                     c.put(rutaLocal, rutaServidor, function (error) {
-                        if (error) reject({
+                        console.log('put');
+                        if (error) resolve({
                             error: error
                         });
                         c.end();
@@ -85,10 +103,12 @@ module.exports = {
                 });
             });
             c.on('close', () => {
+                console.log('closed');
                 resolve({
                     success: true
                 });
             });
+            console.log('conectando con las credenciales', ftpAccess.srvclife);
             c.connect(ftpAccess.srvdirtec);
         });
     },
@@ -99,13 +119,17 @@ module.exports = {
         const filename = vPath[numDirs - 1];
         const rutaLocal = fupload.tmppath + filename;
         return new Promise((resolve, reject) => {
+            resolve({
+                error: 'Servidor no encontrado'
+            });
+            return;
             const c = new ftp();
             c.on('ready', () => {
                 console.log('c ready');
                 c.get(rutaServidor, (err, stream) => {
                     console.log('c get');
                     if (err) {
-                        reject({
+                        resolve({
                             error: err
                         });
                         return;
@@ -124,5 +148,5 @@ module.exports = {
             });
             c.connect(ftpAccess.srvdirtec);
         });
-    },
+    }
 };

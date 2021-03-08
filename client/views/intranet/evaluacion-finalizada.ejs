@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            #sidebar-toggler {display:none}
+            .clickable {display:none}
+            .writable {position:relative;bottom:2px}
+            label{margin:0}
+        </style>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% include _main.sidenav.admin.ejs %>
+            <% include _main.sidenav.documentacion.ejs %>
+            <% include _main.sidenav.footer.ejs %>
+        </div>
+        <!-- content -->
+        <div id="main-content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="alert alert-light border-secondary px-4 py-3 mt-4" role="alert">
+                            <h5 class="text-dark font-weight-light mb-4">La evaluación del documento <span id="documento" class="font-weight-bold text-primary"><%-documento %></span> ha finalizado.</h5>
+                            <div id="dv-resultados" class="mb-5"></div>
+                            <p class="text-dark font-weight-light mb-5">¡Muchas gracias por participar</p>
+                            <p class="mt-4 text-right mb-0">
+                                <a href="evaluaciones" class="btn btn-sm btn-danger"><i class="fa fa-chevron-left mr-2"></i>Volver a la lista de evaluaciones</a>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-4 pt-5">
+                        <img src="/assets/intranet/images/bg-avatar-fin.png" alt="avatar" class="img-fluid mt-5">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            var sesion = JSON.parse('<%-sesion %>');
+            var id = parseInt('<%-id %>');
+            var evaluacion = parseInt('<%-evaluacion %>');
+            var documento = '<%-documento %>';
+            var progreso;
+
+            function escribirRespuestasEvaluado() {
+                var numRespuestas = respuestas.length;
+                var tbody = $('<tbody>');
+                for (var i = 0; i < numRespuestas; i++) {
+                    var irespuesta = respuestas[i];
+                    var tr = $('<tr>');
+                    tr.append(
+                        $('<th>').text(irespuesta.numero).addClass('text-right')
+                    ).append(
+                        $('<td>').text(irespuesta.enunciado)
+                    );
+                    var iclavespregunta = irespuesta.respuestas ? irespuesta.respuestas.split('|') : '';
+                    var respuestasEvaluado = irespuesta.respuesta ? irespuesta.respuesta.split('|') : '';
+                    switch (irespuesta.tipo) {
+                        case 1:
+                        case 2:
+                            var numClaves = iclavespregunta.length;
+                            var iulevaluado = $('<ul>');
+                            var iulcorrectas = $('<ul>');
+                            for (var j = 0; j < numClaves; j++) {
+                                var jsplitclaves = iclavespregunta[j].split('@*@');
+                                // agrega la respuesta del evaluado
+                                var jlieva = $('<li>').text(jsplitclaves[1]);
+                                if (respuestasEvaluado.indexOf(jsplitclaves[0]) > -1) {
+                                    jlieva.addClass('text-primary').prepend(
+                                        $('<i>').addClass('fa fa-check mr-1')
+                                    );
+                                }
+                                else {
+                                    jlieva.addClass('text-dark').prepend(
+                                        $('<i>').addClass('fa fa-times mr-1')
+                                    );
+                                }
+                                iulevaluado.append(jlieva);
+                                // agrega la respuesta correcta
+                                var jlirp = $('<li>').text(jsplitclaves[1]);
+                                if (jsplitclaves[2] == 'S') {
+                                    jlirp.addClass('text-success').prepend(
+                                        $('<i>').addClass('fa fa-check mr-1')
+                                    );
+                                }
+                                else {
+                                    jlirp.addClass('text-dark').prepend(
+                                        $('<i>').addClass('fa fa-times mr-1')
+                                    );
+                                }
+                                iulcorrectas.append(jlirp);
+                            }
+                            tr.append(
+                                $('<td>').append(iulevaluado.addClass('m-0 p-0 pl-2'))
+                            ).append(
+                                $('<td>').append(iulcorrectas.addClass('m-0 p-0 pl-2'))
+                            );
+                            break;
+                        case 3:
+                            // hacer replace en los "_"
+                            var ipartes = irespuesta.enunciado.split('_');
+                            var inumpartes = ipartes.length;
+                            var icontenidoeva = '';
+                            var icontenidorp = '';
+                            for (var j = 0; j < inumpartes; j++) {
+                                if (j > 0) {
+                                    var jsplitclaves = iclavespregunta[j - 1].split('@*@');
+                                    var jwordeva = respuestasEvaluado[j - 1];
+                                    var jwordrp = jsplitclaves[1];
+                                    icontenidoeva += '<span class="text-primary mx-1">' + jwordeva + '</span>';
+                                    icontenidorp += '<span class="text-success mx-1">' + jwordrp + '</span>';
+                                }
+                                icontenidoeva += ipartes[j].trim();
+                                icontenidorp += ipartes[j].trim();
+                            }
+                            tr.append(
+                                $('<td>').html(icontenidoeva)
+                            ).append(
+                                $('<td>').html(icontenidorp)
+                            );
+                            break;
+                        case 4:
+                            tr.append(
+                                $('<td>').addClass('text-dark').text('-')
+                            ).append(
+                                $('<td>').addClass('text-dark').text(irespuesta.respuesta)
+                            );
+                            break;
+                    }
+                    var iresultado = $('<i>');
+                    if (irespuesta.correcto == 'S') {
+                        iresultado.addClass('text-success fa fa-check');
+                    }
+                    else {
+                        iresultado.addClass('text-danger fa fa-times');
+                    }
+                    tr.append(
+                        $('<td>').append(iresultado).addClass('text-center')
+                    );
+                    tbody.append(tr);
+                }
+                $('#dv-resultados').empty().append(
+                    $('<p>').text('A continuación, le mostramos sus resultados').addClass('text-dark mb-2')
+                ).append(
+                    $('<table>').append(
+                        $('<thead>').append(
+                            $('<tr>').append(
+                                $('<th>').text('#')
+                            ).append(
+                                $('<th>').text('Pregunta')
+                            ).append(
+                                $('<th>').text('Respuesta evaluado')
+                            ).append(
+                                $('<th>').text('Respuesta correcta')
+                            ).append(
+                                $('<th>').text('Resultado')
+                            )
+                        )
+                    ).append(tbody).addClass('table table-striped table-hover mb-4')
+                ).append(
+                    $('<p>').text('El progreso obtenido fue de').append(
+                        $('<span>').text(progreso.toFixed(2) + ' %').addClass('btn btn-info ml-2')
+                    ).addClass('text-dark')
+                );
+            }
+            function cargaCalificacion(event) {
+                var a = $(this);
+                var data = {
+                    identificador: id,
+                    evaluacion: evaluacion,
+                    documento: documento,
+                    empresa: sesion.empresa,
+                    usuario: sesion.codigo
+                };
+                $.ajax({
+                    url: '/intranet/ver-calificacion-examen',
+                    method: 'get',
+                    data: data,
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.error) {
+                            $('#dv-resultados').html('<p class="mb-4 text-dark">Una vez que su evaluador califique sus respuestas, podrá ver los resultados de su evaluación en la sección <b>Resultados de evaluaciones</b>.</p>');
+                            return;
+                        }
+                        respuestas = result.resumen;
+                        progreso = result.calificacion;
+                        escribirRespuestasEvaluado();
+                        console.log(respuestas);
+                    },
+                    error: function (error) {
+                        alert(error);
+                    }
+                });
+            }
+
+            // go!
+            $(function() {
+                $('#menu-evaluaciones').collapse('show')
+                $('#sidenav-mis-evaluaciones').addClass('active');
+                cargaCalificacion();
+            });
+        </script>
+    </body>
+</html>

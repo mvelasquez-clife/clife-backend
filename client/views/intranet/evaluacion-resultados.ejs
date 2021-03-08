@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            .table thead th {vertical-align: middle}
+            .table-sm tbody td p {font-size: 0.75rem !important}
+            input[name=rb]:checked + label {font-weight: bold}
+        </style>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% include _main.sidenav.admin.ejs %>
+            <% include _main.sidenav.documentacion.ejs %>
+            <% include _main.sidenav.footer.ejs %>
+        </div>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Evaluaciones</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Programación</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Seleccione una evaluación</p>
+                            </li>
+                            <li class="list-group-item">
+                                <form id="form-usuario" class="py-1">
+                                    <div class="form-group row mb-2">
+                                        <label for="rpa-empresa" class="col-sm-2 col-form-label">Empresa</label>
+                                        <div class="col-sm-6">
+                                            <select id="rpa-empresa" class="form-control form-control-sm">
+                                                <option value="0">- Seleccione -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <label for="rpa-area" class="col-sm-2 col-form-label">Área</label>
+                                        <div class="col-sm-10">
+                                            <select id="rpa-area" class="form-control form-control-sm">
+                                                <option value="0">- Seleccione -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <label for="rpa-documento" class="col-sm-2 col-form-label">Documento</label>
+                                        <div class="col-sm-10">
+                                            <select id="rpa-documento" class="form-control form-control-sm">
+                                                <option value="0">- Seleccione -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <label for="rpa-evaluacion" class="col-sm-2 col-form-label">Evaluación</label>
+                                        <div class="col-sm-10">
+                                            <select id="rpa-evaluacion" class="form-control form-control-sm">
+                                                <option value="0">- Seleccione -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </li>
+                            <li class="list-group-item" id="examenes-container">
+                                <div class="row">
+                                    <div class="col">
+                                        <p class="text-secondary mb-0">No ha seleccionado ninguna evaluación para revisar</p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- modal calificacion -->
+        <div id="modal-calificacion" class="modal fade">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Calificar evaluación</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <input type="hidden" id="clf-usuario">
+                                <input type="hidden" id="clf-identificador">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Pregunta</th>
+                                            <th>Respuesta evaluado</th>
+                                            <th>Respuesta correcta</th>
+                                            <th>Calificación</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-respuestas"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="#" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancelar</a>
+                        <a href="#" class="btn btn-main btn-sm" id="clf-submit">Confirmar calificación</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+        <script>
+            var sesion = JSON.parse('<%-sesion %>');
+            var examenes;
+            var respuestas;
+            
+            function escribirRespuestasEvaluado() {
+console.log(respuestas);
+                var numRespuestas = respuestas.length;
+                for (var i = 0; i < numRespuestas; i++) {
+                    var irespuesta = respuestas[i];
+                    var tr = $('<tr>');
+                    tr.append(
+                        $('<th>').text(irespuesta.numero).addClass('text-right')
+                    ).append(
+                        $('<td>').text(irespuesta.enunciado)
+                    );
+                    var iclavespregunta = irespuesta.respuestas ? irespuesta.respuestas.split('|') : '';
+                    var respuestasEvaluado = irespuesta.respuesta ? irespuesta.respuesta.split('|') : '';
+                    switch (irespuesta.tipo) {
+                        case 1:
+                        case 2:
+                            var numClaves = iclavespregunta.length;
+                            var iulevaluado = $('<ul>');
+                            var iulcorrectas = $('<ul>');
+                            for (var j = 0; j < numClaves; j++) {
+                                var jsplitclaves = iclavespregunta[j].split('@*@');
+                                // agrega la respuesta del evaluado
+                                var jlieva = $('<li>').text(jsplitclaves[1]);
+                                if (respuestasEvaluado.indexOf(jsplitclaves[0]) > -1) {
+                                    jlieva.addClass('text-primary').prepend(
+                                        $('<i>').addClass('fa fa-check mr-1')
+                                    );
+                                }
+                                else {
+                                    jlieva.addClass('text-dark').prepend(
+                                        $('<i>').addClass('fa fa-times mr-1')
+                                    );
+                                }
+                                iulevaluado.append(jlieva);
+                                // agrega la respuesta correcta
+                                var jlirp = $('<li>').text(jsplitclaves[1]);
+                                if (jsplitclaves[2] == 'S') {
+                                    jlirp.addClass('text-success').prepend(
+                                        $('<i>').addClass('fa fa-check mr-1')
+                                    );
+                                }
+                                else {
+                                    jlirp.addClass('text-dark').prepend(
+                                        $('<i>').addClass('fa fa-times mr-1')
+                                    );
+                                }
+                                iulcorrectas.append(jlirp);
+                            }
+                            tr.append(
+                                $('<td>').append(iulevaluado.addClass('m-0 p-0 pl-2'))
+                            ).append(
+                                $('<td>').append(iulcorrectas.addClass('m-0 p-0 pl-2'))
+                            ).append(
+                                $('<td>').append(
+                                    $('<input>').attr({
+                                        'type': 'checkbox',
+                                        'data-numero': irespuesta.numero
+                                    }).prop('checked', irespuesta.correcto == 'S').attr('onclick', 'return false;').addClass('ch-calificacion')
+                                )
+                            );
+                            break;
+                        case 3:
+                            // hacer replace en los "_"
+                            var ipartes = irespuesta.enunciado.split('_');
+                            var inumpartes = ipartes.length;
+                            var icontenidoeva = '';
+                            var icontenidorp = '';
+                            for (var j = 0; j < inumpartes; j++) {
+                                if (j > 0) {
+                                    var jsplitclaves = iclavespregunta[j - 1].split('@*@');
+                                    var jwordeva = respuestasEvaluado[j - 1];
+                                    var jwordrp = jsplitclaves[1];
+                                    icontenidoeva += '<span class="text-primary mx-1">' + jwordeva + '</span>';
+                                    icontenidorp += '<span class="text-success mx-1">' + jwordrp + '</span>';
+                                }
+                                icontenidoeva += ipartes[j].trim();
+                                icontenidorp += ipartes[j].trim();
+                            }
+                            tr.append(
+                                $('<td>').html(icontenidoeva)
+                            ).append(
+                                $('<td>').html(icontenidorp)
+                            ).append(
+                                $('<td>').append(
+                                    $('<input>').attr({
+                                        'type': 'checkbox',
+                                        'data-numero': irespuesta.numero
+                                    }).prop('checked', irespuesta.correcto == 'S').addClass('ch-calificacion')
+                                )
+                            );
+                            break;
+                        case 4:
+                            tr.append(
+                                $('<td>').addClass('text-dark').text('-')
+                            ).append(
+                                $('<td>').addClass('text-dark').text(irespuesta.respuesta)
+                            ).append(
+                                $('<td>').append(
+                                    $('<input>').attr({
+                                        'type': 'checkbox',
+                                        'data-numero': irespuesta.numero
+                                    }).prop('checked', false).addClass('ch-calificacion')
+                                )
+                            );
+                            break;
+                    }
+                    $('#tbody-respuestas').append(tr);
+                }
+            }
+            function calificarExamen(event) {
+                var a = $(this);
+                $('#tbody-respuestas').empty();
+                var data = {
+                    identificador: a.data('identificador'),
+                    evaluacion: document.getElementById('rpa-evaluacion').value,
+                    documento: document.getElementById('rpa-documento').value,
+                    empresa: document.getElementById('rpa-empresa').value,
+                    usuario: a.data('usuario')
+                };
+                $.ajax({
+                    url: '/intranet/resumen-calificacion',
+                    method: 'get',
+                    data: data,
+                    dataType: 'json',
+                    success: function (result) {
+                        respuestas = result.resumen;
+                        document.getElementById('clf-identificador').value = data.identificador;
+                        document.getElementById('clf-usuario').value = data.usuario;
+                        escribirRespuestasEvaluado();
+                        // rellenar un popup con las calificaciones
+                        $('#modal-calificacion').modal('show');
+                    },
+                    error: function (error) {
+                        alert(error);
+                    }
+                });
+            }
+            function escribeListaEvaluaciones() {
+                var numExamenes = examenes.length;
+                if (numExamenes > 0) {
+                    var tbody = $('<tbody>');
+                    for (var i = 0; i < numExamenes; i++) {
+                        var examen = examenes[i];
+                        var calificacion = $('<td>');
+                        if (examen.revisado == '-' || examen.estado != 'Finalizada') {
+                            calificacion.text('-');
+                        }
+                        else {
+                            if (examen.revisado == 'S') {
+                                var color = 'light';
+                                if (examen.calificacion > 75) color = 'success';
+                                else {
+                                    if (examen.calificacion > 50) color = 'warning';
+                                    else color = 'danger';
+                                }
+                                calificacion.append(
+                                    $('<span>').text(examen.calificacion.toFixed(2) + ' %').addClass('btn btn-sm btn-' + color)
+                                );
+                            }
+                            else {
+                                calificacion.append(
+                                    $('<a>').attr('href','#').text('Calificar').data('usuario', examen.codigo).data('identificador', examen.identificador).addClass('btn btn-sm btn-danger').on('click', calificarExamen)
+                                );
+                            }
+                        }
+                        tbody.append(
+                            $('<tr>').append(
+                                $('<td>').text(examen.codigo).addClass('text-right')
+                            ).append(
+                                $('<td>').text(examen.usuario)
+                            ).append(
+                                $('<td>').text(examen.area)
+                            ).append(
+                                $('<td>').text(examen.puesto)
+                            ).append(
+                                $('<td>').text(examen.estado)
+                            ).append(
+                                $('<td>').text(examen.actual + ' de ' + examen.preguntas)
+                            ).append(
+                                $('<td>').text(examen.inicio)
+                            ).append(calificacion)
+                        );
+                    }
+                    $('#examenes-container').children('div').children('div').append(
+                        $('<table>').append(
+                            $('<thead>').append(
+                                $('<tr>').append(
+                                    $('<th>').text('Evaluado').attr('colspan', 2)
+                                ).append(
+                                    $('<th>').text('Área')
+                                ).append(
+                                    $('<th>').text('Puesto')
+                                ).append(
+                                    $('<th>').text('Estado')
+                                ).append(
+                                    $('<th>').text('Progreso')
+                                ).append(
+                                    $('<th>').text('Inicio')
+                                ).append(
+                                    $('<th>').text('Calificación')
+                                )
+                            )
+                        ).append(tbody).addClass('table table-striped table-hover')
+                    );
+                }
+                else {
+                    $('#examenes-container').children('div').children('div').append(
+                        $('<p>').text('No hay usuarios asignados a esta evaluación').addClass('text-secondary mb-0')
+                    );
+                }
+            }
+            function cargaListaEvaluados() {
+                $('#examenes-container').children('div').children('div').empty();
+                var data = {
+                    evaluacion: document.getElementById('rpa-evaluacion').value,
+                    empresa: document.getElementById('rpa-empresa').value
+                };
+                $.ajax({
+                    url: '/intranet/lista-examenes',
+                    method: 'get',
+                    data: data,
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        examenes = result.examenes;
+                        escribeListaEvaluaciones();
+                    },
+                    error: function(error) {
+                        alert(error);
+                    }
+                });
+            }
+            function cargaComboEvaluaciones() {
+                var empresa = document.getElementById('rpa-empresa').value;
+                var documento = document.getElementById('rpa-documento').value;
+                if (empresa != 0 && documento != 0) {
+                    $('#rpa-evaluacion').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    $.ajax({
+                        url: '/intranet/combo-evaluaciones',
+                        method: 'get',
+                        data: { empresa: empresa, documento: documento },
+                        dataType: 'json',
+                        success: function (result) {
+                            if (result.error) {
+                                alert(result.error);
+                                return;
+                            }
+                            var numEvaluaciones = result.options.length;
+                            for (var i = 0; i < numEvaluaciones; i++) {
+                                var evaluacion = result.options[i];
+                                $('#rpa-evaluacion').append(
+                                    $('<option>').val(evaluacion.value).text(evaluacion.text)
+                                );
+                            }
+                        },
+                        error: function(error) {
+                            alert(error);
+                        }
+                    });
+                }
+            }
+            function cargaComboDocumentos() {
+                var empresa = document.getElementById('rpa-empresa').value;
+                var area = document.getElementById('rpa-area').value;
+                if (empresa != 0 && area != 0) {
+                    $('#rpa-documento').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    $.ajax({
+                        url: '/intranet/lista-combos',
+                        method: 'post',
+                        data: { empresa: empresa, area: area, combo: 2 },
+                        dataType: 'json',
+                        success: function (result) {
+                            if (result.error) {
+                                alert(result.error);
+                                return;
+                            }
+                            var numDocumentos = result.options.length;
+                            for (var i = 0; i < numDocumentos; i++) {
+                                var documento = result.options[i];
+                                $('#rpa-documento').append(
+                                    $('<option>').val(documento.value).text(documento.text)
+                                );
+                            }
+                        },
+                        error: function(error) {
+                            alert(error);
+                        }
+                    });
+                }
+            }
+            function cargaComboAreas() {
+                var empresa = document.getElementById('rpa-empresa').value;
+                if (empresa != 0) {
+                    $('#rpa-area').empty().append(
+                        $('<option>').val(0).text('- TODAS -')
+                    );
+                    $('#rpa-documento').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    $.ajax({
+                        url: '/intranet/lista-combos',
+                        method: 'post',
+                        data: { empresa: empresa, area: -1, combo: 1 },
+                        dataType: 'json',
+                        success: function(result) {
+                            if (result.error) {
+                                alert(result.error);
+                                return;
+                            }
+                            var numAreas = result.options.length;
+                            for (var i = 0; i < numAreas; i++) {
+                                var area = result.options[i];
+                                $('#rpa-area').append(
+                                    $('<option>').val(area.value).text(area.text)
+                                );
+                            }
+                        },
+                        error: function(error) {
+                            alert(error);
+                        }
+                    });
+                }
+            }
+            function cargaComboEmpresas() {
+                $.ajax({
+                    url: '/intranet/lista-empresas',
+                    method: 'post',
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        var numItems = result.data.empresas.length;
+                        for (var i = 0; i < numItems; i++) {
+                            let empresa = result.data.empresas[i];
+                            $('#rpa-empresa').append(
+                                $('<option>').val(empresa.value).text(empresa.text)
+                            );
+                        }
+                        // combo tipos documento - busca x envio
+                        $('#rpa-documento').empty().append(
+                            $('<option>').val(0).text('- Seleccione -')
+                        );
+                    },
+                    error: function(error) {
+                        alert(error);
+                    }
+                });
+            }
+            function confirmarCalificacion(event) {
+                event.preventDefault();
+                if (window.confirm('¿Desea confirmar la calificación de esta evaluación?')) {
+                    var calificaciones = [];
+                    // recopilar la calificacion
+                    var inputs = $('.ch-calificacion');
+                    $.each(inputs, function() {
+                        var input = $(this);
+                        calificaciones.push([input.data('numero'), (input.prop('checked') ? 'S' : 'N')].join('~'));
+                    });
+                    var data = {
+                        identificador: document.getElementById('clf-identificador').value,
+                        evaluacion: document.getElementById('rpa-evaluacion').value,
+                        documento: document.getElementById('rpa-documento').value,
+                        empresa: document.getElementById('rpa-empresa').value,
+                        usuario: document.getElementById('clf-usuario').value,
+                        calificaciones: calificaciones.join('|')
+                    };
+                    $.ajax({
+                        url: '/intranet/calificar-examen',
+                        method: 'post',
+                        data: data,
+                        dataType: 'json',
+                        success: function (result) {
+                            if (result.error) {
+                                alert (result.error);
+                                return;
+                            }
+                            alert('El examen fue calificado con éxito');
+                            cargaListaEvaluados();
+                            $('#modal-calificacion').modal('hide');
+                        },
+                        error: function (error) {
+                            alert(error);
+                        }
+                    });
+                }
+            }
+            // go!
+            $(function() {
+                $('#menu-evaluaciones').collapse('show')
+                $('#sidenav-resultados-evaluaciones').addClass('active');
+                cargaComboEmpresas();
+                $('#rpa-empresa').on('change', cargaComboAreas);
+                $('#rpa-area').on('change', cargaComboDocumentos);
+                $('#rpa-documento').on('change', cargaComboEvaluaciones);
+                $('#rpa-evaluacion').on('change', cargaListaEvaluados);
+                $('#clf-submit').on('click', confirmarCalificacion);
+            });
+        </script>
+    </body>
+</html>

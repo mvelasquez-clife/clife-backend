@@ -8,21 +8,20 @@
     <title>re</title> 
     <div style="box-sizing:border-box;padding-left:15mm;width:100%;">
         <!-- <img src="file:///C:/clife-backend/public/assets/images/home/clife-ini.png" class="mx-auto mb-2 d-block" style="height:50px;">
-        <p style="font-size: 12pt;text-align:center;"><b><%=nom%></b></p> -->
-        <table style="font-family:Arial,Verdana;font-size:8pt;width:100%;text-align:center">               
+        <p style="font-size: 8pt;text-align:center;"><b><%=nom%></b></p> -->
+        <table style="font-family:Arial,Verdana;font-size:5pt;width:100%;text-align:center">               
             <thead>
                 <tr> 
-                    <th rowspan="2" style="width:auto; text-align:left;"><img src="file:///C:/clife-backend/public/assets/images/home/clife-ini.png" class="mx-auto mb-2 d-block" style="height:45px;"></th>
-                    <th rowspan="2" style="width:auto; font-size: 12pt;text-align:center;"><b><%=nom%></b></th>
-                    <th style="width:100px; text-align:center;"><b><%=esp%></b></th>
+                    <th rowspan="2" style="width:auto; text-align:left;"><img src="http://www.corporacionlife.com.pe/wp-content/uploads/2018/03/logo-corporacion-life-black-1.svg" class="mx-auto mb-2 d-block" style="height:45px;"></th>
+                    <th rowspan="2" style="width:auto; font-size: 8pt;text-align:center;"><b><%=nom%></b></th>
+                    <th style="width:100px; text-align:center; font-size: 8pt;"><b><%=esp%></b></th>
                 </tr>
                 <tr> 
-                    <th style="width:100px; text-align:center;">Ver.<%=vers%> </th>
+                    <th style="width:100px; text-align:center; font-size: 8pt;">Ver.<%=vers%> </th>
                 </tr>
             </thead>
         </table> 
-        <br>
-        <table style="font-family:Arial,Verdana;font-size:8pt;width:100%;text-align:center">               
+        <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;text-align:center">               
             <thead>
                 <tr>
                     <th style="width:auto; text-align:center;"><b><%=codigo%></b></th>
@@ -32,7 +31,6 @@
                 </tr>
             </thead>
         </table> 
-        <br>
     </div>
     <div style="box-sizing:border-box;padding-left:15mm;width:100%;">
         <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
@@ -57,21 +55,32 @@
                 </tr>
             </thead>
         </table>
-        <p style="font-size: 12pt;text-align:center;"><b>DESCRIPCION</b></p>
+        <table style="font-family:Arial;font-size:7pt;width:100%;">
+            <tbody>
+                <tr>
+                <td class="a" style="font-size: 7pt;text-align:center;"><b>DESCRIPCION</b></td>
+                </tr>
+            </tbody>
+        </table>
         <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
             <thead>
                 <tr>
                     <td style="text-align:left;"><b>MARCA: </b><%=marc%></th>
                     <td style="text-align:left;"><b>SUB.Marca: </b><%=sub%></td>
                     <% filas2.forEach(function(fila) { %>
-                        <td style="text-align:left;"><b>PROVEEDOR: </b><%-fila.DE_PROVEEDOR%></td>
                         <td style="text-align:left;"><b>NSOC: </b><%-fila.CO_NSOC%></td>
                     <% }); %>
                 </tr>
             </thead>
         </table>
-        <p style="font-size: 12pt;text-align:center;"><b>CARACTERISTICAS</b></p>
         <table style="font-family:Arial;font-size:7pt;width:100%;">
+            <tbody>
+                <tr>
+                <td class="a" style="font-size: 7pt;text-align:center;"><b>CARACTERISTICAS</b></td>
+                </tr>
+            </tbody>
+        </table>
+        <table style="font-family:Arial;font-size:5pt;width:100%;">
             <thead>
                 <tr>
                     <% filas2.forEach(function(fila) { %>
@@ -122,30 +131,32 @@
     <div>
         <div class="col-12 col-lg-5">
             <form id="form-login" method="post" action="auth-login" class="py-5 mt-5">
-                <br>
+
                 </form>
             </div>
             
     <div style="box-sizing:border-box;padding-left:15mm;width:100%;">
-        <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
+        <table style="font-family:Arial,Verdana;font-size:5pt;width:100%;">
             <thead>
                 <tr>
-                    <th style="text-align:center;">Método</th>
-                    <th style="text-align:center;">Ensayo</th>
-                    <th style="text-align:center;">Especificaciones</th>
+                    <th style="text-align:center;">ENSAYO</th>
+                    <th style="text-align:center;">METODO</th>
+                    <th style="text-align:center;">UNIDADES</th>
+                    <th style="text-align:center;">ESPECIFICACIONES</th>
                 </tr>
             </thead>
             <tbody>
             <% filas.forEach(function(fila) { %>
                 <tr>
-                    <td style="text-align:left;"><%=fila.DE_METODO%></td>
                     <td style="text-align:left;"><%=fila.DE_ENSAYO%></td>
+                    <td style="text-align:left;"><%=fila.DE_METODO%></td>
+                    <td style="text-align:center;"><%=fila.DE_ABREVIATURA%></td>
                     <td style="text-align:left;"><%=fila.DE_ESPECIFICACIONES%></td>
                 </tr>
             <% }); %>
             </tbody>
         </table>
-        <p style="font-size: 12pt;text-align:center;">CONDICIONES DE ALMACENAMIENTO</p>
+        <p style="font-size: 8pt;text-align:center;">CONDICIONES DE ALMACENAMIENTO</p>
         <table style="font-family:Arial,Verdana;font-size:7pt;width:100%;">
             <thead>
                 <tr>
@@ -158,7 +169,10 @@
 
     </div>
     </div>
-
-
+    <footer>
+        <%if(grupo==4){ %>
+            <p style="font-size: 10pt;color:black;text-align:right;"><b>F/DRT-015</b></p>
+        <%}; %>   
+    </footer> 
 </body>
 </html>

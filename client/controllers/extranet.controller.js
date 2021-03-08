@@ -6,6 +6,7 @@ const mv = require('mv');
 const formidable = require('formidable');
 const fupload = require('../../server/fupload');
 const xlsx = require('xlsx');
+const db = require('../../server/libs/db-oracle');
 
 const responseParams = {
     outFormat: oracledb.OBJECT
@@ -64,8 +65,15 @@ const extranetController = {
         if (request.cookies[CookieId]) {
             let sesion = request.cookies[CookieId];
             const { pedido } = request.params;
+            // verifica si hay results
+            var mensajes = JSON.stringify([]);
+console.log('results', request.cookies['results']);
+            if (request.cookies['results']) {
+                mensajes = request.cookies['results'];
+                // response.clearCookie('results');
+            }
             // go!
-            response.render(path.resolve('client/views/extranet/detalle-pedido.ejs'), { sesion: JSON.stringify(JSON.parse(sesion)), pedido: pedido });
+            response.render(path.resolve('client/views/extranet/detalle-pedido.ejs'), { sesion: JSON.stringify(JSON.parse(sesion)), pedido: pedido, mensajes: JSON.stringify(JSON.parse(mensajes)) });
         }
         else response.redirect('/extranet/login');
     },
@@ -83,7 +91,6 @@ const extranetController = {
             };
             result = await conn.execute(query, params, responseParams);
             result = result.rows[0];
-console.log(result);
             conn.close();
             if (result.stact == 'N') {
                 response.cookie('auth-err','Su cuenta no está ativada. Utilice el enlace proporcionado en el correo de confirmación enviado al momento de su registro.', { httpOnly: true });
@@ -175,8 +182,6 @@ console.log(result);
                     p_empresa: { val: tipo == 'E' ? UserExpo.empresa : UserNac.empresa },
                     p_texto: { val: texto }
                 };
-console.log(query);
-console.log(params);
                 result = await conn.execute(query, params, responseParams);
                 conn.close();
                 response.json({
@@ -212,10 +217,8 @@ console.log(params);
                 params = {
                     p_data: { val: xdata }
                 };
-console.log(query, params);
                 result = await conn.execute(query, params, responseParams);
                 let sCliente = result.rows[0].out.split('@');
-// yrazonsocial||'@'||nvl(ydisponible,0)||'@'||nvl(yimpsolicitud, 0)||'@'||nvl(ydeuda, 0)||'@'||yestado||'@'||ymensaje||'@'||ynumdirecc||'@'||ycodireccion||'@'||ycocliente;
                 sCliente = {
                     codigo: sCliente[8],
                     nombre: sCliente[0],
@@ -258,8 +261,6 @@ console.log(query, params);
                     params = {
                         p_alias: { val: UserNac.alias }
                     };
-console.log(query);
-console.log(params);
                     result = await conn.execute(query, params, responseParams);
                     if (result.rows.length > 0) {
                         let string = result.rows[0].OUT;
@@ -302,7 +303,6 @@ console.log(params);
                     p_empresa: 11,
                     p_moneda: cmoneda
                 };
-console.log(query, params);
                 result = await conn.execute(query, params, responseParams);
                 sCtacte = result.rows;
                 // out
@@ -343,7 +343,6 @@ console.log(query, params);
                     o_resultado: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
                     o_pedido: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
                 };
-console.log(query, params);
                 const result = await conn.execute(query, params, responseParams);
                 const { o_resultado, o_pedido } = result.outBinds;
                 conn.close();
@@ -418,8 +417,8 @@ console.log(query, params);
                 };
                 // carga detalle del pedido
                 query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
-                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\" from " + 
-                    "table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
+                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", " + 
+                    "cjsnivel \"cjsnivel\", maxniveles \"maxniveles\" from table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
                 params = {
                     p_tipo: { val: sesion.tipo },
                     p_empresa: { val: cEmpresa },
@@ -435,11 +434,34 @@ console.log(query, params);
                 };
                 result = await conn.execute(query, params, responseParams);
                 let dCliente = result.rows[0];
+                // estado del pedido
+                query = "call pack_new_web_expo.sp_estado_admin_pedido(:o_codigo, :o_estado, :p_prepedido, :p_empresa, :p_codigo)";
+                params = [
+                    { name: 'o_codigo', io: 'out', type: 'number' },
+                    { name: 'o_estado', io: 'out', type: 'string' },
+                    { name: 'p_prepedido', io: 'in', value: pedido },
+                    { name: 'p_empresa', io: 'in', value: UserExpo.empresa },
+                    { name: 'p_codigo', io: 'in', value: sesion.codigo }
+                ];
+                result = await db.resultSet(query, params);
+                if (result.error) {
+                    response.json({
+                        error: result.error
+                    });
+                    return;
+                }
+                if (result.o_codigo == 0) {
+                    response.json({
+                        error: result.o_estado
+                    });
+                    return;
+                }
                 // escribir
                 conn.close();
                 response.json({
                     pedido: dPedido,
-                    cliente: dCliente
+                    cliente: dCliente,
+                    revision: result.o_estado
                 });
             }
             catch (err) {
@@ -519,7 +541,7 @@ console.log(query, params);
                         p_serielista: { val: serie },
                         p_fventa: { val: fventa },
                         p_listaprec: { val: lista },
-                        p_pventa: { val: pventa },
+                        p_pventa: { val: producto.pventa },
                         //,
                         o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
                         o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
@@ -535,7 +557,7 @@ console.log(query, params);
                 }
                 // carga detalle del pedido
                 query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
-                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\" from " +
+                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", 100 \"pcaja\" from " +
                     "table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
                 params = {
                     p_tipo: { val: sesion.tipo },
@@ -589,7 +611,7 @@ console.log(query, params);
                     else mensajes.push({ error: o_mensaje });
                 }
                 let query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
-                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\" from " +
+                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", 100 \"pcaja\" from " +
                     "table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
                 let params = {
                     p_tipo: { val: sesion.tipo },
@@ -642,7 +664,7 @@ console.log(query, params);
                     else mensajes.push({ error: o_mensaje });
                 }
                 let query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
-                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\" from " +
+                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", 100 \"pcaja\" from " +
                     "table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
                 let params = {
                     p_tipo: { val: sesion.tipo },
@@ -698,7 +720,7 @@ console.log(query, params);
                 }
                 // detalle del pedido
                 query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
-                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\" from " +
+                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", 100 \"pcaja\" from " +
                     "table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
                 params = {
                     p_tipo: { val: sesion.tipo },
@@ -764,7 +786,7 @@ console.log(query, params);
                     if (err) throw err;
                     let productos = new Map();
                     for (let producto of catalogo) {
-                        productos.set(producto.codigo, producto);
+                        productos.set(producto.ean + '', producto);
                     }
                     // ya tengo el catalogo de productos. ahora, debo leer el xlsx
                     var workbook = xlsx.readFile(newpath);
@@ -775,7 +797,7 @@ console.log(query, params);
                         const conn = await oracledb.getConnection(dbParams);
                         let query;
                         if (sesion.tipo == 'E') {
-                            query = "select co_punto_venta \"pventa\", co_serie_listado \"serie\", co_listado_precios \"lista\", co_fuerza_venta \"fventa\" from vt_pre_pedi_c where co_pre_pedido = :p_pedido and co_empresa = :p_empresa";
+                            query = "select co_punto_venta \"pventa\", co_serie_listado \"serie\", co_listado_precios \"lista\", co_fuerza_venta \"fventa\" from vt_pre_pedi_t where co_pre_pedido = :p_pedido and co_empresa = :p_empresa";
                         }
                         else {
                             query = "select co_punto_venta \"pventa\", co_serie_listado \"serie\", co_listado_precios \"lista\", co_fuerza_venta \"fventa\" from vt_pedi_t where co_pedido = :p_pedido and co_empresa = :p_empresa";
@@ -788,44 +810,54 @@ console.log(query, params);
                         let { pventa, serie, lista, fventa } = result.rows[0];
                         //
                         let mensajes = [];
+                        let contadorrr = 0;
                         for (let row of xlData) {
+contadorrr++;
+console.log(contadorrr, row.CODE);
+                            let tpingreso = row['PRICE FOB US$'] == 0 ? 'P' : 'L';
                             let query = "call pack_new_web_expo.sp_agrega_producto_expo(:p_pedido, :p_empresa, :p_producto, :p_cantidad, :p_tpventa, :p_serielista, :p_fventa, :p_listaprec, :p_pventa, :o_codigo, :o_mensaje)";
-                            let producto = productos.get(row.CODE);
-                            // if (producto.stock >= row.QTY) {
-                            if (producto.stock >= 0) {
-                                let params = {
-                                    p_pedido: { val: pedido },
-                                    p_empresa: { val: cEmpresa },
-                                    p_producto: { val: producto.codigo },
-                                    p_cantidad: { val: row.QTY },
-                                    p_tpventa: { val: 'L' },
-                                    p_serielista: { val: serie },
-                                    p_fventa: { val: fventa },
-                                    p_listaprec: { val: lista },
-                                    p_pventa: { val: pventa },
-                                    o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-                                    o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
-                                };
-                                let result = await conn.execute(query, params, responseParams);
-                                const { o_codigo, o_mensaje } = result.outBinds;
-                                if (o_codigo == 1) {
-                                    mensajes.push({ result: o_mensaje });
-                                }
+                            if (productos.has(row.CODE + '')) {
+                                let producto = productos.get(row.CODE + '');
+                                // if (producto.stock >= row.QTY) {
+                                // if (producto.stock >= 0) {
+                                    let params = {
+                                        p_pedido: { val: pedido },
+                                        p_empresa: { val: cEmpresa },
+                                        p_producto: { val: producto.codigo },
+                                        p_cantidad: { val: row.QTY },
+                                        p_tpventa: { val: tpingreso },
+                                        p_serielista: { val: serie },
+                                        p_fventa: { val: fventa },
+                                        p_listaprec: { val: lista },
+                                        p_pventa: { val: pventa },
+                                        o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                                        o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+                                    };
+                                    let result = await conn.execute(query, params, responseParams);
+                                    const { o_codigo, o_mensaje } = result.outBinds;
+                                    if (o_codigo == 1) {
+                                        mensajes.push({ result: o_mensaje, codigo: row.CODE, nombre: row.DESCRIPTION, cantidad: row.QTY, tipo: tpingreso });
+                                    }
+                                    else {
+                                        mensajes.push({ error: o_mensaje, codigo: row.CODE, nombre: row.DESCRIPTION, cantidad: row.QTY, tipo: tpingreso });
+                                    }
+                                /*}
                                 else {
-                                    mensajes.push({ error: o_mensaje });
-                                }
+                                    mensajes.push({ error: 'El stock de ' + producto.nombre + ' es insuficiente' });
+                                }*/
                             }
                             else {
-                                mensajes.push({ error: 'El stock de ' + producto.nombre + ' es insuficiente' });
+                                let msgError = 'No se encontró el producto ' + row.CODE;
+console.log('error:', msgError);
+                                mensajes.push({ error: msgError, codigo: row.CODE, nombre: row.DESCRIPTION, cantidad: row.QTY, tipo: tpingreso });
                             }
                         }
-console.log(mensajes);
                         conn.close();
                     }
                     catch (err) {
                         console.error(err);
                         response.json({
-                            error: err
+                            error: err.message
                         });
                     }
                     //
@@ -904,6 +936,248 @@ console.log(mensajes);
         }
         else response.json({
             error: 'Su sesión expiró'
+        });
+    },
+    // nuevos
+    ListPedidosPendientes: async (request, response) => {
+        const { empresa } = request.query;
+        const query = "call pack_new_web_expo.sp_pedidos_pendientes(:p_result, :p_mensaje, :p_pedidos, :p_empresa)";
+        const params = [
+            { name: 'p_result', io: 'out', type: 'number' },
+            { name: 'p_mensaje', io: 'out', type: 'string' },
+            { name: 'p_pedidos', io: 'out', type: 'cursor' },
+            { name: 'p_empresa', io: 'in', value: empresa }
+        ];
+        const result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.p_result == 0) {
+            response.json({
+                error: result.p_mensaje
+            });
+            return;
+        }
+        response.json({
+            pedidos: result.p_pedidos
+        });
+    },
+    ProductosPedido: async (request, response) => {
+        const { tipo, empresa, codigo } = request.query;
+        const query = "call pack_new_web_expo.sp_productos_pedido(:x_result, :x_mensaje, :x_detalle, :x_tipo, :x_empresa, :x_codigo)";
+        const params = [
+            { name: 'x_result', io: 'out', type: 'number' },
+            { name: 'x_mensaje', io: 'out', type: 'string' },
+            { name: 'x_detalle', io: 'out', type: 'cursor' },
+            { name: 'x_tipo', io: 'in', value: tipo },
+            { name: 'x_empresa', io: 'in', value: empresa },
+            { name: 'x_codigo', io: 'in', value: codigo }
+        ];
+        const result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.x_result == 0) {
+            response.json({
+                error: result.x_mensaje
+            });
+            return;
+        }
+        response.json({
+            pedidos: result.x_detalle
+        });
+    },
+    ProcesarPrePedido: async (request, response) => {
+        const { empresa, prepedido } = request.body;
+        const query = "call pack_new_web_expo.sp_registra_pedido(:x_result,:x_de_result,:x_pedido,:x_empresa,:x_pre_pedido,:p_alias)";
+        const params = [
+            { name: 'x_result', io: 'out', type: 'number' },
+            { name: 'x_de_result', io: 'out', type: 'string' },
+            { name: 'x_pedido', io: 'out', type: 'string' },
+            { name: 'x_empresa', io: 'in', value: empresa },
+            { name: 'x_pre_pedido', io: 'in', value: prepedido },
+            { name: 'p_alias', io: 'in', value: UserExpo.alias }
+        ];
+        const result = await db.statement(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.out.x_result == 0) {
+            response.json({
+                error: result.out.x_de_result
+            });
+            return;
+        }
+        response.json({
+            pedido: result.out.x_pedido
+        });
+    },
+    CheckInPedido: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            let sesion = request.cookies[CookieId];
+            const { prepedido } = request.params;
+            response.render(path.resolve('client/views/extranet/checkout-pedido.ejs'), { sesion: JSON.stringify(JSON.parse(sesion)), prepedido: prepedido });
+        }
+        else response.redirect('/extranet/login');
+    },
+    CargaStockDetallePedido: async (request, response) => {
+        //olakease
+        if (request.cookies[CookieId]) {
+            const { eans, prepedido, cliente } = request.query;
+            const sesion = JSON.parse(request.cookies[CookieId]);
+            let query = "select codigo \"codigo\", ean \"ean\", pvta \"pventa\", stock \"stock\" from table(pack_new_web_expo.f_productos_stock(:p_empresa, :p_pedido, :p_eans))";
+            let params = [
+                { name: 'p_empresa', io: 'in', value: UserExpo.empresa },
+                { name: 'p_pedido', io: 'in', value: prepedido },
+                { name: 'p_eans', io: 'in', value: eans }
+            ];
+            let result = await db.select(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            let rproductos = result.rows;
+            // carga los datos del cliente
+            const cmoneda = sesion.tipo == 'E' ? 2 : 1;
+            const calias = sesion.tipo == 'E' ? UserExpo.alias : UserNac.alias;
+            let xdata = [calias, cliente, 34, cmoneda].join('@');
+            query = "select pack_new_clife_clientes.f_v_ctacte_cliente(:p_data) \"out\" from dual";
+            params = [
+                { name: 'p_data', io: 'in', value: xdata }
+            ];
+            result = await db.select(query, params);
+            console.log(result);
+            let sCliente = result.rows[0].out.split('@');
+            sCliente = {
+                codigo: sCliente[8],
+                nombre: sCliente[0],
+                disponible: parseFloat(sCliente[1]),
+                solicitud: parseFloat(sCliente[2]),
+                deuda: parseFloat(sCliente[3]),
+                moneda: sCliente[9]
+            };
+            // go
+            response.json({
+                data: rproductos,
+                cliente: sCliente
+            });
+        }
+        else response.redirect('/extranet/login');
+    },
+    VerificaPedidoAdmin: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            const { prepedido } = request.query;
+            const sesion = JSON.parse(request.cookies[CookieId]);
+            const query = "call pack_new_web_expo.sp_estado_admin_pedido(:o_codigo, :o_estado, :p_prepedido, :p_empresa, :p_codigo)";
+            const params = [
+                { name: 'o_codigo', io: 'out', type: 'number' },
+                { name: 'o_estado', io: 'out', type: 'string' },
+                { name: 'p_prepedido', io: 'in', value: prepedido },
+                { name: 'p_empresa', io: 'in', value: UserExpo.empresa },
+                { name: 'p_codigo', io: 'in', value: sesion.codigo }
+            ];
+            const result = await db.resultSet(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            if (result.o_codigo == 0) {
+                response.json({
+                    error: result.o_estado
+                });
+                return;
+            }
+            response.json({
+                estado: result.o_estado
+            });
+        }
+        else response.json({
+            error: 'No tiene permisos para acceder aquí'
+        });
+    },
+    CabeceraSolicitudCredito: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            const { cliente } = request.query;
+            const query = "call pack_new_web_expo.sp_cabecera_solcrd(:o_codigo, :o_estado, :o_fventa, :o_cpago, :p_alias, :p_cliente)";
+            const params = [
+                { name: 'o_codigo', io: 'out', type: 'number' },
+                { name: 'o_estado', io: 'out', type: 'string' },
+                { name: 'o_fventa', io: 'out', type: 'cursor' },
+                { name: 'o_cpago', io: 'out', type: 'cursor' },
+                { name: 'p_alias', io: 'in', value: UserExpo.alias },
+                { name: 'p_cliente', io: 'in', value: cliente }
+            ];
+            const result = await db.resultSet(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            if (result.o_codigo == 0) {
+                response.json({
+                    error: result.o_estado
+                });
+                return;
+            }
+            response.json({
+                fventa: result.o_fventa[0],
+                cpago: result.o_cpago
+            });
+        }
+        else response.json({
+            error: 'No tiene permisos para acceder aquí'
+        });
+    },
+    EnviarSolicitudCredito: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            const { cliente, importe, inicial, fventa, cpago, observaciones } = request.query;
+            const query = "call pack_new_web_expo.sp_envia_solicitud_credito (o_result, o_mensaje, p_alias, p_ruc, p_importe, p_inicial, p_semanal, p_fventa, p_cpago, p_moneda, p_observacion)";
+            const params = [
+                { name: 'o_codigo', io: 'out', type: 'number' },
+                { name: 'o_estado', io: 'out', type: 'string' },
+                { name: 'p_alias', io: 'in', value: UserExpo.alias },
+                { name: 'p_ruc', io: 'in', value: cliente },
+                { name: 'p_importe', io: 'in', value: importe },
+                { name: 'p_inicial', io: 'in', value: 0 },
+                { name: 'p_semanal', io: 'in', value: inicial },
+                { name: 'p_fventa', io: 'in', value: fventa },
+                { name: 'p_cpago', io: 'in', value: cpago },
+                { name: 'p_moneda', io: 'in', value: 2 },
+                { name: 'p_observacion', io: 'in', value: observaciones }
+            ];
+            const result = await db.resultSet(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            if (result.o_codigo == 0) {
+                response.json({
+                    error: result.o_estado
+                });
+                return;
+            }
+            response.json({
+                success: true
+            });
+        }
+        else response.json({
+            error: 'No tiene permisos para acceder aquí'
         });
     }
 };

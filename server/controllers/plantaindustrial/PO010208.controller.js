@@ -189,8 +189,7 @@ const po010208Controller = {
     },
 
     grabarnsoc: (req, res) => {        
-        const {empresa,usuario,alias,num_registro_nsoc,vigencia_ini,vigencia_ter,nombre,form_cosm,espec,tvu_com,tvu_prod,version} = req.body;  
-        console.log(empresa,usuario,alias,num_registro_nsoc,vigencia_ini,vigencia_ter,nombre,form_cosm,espec,tvu_com,tvu_prod,version);
+        const {empresa,usuario,alias,num_registro_nsoc,vigencia_ini,vigencia_ter,nombre,form_cosm,espec,tvu_com,tvu_prod,version,accion} = req.body;  
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -199,7 +198,7 @@ const po010208Controller = {
                 });
                 return;
             }
-            const query = "call PACK_NEW_DIRECCION_TECN.SP_NOTIFICACION_SANITARIA (:x_result,:x_de_result,:x_empresa,:x_usuario,:x_alias,:x_num_registro_nsoc,:x_vigencia_ini,:x_vigencia_ter,:x_nombre,:x_form_cosm,:x_co_espec,:tvu_com,:tvu_prod,:x_version)";
+            const query = "call PACK_NEW_DIRECCION_TECN.SP_NOTIFICACION_SANITARIA (:x_result,:x_de_result,:x_empresa,:x_usuario,:x_alias,:x_num_registro_nsoc,:x_vigencia_ini,:x_vigencia_ter,:x_nombre,:x_form_cosm,:x_co_espec,:tvu_com,:tvu_prod,:x_version,:x_accion)";
             const params = { 
                 //parametros de salida
                 x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
@@ -216,7 +215,8 @@ const po010208Controller = {
                 x_co_espec: {val:espec},
                 tvu_com: {val:tvu_com},
                 tvu_prod: {val:tvu_prod},
-                x_version: {val:version}
+                x_version: {val:version},
+                x_accion: {val:accion}
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
@@ -240,7 +240,6 @@ const po010208Controller = {
     
     mostrarnso: (req, res) => {          
         const {buscador} = req.params;  
-        console.log(buscador);
         
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
@@ -266,7 +265,6 @@ const po010208Controller = {
     
     mostrarproductosnso: (req, res) => {          
         const {co_nso} = req.params;  
-        console.log(co_nso);
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
@@ -319,7 +317,6 @@ const po010208Controller = {
             var form = new formidable.IncomingForm();
             form.parse(request, async function (err, fields, files) {
                 if (err) {
-                    console.log('form.parse', err);
                     response.json({
                         error: err
                     });
@@ -327,28 +324,16 @@ const po010208Controller = {
                 }
                 const sFilename = 'Formula.pdf';
                 var oldpath = files.pdf.path;
-                console.log(fields.nsoc);
                 var rfilename = fields.tipo+'_'+fields.nsoc+'.pdf';
                 var rutaserv = 'public/files/direccion_tecnica/'+fields.tipo+'/nso_'+fields.nsoc+'.pdf';
                 var newpath = fupload.tmppath + 'unsigned_' + rfilename;
                 mv(oldpath, newpath, async function (err) {
-                    console.log('entro11');
                     if (err) {
                         console.log('mv', err);
                         response.json({
                             error: err
                         });
                     }
-                    // console.log(newpath);
-                    // const newpathsigned = fupload.tmppath + 'unsigned_' + rfilename;
-                    // const ftpmanager = require('./../../libs/ftp-manager');
-                    // let result = await ftpmanager.SubirRegistro(newpathsigned, rutaserv);
-                    // if (result.error) {
-                    //     response.json({ 
-                    //         error: result.error
-                    //     });
-                    //     return;
-                    // } // fin ftp-manager
                     response.json({
                         result: 'ok'
                     });
@@ -368,7 +353,6 @@ const po010208Controller = {
         var newpath = fupload.tmppath + 'unsigned_' + rfilename;
         fs.stat(newpath, async function(err) {
             if (!err) {    
-                console.log('entra fs'); 
                 
                 res.send({ 'state': 'success','message': "https://mail.corporacionlife.com.pe/service/home/~/?auth=co&loc=es&id=2972&part=2" });
                 
@@ -490,34 +474,6 @@ const po010208Controller = {
         });
     },
     
-    mostrarespecificacion: (req, res) => { 
-            
-        const {empresa,grupo,clase,tipo} = req.params;  
-        console.log(empresa,grupo,clase,tipo);
-        oracledb.getConnection(dbParams, (err, conn) => {
-            if (err) {
-                res.send({ state: 'error', error_conexion: err.stack });
-                return;
-            }
-            const query = "select * from table (pack_new_especificacion.f_list_especificacion(:x_empresa,:x_grupo,:x_clase,:x_tipo))";
-            
-            const params = {
-                x_empresa: {val : empresa},
-                x_grupo: {val : grupo},
-                x_clase: {val : clase},
-                x_tipo: {val : tipo},
-            };
-            conn.execute(query, params, responseParams, (error, result) => {
-                conn.close();
-                if (error) {
-                    res.send({ 'error_query': error.stack });
-                    return;
-                }
-                res.set('Content-Type', 'text/xml');
-                res.send(result.rows.length > 0 ? xmlParser.renderXml(result.rows) : xmlParser.renderXml([{ CO_PRODUCTO: 'No se encontraron coincidencias' }]));
-            });
-        });
-    },
 
     mostrarformacosm: (req, res) => { 
             
@@ -544,7 +500,6 @@ const po010208Controller = {
     
     aprobarform: (req, res) => {        
         const {empresa,formula,producto,usuario,alias,vigencia} = req.body; 
-        console.log(empresa,formula,producto,usuario,alias,vigencia); 
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -569,7 +524,6 @@ const po010208Controller = {
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
                 if (error) {
-                    console(error);
                     res.send({ 'error_query': error.stack });
                     return;
                 }
@@ -615,8 +569,7 @@ const po010208Controller = {
     
     mostrarespproducto: (req, res) => { 
          
-        const {empresa,buscar,co_clase,co_familia,co_subfamilia,co_marca,co_submarca} = req.params;  
-        console.log(empresa,buscar,co_clase,co_familia,co_subfamilia,co_marca,co_submarca);
+        const {empresa,buscar,co_clase,co_familia,co_subfamilia,co_marca,co_submarca} = req.params; 
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
@@ -647,7 +600,6 @@ const po010208Controller = {
 
     grabarformacosm: (req, res) => {        
         const {co_forma,estado,des_forma,accion} = req.body;  
-        console.log(co_forma,estado,des_forma,accion);
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -688,8 +640,7 @@ const po010208Controller = {
     },
     
     mostrarprodporesp: (req, res) => {             
-        const {empresa,especificacion,version} = req.params;  
-        console.log(empresa,especificacion,version);
+        const {empresa,especificacion,version} = req.params; 
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
@@ -796,7 +747,7 @@ const po010208Controller = {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select co_metodo_anal,de_metodo,co_ensayo,de_ensayo,de_especificaciones,limit_min,limit_max,de_tipo_ensayo,des_objetivo_ensayo from table (pack_new_especificacion.f_list_ensayo(:x_empresa,:x_espec,:x_version))";
+            const query = "select co_metodo_anal,de_metodo,co_ensayo,de_ensayo,de_especificaciones,limit_min,limit_max,de_abreviatura,de_tipo_ensayo,des_objetivo_ensayo from table (pack_new_especificacion.f_list_ensayo(:x_empresa,:x_espec,:x_version))";
             
             const params = {
                 x_empresa: {val : empresa},
@@ -831,11 +782,17 @@ const po010208Controller = {
                 const result_n = await conn.execute(query_n, params, responseParams);
                 const filas_n = result_n.rows;
 
-                let query_p = "select fe_creacion,de_creador,de_revisado,de_aprueba from table (pack_new_especificacion.f_list_caract_report(11,:x_espec,:x_vers))";                
+                let query_p = "select fe_creacion,de_creador,de_revisado,de_aprueba,to_char(de_caracteris_generales) DE_CARACTERIS_GENERALES from table (pack_new_especificacion.f_list_caract_report(11,:x_espec,:x_vers))";                
                 
                 const result_p = await conn.execute(query_p, params, responseParams);
                 const filas_p = result_p.rows;
 
+                filas_p.forEach(fila => {
+                    let value = fila.DE_CARACTERIS_GENERALES;
+                    if (value && value.length > 0) {
+                        fila.DE_CARACTERIS_GENERALES = value.replace(/\r\n/g, '<br />');
+                    }
+                });
                 const pdfWriter = require('html-pdf');
                 const ejs = require('ejs');
                 // const d = new Date();
@@ -849,7 +806,7 @@ const po010208Controller = {
                     filas_n:filas_n,
                     filas_p:filas_p,
                 };
-                const html = await ejs.renderFile(path.resolve('client/views/modulos/plantaindustrial/po0102008-report1.ejs'), data);
+                const html = await ejs.renderFile(path.resolve('client/views/modulos/plantaindustrial/PO0102008-report1.ejs'), data);
                 const pdfOptions = {
                     border: {
                         top: '0mm',
@@ -879,7 +836,6 @@ const po010208Controller = {
                 });
             }
             catch (err) {
-                console.error(err);
                 response.json({
                     error: err
                 });
@@ -1146,7 +1102,7 @@ const po010208Controller = {
     },
 
     mostrarproductopornsoc: (req, res) => {        
-        const {co_nsoc,co_menu} = req.body; 
+        const {co_nsoc} = req.body; 
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -1155,10 +1111,9 @@ const po010208Controller = {
                 });
                 return;
             }
-            const query = "select co_catalogo_producto,(select co_menu_replica from po_regi_sani_docu_menu where co_menu_sistema = :x_co_menu) as tipo_doc from table(pack_new_direccion_tecn.F_GET_CATALOGO_PRODUCTO(:x_co_nsoc))";
+            const query = "select co_catalogo_producto from table(pack_new_direccion_tecn.F_GET_CATALOGO_PRODUCTO(:x_co_nsoc))";
             const params = { 
                 x_co_nsoc:{val:co_nsoc},
-                x_co_menu:{val:co_menu},
             };
             conn.execute(query,params,responseParams,(error, result)=>{                
                 if(error) {           
@@ -1191,7 +1146,6 @@ const po010208Controller = {
 
     subirdocadjunto: (req, res) => {        
         const {empresa,entidad,tipo_doc,producto,doc,usuario} = req.body; 
-        console.log(empresa,entidad,tipo_doc,producto,doc,usuario);
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -1240,17 +1194,15 @@ const po010208Controller = {
 
     mostrardocpormarca: (req, res) => { 
             
-        const {tipo_doc,menu} = req.params;  
+        const {} = req.params;  
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select co_nsoc,de_nombre_nsoc,de_nombre_fichero,de_marca,de_usuario,fe_registro,nu_tipo_doc,co_catalogo_producto from table(pack_new_direccion_tecn.F_LIST_DOCU_POR_MARCA(:x_tipo_doc,:x_menu))";
+            const query = "select nu_tipo_doc,co_nsoc,de_nombre_nsoc,de_nombre_fichero,de_marca,de_usuario,fe_registro,co_catalogo_producto from table(pack_new_direccion_tecn.F_LIST_DOCU_POR_MARCA())";
             
             const params = {
-                x_tipo_doc: {val : tipo_doc},
-                x_menu: {val : menu},
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();

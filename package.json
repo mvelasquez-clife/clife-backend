@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon server/index.js --ignore \"/home/nodejs/nodehtmlx/public/assets/vendor/**\""
+    "dev": "nodemon server/index.js --ignore \"/home/node/nodehtmlx/public/assets/vendor/**\""
   },
   "keywords": [],
   "author": "",
@@ -51,6 +51,7 @@
     "request": "^2.88.0",
     "shelljs": "^0.8.4",
     "socket.io": "^2.2.0",
+    "ssh2-sftp-client": "^5.3.1",
     "utf8": "^3.0.0",
     "xlsx": "^0.15.5",
     "xlsx-workbook": "^1.0.3"

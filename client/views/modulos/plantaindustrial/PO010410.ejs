@@ -74,16 +74,10 @@
             var form_especf = [
                 { type: "settings", labelWidth: 100 },
                 { type: "newcolumn" },
-                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 180, list: [
-                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 70,label:'Código:', name: "ep_codigo"}, { type: "newcolumn" },
-                   ],},
-                { type: "newcolumn" },
-                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 120, list: [
-                    { type: "input",readonly:true,labelWidth: 55,offsetLeft:0,inputWidth: 40,label:'Versión:', name: "ep_version"}, { type: "newcolumn" },
-                   ],},
-                { type: "newcolumn" },
-                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 150, list: [
-                    { type: "input",readonly:true,labelWidth: 55,offsetLeft:5,inputWidth: 80,label:'Estado:', name: "ep_estado"}, { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:15,inputWidth: 80,label:'Código:', name: "ep_codigo"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 50,offsetLeft:20,inputWidth: 70,label:'Versión:', name: "ep_version"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 50,offsetLeft:15,inputWidth: 80,label:'Estado:', name: "ep_estado"}, { type: "newcolumn" },
                    ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
@@ -93,24 +87,35 @@
                    ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
-                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 300,label:'Descripción:', name: "ep_desc"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 380,label:'Descripción:',rows:3, name: "ep_desc"}, { type: "newcolumn" },
+                   ],},
+                // { type: "newcolumn" },
+                // {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
+                //     { type: "select",hidden:true,offsetLeft: 10,labelWidth: 70,inputWidth:100, name: "ep_tipo", label: 'Tipo:',options: [ {value: "REGISTRADO", text: "REGISTRADO" } , {value: "INTERNO", text: "INTERNO" }]   }, { type: "newcolumn" },
+                //     ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
+                    { type: "input",hidden:true,readonly:false,labelWidth: 70,offsetLeft:10,inputWidth: 160,label:'Tipo Material:',rows:2, name: "ep_tm"}, { type: "newcolumn" },
+                    { type: "input",hidden:true,readonly:false,labelWidth: 40,offsetLeft:15,inputWidth: 160,label:'Arte:',rows:2, name: "ep_arte"}, { type: "newcolumn" },
                    ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
-                    { type: "select",hidden:true,offsetLeft: 10,labelWidth: 70,inputWidth:100, name: "ep_tipo", label: 'Tipo:',options: [ {value: "REGISTRADO", text: "REGISTRADO" } , {value: "INTERNO", text: "INTERNO" }]   }, { type: "newcolumn" },
-                    ],},
-                { type: "newcolumn" },
-                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 400, list: [
-                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 200,label:'NSOC:', name: "ep_nsoc"}, { type: "newcolumn" },
+                    { type: "input",hidden:true,readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 95,label:'Principio Activo:',rows:2, name: "ep_pact"}, { type: "newcolumn" },
+                    { type: "input",hidden:true,readonly:true,labelWidth: 40,offsetLeft:4,inputWidth: 95,label:'INCI:',rows:2, name: "ep_inci"}, { type: "newcolumn" },
+                    { type: "input",hidden:true,readonly:true,labelWidth: 40,offsetLeft:4,inputWidth: 95,label:'CAS:',rows:2, name: "ep_cas"}, { type: "newcolumn" },
                    ],},
                 { type: "newcolumn" },
-                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 450, list: [
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
                     { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 80,label:'Creación:', name: "ep_fecc"}, { type: "newcolumn" },
-                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:2,inputWidth: 200, name: "ep_crea"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:2,inputWidth: 295, name: "ep_crea"}, { type: "newcolumn" },
                     { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 80,label:'Revisión:', name: "ep_fecrev"}, { type: "newcolumn" },
-                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:2,inputWidth: 200, name: "ep_rev"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:2,inputWidth: 295, name: "ep_rev"}, { type: "newcolumn" },
                     { type: "input",readonly:true,labelWidth: 70,offsetLeft:10,inputWidth: 80,label:'Aprobación:', name: "ep_fecapro"}, { type: "newcolumn" },
-                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:2,inputWidth: 200, name: "ep_aprob"}, { type: "newcolumn" },
+                    { type: "input",readonly:true,labelWidth: 70,offsetLeft:2,inputWidth: 295, name: "ep_aprob"}, { type: "newcolumn" },
+                   ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 500, list: [
+                    { type: "input",hidden:true,readonly:false,labelWidth: 70,offsetLeft:10,inputWidth: 160,label:'Producto:',rows:2, name: "cod_producto"}, { type: "newcolumn" },
                    ],},
             ];
             var f_historia = [ { type: "newcolumn" },

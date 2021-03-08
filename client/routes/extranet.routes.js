@@ -23,5 +23,14 @@ const extranetController = require('../controllers/extranet.controller');
     router.post('/actualizar-cantidad-producto', extranetController.ActualizarCantidad);
     router.post('/carga-xlsx', extranetController.CargarXlsx);
     router.post('/cerrar-pedido', extranetController.CerrarPedido);
+    router.get('/revisar-pedido/:prepedido', extranetController.CheckInPedido);
+    router.get('/carga-stock-detalle-pedido', extranetController.CargaStockDetallePedido);
+    router.get('/verifica-pedido-admin', extranetController.VerificaPedidoAdmin);
+    router.get('/carga-cabecera-pedido', extranetController.CabeceraSolicitudCredito);
+    router.post('/enviar-solicitud-credito', extranetController.EnviarSolicitudCredito);
+    //
+    router.get('/pedidos-pendientes', extranetController.ListPedidosPendientes);
+    router.get('/detalle-pedido', extranetController.ProductosPedido);
+    router.post('/procesar-pre-pedido', extranetController.ProcesarPrePedido);
 
 module.exports = router;

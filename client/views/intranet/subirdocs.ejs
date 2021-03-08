@@ -416,6 +416,8 @@
             }
             SubirArchivos = async e => {
                 e.preventDefault();
+                let documentoNoRequiereFirma = document.getElementById('form-tipodoc').value != '69';
+                let urlSendPdf = documentoNoRequiereFirma ? '/intranet/cargar-pdf' : '/intranet/cargar-pdf-unsigned';
                 $('#btn-upload').addClass('disabled');
                 let cfiles = $('#doc-container').children('div');
                 const totalArchivos = cfiles.length;
@@ -436,7 +438,7 @@
                         let result;
                         try {
                             result = await $.ajax({
-                                url: '/intranet/cargar-pdf',
+                                url: urlSendPdf,
                                 type: 'post',
                                 dataType: 'json',
                                 data: formData,
@@ -476,27 +478,29 @@
                 // $('#btn-upload').removeClass('disabled');
                 OcultaIndicadorCarga();
                 // enviar el sms
-                let resms;
-                try {
-                    let smsdata = {
-                        documentos: destinatarios.join(','),
-                        empresa: document.getElementById('form-empresa').value,
-                        envio: document.getElementById('crear-envio').value,
-                        codigo: $('#crear-envio').data('codigo')
-                    };
-                    resms = await $.ajax({
-                        url: '/intranet/send-sms',
-                        type: 'post',
-                        dataType: 'json',
-                        data: smsdata
-                    });
-console.log(smsdata);
-                    if (resms.error) {
-                        console.error(resms.error);
+                if (documentoNoRequiereFirma) {
+                    let resms;
+                    try {
+                        let smsdata = {
+                            documentos: destinatarios.join(','),
+                            empresa: document.getElementById('form-empresa').value,
+                            envio: document.getElementById('crear-envio').value,
+                            codigo: $('#crear-envio').data('codigo')
+                        };
+                        resms = await $.ajax({
+                            url: '/intranet/send-sms',
+                            type: 'post',
+                            dataType: 'json',
+                            data: smsdata
+                        });
+    console.log(smsdata);
+                        if (resms.error) {
+                            console.error(resms.error);
+                        }
                     }
-                }
-                catch (err) {
-                    console.error(err);
+                    catch (err) {
+                        console.error(err);
+                    }
                 }
             }
             // go!

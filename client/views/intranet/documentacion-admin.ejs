@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% if (admin[0] == 'S') { %>
+                <% include _main.sidenav.admin.ejs %>
+            <% } if (admin[1] == 'S') { %>
+                <% include _main.sidenav.documentacion.ejs %>
+            <% } %>
+            <!-- body -->
+            <% include _main.sidenav.footer.ejs %>
+        </div>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Control documentario</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Administración y permisos</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Permisos por documento</p>
+                            </li>
+                            <li class="list-group-item">
+                                <form>
+                                    <div class="form-group row mt-2">
+                                        <label for="rpa-empresa" class="col-sm-2 col-form-label">Empresa</label>
+                                        <div class="col-sm-10">
+                                            <select name="empresa" id="rpa-empresa" class="form-control form-control-sm"></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="rpa-area" class="col-sm-2 col-form-label">Área</label>
+                                        <div class="col-sm-10">
+                                            <select name="area" id="rpa-area" class="form-control form-control-sm"></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-2">
+                                        <label for="rpa-documento" class="col-sm-2 col-form-label">Documento</label>
+                                        <div class="col-sm-10">
+                                            <select name="documento" id="rpa-documento" class="form-control form-control-sm"></select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </li>
+                            <li id="li-container" class="list-group-item">
+                                <p class="mb-0 text-muted">Seleccione un documento para gestionar los permisos</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- modal nuevo permiso -->
+        <div id="modal-permisos" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Otorgar permisos al documento</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <form>
+                                    <input type="hidden" id="mp-tipo-permiso">
+                                    <div class="form-group row">
+                                        <label for="mp-area" class="col-sm-2 col-form-label">Área</label>
+                                        <div class="col-sm-10">
+                                            <select name="area" id="mp-area" class="form-control form-control-sm"></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="mp-puesto" class="col-sm-2 col-form-label">Puesto</label>
+                                        <div class="col-sm-10">
+                                            <select name="puesto" id="mp-puesto" class="form-control form-control-sm"></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="mp-usuario" class="col-sm-2 col-form-label">Usuario</label>
+                                        <div class="col-sm-10">
+                                            <select name="usuario" id="mp-usuario" class="form-control form-control-sm"></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Permisos</label>
+                                        <div class="col-sm-10">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="S" id="mp-chlectura">
+                                                <label class="form-check-label" for="mp-chlectura">Puede ver el/los documento(s)</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="S" id="mp-chcreacion">
+                                                <label class="form-check-label" for="mp-chcreacion">Puede crear documentos</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="S" id="mp-chedicion">
+                                                <label class="form-check-label" for="mp-chedicion">Puede modificar el/los documento(s)</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="S" id="mp-chaprobacion">
+                                                <label class="form-check-label" for="mp-chaprobacion">Puede aprobar documentos</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="S" id="mp-chrevision">
+                                                <label class="form-check-label" for="mp-chrevision">Puede revisar documentos</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-main"><i class="fa fa-check mr-1"></i>Confirmar permisos</button>
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal editar permisos -->
+        <div id="modal-upd-permisos" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Actualizar permisos</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col">
+                                <form>
+                                    <input type="hidden" name="pid" id="upd-id">
+                                    <div class="form-group row">
+                                        <label for="upd-documento" class="col-sm-2 col-form-label">Documento</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" readonly class="form-control-plaintext form-control-sm" id="upd-documento">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="upd-tipo" class="col-sm-2 col-form-label">Tipo</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" readonly class="form-control-plaintext form-control-sm" id="upd-tipo">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Permisos</label>
+                                        <div class="col-sm-10">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="S" id="upd-chlectura">
+                                                <label class="form-check-label" for="upd-chlectura">Puede ver el/los documento(s)</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="S" id="upd-chcreacion">
+                                                <label class="form-check-label" for="upd-chcreacion">Puede crear documentos</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="S" id="upd-chedicion">
+                                                <label class="form-check-label" for="upd-chedicion">Puede modificar el/los documento(s)</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="S" id="upd-chaprobacion">
+                                                <label class="form-check-label" for="upd-chaprobacion">Puede aprobar documento</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="S" id="upd-chrevision">
+                                                <label class="form-check-label" for="upd-chrevision">Puede revisar documentos</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-main"><i class="fa fa-check mr-1"></i>Actualizar permisos</button>
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            
+            CargaComboDocumentos = async _ => {
+                let empresa = document.getElementById('rpa-empresa').value;
+                let area = document.getElementById('rpa-area').value;
+                if (empresa != 0 && area != 0) {
+                    $('#rpa-documento').empty().append(
+                        $('<option>').val(0).text('- Seleccione -').prop('selected', true).prop('disabled', true)
+                    ).append(
+                        $('<option>').val('ALL').text('TODOS LOS DOCUMENTOS').addClass('text-success')
+                    );
+                    let result = await $.ajax({
+                        url: '/intranet/lista-combos',
+                        method: 'post',
+                        data: { empresa: empresa, area: area, combo: 2 },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    for (let area of result.options) {
+                        $('#rpa-documento').append(
+                            $('<option>').val(area.value).text(area.text)
+                        );
+                    }
+                }
+            }
+            CargaComboAreas = async _ => {
+                let empresa = document.getElementById('rpa-empresa').value;
+                if (empresa != 0) {
+                    $('#rpa-area').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    $('#rpa-documento').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    $('#mp-area').empty().append(
+                        $('<option>').val(0).text('- Seleccione -')
+                    );
+                    let result = await $.ajax({
+                        url: '/intranet/lista-combos',
+                        method: 'post',
+                        data: { empresa: empresa, area: -1, combo: 1 },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    for (let area of result.options) {
+                        $('#rpa-area').append(
+                            $('<option>').val(area.value).text(area.text)
+                        );
+                        $('#mp-area').append(
+                            $('<option>').val(area.value).text(area.text)
+                        );
+                    }
+                }
+            }
+            CargaComboEmpresas = async _ => {
+                // combo empresas - busca x envio
+                let result = await $.ajax({
+                    url: '/intranet/lista-empresas',
+                    method: 'post',
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                $('#rpa-empresa').append(
+                    $('<option>').val(0).text('- Seleccione -').prop('selected', true).prop('disabled', true)
+                );
+                for (let empresa of result.data.empresas) {
+                    $('#rpa-empresa').append(
+                        $('<option>').val(empresa.value).text(empresa.text)
+                    );
+                }
+                // combo tipos documento - busca x envio
+                $('#rpa-area').empty().append(
+                    $('<option>').val(0).text('- Seleccione -')
+                );
+                $('#rpa-documento').empty().append(
+                    $('<option>').val(0).text('- Seleccione -')
+                );
+            }
+            CargaListaPermisos = async _ => {
+                $('#li-container').empty().append(
+                    $('<p>').text('Por favor, espere...').addClass('text-secondary mb-1')
+                );
+                let empresa = document.getElementById('rpa-empresa').value;
+                let documento = document.getElementById('rpa-documento').value;
+                let area = document.getElementById('rpa-area').value;
+                if (empresa != 0 && documento != '0') {
+                    // ajaxcucho
+                    let result = await $.ajax({
+                        url: '/intranet/lista-permisos-documento',
+                        method: 'get',
+                        data: { empresa: empresa, documento: documento, area: area },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        $('#li-container').empty().append(
+                            $('<p>').text(result.error).addClass('text-danger mb-1')
+                        );
+                        return;
+                    }
+                    $('#li-container').empty();
+                    let tbody = $('<tbody>');
+                    for (let fila of result.data.permisos) {
+                        tbody.append(
+                            $('<tr>').append(
+                                $('<td>').append(fila.tipo)
+                            ).append(
+                                $('<td>').append(fila.nombre)
+                            ).append(
+                                $('<td>').append(
+                                    $('<i>').addClass('fa fa-' + (fila.lectura == 'S' ? 'check text-success' : 'times text-danger'))
+                                )
+                            ).append(
+                                $('<td>').append(
+                                    $('<i>').addClass('fa fa-' + (fila.creacion == 'S' ? 'check text-success' : 'times text-danger'))
+                                )
+                            ).append(
+                                $('<td>').append(
+                                    $('<i>').addClass('fa fa-' + (fila.edicion == 'S' ? 'check text-success' : 'times text-danger'))
+                                )
+                            ).append(
+                                $('<td>').append(
+                                    $('<i>').addClass('fa fa-' + (fila.revision == 'S' ? 'check text-success' : 'times text-danger'))
+                                )
+                            ).append(
+                                $('<td>').append(
+                                    $('<i>').addClass('fa fa-' + (fila.aprobacion == 'S' ? 'check text-success' : 'times text-danger'))
+                                )
+                            ).append(
+                                $('<td>').append(
+                                    fila.id > 0 ?
+                                    $('<a>').append(
+                                        $('<i>').addClass('fa fa-pencil mr-2')
+                                    ).append('Editar').addClass('btn btn-sm btn-danger').attr('href', '#').data({
+                                        id: fila.id,
+                                        lectura: fila.lectura,
+                                        creacion: fila.creacion,
+                                        edicion: fila.edicion,
+                                        revision: fila.revision,
+                                        aprobacion: fila.aprobacion,
+                                        tipo: fila.tipo,
+                                        nombre: fila.nombre
+                                    }).on('click', modalEditarPermisos) :
+                                    '-'
+                                )
+                            )
+                        );
+                    }
+                    $('#li-container').append(
+                        $('<table>').append(
+                            $('<thead>').append(
+                                $('<tr>').append(
+                                    $('<th>').append('Tipo permiso')
+                                ).append(
+                                    $('<th>').append('Referencia')
+                                ).append(
+                                    $('<th>').append('Lectura')
+                                ).append(
+                                    $('<th>').append('Creación')
+                                ).append(
+                                    $('<th>').append('Edición')
+                                ).append(
+                                    $('<th>').append('Revisión')
+                                ).append(
+                                    $('<th>').append('Aprobación')
+                                ).append(
+                                    $('<th>').html('&nbsp;')
+                                )
+                            )
+                        ).append(tbody).addClass('table table-striped table-hover mt-2 mb-3')
+                    ).append(
+                        $('<div>').append(
+                            $('<a>').attr({
+                                'href': '#',
+                                'data-toggle': 'dropdown',
+                                'aria-haspopup': true,
+                                'aria-expanded': false
+                            }).append(
+                                $('<i>').addClass('fa fa-plus mr-2')
+                            ).append('Otorgar permisos').addClass('btn btn-success btn-sm dropdown-toggle')
+                        ).append(
+                            $('<div>').append(
+                                $('<a>').attr({
+                                    'href': '#'
+                                }).text('A un área').addClass('dropdown-item').data('tipo', 1).on('click', asignarPermisosArea)
+                            ).append(
+                                $('<a>').attr({
+                                    'href': '#'
+                                }).text('A un puesto').addClass('dropdown-item').data('tipo', 2).on('click', asignarPermisosPuesto)
+                            ).append(
+                                $('<a>').attr({
+                                    'href': '#'
+                                }).text('A un usuario').addClass('dropdown-item').data('tipo', 3).on('click', asignarPermisosUsuario)
+                            ).addClass('dropdown-menu')
+                        ).addClass('btn-group').attr('role', 'group')
+                    );
+                }
+                else {
+                    alert('Debe seleccionar la empresa, área y documento para generar el reporte');
+                }
+            }
+            function modalEditarPermisos(event) {
+                event.preventDefault();
+                var a = $(this);
+                var id = a.data('id');
+                var lectura = a.data('lectura');
+                var creacion = a.data('creacion');
+                var edicion = a.data('edicion');
+                var aprobacion = a.data('aprobacion');
+                var revision = a.data('revision');
+                var tipo = a.data('tipo');
+                var nombre = a.data('nombre');
+                var area = $('#rpa-area option:selected').text();
+                var documento = $('#rpa-documento option:selected').text();
+                document.getElementById('upd-id').value = id;
+                document.getElementById('upd-documento').value = area + ' | ' + documento;
+                document.getElementById('upd-tipo').value = tipo + ', ' + nombre;
+                document.getElementById('upd-chlectura').checked = lectura == 'S';
+                document.getElementById('upd-chcreacion').checked = creacion == 'S';
+                document.getElementById('upd-chedicion').checked = edicion == 'S';
+                document.getElementById('upd-chaprobacion').checked = aprobacion == 'S';
+                document.getElementById('upd-chrevision').checked = revision == 'S';
+                $('#modal-upd-permisos').modal('show');
+            }
+            function AsignaPermisosUsuario() {
+                var modo = document.getElementById('mp-tipo-permiso').value;
+                var data = {
+                    documento: document.getElementById('rpa-documento').value,
+                    area: document.getElementById('rpa-area').value,
+                    empresa: document.getElementById('rpa-empresa').value,
+                    tipo: modo,
+                    arearef: document.getElementById('mp-area').value,
+                    puestoref: document.getElementById('mp-puesto').value,
+                    usuref: document.getElementById('mp-usuario').value,
+                    lectura: document.getElementById('mp-chlectura').checked ? 'S' : 'N',
+                    crear: document.getElementById('mp-chcreacion').checked ? 'S' : 'N',
+                    editar: document.getElementById('mp-chedicion').checked ? 'S' : 'N',
+                    aprueba: document.getElementById('mp-chaprobacion').checked ? 'S' : 'N',
+                    revisa: document.getElementById('mp-chrevision').checked ? 'S' : 'N'
+                };
+                $('#modal-permisos .btn-main').hide();
+                $.ajax({
+                    url: '/intranet/asigna-permisos-documento',
+                    method: 'post',
+                    data: data,
+                    dataType: 'json',
+                    success: function(response) {
+                        alert('Permiso registrado');
+                        $('#modal-permisos .btn-main').show();
+                        $('#modal-permisos').modal('hide');
+                        CargaListaPermisos();
+                    },
+                    error: function(error) {
+                        alert(error);
+                        $('#modal-permisos .btn-main').show();
+                    }
+                });
+            }
+            function cargaComboModalArea() {
+                var cmbArea = $('#mp-area');
+                cmbArea.empty().append(
+                    $('<option>').val(0).text('- Seleccione -').prop('selected', true).prop('disabled', true)
+                );
+                $('#mp-puesto').empty().append(
+                    $('<option>').val(0).text('- Seleccione -').prop('selected', true).prop('disabled', true)
+                );
+                $('#mp-usuario').empty().append(
+                    $('<option>').val(0).text('- Seleccione -').prop('selected', true).prop('disabled', true)
+                );
+                $.ajax({
+                    url: '/intranet/combo-permisos-documento',
+                    method: 'post',
+                    data: {
+                        documento: document.getElementById('rpa-documento').value,
+                        permiso: document.getElementById('mp-tipo-permiso').value,
+                        tipo: 3
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        var areas = response.data.combo;
+                        var numAreas = areas.length;
+                        for (var i = 0; i < numAreas; i++) {
+                            var iArea = areas[i];
+                            cmbArea.append(
+                                $('<option>').val(iArea.value).text(iArea.text)
+                            );
+                        }
+                    },
+                    error: function(error) {
+                        alert(error);
+                    }
+                });
+            }
+            function CargaComboModalPuesto() {
+                var cmbPuesto = $('#mp-puesto');
+                cmbPuesto.empty().append(
+                    $('<option>').val(0).text('- Seleccione -').prop('selected', true).prop('disabled', true)
+                );
+                $('#mp-usuario').empty().append(
+                    $('<option>').val(0).text('- Seleccione -').prop('selected', true).prop('disabled', true)
+                );
+                $.ajax({
+                    url: '/intranet/combo-permisos-documento',
+                    method: 'post',
+                    data: {
+                        documento: document.getElementById('rpa-documento').value,
+                        area: document.getElementById('mp-area').value,
+                        permiso: document.getElementById('mp-tipo-permiso').value,
+                        tipo: 2
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        var puestos = response.data.combo;
+                        var numPuestos = puestos.length;
+                        for (var i = 0; i < numPuestos; i++) {
+                            var iPuesto = puestos[i];
+                            cmbPuesto.append(
+                                $('<option>').val(iPuesto.value).text(iPuesto.text)
+                            );
+                        }
+                    },
+                    error: function(error) {
+                        alert(error);
+                    }
+                });
+            }
+            function CargaComboModalUsuario() {
+                var cmbUsuario = $('#mp-usuario');
+                cmbUsuario.empty().append(
+                    $('<option>').val(0).text('- Seleccione -').prop('selected', true).prop('disabled', true)
+                );
+                $.ajax({
+                    url: '/intranet/combo-permisos-documento',
+                    method: 'post',
+                    data: {
+                        documento: document.getElementById('rpa-documento').value,
+                        area: document.getElementById('mp-area').value,
+                        puesto: document.getElementById('mp-puesto').value,
+                        permiso: document.getElementById('mp-tipo-permiso').value,
+                        tipo: 1
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        var usuarios = response.data.combo;
+                        var numUsuarios = usuarios.length;
+                        for (var i = 0; i < numUsuarios; i++) {
+                            var iUsuario = usuarios[i];
+                            cmbUsuario.append(
+                                $('<option>').val(iUsuario.value).text(iUsuario.text)
+                            );
+                        }
+                    },
+                    error: function(error) {
+                        alert(error);
+                    }
+                });
+            }
+            function asignarPermisosArea(event) {
+                event.preventDefault();
+                $('#mp-puesto').empty().append(
+                    $('<option>').val(0)
+                ).parent().parent().hide();
+                $('#mp-usuario').empty().append(
+                    $('<option>').val(0)
+                ).parent().parent().hide();
+                // carga combo de areas
+                cargaComboModalArea();
+                $('#mp-tipo-permiso').val('03')
+                $('#modal-permisos').modal('show');
+                // restablece los checkboxes
+                document.getElementById('mp-chlectura').checked = true;
+                document.getElementById('mp-chcreacion').checked = false;
+                document.getElementById('mp-chedicion').checked = false;
+                document.getElementById('mp-chaprobacion').checked = false;
+                document.getElementById('mp-chrevision').checked = false;
+            }
+            function asignarPermisosPuesto(event) {
+                event.preventDefault();
+                $('#mp-puesto').parent().parent().show();
+                $('#mp-usuario').empty().append(
+                    $('<option>').val(0)
+                ).parent().parent().hide();
+                // carga combo de areas
+                cargaComboModalArea();
+                $('#mp-tipo-permiso').val('02')
+                $('#modal-permisos').modal('show');
+                // restablece los checkboxes
+                document.getElementById('mp-chlectura').checked = true;
+                document.getElementById('mp-chcreacion').checked = false;
+                document.getElementById('mp-chedicion').checked = false;
+                document.getElementById('mp-chaprobacion').checked = false;
+                document.getElementById('mp-chrevision').checked = false;
+            }
+            function asignarPermisosUsuario(event) {
+                event.preventDefault();
+                $('#mp-puesto').parent().parent().show();
+                $('#mp-usuario').parent().parent().show();
+                // carga combo de areas
+                cargaComboModalArea();
+                $('#mp-tipo-permiso').val('01')
+                $('#modal-permisos').modal('show');
+                // restablece los checkboxes
+                document.getElementById('mp-chlectura').checked = true;
+                document.getElementById('mp-chcreacion').checked = false;
+                document.getElementById('mp-chedicion').checked = false;
+                document.getElementById('mp-chaprobacion').checked = false;
+                document.getElementById('mp-chrevision').checked = false;
+            }
+            function ActualizaPermisosUsuario(event) {
+                event.preventDefault();
+                $('#modal-upd-permisos .btn-main').hide();
+                $.ajax({
+                    url: '/intranet/actualiza-permisos-documento',
+                    method: 'post',
+                    data: {
+                        permiso: document.getElementById('upd-id').value,
+                        empresa: document.getElementById('rpa-empresa').value,
+                        lectura: document.getElementById('upd-chlectura').checked ? 'S' : 'N',
+                        crear: document.getElementById('upd-chcreacion').checked ? 'S' : 'N',
+                        editar: document.getElementById('upd-chedicion').checked ? 'S' : 'N',
+                        aprueba: document.getElementById('upd-chaprobacion').checked ? 'S' : 'N',
+                        revisa: document.getElementById('upd-chrevision').checked ? 'S' : 'N'
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.error) {
+                            $('#modal-upd-permisos .btn-main').show();
+                            alert(response.error);
+                            return;
+                        }
+                        alert('Permisos actualizados');
+                        $('#modal-upd-permisos').modal('hide');
+                        CargaListaPermisos();
+                    },
+                    error: function(error) {
+                        alert(error);
+                        $('#modal-upd-permisos .btn-main').show();
+                    }
+                });
+            }
+
+            // go!
+            $(function() {
+                $('#menu-documentacion').collapse('show')
+                $('#documentacion-admin').addClass('active');
+                CargaComboEmpresas();
+                $('#rpa-empresa').on('change', CargaComboAreas);
+                $('#rpa-area').on('change', CargaComboDocumentos);
+                $('#rpa-documento').on('change', CargaListaPermisos);
+                $('#mp-area').on('change', CargaComboModalPuesto);
+                $('#mp-puesto').on('change', CargaComboModalUsuario);
+                $('#modal-permisos .btn-main').on('click', AsignaPermisosUsuario);
+                $('#modal-upd-permisos .btn-main').on('click', ActualizaPermisosUsuario);
+            });
+        </script>
+    </body>
+</html>

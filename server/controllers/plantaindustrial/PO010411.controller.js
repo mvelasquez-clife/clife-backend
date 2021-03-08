@@ -10,7 +10,6 @@ const po010411Controller = {
     
     mostrarespecificacion: (req, res) => { 
         const {empresa,grupo,flag} = req.params;  
-        console.log(empresa,grupo,flag);
         
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
@@ -38,7 +37,6 @@ const po010411Controller = {
 
     mostrarespecDescontinuada: (req, res) => { 
         const {empresa} = req.params;  
-        console.log('jol');
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
@@ -63,18 +61,20 @@ const po010411Controller = {
 
     mostrarespecporgrupo: (req, res) => { 
             
-        const {empresa,grupo} = req.params;  
+        const {empresa,grupo,producto,filter} = req.params;  
         
         oracledb.getConnection(dbParams, (err, conn) => {
             if (err) {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select co_especificacion,de_nombre,co_espec_granel,co_nsoc,nu_version,es_vigencia,fe_creacion,fe_revisa,fe_aprueba,de_creador,de_revisado,de_aprueba,de_proveedor,co_proveedor,de_tipo from table (pack_new_especificacion.f_list_especificacion_grupo(:x_empresa,:x_grupo))";
+            const query = "select co_especificacion,de_nombre,co_espec_granel,co_nsoc,nu_version,es_vigencia,fe_creacion,fe_revisa,fe_aprueba,de_creador,de_revisado,de_aprueba,de_proveedor,co_proveedor,de_tipo from table (pack_new_especificacion.f_list_especificacion_grupo_v2(:x_empresa,:x_grupo,:x_co_producto,:x_filter))";
             
             const params = {
                 x_empresa: {val : empresa},
                 x_grupo: {val : grupo},
+                x_co_producto: {val : producto},
+                x_filter: {val : filter},
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
@@ -127,6 +127,51 @@ const po010411Controller = {
                     state: 'error',
                     message: x_de_result
                 });
+            });
+        });
+    },
+    validaraccion: (req, res) => {        
+        const {empresa,usuario,serie} = req.body; 
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err.Error
+                });
+                return;
+            }
+            const query = "select  nvl(rtrim (xmlagg (xmlelement (e, co_operacion || '@')).extract ('//text()'), ',') ,'NO') as de_descripcion from SG_usuarios_autoriza_serie where co_usuario = :x_usuario and co_empresa= :x_empresa and co_serie = :x_serie and CO_OPERACION in ('REVISA','APRUEBA') and co_tipo_doc_administr = 601";
+            const params = { 
+                //parametros de entrada
+                x_empresa: {val:empresa},
+                x_usuario: {val:usuario},
+                x_serie: {val:serie},
+            };
+            conn.execute(query,params,responseParams,(error, result)=>{                
+                if(error) {           
+                    conn.close();
+                    return;
+                }
+                var resultado;
+                for(var i in result.rows) {
+                    resultado = result.rows[i];                  
+                }
+                //comprobar si obtuve resultado
+                if(resultado) {                   
+                    res.json({
+                        state: 'success',
+                        data: {
+                            resul: resultado
+                        }                      
+                    
+                    });
+                }
+                else {
+                    res.json({
+                        state: 'error',
+                        message: 'Sin registro'
+                    });
+                }
             });
         });
     },

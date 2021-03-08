@@ -1,6 +1,6 @@
 module.exports = {
-    tmppath: 'D:\\files\\nodejs\\tmp\\',
-    downloadpath: 'D:\\files\\nodejs\\download\\',
+    tmppath: '/home/node/files/tmp/',
+    downloadpath: '/home/node/files/download/',
     winseparator: '\\',
     linuxseparator: '/'
 };

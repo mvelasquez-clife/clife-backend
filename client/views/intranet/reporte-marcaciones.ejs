@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <% include _main.head.ejs %>
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+        <!-- pinche navbar -->
+        <% include _main.navbar.ejs %>
+        <!-- sidenav -->
+        <div id="sidenav" class="sidenav text-light">
+            <% include _main.sidenav.ejs %>
+            <% if (admin[0] == 'S') { %>
+                <% include _main.sidenav.admin.ejs %>
+            <% } if (admin[1] == 'S') { %>
+                <% include _main.sidenav.documentacion.ejs %>
+            <% } %>
+            <!-- body -->
+            <% include _main.sidenav.footer.ejs %>
+        </div>
+        <!-- body -->
+        <div id="main-content">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Mis documentos</li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Contratos</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Revisar contratos</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- separador de bajo presupuesto -->
+                <div class="row">
+                    <div class="col">
+                        <ul id="container" class="list-group mb-2">
+                            <li class="list-group-item">
+                                <p class="text-main mb-0">Rango de fechas</p>
+                            </li>
+                            <li id="doc-vigente-container" class="list-group-item">
+                                <form id="f-form" class="form-inline">
+                                    <label for="f-desde" class="mr-1">Desde</label>
+                                    <input name="desde" id="f-desde" class="form-control form-control-sm datepicker" style="width:120px;" />
+                                    <!-- separador de bajo presupuesto -->
+                                    <label for="f-hasta" class="mr-1 ml-3">Hasta</label>
+                                    <input name="hasta" id="f-hasta" class="form-control form-control-sm datepicker" style="width:120px;"></select>
+                                    <!-- separador de bajo presupuesto -->
+                                    <button type="submit" class="btn btn-primary btn-sm ml-3">Cargar marcaciones</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modals -->
+        <% include _main.logout.ejs %>
+        <!-- separador de bajo presupuesto -->
+        <% include _main.scripts.ejs %>
+        <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+        <script>
+            const sesion = JSON.parse('<%-sesion %>');
+            // funciones
+            function escribirListaMarcaciones(marcaciones) {
+                var tbody = $('<tbody>');
+                for (var marca of marcaciones) {
+                    var tr = $('<tr>').append(
+                        $('<td>').text(marca.FECHA)
+                    ).append(
+                        $('<td>').text(marca.DNI).addClass('text-right')
+                    ).append(
+                        $('<td>').text(marca.NOMBRE)
+                    ).append(
+                        $('<td>').text(marca.DETALLE)
+                    ).append(
+                        $('<td>').text(marca.HORAS).addClass('text-right')
+                    );
+                    tbody.append(tr);
+                }
+                var table = $('<table>').append(
+                    $('<thead>').append(
+                        $('<tr>').append(
+                            $('<th>').text('Día')
+                        ).append(
+                            $('<th>').text('DNI')
+                        ).append(
+                            $('<th>').text('Nombre')
+                        ).append(
+                            $('<th>').text('Marcaciones')
+                        ).append(
+                            $('<th>').text('Total horas')
+                        )
+                    )
+                ).append(tbody).addClass('table table-striped table-hover');
+                $('#container').append(
+                    $('<li>').append(
+                        $('<p>').text('Marcaciones encontradas').addClass('text-main mb-0')
+                    ).addClass('list-group-item')
+                ).append(
+                    $('<li>').append(table).addClass('list-group-item')
+                );
+            }
+            function cargaListaMarcaciones(event) {
+                event.preventDefault();
+                $('#container').children('li').eq(3).remove();
+                $('#container').children('li').eq(2).remove();
+                var data = {
+                    desde: document.getElementById('f-desde').value,
+                    hasta: document.getElementById('f-hasta').value
+                };
+                $.ajax({
+                    url: '/intranet/lista-marcaciones',
+                    method: 'get',
+                    data: data,
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        escribirListaMarcaciones(result.marcaciones);
+                    },
+                    error: function (error) {
+                        alert(error);
+                    }
+                });
+            }
+            // go!
+            $(_ => {
+                $('#f-desde').datepicker({
+                    // locale: 'es-es',
+                    format: 'dd/mm/yyyy',
+                    datepicker: { weekStartDay: 1 },
+                    uiLibrary: 'bootstrap4',
+                    iconsLibrary: 'fontawesome'
+                });
+                $('#f-hasta').datepicker({
+                    // locale: 'es-es',
+                    format: 'dd/mm/yyyy',
+                    datepicker: { weekStartDay: 1 },
+                    uiLibrary: 'bootstrap4',
+                    iconsLibrary: 'fontawesome'
+                });
+                $('#menu-reportes').collapse('show')
+                $('#reportes-marcaciones').addClass('active');
+                $('#f-form').on('submit', cargaListaMarcaciones);
+            });
+        </script>
+    </body>
+</html>

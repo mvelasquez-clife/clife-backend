@@ -9,6 +9,7 @@ const intranetController = {
         res.sendFile(path.resolve('client/views/login/reset_password.html'));
     },
     inicio: (req, res) => {
+        // go 
         res.sendFile(path.resolve('client/views/home/inicio.html'));
     },
 
