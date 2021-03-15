@@ -39,5 +39,7 @@ router.post('/mostrar-nueva-espec/',po010410Controller.mostrarnuevaEspec);
 router.post('/mostrar-subir-adjunto/',po010410Controller.mostrarsubiradj);
 router.post('/mostrar-producto-por-espec-adj/',po010410Controller.mostrarproducporespec);
 router.post('/vincular-especificacion/',po010410Controller.vincularEPT);
+router.post('/eliminar-archivo/',po010410Controller.eliminarArchivo);
+router.post('/eliminar-especificacion/',po010410Controller.eliminarEspecificacion);
 
 module.exports = router;

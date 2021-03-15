@@ -378,9 +378,9 @@ cargarEnsayo = (espec,version) => {
     mainLayout_ensa = tabbar_det.cells('esy').attachLayout('1C');  
     mainLayout_ensa.cells('a').hideHeader();  
     myGrid_ensa = mainLayout_ensa.cells('a').attachGrid();    
-    myGrid_ensa.setHeader(',Cod.met,Co.Método,Método,Co.Ensayo,Condiciones,Especificaciones,Especificaciones(Inglés),Rango/De,Rangos/A,U.M,Tipo de Ensayo,Objetivos de la Prueba,Técnica');    
-    myGrid_ensa.setInitWidths('0,0,70,200,80,200,400,400,70,70,70,150,300,100');
-    myGrid_ensa.setColAlign('left,center,left,left,left,left,left,left,left,left,center,left,left,left');
+    myGrid_ensa.setHeader(',Cod.met,Co.Método,Método,Co.Ensayo,Especificaciones,Rango/De,Rangos/A,Especificaciones(Inglés),Condiciones,Unid.Análisis,Tipo de Ensayo,Objetivos de la Prueba,Técnica');    
+    myGrid_ensa.setInitWidths('0,0,70,400,80,400,70,70,400,200,70,150,300,100');
+    myGrid_ensa.setColAlign('left,center,left,left,center,left,left,left,left,left,center,left,left,left');
     myGrid_ensa.setColTypes('ro,ro,ro,ro,ro,ro,ed,ed,ed,ed,ro,ro,ro,ro'); 
     myGrid_ensa.setColumnHidden(0,true);
     myGrid_ensa.setColumnHidden(1,true);

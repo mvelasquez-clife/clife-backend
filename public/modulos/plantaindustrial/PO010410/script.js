@@ -52,9 +52,11 @@ Inicio = () => {
             esptoolbar.addButton('info',null,'',"ic-info.png","");  
             esptoolbar.addButton('minimizar',null,'Ocultar',"ic-hide.png","");
             esptoolbar.addButton('maximizar',null,'Maximizar',"ic-expand.png","");
+            esptoolbar.addButton('eliminar',null,'Eliminar Especificación',"ic-delete.png","ic-delete.png");
             esptoolbar.addButton('descontinuar',null,'Descontinuar',"ic-cancel.png","");
             esptoolbar.attachEvent('onClick', mainToolbarOnClick);
             esptoolbar.setIconSize(18);
+            esptoolbar.disableItem('eliminar');
             myGrid_version= mainLayout_det.cells('a').attachGrid();
             myGrid_version.setSizes ("8px");
             myGrid_version.setHeader('Cod.Espec,Nombre,Ver.,Estado,Proveedor,Cod.Proveedor,Tipo Espec.,F.Creación,Creado por,F.Revisado,Revisado por,F.Aprobado,Aprobado por');
@@ -170,7 +172,28 @@ mainToolbarOnClick= async (id) => {
                 data = myGrid_group.getRowData(myGrid_group.getSelectedRowId());
                 cargarversiones(data.cod,'S');
             }
-            break;
+            break;''
+        case 'eliminar':    
+            if (de_grupo == '__matpr'||de_grupo == '__emp'){
+                col  = myGrid_espvers.getSelectedRowId();
+                if(col) {
+                    sel = myGrid_espvers.getRowData(col);
+                    eliminarEspecificacion(sel.cod,sel.vers);  
+                }else{
+                    dhtmlx.confirm("Debe seleccionar una especificación", function (result) {
+                    });
+                }
+            }else{ 
+                col  = myGrid_version.getSelectedRowId();
+                if(col) {
+                    sel = myGrid_version.getRowData(col);
+                    eliminarEspecificacion(sel.cod,sel.vers);   
+                }else{
+                    dhtmlx.confirm("Debe seleccionar una especificación", function (result) {
+                    });
+                }          
+            }
+        break;
         default:
             null;
             break;
@@ -604,7 +627,7 @@ toolbarOnensayo = async (id) => {
             break; 
         case 'aceptar':       
             let  cant_filas_guardar = 0,n=0;
-            let cadenaensayo = '',cadenametodo='',cadenaespec='',limmax='',limmin='',data_grabar;
+            let cadenaensayo = '',cadenametodo='',cadenaespec='',limmax='',limmin='',cadenaespecingl='',data_grabar;
             cant_filas_guardar = myGrid_ensa.getRowsNum();
             if (cant_filas_guardar ==0){
                 dhtmlx.confirm("Sin ensayos", function (result) {
@@ -621,11 +644,12 @@ toolbarOnensayo = async (id) => {
                         cadenaespec += data_grabar.esp +'@';
                         limmax += data_grabar.max +'@';
                         limmin += data_grabar.min +'@';
+                        cadenaespecingl += data_grabar.espin +'@';
                         n++;
                     }
                 }
                 cant_filas_guardar = n;
-                guardarensayo(sel.cod,version_esp,cadenaensayo,cadenametodo,cadenaespec,limmin,limmax,cant_filas_guardar);
+                guardarensayo(sel.cod,version_esp,cadenaensayo,cadenametodo,cadenaespec,limmin,limmax,cadenaespecingl,cant_filas_guardar);
             }
             break;     
         default:
@@ -647,11 +671,11 @@ cargarEnsayo = (espec,version,estado) => {
     enstoolbar.setIconSize(18);
      }
     myGrid_ensa = mainLayout_ensa.cells('a').attachGrid();
-    myGrid_ensa.setHeader(',Cod.met,Co.Método,Método,Co.Ensayo,Condiciones,Especificaciones,Especificaciones(Inglés),Rango/De,Rangos/A,Unid.Análisis,Tipo de Ensayo,Objetivos de la Prueba,Técnica');    
-    myGrid_ensa.setInitWidths('30,0,70,400,80,200,400,400,70,70,70,150,300,100');
-    myGrid_ensa.setColAlign('left,center,left,left,left,left,left,left,left,left,center,left,left,left');
-    myGrid_ensa.setColTypes('ch,ro,ro,ro,ro,ro,ed,ed,ed,ed,ro,ro,ro,ro'); 
-    myGrid_ensa.setColumnIds('chec,codmet,comet,met,codens,ens,esp,espin,min,max,um,tipens,objp,tecn'); 
+    myGrid_ensa.setHeader(',Cod.met,Co.Método,Método,Co.Ensayo,Especificaciones,Rango/De,Rangos/A,Especificaciones(Inglés),Condiciones,Unid.Análisis,Tipo de Ensayo,Objetivos de la Prueba,Técnica');    
+    myGrid_ensa.setInitWidths('30,0,70,400,80,400,70,70,400,200,70,150,300,100');
+    myGrid_ensa.setColAlign('left,center,left,left,center,left,left,left,left,left,center,left,left,left');
+    myGrid_ensa.setColTypes('ch,ro,ro,ro,ro,ed,ed,ed,ed,ro,ro,ro,ro,ro'); 
+    myGrid_ensa.setColumnIds('chec,codmet,comet,met,codens,esp,min,max,espin,ens,um,tipens,objp,tecn'); 
     myGrid_ensa.setColumnHidden(0,true);
     myGrid_ensa.init();      
     myGrid_ensa.clearAll(); 
@@ -736,6 +760,7 @@ cargarDocumento = (espec,version) => {
     dctotoolbar.setIconsPath('/assets/images/icons/');
     dctotoolbar.addButton('verdcto',null,'Ver Archivo',"ic-look.png","");
     dctotoolbar.addButton('subirdt',null,'Subir Archivo',"ic-upload.png","");
+    dctotoolbar.addButton('eliminar',null,'Eliminar Archivo',"ic-delete.png","");
     dctotoolbar.addButton('refresh',null,'Actualizar',"ic-refresh.png","");
     dctotoolbar.attachEvent('onClick', toolbarOnadj);
     dctotoolbar.setIconSize(18); 
@@ -750,6 +775,56 @@ cargarDocumento = (espec,version) => {
     mainLayout_dcto.cells('a').progressOn();
     myGrid_dcto.load( BASE_URL + 'PO010410/mostrar-documento/'+usrJson.empresa+'/'+espec+'/'+version).then(function (text) {
         mainLayout_dcto.cells('a').progressOff();
+    });
+};
+
+eliminarDocumento = (espec,version,producto,nombre) => {  
+    params = {
+        empresa: usrJson.empresa,
+        usuario: usrJson.codigo,
+        alias: usrJson.alias,
+        espec: espec,
+        version: version,
+        producto: producto,
+        nombre: nombre,
+    };         
+    dhtmlx.confirm("¿Está seguro?", function (result) {
+        if (result === Boolean(true)) {
+            $.post(BASE_URL + "PO010410/eliminar-archivo", params, function (res) {
+                if (res.state=='success'){
+                    Swal.fire('Bien!', res.message, 'success');
+                    cargarDocumento(espec,version);
+                } else {
+                    Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'No se guardo el registro :' + res.message });
+                }
+            }, "json");
+        }
+    });
+};
+
+eliminarEspecificacion = (espec,version) => {  
+    params = {
+        empresa: usrJson.empresa,
+        usuario: usrJson.codigo,
+        alias: usrJson.alias,
+        espec: espec,
+        version: version,
+    };    
+    dhtmlx.confirm("¿Está seguro?", function (result) {
+        if (result === Boolean(true)) {
+            $.post(BASE_URL + "PO010410/eliminar-especificacion", params, function (res) {
+                if (res.state=='success'){
+                    Swal.fire('Bien!', res.message, 'success');  
+                    if(grupo_prod==5||grupo_prod==1){      
+                        cargarprodespecgrupo(de_grupo,grupo_prod); 
+                    }else{
+                        cargarespecific(de_grupo,grupo_prod,'N','N');  
+                    }
+                } else {
+                    Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'No se guardo el registro :' + res.message });
+                }
+            }, "json");
+        }
     });
 };
 
@@ -1072,6 +1147,7 @@ buscarespProd = async (grupo_prod) => {
 };
 
 cargarversiones = (espec,flag) => { 
+    esptoolbar.disableItem('eliminar');
     if (grupo_prod == 4){
         const params = {
             espec : espec,
@@ -1129,6 +1205,11 @@ cargarversiones = (espec,flag) => {
         mainLayout_det.cells('b').expand();
         mainLayout_det.cells('a').setHeight(200);
         cargarespecProd(form_cod,version_esp,st_vers);
+        if(data.estado=='Por Aprobar'){            
+            esptoolbar.enableItem('eliminar');
+        }else{    
+            esptoolbar.disableItem('eliminar');
+        };
      });  
     myGrid_version.clearAll(); 
     myGrid_version.load( BASE_URL + 'PO010410/mostrar-version/'+usrJson.empresa+'/'+espec+'/'+flag).then(function (text) {
@@ -1152,6 +1233,7 @@ cargarversiones = (espec,flag) => {
 };
 
 cargarespecversProducto = (prod,grupo,flag) => {   
+    esptoolbar.disableItem('eliminar');
     esptoolbar.showItem('espec');
     esptoolbar.hideItem('info');
     mainLayout_det.cells('a').progressOn();
@@ -1193,6 +1275,11 @@ cargarespecversProducto = (prod,grupo,flag) => {
         form_inci = data.inci;
         form_cas= data.cas;
         form_tmat= data.tipo; 
+        if(data.estado=='Por Aprobar'){            
+            esptoolbar.enableItem('eliminar');
+        }else{    
+            esptoolbar.disableItem('eliminar');
+        };
      }); 
     myGrid_espvers.load( BASE_URL + 'PO010410/mostrar-espec-por-producto/'+usrJson.empresa+'/'+prod+'/'+grupo+'/'+flag).then(function (text) {
         mainLayout_det.cells('a').progressOff();
@@ -1288,7 +1375,7 @@ guardarcaract = (especificacion,version,cadena_cod_car,cadena_de_car,cantfilas,c
     }, "json");
 };
 
-guardarensayo = (especificacion,version,ensayo,metodo,cadespec,limmin,limmax,cantfilas) => { 
+guardarensayo = (especificacion,version,ensayo,metodo,cadespec,limmin,limmax,cadespecingl,cantfilas) => { 
     params = {
         empresa: usrJson.empresa,
         usuario: usrJson.codigo,
@@ -1299,6 +1386,7 @@ guardarensayo = (especificacion,version,ensayo,metodo,cadespec,limmin,limmax,can
         cadespec: cadespec,
         limmin: limmin,
         limmax: limmax,
+        cadespecingl:cadespecingl,
         cantfilas: cantfilas
     };    
     $.post(BASE_URL + "PO010410/guardar-ensayo", params, function (res) {
@@ -2021,7 +2109,7 @@ ensayoOnToolbar = async (id) => {
             for(let i=0;i<cant_filas_l_total;i++){
                 data = myGridensaysel.getRowData(i);
                 if (data.chec == 1) {
-                    myGrid_ensa.addRow(myGrid_ensa.uid(),[0,data.codmet,data.comet,data.met,data.codens,data.ens,,,,,data.um,data.tipens,data.obj,data.tec],1);
+                    myGrid_ensa.addRow(myGrid_ensa.uid(),[0,data.codmet,data.comet,data.met,data.codens,,,,,data.ens,data.um,data.tipens,data.obj,data.tec],1);
                 }      
             } 
             cant_filas_n = myGrid_ensa.getRowsNum();
@@ -2218,6 +2306,16 @@ toolbarOnadj  = async (id) => {
             break; 
         case 'refresh':
             cargarDocumento(cod_esp,version_esp,st_vers);               
+            break;
+        case 'eliminar':            
+            col  = myGrid_dcto.getSelectedRowId();
+            if(col) {
+                col_adj = myGrid_dcto.getRowData(myGrid_dcto.getSelectedRowId());
+                eliminarDocumento(cod_esp,version_esp,col_adj.prod,col_adj.nom);  
+            }else{
+                dhtmlx.confirm("Debe seleccionar un archivo", function (result) {
+                });
+            }             
             break;
         default:
             null;

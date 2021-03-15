@@ -178,7 +178,7 @@ const po010410Controller = {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select 0,co_metodo,co_metodo_anal,de_metodo,co_ensayo,de_ensayo,de_especificaciones,de_especificaciones_ingles,limit_min,limit_max,de_abreviatura,de_tipo_ensayo,des_objetivo_ensayo,de_tecn_anal from table (pack_new_especificacion.f_list_ensayo(:x_empresa,:x_espec,:x_version))";
+            const query = "select 0,co_metodo,co_metodo_anal,de_metodo,co_ensayo,de_especificaciones,limit_min,limit_max,de_especificaciones_ingles,de_ensayo,de_abreviatura,de_tipo_ensayo,des_objetivo_ensayo,de_tecn_anal from table (pack_new_especificacion.f_list_ensayo(:x_empresa,:x_espec,:x_version))";
             
             const params = {
                 x_empresa: {val : empresa},
@@ -746,7 +746,7 @@ const po010410Controller = {
     },
     
     guardarensayo: (req, res) => {        
-        const {empresa,usuario,especificacion,version,ensayo,metodo,cadespec,limmin,limmax,cantfilas} = req.body; 
+        const {empresa,usuario,especificacion,version,ensayo,metodo,cadespec,limmin,limmax,cadespecingl,cantfilas} = req.body; 
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -755,7 +755,7 @@ const po010410Controller = {
                 });
                 return;
             }
-            const query = "call pack_new_especificacion.sp_grabar_ensayo(:x_result,:x_de_result,:x_empresa,:x_usuario,:x_co_especificacion,:x_version,:x_co_cadena_ensayo,:x_co_cadena_metodo,:x_cadena_espec,:x_cadena_lim_min,:x_cadena_lim_max,:x_cant_filas)";
+            const query = "call pack_new_especificacion.sp_grabar_ensayo_v2(:x_result,:x_de_result,:x_empresa,:x_usuario,:x_co_especificacion,:x_version,:x_co_cadena_ensayo,:x_co_cadena_metodo,:x_cadena_espec,:x_cadena_lim_min,:x_cadena_lim_max,:x_cadena_espec_ingl,:x_cant_filas)";
             const params = { 
                 //parametros de salida
                 x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
@@ -770,6 +770,7 @@ const po010410Controller = {
                 x_cadena_espec: {val:cadespec},
                 x_cadena_lim_min: {val:limmin},
                 x_cadena_lim_max: {val:limmax},
+                x_cadena_espec_ingl: {val:cadespecingl},
                 x_cant_filas: {val:cantfilas},
             };
             conn.execute(query, params, responseParams, (error, result) => {
@@ -1378,6 +1379,92 @@ mostrarespecreporten2: async (request, response) => {
                         message: 'Sin registro'
                     });
                 }
+            });
+        });
+    },
+
+    eliminarArchivo: (req, res) => {        
+        const {empresa,usuario,alias,espec,version,producto,nombre} = req.body; 
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err.Error
+                });
+                return;
+            }
+            const query = "call pack_new_especificacion.sp_eliminar_documento(:x_result,:x_de_result,:x_empresa,:x_co_usuario,:x_alias,:x_co_espec,:x_version,:x_co_producto,:x_de_archivo)";
+            const params = { 
+                //parametros de salida
+                x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                x_de_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                //parametros de entrada
+                x_empresa: {val:empresa},
+                x_co_usuario: {val:usuario},
+                x_alias: {val:alias},
+                x_co_espec: {val:espec},
+                x_version: {val:version},
+                x_co_producto: {val:producto},
+                x_de_archivo: {val:nombre},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+    
+                const { x_result, x_de_result } = result.outBinds;
+                if(x_result == 1) res.json({
+                    state: 'success',
+                    message: x_de_result,
+                });
+                else res.json({
+                    state: 'error',
+                    message: x_de_result
+                });
+            });
+        });
+    },
+
+    eliminarEspecificacion: (req, res) => {        
+        const {empresa,usuario,alias,espec,version} = req.body; 
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err.Error
+                });
+                return;
+            }
+            const query = "call pack_new_especificacion.sp_eliminar_especificacion(:x_result,:x_de_result,:x_empresa,:x_co_usuario,:x_alias,:x_co_espec,:x_version)";
+            const params = { 
+                //parametros de salida
+                x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                x_de_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                //parametros de entrada
+                x_empresa: {val:empresa},
+                x_co_usuario: {val:usuario},
+                x_alias: {val:alias},
+                x_co_espec: {val:espec},
+                x_version: {val:version},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+    
+                const { x_result, x_de_result } = result.outBinds;
+                if(x_result == 1) res.json({
+                    state: 'success',
+                    message: x_de_result,
+                });
+                else res.json({
+                    state: 'error',
+                    message: x_de_result
+                });
             });
         });
     },
