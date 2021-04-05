@@ -32,7 +32,7 @@
     "formidable": "^1.2.1",
     "fs-extra": "^7.0.1",
     "ftp": "^0.3.10",
-    "highcharts-export-server": "^2.0.28",
+    "highcharts-export-server": "^2.1.0",
     "html-pdf": "^2.2.0",
     "jsonwebtoken": "^8.3.0",
     "moment": "^2.24.0",
