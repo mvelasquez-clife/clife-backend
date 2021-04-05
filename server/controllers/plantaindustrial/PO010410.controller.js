@@ -311,7 +311,7 @@ const po010410Controller = {
     },
 
     guardarcabecera: (req, res) => {        
-        const {empresa,alias,usuario,especificacion,version,proveedor,grupo,descripcion,serie,accion,tipo_material,arte,princ_activo,inci,cas,prod} = req.body; 
+        const {empresa,alias,usuario,especificacion,version,proveedor,grupo,descripcion,serie,accion,tipo_material,arte,princ_activo,inci,cas,prod,origen,fabricante} = req.body; 
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -320,7 +320,7 @@ const po010410Controller = {
                 });
                 return;
             }
-            const query = "call pack_new_especificacion.sp_grabar_especificacion(:x_result,:x_de_result,:x_empresa,:x_alias,:x_usuario,:x_co_especificacion,:x_version,:x_proveedor,:x_grupo_prod,:x_descripcion,:x_serie,:x_accion,:x_tipo_material,:x_arte,:x_princ_activo,:x_inci,:x_cas,:x_prod)";
+            const query = "call pack_new_especificacion.sp_grabar_especificacion(:x_result,:x_de_result,:x_empresa,:x_alias,:x_usuario,:x_co_especificacion,:x_version,:x_proveedor,:x_grupo_prod,:x_descripcion,:x_serie,:x_accion,:x_tipo_material,:x_arte,:x_princ_activo,:x_inci,:x_cas,:x_prod,:x_origen,:x_fabricante)";
             const params = { 
                 //parametros de salida
                 x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
@@ -341,7 +341,9 @@ const po010410Controller = {
                 x_princ_activo: {val:princ_activo},
                 x_inci: {val:inci},
                 x_cas: {val:cas},
-                x_prod: {val:prod}
+                x_prod: {val:prod},
+                x_origen : {val:origen},
+                x_fabricante : {val:fabricante}
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();
@@ -1083,7 +1085,7 @@ const po010410Controller = {
     }, 
 
     mostrarespecreporte: async (request, response) => {       
-        const {esp,vers,codigo,marc,sub,nom,grupo} = request.params;
+        const {esp,vers,codigo,marc,sub,nom,grupo,nom_prod} = request.params;
         try {
             const conn = await oracledb.getConnection(dbParams);
             //let query = "select de_metodo,de_ensayo,de_tipo_ensayo,de_especificaciones,limit_min,limit_max from table (pack_new_especificacion.f_list_ensayo(11,:x_espec,:x_version))";
@@ -1120,7 +1122,8 @@ const po010410Controller = {
                 filas:filas,                
                 filas2: filas2,
                 nom:nom,
-                grupo:grupo
+                grupo:grupo,
+                nom_prod:nom_prod
             };
             const html = await ejs.renderFile(path.resolve('client/views/modulos/plantaindustrial/PO010410-report1.ejs'), data);
             const pdfOptions = {
@@ -1258,7 +1261,7 @@ mostrarespecreporten2: async (request, response) => {
                 });
                 return;
             }
-            const query = "select pack_new_attached.f_get_url_updload_new(11,19,20123487541,'601',:x_prod,'ESPECPROD',19,:x_usuario,:x_cad_esp) as URL from dual";
+            const query = "select pack_new_attached.f_get_url_updload_new_v2(11,19,20123487541,'601',:x_prod,'ESPECPROD',19,:x_usuario,:x_cad_esp) as URL from dual";
             //const query = "select pack_new_attached.f_get_url_updload_new(11,19,20123487541,'601','80701680700344','ESPECPROD',19,:x_usuario,'ETMP-602_1') as URL from dual";
             const params = { 
                 x_prod:{val:prod},
@@ -1527,8 +1530,62 @@ mostrarespecreporten2: async (request, response) => {
                 error: err
             });
         }
-}, 
+    }, 
 
+    exportarxls: async (request, response) => {        
+        const { empresa,grupo_prod } = request.params;
+        try {
+            const conn = await oracledb.getConnection(dbParams);
+            let query = "select * from table(pack_new_especificacion.f_reporte_espec_xls(:x_empresa,:x_grupo))";
+            let params = {
+                x_empresa: { val: empresa },
+                x_grupo: { val: grupo_prod }
+            };
+            console.log(params);
+            const result = await conn.execute(query, params, responseParams);
+            const personal = result.rows;
+            var Workbook = require('xlsx-workbook').Workbook;
+            var workbook = new Workbook();
+            var reporte = workbook.add("Especificaiones");
+            // encabezados
+            reporte[0] = ['COD.PRODUCTO','NOMBRE PRODUCTO','ESTADO PRODUCTO', 'COD.ESPEC','VERSION','DESCRIPCION','COD.ARTE', 'VIGENCIA','TIPO','FE_CREACION','CREADO','FE_REVISA','REVISADO','F_APRUEBA','APROBADO','PROVEEDOR','MOTIVO CAMBIO'];
+            
+            let i = 1;
+            // reporte[fila][columna]
+            for (let fila of personal) {
+                reporte[i] = [
+                    fila.CO_CATALOGO_PRODUCTO ,
+                    fila.DE_NOMBRE_PRODUCTO,
+                    fila.ES_CATALOGO ,
+                    fila.CO_ESPECIFICACION ,
+                    fila.NU_VERSION,
+                    fila.DE_NOMBRE,
+                    fila.DE_CODIGO_ARTE,
+                    fila.ES_VIGENCIA ,
+                    fila.DE_TIPO,
+                    fila.FE_CREACION ,
+                    fila.DE_CREADOR,
+                    fila.FE_REVISA ,
+                    fila.DE_REVISADO,
+                    fila.FE_APRUEBA ,
+                    fila.DE_APRUEBA,
+                    fila.DE_PROVEEDOR,
+                    fila.DE_OBSERV
+                ];
+                i++;
+            }
+            // automatically appends the '.xlsx' extension
+            let fpath = './tmp/' + empresa + '.xlsx';
+            workbook.save(fpath);
+            response.setHeader('Content-Disposition', 'attachment; filename=especificaciones.xlsx');
+            response.setHeader('Content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            let filestream = require('fs').createReadStream(fpath);
+            filestream.pipe(response);
+        }
+        catch (err) {
+            response.send(JSON.stringify(err));
+        }
+    }, 
 }
 
 module.exports = po010410Controller;

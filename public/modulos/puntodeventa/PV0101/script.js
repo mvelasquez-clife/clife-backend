@@ -2566,7 +2566,7 @@ Inicio = () => {
         dhxWin3_otro.window("w_reportarq").setModal(true), dhxWin3_otro.window("w_reportarq").denyResize(), dhxWin3_otro.window("w_reportarq").center(), dhxWin_ot.setText("Otras Opciones");
         var myLayout_otr = new dhtmlXLayoutObject(dhxWin_ot, '1C');
         myLayout_otr.cells("a").hideHeader();
-        myLayout_otr.cells("a").attachURL("<?php echo base_url(); ?>xml/pv0101/report_arqueo.php?serie=" + serie_arq + "&plan=" + plani + "&co_arq=" + co_arqs + "&emp=" + emp);
+        myLayout_otr.cells("a").("<?php echo base_url(); ?>xml/pv0101/report_arqueo.php?serie=" + serie_arq + "&plan=" + plani + "&co_arq=" + co_arqs + "&emp=" + emp);
         myLayout_otr.cells("a").attachEvent("onContentLoaded", function (id) {
             myLayout_otr.cells("a").cells(id).progressOff();
         });

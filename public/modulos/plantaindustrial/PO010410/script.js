@@ -454,6 +454,7 @@ cargarprodespecgrupo = (nombre,grupo) => {
     mytoolbar.addButton('nuevo',null,'Nuevo',"ic-add3.png","ic-add3.png");
     mytoolbar.addButton('historial',null,'Historial de cambios',"ic-historial.png","");
     mytoolbar.addButton('print',null,'Imprimir',"print.png","");
+    mytoolbar.addButton('export',null,'Exportar',"ic-excel.png","");
     mytoolbar.addButton('filter',null,'Incluir códigos anulados/sin especificación',"filter.png","");
     mytoolbar.attachEvent ( "onClick" , onClickaction); 
     mytoolbar.setIconSize(32);    
@@ -990,7 +991,7 @@ onClickaction = async (id) => {
                     if(rp1){
                         sel  = myGrid_espvers.getRowData(myGrid_espvers.getSelectedRowId());
                         sel2  = myGrid_group.getRowData(myGrid_group.getSelectedRowId());
-                        cargarReport(sel.cod,sel.vers,sel2.cod,1,1,nom_report,grupo_prod);
+                        cargarReport(sel.cod,sel.vers,sel2.cod,1,1,nom_report,grupo_prod,1);
                     }else{
                         dhtmlx.confirm("Debe seleccionar una versión", function (result) {
                         });
@@ -1012,7 +1013,7 @@ onClickaction = async (id) => {
                         sel.coesp = sel.coesp.length==0 ? 'No aplica' : sel.coesp;
                         sel2.marc = sel2.marc.length==0 ? '-' : sel2.marc;
                         sel2.subm = sel2.subm.length==0 ? '-' : sel2.subm;
-                        cargarReport(sel.cod,sel3.vers,sel2.cod,sel2.marc,sel2.subm,nom_report,grupo_prod);
+                        cargarReport(sel.cod,sel3.vers,sel2.cod,sel2.marc,sel2.subm,nom_report,grupo_prod,sel2.desc);
                         }else{
                                 dhtmlx.confirm("Debe seleccionar un producto", function (result) {
                             });
@@ -1048,11 +1049,24 @@ onClickaction = async (id) => {
             break;    
         case 'refresh':            
             cargarespecific(de_grupo,grupo_prod,'N','N');  
-            break;                    
+            break;             
+        case 'export':    
+            cargaReportexls(grupo_prod);
+            WinDocumentoViewer.hide();
+            break;          
         default:
             null;
             break;
     }
+};
+
+cargaReportexls = async (grupo_prod) => {
+    WinContainer = new dhtmlXWindows();
+    WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 0, 0, 0, 0);
+    WinDocumentoViewer.keepInViewport();
+    WinDocumentoViewer.setText('Mostrando documento ');
+    WinDocumentoViewer.attachURL('/api/po010410/xls-reporte/'+usrJson.empresa+'/'+ grupo_prod); 
+
 };
 
 prodgrupoToolbar = async (id) => {
@@ -1275,6 +1289,8 @@ cargarespecversProducto = (prod,grupo,flag) => {
         form_inci = data.inci;
         form_cas= data.cas;
         form_tmat= data.tipo; 
+        form_orig= data.orig; 
+        form_fab= data.fab; 
         if(data.estado=='Por Aprobar'){            
             esptoolbar.enableItem('eliminar');
         }else{    
@@ -1637,7 +1653,7 @@ buscarnsoc = async (name) => {
     });
 };
 
-guardarcabecera = (especificacion,version,proveedor,grupo,descripcion,serie,accion,tipo_material,arte,princ_activo,inci,cas,prod) => {   
+guardarcabecera = (especificacion,version,proveedor,grupo,descripcion,serie,accion,tipo_material,arte,princ_activo,inci,cas,prod,origen,fabricante) => {   
     params = {
         empresa: usrJson.empresa,
         alias: usrJson.alias,
@@ -1654,7 +1670,9 @@ guardarcabecera = (especificacion,version,proveedor,grupo,descripcion,serie,acci
         princ_activo:princ_activo,
         inci:inci,
         cas:cas,
-        prod:prod
+        prod:prod,
+        origen:origen,
+        fabricante:fabricante
     };      
     $.post(BASE_URL + "PO010410/guardar-cabecera", params, function (res) {
         if (res.state=='success'){
@@ -1695,6 +1713,8 @@ verdetespecif = async (condic,de_grupo) => {
         myFormespecf.showItem('ep_pact');
         myFormespecf.showItem('ep_inci');
         myFormespecf.showItem('ep_cas');
+        myFormespecf.showItem('ep_fab');
+        myFormespecf.showItem('ep_orig');
     };
     
     if (condic=='edit'){
@@ -1717,6 +1737,8 @@ verdetespecif = async (condic,de_grupo) => {
         myFormespecf.setItemValue('ep_tm',form_tmat); 
         myFormespecf.setItemValue('ep_cas',form_cas); 
         myFormespecf.setItemValue('ep_inci',form_inci); 
+        myFormespecf.setItemValue('ep_fab',form_fab); 
+        myFormespecf.setItemValue('ep_orig',form_orig); 
         myFormespecf.setItemValue('ep_arte',form_arte);
         myFormespecf.setItemValue('ep_pact',form_tmat);
         if (de_grupo == '__matpr'||de_grupo == '__emp'){
@@ -1788,6 +1810,8 @@ onClickDetesp = async (id) => {
             inci = myFormespecf.getItemValue('ep_inci');
             cas = myFormespecf.getItemValue('ep_cas');
             prod = myFormespecf.getItemValue('cod_producto');
+            origen = myFormespecf.getItemValue('ep_orig');
+            fabricante = myFormespecf.getItemValue('ep_fab');
             if(proveedor.length==0||descripcion.length==0){
                 dhtmlx.alert({
                     type: 'alert-error',
@@ -1795,11 +1819,11 @@ onClickDetesp = async (id) => {
                 });
             }else{
                 if (nuev == 'S'){
-                    guardarcabecera(11,1,proveedor,grupo_prod,descripcion,serie,nuev,tipo_material,arte,princ_activo,inci,cas,prod);
+                    guardarcabecera(11,1,proveedor,grupo_prod,descripcion,serie,nuev,tipo_material,arte,princ_activo,inci,cas,prod,origen,fabricante);
                 }else{ 
                     version = myFormespecf.getItemValue('ep_version');
                     especificacion = myFormespecf.getItemValue('ep_codigo');
-                    guardarcabecera(especificacion,version,proveedor,grupo_prod,descripcion,serie,nuev,tipo_material,arte,princ_activo,inci,cas,prod);
+                    guardarcabecera(especificacion,version,proveedor,grupo_prod,descripcion,serie,nuev,tipo_material,arte,princ_activo,inci,cas,prod,origen,fabricante);
                 };
             }
             break;    
@@ -2399,7 +2423,7 @@ verurladjunto = async (prod,archivo,indicador) => {
 
 subiradjunto = async (espec,vers,prod) => {
     WinContainer = new dhtmlXWindows();
-    WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 680, 280);
+    WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 750, 600);
     WinDocumentoViewer.keepInViewport();
     WinDocumentoViewer.setText('Mostrando documento ');
     const params = {
@@ -2424,7 +2448,7 @@ cargarcmpt = (buscar) => {
     });  
 };
  
-cargarReport = async (esp,vers,cod,marc,sub,nom_report,grupo_prod) => {    
+cargarReport = async (esp,vers,cod,marc,sub,nom_report,grupo_prod,nom_prod) => {    
     WinContainer = new dhtmlXWindows();
     WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 800, 600);
     WinDocumentoViewer.setModal(true);
@@ -2434,7 +2458,7 @@ cargarReport = async (esp,vers,cod,marc,sub,nom_report,grupo_prod) => {
     if (grupo_prod==1||grupo_prod==5){
         WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte2/'+usrJson.empresa+'/'+usrJson.codigo+'/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod);
     }else{
-        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod);
+        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod+'/'+nom_prod);
     }
 };
 

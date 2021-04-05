@@ -9,11 +9,11 @@
     <div style="box-sizing:border-box;padding-left:15mm;width:100%;">
         <!-- <img src="file:///C:/clife-backend/public/assets/images/home/clife-ini.png" class="mx-auto mb-2 d-block" style="height:50px;">
         <p style="font-size: 12pt;text-align:center;"><b><%=nom%></b></p> -->
-        <table style="font-family:Arial,Verdana;font-size:6pt;width:100%;text-align:center">               
+        <table style="font-family:Arial,Verdana;font-size:4pt;width:100%;text-align:center">               
             <thead>
                 <tr> 
                     <th rowspan="2" style="width:auto; text-align:left;"><img src="http://www.corporacionlife.com.pe/wp-content/uploads/2018/03/logo-corporacion-life-black-1.svg" class="mx-auto mb-2 d-block" style="height:45px;"></th>
-                    <th rowspan="2" style="width:auto; font-size: 8pt;text-align:center;"><b><%=nom%></b></th>
+                    <th rowspan="2" style="width:auto;height: 10px; font-size: 8pt;text-align:center;"><b><%=nom%></b></th>
                     <th style="width:auto; text-align:center;font-size: 8pt;"><b><%=esp%></b></th>
                 </tr>
                 <tr> 
@@ -24,7 +24,7 @@
         <table style="font-family:Arial,Verdana;font-size:5pt;width:100%;text-align:left">               
             <thead>
                 <tr>
-                    <th style="width: 100px;; text-align:left;"><b><%=codigo%></b></th>
+                    <th style="width: 100px;; text-align:center;"><b><%=codigo%></b></th>
                     <% filas4.forEach(function(fila) { %>
                         <th style="width:auto; text-align:left;"><%-fila.DE_NOMBRE%></th>
                     <% }); %>
@@ -58,7 +58,7 @@
         <table style="font-family:Arial;font-size:7pt;width:100%;">
             <tbody>
                 <tr>
-                <td class="a" style="font-size: 7pt;text-align:center;"><b>DESCRIPCION</b></td>
+                <td class="a" style="font-size: 6pt;text-align:center;"><b>DESCRIPCION</b></td>
                 </tr>
             </tbody>
         </table>
@@ -67,7 +67,7 @@
                 <%if(grupo==5){ %>
                     <tr>                        
                         <% filas4.forEach(function(fila) { %>
-                            <td style="text-align:left;"><b>CÃ³digo Arte: </b><%=fila.CO_ARTE%></td>
+                            <td style="text-align:left;"><b>CÃƒÂ³digo Arte: </b><%=fila.CO_ARTE%></td>
                             <td style="text-align:left;"><b>Material de empaque: </b><%=fila.DE_PRINCIPIO_ACTIVO%></td>
                             <td colspan="2" style="text-align:left;"><b>Proveedor: </b><%=fila.DE_PROVEEDOR%></td>
                         <% }); %>
@@ -91,10 +91,10 @@
                       
             </thead>
         </table>
-        <table style="font-family:Arial;font-size:7pt;width:100%;">
+        <table style="font-family:Arial;font-size:6pt;width:100%;">
             <tbody>
                 <tr>
-                <td class="a" style="font-size: 7pt;text-align:center;">CARACTERISTICAS</td>
+                <td class="a" style="font-size: 6pt;text-align:center;">CARACTERISTICAS</td>
                 </tr>
             </tbody>
         </table>
@@ -116,7 +116,7 @@
                 </tr>
             <% filas3.forEach(function(fila,indice) { 
                 
-                if(fila.DE_DETALLE_CARACT=!'Sin CaracterÃ­sticas'){
+                if(fila.DE_DETALLE_CARACT=!'Sin CaracterÃƒÂ­sticas'){
                 if(indice%2==0){%>
                 <tr>
                     <td style="text-align:left;"><%-fila.DE_DETALLE_CARACT%></td>
@@ -170,7 +170,7 @@
         <table style="font-family:Arial,Verdana;font-size:6pt;width:100%;">
             <tbody>
                 <tr>
-                <td class="a" style="font-size: 7pt;text-align:center;"><b>ESPECIFICACIONES TECNICAS</b></td>
+                <td class="a" style="font-size: 6pt;text-align:center;"><b>ESPECIFICACIONES TECNICAS</b></td>
                 </tr>
             </tbody>
         </table>
@@ -192,7 +192,7 @@
             <% }); %>
             </tbody>
         </table>
-        <p style="font-size: 7pt;text-align:center;">CONDICIONES DE ALMACENAMIENTO</p>
+        <p style="font-size: 6pt;text-align:center;">CONDICIONES DE ALMACENAMIENTO</p>
         <table style="font-family:Arial,Verdana;font-size:5pt;width:100%;">
             <thead>
                 <tr>

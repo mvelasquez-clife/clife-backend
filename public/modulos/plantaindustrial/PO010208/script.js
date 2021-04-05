@@ -73,7 +73,7 @@ mainTreeuploadClick = (id) => {
         data = myGridrsdoc.getRowData(myGridrsdoc.getSelectedRowId());
         Wind_.window("wmenu").close();
         WinContainer = new dhtmlXWindows();
-        WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 680, 280);
+        WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 750, 600);
         WinDocumentoViewer.keepInViewport();
         WinDocumentoViewer.setText('Subir Documento');
         const parametros = {

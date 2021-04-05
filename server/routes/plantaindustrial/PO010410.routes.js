@@ -31,7 +31,7 @@ router.post('/guardar-historial/',po010410Controller.guardarhistorial);
 router.post('/copiar-especificacion/',po010410Controller.copiarespecificacion);
 router.post('/mostrar-especificacion-copia/',po010410Controller.mostrarespecopia);
 router.post('/mostrar-especificacion-pt/',po010410Controller.mostrarespecpt);
-router.get('/mostrar-reporte/:esp/:vers/:codigo/:marc/:sub/:nom/:grupo/',po010410Controller.mostrarespecreporte);
+router.get('/mostrar-reporte/:esp/:vers/:codigo/:marc/:sub/:nom/:grupo/:nom_prod/',po010410Controller.mostrarespecreporte);
 router.get('/mostrar-reporte2/:empresa/:usuario/:esp/:vers/:codigo/:marc/:sub/:nom/:grupo/',po010410Controller.mostrarespecreporten2);
 router.get('/mostrar-reporte-dt1/:nombre/:esp/:version/',po010410Controller.mostrareportdt1);
 router.post('/mostrar-adjunto-espec/',po010410Controller.mostraradjporprod);
@@ -41,5 +41,6 @@ router.post('/mostrar-producto-por-espec-adj/',po010410Controller.mostrarproducp
 router.post('/vincular-especificacion/',po010410Controller.vincularEPT);
 router.post('/eliminar-archivo/',po010410Controller.eliminarArchivo);
 router.post('/eliminar-especificacion/',po010410Controller.eliminarEspecificacion);
-
+// router.post('/xls-reporte/', po010410Controller.exportarxls);
+router.get('/xls-reporte/:empresa/:grupo_prod/', po010410Controller.exportarxls);
 module.exports = router;

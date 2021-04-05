@@ -1146,6 +1146,7 @@ const po010208Controller = {
 
     subirdocadjunto: (req, res) => {        
         const {empresa,entidad,tipo_doc,producto,doc,usuario} = req.body; 
+        console.log(entidad,tipo_doc,producto,doc,usuario);
         oracledb.getConnection(dbParams, (err, conn) => {
             if(err) {
                 res.json({
@@ -1154,7 +1155,7 @@ const po010208Controller = {
                 });
                 return;
             }
-            const query = "select pack_new_attached.f_get_url_updload(:x_empresa,:x_entidad,:x_producto,:x_tipo_doc,:x_producto,:x_doc,:x_entidad,:x_usuario) as URL from dual";
+            const query = "select pack_new_attached.f_get_url_updload_new_v2(:x_empresa,:x_entidad,:x_producto,:x_tipo_doc,:x_producto,:x_doc,:x_entidad,:x_usuario,'') as URL from dual";
             const params = { 
                 x_empresa:{val:empresa},
                 x_entidad:{val:entidad},
