@@ -41,6 +41,10 @@ router.post('/mostrar-producto-por-espec-adj/',po010410Controller.mostrarproducp
 router.post('/vincular-especificacion/',po010410Controller.vincularEPT);
 router.post('/eliminar-archivo/',po010410Controller.eliminarArchivo);
 router.post('/eliminar-especificacion/',po010410Controller.eliminarEspecificacion);
-// router.post('/xls-reporte/', po010410Controller.exportarxls);
 router.get('/xls-reporte/:empresa/:grupo_prod/', po010410Controller.exportarxls);
+router.post('/alerta-codiseno/',po010410Controller.alertacodiseno);
+router.get('/mostrar-tipo-patron/', po010410Controller.mostrartipoptr);
+router.post('/guardar-patron/',po010410Controller.guardarpatron);
+router.post('/guardar-estado-patron/',po010410Controller.guardarestadopatron);
+router.get('/mostrar-patrones/:empresa/:especificacion/:version/',po010410Controller.mostrarpatrones);
 module.exports = router;

@@ -68,6 +68,7 @@ app.use('/api/CO010401B', require('./routes/contabilidad/CO010401B.routes'));
 app.use('/api/SG010101', require('./routes/seguridad/SG010101.routes'));
 app.use('/api/SG010203', require('./routes/seguridad/SG010203.routes'));
 app.use('/api/PO010208', require('./routes/plantaindustrial/PO010208.routes'));
+app.use('/api/PO010210', require('./routes/plantaindustrial/PO010210.routes'));
 app.use('/api/PO010411', require('./routes/plantaindustrial/PO010411.routes'));
 app.use('/api/PO010410', require('./routes/plantaindustrial/PO010410.routes'));
 app.use('/api/PO01020102', require('./routes/plantaindustrial/PO01020102.routes'));

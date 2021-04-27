@@ -550,7 +550,7 @@ const po010208Controller = {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select de_nombre,co_especificacion,nu_version,es_vigencia,fe_creacion,fe_revisa,fe_aprueba,de_creador,de_revisado,de_aprueba,de_proveedor,co_proveedor from table (PACK_NEW_DIRECCION_TECN.f_list_especificacion_v2(:x_empresa))";
+            const query = "select 'ic-dlike.png^Rechazar','ic-msj.png^Ver mensajes',de_nombre,co_especificacion,nu_version,es_vigencia,fe_creacion,fe_revisa,fe_aprueba,de_creador,de_revisado,de_aprueba,de_proveedor,co_proveedor from table (PACK_NEW_DIRECCION_TECN.f_list_especificacion_v2(:x_empresa))";
             
             const params = {
                 x_empresa: {val : empresa}

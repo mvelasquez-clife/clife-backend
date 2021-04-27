@@ -263,6 +263,11 @@
                 ],},
             ];
             
+            var form_observaciones = [ { type: "newcolumn" },
+            {type: "block",blockOffset: 10,  offsetTop: 10, position: "label-left", width: 450, list: [
+                { type: "newcolumn" },
+                { type: "input",offsetLeft: 10,labelWidth: 150, inputWidth: 400, rows:4, name: "_drt_observ", label: 'Observaciones:'}, { type: "newcolumn" },],
+            }];
             mainLayout_inicio = new dhtmlXLayoutObject(document.body, '1C'); 
             mainLayout_inicio.cells('a').hideHeader();
             tabbarinicio = mainLayout_inicio.cells('a').attachTabbar();

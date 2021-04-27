@@ -155,11 +155,13 @@ Inicio = () => {
     myToolbardatos_register.disableItem('__notif');
     maingrid = mainLayout_register.cells('a').attachGrid();     
     maingrid.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/");
-    maingrid.setHeader('NOMBRE ESPECIFICACIÓN, COD.ESPECIFICACIÓN,VERSION,VIGENCIA,FEC.CREACION,FEC.REVISA,FE.APRUEBA,NOM.CREACION,NOM.REVISA,NOM.APRUEBA,NOM.PROVEEDOR');
-    maingrid.setInitWidths('600,150,100,0,150,0,0,470,0,0,0');
-    maingrid.setColAlign('left,center,center,center,center,center,center,left,left,left,left');
-    maingrid.setColumnIds("despec,ccespec,version"); 
-    maingrid.attachHeader("#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter"); 
+    maingrid.setIconsPath('/assets/images/icons/');
+    maingrid.setHeader(',,NOMBRE ESPECIFICACIÓN, COD.ESPECIFICACIÓN,VERSION,VIGENCIA,FEC.CREACION,FEC.REVISA,FE.APRUEBA,NOM.CREACION,NOM.REVISA,NOM.APRUEBA,NOM.PROVEEDOR');
+    maingrid.setInitWidths('40,40,600,150,100,0,150,0,0,470,0,0,0');
+    maingrid.setColAlign('center,center,left,center,center,center,center,center,center,left,left,left,left');
+    maingrid.setColumnIds(",,despec,ccespec,version"); 
+    maingrid.setColTypes('img,img,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro');    
+    maingrid.attachHeader(",,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter"); 
     maingrid.init();     
     mainLayout_register.cells('a').progressOn();  
     maingrid.load( BASE_URL + 'PO010208/mostrar-especificacion/'+usrJson.empresa).then(function (text) {
@@ -167,7 +169,13 @@ Inicio = () => {
     });    
     mainLayout_register.cells('c').setHeight(280);     
     iniciotabs();  
-    maingrid.attachEvent("onRowSelect", function (id, ind) {
+    maingrid.attachEvent("onRowSelect", function (rowId,colId) {
+        switch(colId) {
+            case 0:
+                rechazar();
+                break;
+            default: break;
+        }
         mainLayout_register.cells('c').expand();
         data = maingrid.getRowData(maingrid.getSelectedRowId())     
         version_esp = data.version;
@@ -180,6 +188,56 @@ Inicio = () => {
      });
 },
 
+rechazar = async () => {
+    Wind_ = new dhtmlXWindows();
+    Winid_ = Wind_.createWindow("wbuscar", 0, 0, 500, 200);
+    Wind_.window("wbuscar").hideHeader();
+    Wind_.window("wbuscar").setModal(true);
+    Wind_.window("wbuscar").denyResize();
+    Wind_.window("wbuscar").center(); 
+    myToolbar = Wind_.window("wbuscar").attachToolbar();
+    myToolbar.setIconsPath('/assets/images/icons/');
+    myToolbar.addButton('b_guardar', null, 'Guardar', "ic-save2.png", null);
+    myToolbar.addSeparator(null, null);
+    myToolbar.addButton('b_close', null, 'Cerrar', "ic-cancel-cd.png", null);
+    myToolbar.attachEvent('onClick', toolbarOnhist);
+    form_observ = Wind_.window("wbuscar").attachForm(form_observaciones);     
+};
+
+toolbarOnhist  = async (id) => {
+    switch (id) {
+        case 'b_guardar':
+            var obsv = form_observ.getItemValue('_drt_observ');
+            //guardarhistorial(sel.cod,sel.vers,obsv);
+            break;  
+        case 'b_close':
+            Wind_.window("wbuscar").close();
+            break; 
+        default:
+            null;
+            break;
+    }
+};
+
+guardarhistorial = () => {   
+    dhtmlx.confirm("¿Está seguro?", function (result) {});
+    // params = {
+    //     empresa: usrJson.empresa,
+    //     usuario: usrJson.codigo,
+    //     especificacion: especificacion,
+    //     version:version,
+    //     observacion: observacion
+    // };    
+    // $.post(BASE_URL + "PO010410/guardar-historial", params, function (res) {
+    //     if (res.state=='success'){
+    //         Swal.fire('Bien!', res.message, 'success');
+    //         cargarHistorial(especificacion,version,'Por Aprobar'); 
+    //     } else {
+    //         Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'No se guardo el registro :' + res.message });
+    //     }
+    // }, "json");
+};
+
 iniciotabs= () => {
     tabbar_det = mainLayout_register.cells('c').attachTabbar();
     tabbar_det.addTab('presp', 'Productos Espec.', null, null, true);
@@ -189,14 +247,14 @@ iniciotabs= () => {
     tabbar_det.attachEvent ( "onSelect" , detaOnSelect);  
 }
 
-cargarReportEsp = async (esp,vers,cod,marc,sub,nom_report,grupo_prod) => {    
+cargarReportEsp = async (esp,vers,cod,marc,sub,nom_report,grupo_prod,nom_prod) => {    
     WinContainer = new dhtmlXWindows();
     WinDocumentoViewer = WinContainer.createWindow('WinDocumentoViewer', 320, 0, 800, 600);
     WinDocumentoViewer.setModal(true);
     WinDocumentoViewer.center();    
     WinDocumentoViewer.keepInViewport();
     WinDocumentoViewer.setText('Mostrando documento ');
-        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod);  
+        WinDocumentoViewer.attachURL('/api/po010410/mostrar-reporte/'+esp+'/'+vers+'/'+cod+'/'+marc+'/'+sub+'/'+nom_report+'/'+grupo_prod+'/'+nom_prod);   
 };
 
 detaOnSelect= async (id) => {
@@ -1073,7 +1131,7 @@ onClicktoolbarform= async (id) => {
             cargarReport(codigo,nombre, cod_esp,seleccione.marc,version_esp);                
             break;
         case '__repesp': 
-            cargarReportEsp(cod_esp,version_esp,seleccione.cod,seleccione.marc,seleccione.subm,'ESPECIFICACIONES TECNICAS DE PRODUCTO TERMINADO',4);    
+            cargarReportEsp(cod_esp,version_esp,seleccione.cod,seleccione.marc,seleccione.subm,'ESPECIFICACIONES TECNICAS DE PRODUCTO TERMINADO',4,seleccione.desc);    
             break;
         default:
             null;
