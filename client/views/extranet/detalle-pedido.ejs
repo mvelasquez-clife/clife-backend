@@ -26,6 +26,10 @@
             width: 60px;
         }
         td, th {vertical-align: middle !important;}
+        .ptext{min-width: 160px;}
+        .th-hoverable{cursor:pointer}
+        .th-hoverable:hover{text-decoration:underline}
+        #btn-agregar, #btn-eliminar, #btn-cierre, #btn-editar {display:none}
     </style>
 </head>
 
@@ -69,6 +73,7 @@
                 <div id="head-container" class="alert bg-light">
                     <h5 class="font-weight-light mb-2">Cliente: <span class="font-weight-normal" id="nombre-cliente">Cargando datos...</span></h5>
                     <!-- -->
+                    <span id="sp-status">Recuperando datos del pedido...</span>
                     <a href="#" class="btn btn-primary m-1 dropdown-toggle" id="btn-agregar" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-plus"></i> Agregar productos</a>
                     <div class="dropdown-menu" aria-labelledby="btn-agregar">
                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-lista"><i class="fa fa-list"></i> Desde el catálogo de productos</a>
@@ -77,11 +82,30 @@
                     <a href="#" class="btn btn-danger m-1" id="btn-eliminar"><i class="fa fa-remove"></i> Quitar productos</a>
                     <a href="#" class="btn btn-info m-1" id="btn-itsfree" data-toggle="modal" data-target="#modal-permiso"><i class="fa fa-remove"></i> Título gratuito</a>
                     <a href="#" class="btn btn-success ml-5 mr-1" data-toggle="modal" data-target="#modal-cierre" id="btn-cierre"><i class="fa fa-check"></i> Cerrar pedido</a>
+                    <a href="#" class="btn btn-success ml-5 mr-1" id="btn-editar"><i class="fa fa-edit"></i> Abrir el pre-pedido</a>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col" id="container"></div>
+        </div>
+        <div style="height:0px;overflow:hidden;">
+            <table id="table-export">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Codigo EAN</th>
+                        <th>Producto</th>
+                        <th>Precio Venta</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                        <th>Unidades/Caja</th>
+                        <th>Cajas</th>
+                        <th>Palets</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
     <!-- modals -->
@@ -116,7 +140,11 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p>A continuación, seleccione los productos que desea agregar al pedido</p>
+                    <form id="form-filter">
+                        <div class="form-group">
+                            <input type="text" class="form-control text-uppercase" id="form-query" placeholder="Puede filtrar los productos por EAN o nombre">
+                        </div>
+                    </form>
                     <div class="row">
                         <div class="col" id="lista-container"></div>
                     </div>
@@ -333,6 +361,10 @@
     <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
     <script src="/assets/bootstrap/js/popper.min.js"></script>
     <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/assets/vendor/tableexport/lib/js-xlsx/xlsx.core.min.js"></script>
+    <script type="text/javascript" src="/assets/vendor/tableexport/lib/FileSaver/FileSaver.min.js"></script> 
+    <script type="text/javascript" src="/assets/vendor/tableexport/lib/html2canvas/html2canvas.min.js"></script>
+    <script type="text/javascript" src="/assets/vendor/tableexport/tableExport.js"></script>
     <script>
         let sesdata = JSON.parse('<%-sesion %>');
         let CodigoPedido = '<%=pedido %>';
@@ -347,7 +379,6 @@
         var requiereRevision;
         var stocks = [];
         var mensajes = JSON.parse('<%-mensajes %>');
-console.log(mensajes);
 var pallets;
 
         CargarDatosPedido = async () => {
@@ -372,13 +403,27 @@ var pallets;
                 if (Pedido.vigencia != 'Vigente' && Pedido.vigencia != 'Pendiente') {
                     $('#btn-agregar').prop('disabled', true);
                 }
+                if (Pedido.vigencia == 'Cerrado') {
+                    $('#btn-agregar').remove();
+                    $('#btn-eliminar').remove();
+                    $('#btn-cierre').remove();
+                    $('#btn-editar').show();
+                    document.getElementById('sp-status').innerHTML = 'El pre-pedido está cerrado';
+                }
+                if (Pedido.vigencia == 'Pendiente') {
+                    $('#btn-agregar').show();
+                    $('#btn-eliminar').show();
+                    $('#btn-cierre').show();
+                    $('#btn-editar').remove();
+                    $('#sp-status').hide();
+                }
                 requiereRevision = result.revision;
                 EscribirListaProductos();
                 if (requiereRevision == 'S') {
                     // olakease
                     $('#btn-cierre').remove();
                     $('#head-container').append(
-                        $('<a>').attr('href', '#').text('Generar pedido').addClass('btn btn-success ml-5 mr-1').prepend(
+                        $('<a>').attr('href', '#').text('Generar pedido').addClass('btn btn-danger ml-5 mr-1').prepend(
                             $('<i>').addClass('fa fa-magic mr-1')
                         ).on('click', generaPedidoAlmacen)
                     );
@@ -409,7 +454,7 @@ var pallets;
                     location.href = '/extranet';
                 }
                 catch (err) {
-                    console.log(err);
+                    alert(err);
                 }
             }
         }
@@ -451,7 +496,6 @@ var pallets;
                     EscribirListaProductos();
                 }
                 catch (err) {
-                    console.error(err);
                     alert(err);
                 }
             }
@@ -463,18 +507,55 @@ var pallets;
                 var iean = iproducto.ean;
                 var ipventa = iproducto.pventa;
                 var istock = iproducto.stock;
+                var ipromvta = iproducto.cantidad;
+                var icantidad = parseInt($('#comprometido-' + iean).parent().data('cantidad'));
+                var idespachar = parseInt($('#ip-' + iean).data('despachar'));
                 $('#ip-' + iean).attr('data-stock', istock);
+                $('#comprometido-' + iean).empty().append(
+                    $('<input>').addClass('form-control ip-comprometido').css('width','75px').attr({
+                        'data-stock': istock,
+                        'data-promvta': ipromvta,
+                        'data-cantidad': icantidad,
+                        'data-ean': iean,
+                        'id': 'ipcomprom-' + iean
+                    }).on('keyup', function () {
+                        var input = $(this);
+                        var comprometido = input.val();
+                        var ipean = input.data('ean');
+                        var stock = input.data('stock');
+                        var promvta = input.data('promvta');
+                        var cantidad = input.data('cantidad');
+                        var ms = promvta > 0 ? ((stock - comprometido) / promvta) : 0;
+                        document.getElementById('ms-' + ipean).innerHTML = ms.toFixed(2);
+                    }).val(0).trigger('keyup')
+                );
+                $('#despachar-' + iean).empty().append(
+                    $('<input>').addClass('form-control ip-despachar').css('width','75px').attr({
+                        'data-stock': istock,
+                        'data-promvta': ipromvta,
+                        'data-cantidad': icantidad,
+                        'data-ean': iean
+                    }).on('keyup', function () {
+                        var input = $(this);
+                        var despachar = input.val();
+                        var ipean = input.data('ean');
+                        var stock = input.data('stock');
+                        var promvta = input.data('promvta');
+                        var cantidad = input.data('cantidad');
+                        var comprometido = parseInt(document.getElementById('ipcomprom-' + ipean).value);
+                        var nms = promvta > 0 ? ((stock - comprometido - despachar) / promvta) : 0;
+                        var pendiente = cantidad - despachar;
+                        document.getElementById('nms-' + ipean).innerHTML = nms.toFixed(2);
+                        document.getElementById('pendiente-' + ipean).innerHTML = pendiente.toLocaleString('en-us', {minimumFractionDigits:0, maximumFractionDigits:0});
+                    }).val(idespachar).trigger('keyup')
+                );
                 $('#stock-' + iean).text(istock.toLocaleString('en-us', {minimumFractionDigits: 0, maximumFractionDigits: 0})).addClass('font-weight-bold');
+                $('#promvta-' + iean).text(ipromvta.toLocaleString('en-us', {minimumFractionDigits: 0, maximumFractionDigits: 0})).addClass('font-weight-bold');
             }
         }
         function cargaStockProductos() {
-            var eans = [];
-            var numProductosPedido = DetallePedido.length;
-            for (var i = 0; i < numProductosPedido; i++) {
-                eans.push(DetallePedido[i].ean);
-            }
             var data = {
-                eans: eans.join(','),
+                eans: '',
                 prepedido: CodigoPedido,
                 cliente: Cliente.rucdni
             };
@@ -491,6 +572,7 @@ var pallets;
                     stocks = result.data;
                     actualizarStockProductos();
                     // coloca el encabezado de credito
+                    var solicitud = result.solicitud;
                     var credito = result.cliente;
                     $('#head-container').children('h5').after(
                         $('<p>').attr('id', 'head-credito').html('Saldo disponible: ' + credito.moneda + ' ' + credito.disponible.toLocaleString('en-us', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' - Solicitud de Crédito: ' + credito.moneda + ' ' + credito.solicitud.toLocaleString('en-us', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' - Deuda: ' + credito.moneda + ' ' + credito.deuda.toLocaleString('en-us', {minimumFractionDigits:2, maximumFractionDigits:2})).addClass('mb-3')
@@ -509,11 +591,19 @@ var pallets;
                         }
                     }
                     Credito = credito;
-                    if (credito.deuda > 0 && credito.disponible <= 0) {
-                    // if (true) {
-                        $('#head-credito').append(
-                            $('<a>').addClass('btn btn-sm btn-primary ml-3').text('Solicitar crédito').attr('href', '#').on('click', solicitarCredito)
+                    // .append('<br><small>Solicitud por ' + solicitud.datos.importe + ' enviada el ' + solicitud.datos.fecha + '</small>')
+console.log('solicitud', solicitud);
+                    if (solicitud.existe) {
+                        $('#head-credito').append($('<br>')).append(
+                            $('<span>').addClass('text-secondary').html('Solicitud pendiente por <span class="text-primary">' + solicitud.datos.importe.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</span> enviada el ' + solicitud.datos.fecha)
                         );
+                    }
+                    else {
+                        if (credito.deuda > 0 && credito.disponible <= 0) {
+                            $('#head-credito').append(
+                                $('<a>').addClass('btn btn-sm btn-primary ml-3').text('Solicitar crédito').attr('href', '#').on('click', solicitarCredito)
+                            );
+                        }
                     }
                 },
                 error: function (error) {
@@ -549,7 +639,6 @@ var pallets;
                             $('<option>').val(icpago.value).text(icpago.text)
                         );
                     }
-                    console.log(result.fventa, result.cpago);
                 },
                 error: function (error) {
                     alert(error);
@@ -581,6 +670,7 @@ var pallets;
         }
         EscribirListaProductos = () => {
             $('#container').empty();
+            $('#table-export tbody').empty();
             if (DetallePedido.length > 0) {
                 let tbody = $('<tbody>');
                 totales = {
@@ -600,9 +690,28 @@ var pallets;
                         case 'N': btnTipo.addClass('text-warning').attr('title', 'Precio normal'); break;
                         default: btnTipo.addClass('text-light'); break;
                     }
+                    /*
+                    var tdCantidad = $('<td>').append(
+                        $('<p>').text(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('mb-0')
+                    ).addClass('text-right');
+                    */
+                    var tdCantidad = $('<td>').text(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('mb-0').addClass('text-right');
+                    // verifica si la caja está completa
+                    var resto = producto.cantidad % producto.unidcaja;
+                    if (resto > 0) {
+                        tdCantidad.prepend(
+                            $('<i>').addClass('mr-2 fa fa-exclamation-circle')
+                        ).attr({
+                            'data-toggle': 'tooltip',
+                            'data-placement': 'top',
+                            'title': 'Falta(n) ' + (producto.unidcaja - resto) + ' unid(s). para completar ' + producto.cajas + ' caja(s)'
+                        }).addClass('text-danger');
+//  ="tooltip" ="top" title="Tooltip on top"
+                    }
+                    var tridx = parseInt(i) + 1;
                     tbody.append(
                         $('<tr>').append(
-                            $('<td>').text(parseInt(i) + 1)
+                            $('<td>').text(tridx)
                         ).append(
                             $('<td>').append(
                                 $('<input>').attr({
@@ -619,17 +728,30 @@ var pallets;
                         ).append(
                             $('<td>').html(producto.nombre)
                         ).append(
-                            $('<td>').attr('id', 'stock-' + producto.ean).hide().addClass('td-hidden')
-                        ).append(
                             $('<td>').html(producto.pventa.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                         ).append(
-                            $('<td>').html(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                            // $('<td>').html(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                            tdCantidad.css('max-width', '100px')
+                        ).append(
+                            $('<td>').attr('id', 'comprometido-' + producto.ean).hide().addClass('td-hidden')
+                        ).append(
+                            $('<td>').attr('id', 'stock-' + producto.ean).hide().addClass('td-hidden text-right text-primary')
+                        ).append(
+                            $('<td>').attr('id', 'promvta-' + producto.ean).hide().addClass('td-hidden text-right')
+                        ).append(
+                            $('<td>').attr('id', 'ms-' + producto.ean).hide().addClass('td-hidden text-right text-success')
+                        ).append(
+                            $('<td>').attr('id', 'despachar-' + producto.ean).hide().addClass('td-hidden')
+                        ).append(
+                            $('<td>').attr('id', 'nms-' + producto.ean).hide().addClass('td-hidden text-right text-success')
+                        ).append(
+                            $('<td>').attr('id', 'pendiente-' + producto.ean).hide().addClass('td-hidden text-right text-danger')
                         ).append(
                             $('<td>').html(producto.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                         ).append(
                             $('<td>').html(producto.unidcaja.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
                         ).append(
-                            $('<td>').html(producto.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                            $('<td>').html(producto.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right' + (resto > 0 ? ' text-danger' : ''))
                         ).append(
                             $('<td>').html(producto.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                         ).append(
@@ -641,18 +763,47 @@ var pallets;
                                     'data-tipo': producto.tipo,
                                     'data-codigo': producto.codigo,
                                     'data-difer': producto.difer,
+                                    'data-despachar': producto.promodsc,
                                     'id': 'ip-' + producto.ean,
                                     'data-stock': 0
                                 }).on('click', EditarProducto).addClass('btn btn-sm btn-warning')
-                            )
+                            ).addClass('td-shown')
+                        ).attr({
+                            'data-cantidad': producto.cantidad,
+                            'data-tipo': producto.tipo,
+                            'data-difer': producto.difer,
+                            'data-codigo': producto.codigo
+                        })
+                    );
+                    // tabla xls
+                    $('#table-export tbody').append(
+                        $('<tr>').append(
+                            $('<td>').text(tridx.toString())
+                        ).append(
+                            $('<td>').text(producto.ean)
+                        ).append(
+                            $('<td>').text(producto.nombre)
+                        ).append(
+                            $('<td>').text(producto.pventa)
+                        ).append(
+                            $('<td>').text(producto.cantidad)
+                        ).append(
+                            $('<td>').text(producto.importe)
+                        ).append(
+                            $('<td>').text(producto.unidcaja)
+                        ).append(
+                            $('<td>').text(producto.cajas)
+                        ).append(
+                            $('<td>').text(producto.pallets)
                         )
                     );
+                    //
                     totales.cantidad += producto.cantidad;
                     totales.cajas += producto.cajas;
                     totales.pallets += producto.pallets;
                     totales.importe += producto.importe;
                 }
-                $('#container').append(
+                $('#container').empty().append(
                     $('<table>').append(
                         $('<thead>').append(
                             $('<tr>').append(
@@ -665,17 +816,29 @@ var pallets;
                                     }).on('click', checkAll)
                                 )
                             ).append(
-                                $('<th>').html('Tipo')
+                                $('<th>').html('Tipo').addClass('th-hoverable').data('crt', 'tipo').data('asc', '1').on('click', sortData).attr('id', 'th-tipo')
                             ).append(
-                                $('<th>').html('Cod. EAN')
+                                $('<th>').html('Cod. EAN').addClass('th-hoverable').data('crt', 'ean').data('asc', '1').on('click', sortData).attr('id', 'th-ean')
                             ).append(
-                                $('<th>').html('Producto')
-                            ).append(
-                                $('<th>').html('Stock').hide().addClass('td-hidden')
+                                $('<th>').html('Producto').addClass('th-hoverable').data('crt', 'nombre').data('asc', '1').on('click', sortData).attr('id', 'th-nombre')
                             ).append(
                                 $('<th>').html('Pr.Venta')
                             ).append(
-                                $('<th>').html('Cantidad')
+                                $('<th>').html('Cantidad').css('max-width', '100px')
+                            ).append(
+                                $('<th>').html('Comprometido').hide().addClass('td-hidden')
+                            ).append(
+                                $('<th>').html('Stock').hide().addClass('td-hidden')
+                            ).append(
+                                $('<th>').html('Promedio venta').hide().addClass('td-hidden')
+                            ).append(
+                                $('<th>').html('Meses de inventario').hide().addClass('td-hidden')
+                            ).append(
+                                $('<th>').html('Despachar').hide().addClass('td-hidden')
+                            ).append(
+                                $('<th>').html('Nuevo meses de inventario').hide().addClass('td-hidden')
+                            ).append(
+                                $('<th>').html('Pendiente').hide().addClass('td-hidden')
                             ).append(
                                 $('<th>').html('Subtotal')
                             ).append(
@@ -685,7 +848,7 @@ var pallets;
                             ).append(
                                 $('<th>').html('Palets')
                             ).append(
-                                $('<th>').html('')
+                                $('<th>').html('').addClass('td-shown')
                             )
                         )
                     ).append(tbody).append(
@@ -699,12 +862,23 @@ var pallets;
                             ).append(
                                 $('<th>').html('TOTALES').attr('colspan', '2')
                             ).append(
-                                $('<th>').html('').hide().addClass('td-hidden')
-                            // Tipo, Cod. EAN, Producto, Stock, Pr.Venta, Cantidad, Subtotal, Unid./Caja, Cajas, Palets
-                            ).append(
                                 $('<th>').html('')
                             ).append(
                                 $('<th>').html(totales.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                            ).append(
+                                $('<th>').html('').hide().addClass('td-hidden')
+                            ).append(
+                                $('<th>').html('').hide().addClass('td-hidden')
+                            ).append(
+                                $('<th>').html('').hide().addClass('td-hidden')
+                            ).append(
+                                $('<th>').html('').hide().addClass('td-hidden')
+                            ).append(
+                                $('<th>').html('').hide().addClass('td-hidden')
+                            ).append(
+                                $('<th>').html('').hide().addClass('td-hidden')
+                            ).append(
+                                $('<th>').html('').hide().addClass('td-hidden')
                             ).append(
                                 $('<th>').html(Pedido.moneda + '' + totales.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                             ).append(
@@ -714,24 +888,103 @@ var pallets;
                             ).append(
                                 $('<th>').html(totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                             ).append(
-                                $('<th>').html('')
+                                $('<th>').html('').addClass('td-shown')
                             )
                         )
                     ).addClass('table table-hover table-striped table-responsive')
+                ).append(
+                    $('<a>').text('Confirmar cantidades de productos').prepend(
+                        $('<i>').addClass('fa fa-check mr-2')
+                    ).addClass('btn btn-success my-2 td-hidden').attr('href','#').on('click', actualizarCantidadesProductos)
+                ).append(
+                    $('<a>').text('Exportar a XLS').prepend(
+                        $('<i>').addClass('fa fa-download mr-2')
+                    ).addClass('btn btn-success my-2 td-shown').attr('href','#').on('click', exportarXls)
                 );
                 if (requiereRevision == 'S') {
                     $('.td-hidden').show();
+                    $('.td-shown').hide();
                     actualizarStockProductos();
                 }
                 else {
                     $('.td-hidden').hide();
+                    $('.td-shown').show();
                 }
+                $('[data-toggle="tooltip"]').tooltip();
             }
             else {
                 $('#container').empty().append(
                     $('<p>').addClass('mb-0').html('Aún no ha agregado productos para su pedido')
                 );
             }
+        }
+        function sortData(event) {
+            var criterio = $(this).data('crt');
+            var asc = $(this).data('asc') != '1';
+            var numFilas = DetallePedido.length;
+            for (var i = 0; i < numFilas - 1; i++) {
+                for (var j = i + 1; j < numFilas; j++) {
+                    let iItem = DetallePedido[i];
+                    let jItem = DetallePedido[j];
+                    if (asc) {
+                        if (iItem[criterio] > jItem[criterio]) {
+                            var aux = DetallePedido[i];
+                            DetallePedido[i] = DetallePedido[j];
+                            DetallePedido[j] = aux;
+                        }
+                    }
+                    else {
+                        if (iItem[criterio] < jItem[criterio]) {
+                            var aux = DetallePedido[i];
+                            DetallePedido[i] = DetallePedido[j];
+                            DetallePedido[j] = aux;
+                        }
+                    }
+                }
+            }
+            EscribirListaProductos();
+            $('#th-' + criterio).data('asc', asc ? '1' : '0');
+        }
+        function exportarXls(event) {
+            event.preventDefault();
+            $('#table-export').tableExport({
+                fileName: 'pedido_' + CodigoPedido + '.xlsx',
+                type: 'xlsx'
+            });
+        }
+        function actualizarCantidadesProductos(event) {
+            event.preventDefault();
+            var productos = [];
+            var trs = $('#container .table tbody tr');
+            $.each(trs, function() {
+                var itr = $(this);
+                var itipo = itr.data('tipo');
+                var idifer = itr.data('difer');
+                var icodigo = itr.data('codigo');
+                var icantidad = itr.children('td').eq(11).children('input').val();
+                productos.push([icodigo, icantidad, itipo, idifer].join('|'));
+            });
+            var params = {
+                pedido: CodigoPedido,
+                productos: productos.join('@')
+            };
+            $.post({
+                url: '/extranet/actualizar-cantidades-producto',
+                method: 'post',
+                data: params,
+                dataType: 'json',
+                success: function(result) {
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    alert('Cantidades confirmadas');
+                    location.reload();
+                },
+                error: function(err) {
+                    alert(err);
+                }
+            });
         }
         function checkAll() {
             var checked = document.getElementById('ch-all').checked;
@@ -783,83 +1036,76 @@ var pallets;
                 document.getElementById('tpallets-' + idx).innerHTML = pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });;
             }
         }
-        CargarCatalogoProductos = async (event) => {
-            $('#lista-container').empty();
-            try {
-                let result = await $.ajax({
-                    url: '/extranet/catalogo-productos',
-                    method: 'post',
-                    data: { pedido: Pedido.codigo },
-                    dataType: 'json'
-                });
-                if (result.error) {
-                    alert(result.error);
-                    return;
-                }
-                catalogo = result.productos;
-            }
-            catch (err) {
-                console.error(err);
-            }
-            //
+        EscribirCatalogoProductos = query => {
             let tbody = $('<tbody>');
             for (let j in catalogo) {
                 let item = catalogo[j];
-                tbody.append(
-                    $('<tr>').append(
-                        $('<td>').html(item.ean)
-                    ).append(
-                        $('<td>').html(item.nombre)
-                    ).append(
-                        $('<td>').html(item.pventa.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
-                    )/*.append(
-                        $('<td>').html(item.stock).addClass('text-right')
-                    )*/.append(
-                        $('<td>').append(
-                            $('<input>').attr({
-                                type: 'text',
-                                id: 'cnt-' + j,
-                                'data-idx': j,
-                                'data-codigo': item.codigo,
-                                'data-pventa': item.pventa,
-                                'data-caja': item.caja,
-                                'data-pcaja': item.pcaja,
-                                'data-cajasnivel': item.cjnivel,
-                                'data-stock': item.stock,
-                                'data-grupo': item.cogrupo
-                            }).addClass('form-control form-control-sm ip-cant').on('keyup', IngresarCantidad).prop('disabled', item.stock == 0)
+                if (query == '' || item.ean.indexOf(query) > -1 || item.nombre.toUpperCase().indexOf(query) > -1) {
+                    tbody.append(
+                        $('<tr>').append(
+                            $('<td>').html(item.ean)
                         ).append(
-                            $('<small>').attr('id', 'alert-' + j).addClass('text-danger')
+                            $('<td>').append(
+                                $('<p>').html(item.nombre).addClass('m-0 p-0 ptext')
+                            )
+                        ).append(
+                            $('<td>').html(item.pventa.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                        )/*.append(
+                            $('<td>').html(item.stock).addClass('text-right')
+                        )*/.append(
+                            $('<td>').append(
+                                $('<input>').attr({
+                                    type: 'text',
+                                    id: 'cnt-' + j,
+                                    'data-idx': j,
+                                    'data-codigo': item.codigo,
+                                    'data-pventa': item.pventa,
+                                    'data-caja': item.caja,
+                                    'data-pcaja': item.pcaja,
+                                    'data-cajasnivel': item.cjnivel,
+                                    'data-stock': item.stock,
+                                    'data-grupo': item.cogrupo
+                                }).addClass('form-control form-control-sm ip-cant').on('keyup', IngresarCantidad).prop('disabled', item.stock == 0)
+                            ).append(
+                                $('<small>').attr('id', 'alert-' + j).addClass('text-danger')
+                            )
+                        ).append(
+                            $('<td>').append(
+                                $('<span>').attr('id', 'subtotal-' + j).html('0') // subtotal
+                            ).addClass('text-right')
+                        ).append(
+                            $('<td>').html(item.caja).addClass('text-right') // unidades x caja
+                        ).append(
+                            $('<td>').append(
+                                $('<span>').attr('id', 'tcajas-' + j).html('0')
+                            ).addClass('text-right') // total cajas
+                        ).append(
+                            $('<td>').html(item.cjnivel).addClass('text-right') // cajas x nivel
+                        ).append(
+                            $('<td>').html(parseInt(item.pcaja) > 0 ? (parseInt(item.pcaja) / parseInt(item.cjnivel)).toFixed(2) : item.pcaja).addClass('text-right') // nivel x palet
+                        ).append(
+                            $('<td>').html(item.pcaja).addClass('text-right') // cajas x palet
+                        ).append(
+                            $('<td>').html(item.pesopt.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right font-weight-bold')
+                        ).append(
+                            $('<td>').html(item.largo.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right font-weight-bold')
+                        ).append(
+                            $('<td>').html(item.ancho.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right font-weight-bold')
+                        ).append(
+                            $('<td>').html(item.alto.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right font-weight-bold')
+                        ).append(
+                            $('<td>').append(
+                                $('<span>').attr('id', 'tniveles-' + j).html('0')
+                            ).addClass('text-right') // total niveles
+                        ).append(
+                            $('<td>').append(
+                                $('<span>').attr('id', 'tpallets-' + j).html('0') // total palets
+                            ).addClass('text-right')
                         )
-                    ).append(
-                        $('<td>').append(
-                            $('<span>').attr('id', 'subtotal-' + j).html('0') // subtotal
-                        ).addClass('text-right')
-                    ).append(
-                        $('<td>').html(item.caja).addClass('text-right') // unidades x caja
-                    ).append(
-                        $('<td>').append(
-                            $('<span>').attr('id', 'tcajas-' + j).html('0')
-                        ).addClass('text-right') // total cajas
-                    ).append(
-                        $('<td>').html(item.cjnivel).addClass('text-right') // cajas x nivel
-                    ).append(
-                        $('<td>').html(parseInt(item.pcaja) > 0 ? (parseInt(item.pcaja) / parseInt(item.cjnivel)).toFixed(2) : item.pcaja).addClass('text-right') // nivel x palet
-                    ).append(
-                        $('<td>').html(item.pcaja).addClass('text-right') // cajas x palet
-                    ).append(
-                        $('<td>').append(
-                            $('<span>').attr('id', 'tniveles-' + j).html('0')
-                        ).addClass('text-right') // total niveles
-                    ).append(
-                        $('<td>').append(
-                            $('<span>').attr('id', 'tpallets-' + j).html('0') // total palets
-                        ).addClass('text-right')
-                    )
-                );
+                    );
+                }
             }
-// EAN, Producto, P.Venta, Stock, Cantidad, Subtotal, Unids/ Caja, Tot.Cajas, Cajas por nivel, Tot.Niveles, Cajas por pallet, Tot.Niveles, Tot.Pallets
-            $('#lista-container').append(
+            $('#lista-container').empty().append(
                 $('<table>').append(
                     $('<thead>').append(
                         $('<tr>').append(
@@ -885,13 +1131,42 @@ var pallets;
                         ).append(
                             $('<th>').html('Cajas por palet')
                         ).append(
+                            $('<th>').html('Peso PT')
+                        ).append(
+                            $('<th>').html('Largo (cm)')
+                        ).append(
+                            $('<th>').html('Ancho (cm)')
+                        ).append(
+                            $('<th>').html('Alto (cm)')
+                        ).append(
                             $('<th>').html('Tot.Niveles')
                         ).append(
                             $('<th>').html('Tot.Palets')
                         )
                     )
-                ).append(tbody).addClass('table table-hover table-striped')
+                ).append(tbody).addClass('table table-hover table-striped table-responsive')
             );
+        }
+        CargarCatalogoProductos = async (event) => {
+            $('#lista-container').empty();
+            try {
+                let result = await $.ajax({
+                    url: '/extranet/catalogo-productos',
+                    method: 'post',
+                    data: { pedido: Pedido.codigo },
+                    dataType: 'json'
+                });
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                catalogo = result.productos;
+            }
+            catch (err) {
+                alert(err);
+            }
+            //
+            EscribirCatalogoProductos('');
         }
         EliminarProductos = async (event) => {
             event.preventDefault();
@@ -940,7 +1215,6 @@ var pallets;
             $.each(cantidades, function() {
                 let input = $(this);
                 if (input.val() != '' && input.val() != '0') {
-console.log(input);
                     productos.push({
                         grupo: input.data('grupo'),
                         codigo: input.data('codigo'),
@@ -959,7 +1233,6 @@ console.log(input);
                     dataType: 'json'
                 });
                 if (result.error) {
-                    console.log(result.data.mensajes);
                     alert(JSON.stringify(result.error));
                     return;
                 }
@@ -984,21 +1257,13 @@ console.log(input);
             document.getElementById('rp-items').value = totales.cantidad.toLocaleString('en-us', { minimumFractionDigits:0, maximumFractionDigits: 0 });
             document.getElementById('rp-subtotal').value = Pedido.moneda + ' ' + totales.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             document.getElementById('rp-cajas').value = totales.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-            document.getElementById('rp-pallets').value = totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            document.getElementById('rp-pallets').value = totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
         CerrarPedido = async (event) => {
             event.preventDefault();
             const boton = $('#modal-cierre .modal-footer .btn-success');
             boton.prop('disabled', true);
             boton.empty().html('Procesando. Por favor, espere...');
-            /*setTimeout(() => {
-                boton.prop('disabled', false).empty().append(
-                    $('<i>').addClass('fa fa-check')
-                ).append(' Cerrar el pedido');
-                $('#modal-cierre').modal('hide');
-                alert('¡Su pedido ha sido enviado!');
-                location.href = '/extranet';
-            }, 1500);*/
             try {
                 let result = await $.ajax({
                     url: '/extranet/cerrar-pedido',
@@ -1015,7 +1280,6 @@ console.log(input);
             }
             catch (err) {
                 alert(err);
-                console.error(err);
             }
         }
         ObsequiarProductos = async (event) => {
@@ -1138,11 +1402,39 @@ console.log(input);
                 }
             });
         }
+        function formFilterOnSubmit (event) {
+            event.preventDefault();
+            var query = document.getElementById('form-query').value;
+            EscribirCatalogoProductos(query.toUpperCase());
+        }
+        function AperturaPrePedido (event) {
+            event.preventDefault();
+            if (window.confirm('Está a punto de abrir el pedido. Podrá agregar/quitar productos y/o modificar las cantidades de los productos añadidos. Tome en cuenta que puede haber cambios en las cantidades originales ingresadas debido a la disponibilidad de stocks. ¿Desea continuar?')) {
+                $.ajax({
+                    url: '/extranet/abrir-pre-pedido',
+                    method: 'post',
+                    data: { pedido: CodigoPedido, usuario: sesdata.codigo },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        alert('El pedido ha sido abierto');
+                        location.reload();
+                    },
+                    error: function(error) {
+                        alert(error.getMessage());
+                    }
+                });
+            }
+        }
         // iniciar la interfaz
         if (sesdata.admin != 'S') {
             $('#btn-itsfree').remove();
         }
         $('#btn-eliminar').on('click', EliminarProductos);
+        $('#btn-editar').on('click', AperturaPrePedido);
         // $('#modal-plantilla .modal-footer .btn-success').on('click', AdjuntarPlantilla);
         $('#modal-plantilla .modal-footer .btn-success').on('click', FormCargaMasivaSubmit);
         $('#modal-lista').on('show.bs.modal', CargarCatalogoProductos);
@@ -1153,6 +1445,7 @@ console.log(input);
         $('#modal-permiso').on('shown.bs.modal', ModalPermisosOnShown);
         $('#mp-submit').on('click', ObsequiarProductos);
         $('#solcrd-submit').on('click', enviarSolicitudCredito);
+        $('#form-filter').on('submit', formFilterOnSubmit);
         CargarDatosPedido();
 //        validarPopupResult();
     </script>

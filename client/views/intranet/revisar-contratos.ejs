@@ -71,7 +71,6 @@
                         <div id="dv-iframe"></div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-sm btn-primary"><i class="fa fa-check mr-1"></i>Aprobar este contrato</button>
                         <button type="button" class="btn btn-sm btn-light" data-dismiss="modal"><i class="fa fa-times mr-1"></i>Cerrar</button>
                     </div>
                 </div>
@@ -254,7 +253,7 @@
                 event.preventDefault();
                 var key = $(this).data('key');
                 $('#dv-iframe').empty().append(
-                    $('<iframe>').attr('src', '/intranet/ver-contrato-uns/' + key).addClass('w-100').css('height', '640px')
+                    $('<iframe>').attr('src', '/intranet/ver-documento/' + key).addClass('w-100').css('height', '640px')
                 ).append(
                     $('<input>').attr({
                         type: 'hidden',

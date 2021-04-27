@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Web Service Corporación Life</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="/assets/intranet/css/main.css">
+        <style>
+            body {padding-top:60px}
+            .bg-purple {background-color:#7e57c2}
+        </style>
+    </head>
+    <body>
+        <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-main">
+            <a class="navbar-brand pb-1" href="#">
+                <img src="/assets/intranet/images/clife-banner-light.svg" alt="Corporacion Life" style="height:24px;">
+            </a>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Carga de reporte de depósitos</a>
+                    </li>
+                </ul>
+            </div>
+            <button id="sidebar-toggler" class="navbar-toggler" type="button" aria-expanded="false">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/ws-life" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-home mr-2"></i>Volver</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <!-- SEPARADOR DE BAJO PRESUPUESTO -->
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-8 alert alert-light shadow-sm p-3">
+                    <form id="form-archivo" method="post" action="/">
+                        <div class="form-group w-50">
+                            <label for="form-pasarela">Pasarela de pago</label>
+                            <select id="form-pasarela" class="form-control form-control-sm">
+                                <option value="-1" disabled="true">- Seleccione -</option>
+                                <option value="PU">PayU</option>
+                                <option value="PE">PagoEfectivo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="form-file">Archivo</label>
+                            <input type="file" class="form-control-file" id="form-file">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-upload mr-2"></i>Cargar XLS/CSV</button>
+                    </form>
+                </div>
+            </div>
+            <div id="detalle-planilla" class="row justify-content-center"></div>
+        </div>
+    </body>
+    <!-- scripts -->
+    <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script src="/assets/bootstrap/js/popper.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+        function muestraIconoCarga () {
+            $('#detalle-planilla').empty().append(
+                $('<div>').append(
+                    $('<img>').attr('src', '/assets/images/icons/ic-uploading.svg').width('48')
+                ).append(
+                    $('<span>').text('Procesando la plantilla. Por favor, espere...')
+                ).addClass('col-8 alert alert-success shadow-sm p-3')
+            );
+        }
+        function ocultaIconoCarga () {
+            $('#detalle-planilla').children().fadeOut(150);
+        }
+        function escribirDetallePlanilla (detalle, codigo) {
+            $('#detalle-planilla').children().fadeOut(150, function() {
+                $('#detalle-planilla').children().remove();
+                var total = 0;
+                var tbody = $('<tbody>');
+                for (var pago of detalle) {
+                    tbody.append(
+                        $('<tr>').append(
+                            $('<td>').text(pago.factura)
+                        ).append(
+                            $('<td>').text(pago.fecha)
+                        ).append(
+                            $('<td>').text(pago.rucdni)
+                        ).append(
+                            $('<td>').text(pago.cliente)
+                        ).append(
+                            $('<td>').text(pago.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                        ).append(
+                            $('<td>').text(pago.medpago)
+                        ).append(
+                            $('<td>').text(pago.orderid)
+                        )
+                    );
+                    total += pago.importe;
+                }
+                $('#detalle-planilla').append(
+                    $('<div>').append(
+                        $('<p>').append('Se generó la planilla de cobranza ').append(
+                            $('<span>').text(codigo).addClass('text-success font-weight-bold')
+                        ).append('. A continuación se muestra el detalle.').addClass('text-dark mb-3')
+                    ).append(
+                        $('<table>').append(
+                            $('<thead>').append(
+                                $('<tr>').append(
+                                    $('<th>').text('Factura')
+                                ).append(
+                                    $('<th>').text('Fecha')
+                                ).append(
+                                    $('<th>').text('RUC/DNI')
+                                ).append(
+                                    $('<th>').text('Cliente')
+                                ).append(
+                                    $('<th>').text('Importe')
+                                ).append(
+                                    $('<th>').text('Medio pago')
+                                ).append(
+                                    $('<th>').text('OrderID VTEX')
+                                )
+                            )
+                        ).append(tbody).append(
+                            $('<tfoot>').append(
+                                $('<tr>').append(
+                                    $('<th>').text('')
+                                ).append(
+                                    $('<th>').text('Total').attr('colspan', 3)
+                                ).append(
+                                    $('<th>').text(total.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                                ).append(
+                                    $('<th>').text('').attr('colspan', 2)
+                                )
+                            )
+                        ).addClass('table table-striped table-hover mb-0')
+                    ).addClass('col alert alert-light shadow-sm py-3 px-4')
+                );
+            });
+        }
+        function enviarAdjunto(event) {
+            event.preventDefault();
+            muestraIconoCarga();
+            var data = new FormData();
+            data.append('pasarela', document.getElementById('form-pasarela').value);
+            data.append('archivo', document.getElementById('form-file').files[0]);
+            $.ajax({
+                url: '/ws-life/carga-depositos/upload',
+                data: data,
+                method: 'post',
+                dataType: 'json',
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (result) {
+                    if(result.error) {
+                        ocultaIconoCarga();
+                        alert(result.error);
+                        return;
+                    }/*
+                    $('#form-pasarela option').eq(0).prop('selected', true);
+                    document.getElementById('form-file').value = null;*/
+                    escribirDetallePlanilla(result.detalle, result.planilla);
+                },
+                error: function (error) {
+                    ocultaIconoCarga();
+                    alert(error);
+                }
+            });
+        }
+        function init() {
+            $('#form-pasarela').children('option').eq(0).prop('selected', true);
+            document.getElementById('form-file').value = null;
+            $('#form-archivo').on('submit', enviarAdjunto);
+        }
+        // go
+        $(init);
+    </script>
+</html>

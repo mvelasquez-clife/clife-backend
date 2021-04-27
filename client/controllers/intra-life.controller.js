@@ -9,8 +9,8 @@ const responseParams = {
     outFormat: oracledb.OBJECT
 };
 const db = require('./../../server/libs/db-oracle');
-const { response } = require('express');
-const encargadosContratos = [7020557, 46455181];
+const { response, request } = require('express');
+const encargadosContratos = [7020557, 46455181, 44273152, 41544424];
 
 const LifeController = {
     Login: (request, response) => {
@@ -653,10 +653,10 @@ const LifeController = {
                         // genera la ruta del archivo alv
                         let folders = [fields.empresa, 'PERSONAL', codusr];
                         const sPath = 'X:' + fupload.winseparator + folders.join(fupload.winseparator) + fupload.winseparator + sFilename;
-                        let remotePath = '/publico/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator);
+                        let remotePath = '/common/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator);
                         // aqui subir con ftp-manager
-                        const ftpmanager = require('../../server/libs/ftp-manager');
-                        let result = await ftpmanager.Subir(newpathsigned, remotePath + fupload.linuxseparator + sFilename);
+                        const ftpmanager = require('../../server/libs/sftp-manager');
+                        let result = await ftpmanager.upload(newpathsigned, remotePath + fupload.linuxseparator + sFilename);
                         if (result.error) {
                             response.json({
                                 error: result.error
@@ -794,8 +794,8 @@ const LifeController = {
                 conn.close();
             }
             // descarga el pdf
-            const ftpmanager = require('../../server/libs/ftp-manager');
-            let ftpResult = await ftpmanager.Descargar(o_ruta);
+            const ftpmanager = require('../../server/libs/sftp-manager');
+            let ftpResult = await ftpmanager.download(o_ruta);
             if (ftpResult.error) {
                 response.send(ftpResult.error);
                 return;
@@ -1950,7 +1950,7 @@ const LifeController = {
         response.send('<img src="' + base64 + '" />');
     },
     PruebaFtp: async (request, response) => {
-        const ftpManager = require('../../server/libs/ftp-manager');
+        const ftpManager = require('../../server/libs/sftp-manager');
         /*
         // descarga ok
         const rutaFtp = '/domains/cspcomunicaciones.com/files/1/diarios/2020/02/12/cortes/306.jpg';
@@ -1964,7 +1964,7 @@ const LifeController = {
         // subida
         const rutaLocal = 'D:\\files\\nodejs\\tmp\\unsigned_DIGI_41_46455181.pdf';
         const rutaRemota = '/domains/cspcomunicaciones.com/files/tmp/archivo.pdf';
-        const result = await ftpManager.Subir(rutaLocal, rutaRemota);
+        const result = await ftpManager.upload(rutaLocal, rutaRemota);
         if (result.error) {
             response.send('Error: ' + result.error);
         }
@@ -2047,15 +2047,16 @@ const LifeController = {
     CargaDatosDni: async (request, response) => {
         const { dni, telefono } = request.body;
         const conn = await oracledb.getConnection(dbParams);
-        let query = "call pack_digitalizacion.sp_datos_dni(:p_dni, :p_empresa, :o_codigo, :o_nombre)";
+        let query = "call pack_digitalizacion.sp_datos_dni(:p_dni, :p_empresa, :o_codigo, :o_nombre, :o_email)";
         let params = {
             p_dni: { val: dni },
             p_empresa: { val: 11 },
             o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-            o_nombre: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
+            o_nombre: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+            o_email: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
         };
         let result = await conn.execute(query, params, responseParams);
-        const { o_codigo, o_nombre } = result.outBinds;
+        const { o_codigo, o_nombre, o_email } = result.outBinds;
         if (o_codigo == 1) {
             // genera el pin
             const pin = Math.floor(Math.random() * (1 + 999999 - 100000)) + 100000;
@@ -2086,13 +2087,28 @@ console.log(query, params);
                 });
                 return;
             }
+            var encemail = o_email.split('@');
+            // enviar pin al correo
+            let command2 = 'php /var/www/laravel/reporter/artisan intralife:sendpsw ' + dni + ' 11 ' + pin;
+            var exec = require('child_process').exec, child;
+            child = exec(command2, async function (error, stdout, stderr) {
+                console.log('child exec', stdout);
+                /*response.json({
+                    result: 'OK'
+                });*/
+            });
             // enviar el sms
             let command = 'php /var/www/html/sms/pin.php ' + o_telefono + ' ' + pin;
             var exec = require('child_process').exec, child;
             child = exec(command, async function (error, stdout, stderr) {
                 console.log('child exec', stdout);
                 response.json({
-                    result: 'OK'
+                    data: {
+                        nombre: o_nombre,
+                        solicitud: o_solicitud,
+                        telefono: '******' + o_telefono.substr(6),
+                        email: encemail[0].substr(0,6) + '**********@' + encemail[1]
+                    }
                 });
             });
             // enviar respuesta
@@ -2100,7 +2116,8 @@ console.log(query, params);
                 data: {
                     nombre: o_nombre,
                     solicitud: o_solicitud,
-                    telefono: '******' + o_telefono.substr(6)
+                    telefono: '******' + o_telefono.substr(6),
+                    email: encemail[0].substr(0,6) + '**********@' + encemail[1]
                 }
             });
             return;
@@ -3084,7 +3101,8 @@ console.log(query, params);
         // recupera los parametros
         const vparams = decrypted.split('|');
         const envio = vparams[0];
-        const dni = vparams[1];
+        const empresa = vparams[1];
+        const dni = vparams[2];
         // recupera ruta del archivo
         const pdfPath = fupload.tmppath + ['unsigned', 'DIGI', envio, dni].join('_') + '.pdf';
         // muestra el pdf
@@ -3097,6 +3115,8 @@ console.log(query, params);
         const { keys } = request.body;
         const fupload = require('../../server/fupload');
         const numKeys = keys.length;
+        const java = require('../../server/config/java');
+        let completados = 0;
         if (numKeys > 0) {
             for (let key of keys) {
                 let decipher = crypto.createDecipher(encParams.algorytm, encParams.password);
@@ -3109,11 +3129,12 @@ console.log(query, params);
                 let empresa = vparams[2];
                 // recupera ruta del archivo
                 let pdfPath = fupload.tmppath + ['unsigned', 'DIGI', envio, dni].join('_') + '.pdf';
+                const sFilename = ['DIGI', envio, dni].join('_') + '.pdf';
                 // firma el mugre pdf
-                let newpathsigned = fupload.tmppath + ['DIGI', envio, dni].join('_') + '.pdf';
-                /*
+                let newpathsigned = fupload.tmppath + sFilename;
                 var exec = require('child_process').exec, child;
                 child = exec('java -jar ' + java.stamper + ' "' + pdfPath + '" "' + newpathsigned + '"', async function (error, stdout, stderr) {
+                    completados++;
                     if(stdout.indexOf('OK') == -1){
                         let serror = (error || stderr);
                         console.log('exec error: ' + serror);
@@ -3122,24 +3143,18 @@ console.log(query, params);
                         });
                         return;
                     }
-                    */
-                    // alternativa a la firma pdf
-                    const fs =require('fs');
-                    fs.copyFileSync(pdfPath, newpathsigned);
                     // sube al servidor de archivos
                     let folders = [empresa, 'PERSONAL', dni];
-                    /*
-                    let remotePath = '/publico/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator);
+                    let remotePath = '/common/document' + fupload.linuxseparator + folders.join(fupload.linuxseparator);
                     // aqui subir con ftp-manager
-                    const ftpmanager = require('../../server/libs/ftp-manager');
-                    let result = await ftpmanager.Subir(newpathsigned, remotePath + fupload.linuxseparator + sFilename);
+                    const ftpmanager = require('../../server/libs/sftp-manager');
+                    let result = await ftpmanager.upload(newpathsigned, remotePath + fupload.linuxseparator + sFilename);
                     if (result.error) {
                         response.json({
                             error: result.error
                         });
                         return;
                     } // fin ftp-manager
-                    */
                     // actualiza el registro correspondiente
                     let query = "call pack_digitalizacion.sp_aprueba_documento_tipo(:p_documento, :p_usuario, :p_empresa, :o_codigo, :o_mensaje)";
                     let params = [
@@ -3150,13 +3165,13 @@ console.log(query, params);
                         { name: 'o_mensaje', io: 'out', type: 'string' }
                     ];
                     await db.statement(query, params);
-                    /*
+                    if (completados == numKeys) {
+                        response.json({
+                            result: 'ok'
+                        });
+                    }
                 }); // fin exec java
-                */
             }
-            response.json({
-                result: 'ok'
-            });
         }
         else {
             response.json({
@@ -3376,7 +3391,7 @@ console.log(query, params);
         if (request.cookies[confParams.cookieIntranet]) {
             const { desde, hasta } = request.query;
             const jsSession = JSON.parse(request.cookies[confParams.cookieIntranet]);
-            let query = 'select * from table (pack_digitalizacion.f_reporte_marcaciones(:p_empresa, :p_desde, :p_hasta))';
+            let query = 'select * from table (pack_digitalizacion.f_reporte_marcaciones(:p_empresa, :p_desde, :p_hasta)) order by nombre asc, dia asc';
             let params = [
                 { name: 'p_empresa', io: 'in', value: jsSession.empresa },
                 { name: 'p_desde', io: 'in', value: desde },
@@ -3391,6 +3406,110 @@ console.log(query, params);
             }
             response.json({
                 marcaciones: result.rows
+            });
+        }
+        else {
+            response.json({
+                error: 'No tienes permisos para acceder a esta sección'
+            });
+        }
+    },
+    InfoEdicionUsuario: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { usuario, empresa } = request.query;
+            let query = 'call pack_digitalizacion.sp_info_edicion_usr (:p_usuario, :p_empresa, :o_codigo, :o_mensaje, :o_apepat, :o_apemat, :o_nombres, :o_correo, :o_telefono, :o_area, :o_puesto, :o_areas, :o_puestos)';
+            let params = [
+                { name: 'p_usuario', io: 'in', value: usuario },
+                { name: 'p_empresa', io: 'in', value: empresa },
+                { name: 'o_codigo', io: 'out', type: 'number' },
+                { name: 'o_mensaje', io: 'out', type: 'string' },
+                { name: 'o_apepat', io: 'out', type: 'string' },
+                { name: 'o_apemat', io: 'out', type: 'string' },
+                { name: 'o_nombres', io: 'out', type: 'string' },
+                { name: 'o_correo', io: 'out', type: 'string' },
+                { name: 'o_telefono', io: 'out', type: 'string' },
+                { name: 'o_area', io: 'out', type: 'number' },
+                { name: 'o_puesto', io: 'out', type: 'number' },
+                { name: 'o_areas', io: 'out', type: 'cursor' },
+                { name: 'o_puestos', io: 'out', type: 'cursor' }
+            ];
+            let result = await db.resultSet(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            if (result.o_codigo == -1) {
+                response.json({
+                    error: result.o_mensaje
+                });
+                return;
+            }
+            response.json(result);
+        }
+        else {
+            response.json({
+                error: 'No tienes permisos para acceder a esta sección'
+            });
+        }
+    },
+    ComboPuestosPorArea: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa, area } = request.query;
+            let query = 'select co_puesto_empr "value", de_nombre "text" from ma_puesto_empr_m where co_empresa = :p_empresa and co_area_empr = :p_area';
+            let params = [
+                { name: 'p_empresa', io: 'in', value: empresa },
+                { name: 'p_area', io: 'in', value: area }
+            ];
+            let result = await db.select(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            response.json({
+                puestos: result.rows
+            });
+        }
+        else {
+            response.json({
+                error: 'No tienes permisos para acceder a esta sección'
+            });
+        }
+    },
+    ActualizaDatosUsuario: async (request, response) => {
+        if (request.cookies[confParams.cookieIntranet]) {
+            const { empresa, usuario, apepat, apemat, nombres, email, telefono, puesto } = request.body;
+            let query = 'call pack_digitalizacion.sp_actualizar_info_usuario(:p_empresa, :p_usuario, :p_apepat, :p_apemat, :p_nombres, :p_email, :p_telefono, :p_puesto, :o_codigo, :o_mensaje)';
+            let params = [
+                { name: 'p_empresa', io: 'in', value: empresa },
+                { name: 'p_usuario', io: 'in', value: usuario },
+                { name: 'p_apepat', io: 'in', value: apepat },
+                { name: 'p_apemat', io: 'in', value: apemat },
+                { name: 'p_nombres', io: 'in', value: nombres },
+                { name: 'p_email', io: 'in', value: email },
+                { name: 'p_telefono', io: 'in', value: telefono },
+                { name: 'p_puesto', io: 'in', value: puesto },
+                { name: 'o_codigo', io: 'out', type: 'number' },
+                { name: 'o_mensaje', io: 'out', type: 'string' }
+            ];
+            let result = await db.resultSet(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            if (result.o_codigo == -1) {
+                response.json({
+                    error: result.o_mensaje
+                });
+                return;
+            }
+            response.json({
+                success: true
             });
         }
         else {

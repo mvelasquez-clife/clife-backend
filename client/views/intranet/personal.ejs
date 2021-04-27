@@ -194,11 +194,210 @@
                 </div>
             </div>
         </div>
+        <!-- Modal -->
+        <div class="modal fade" id="modal-edicion" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Editar: <span id="ed-fullname"></span></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col px-4">
+                                <form>
+                                    <input type="hidden" id="ed-usuario">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="inputEmail4">Ap. Paterno</label>
+                                            <input type="text" class="form-control form-control-sm" id="ed-apepat">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="inputEmail4">Ap. Materno</label>
+                                            <input type="text" class="form-control form-control-sm" id="ed-apemat">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-8">
+                                            <label for="inputEmail4">Nombres</label>
+                                            <input type="text" class="form-control form-control-sm" id="ed-nombres">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="inputEmail4">Correo electrónico</label>
+                                            <input type="text" class="form-control form-control-sm" id="ed-email">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="inputEmail4">Teléfono</label>
+                                            <input type="text" class="form-control form-control-sm" id="ed-telefono">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="inputEmail4">Área</label>
+                                            <select class="form-control form-control-sm" id="ed-area">
+                                                <option value="-1">- Seleccione -</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="inputEmail4">Puesto</label>
+                                            <select class="form-control form-control-sm" id="ed-puesto">
+                                                <option value="-1">- Seleccione -</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-primary"><i class="fa fa-floppy-o mr-2"></i>Guardar cambios</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- separador de bajo presupuesto -->
         <% include _main.scripts.ejs %>
         <script>
             const sesion = JSON.parse('<%-sesion %>');
             // funciones
+            function recargaComboEdPuestos() {
+                var area = document.getElementById('ed-area').value;
+                var empresa = document.getElementById('combo-empresa').value;
+                $.post({
+                    url: '/intranet/combo-puestos',
+                    method: 'get',
+                    data: { area: area, empresa: empresa },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        // llena combo de puestos
+                        $('#ed-puesto').empty().append(
+                            $('<option>').val(-1).text('- Seleccione -').prop('selected', true).prop('disabled', true)
+                        );
+                        for (var area of result.puestos) {
+                            $('#ed-puesto').append(
+                                $('<option>').val(area.value).text(area.text)
+                            );
+                        }
+                    },
+                    error: function (error) {
+                        alert(error);
+                    }
+                });
+            }
+            function muestraPopupEdicion(event) {
+                event.preventDefault();
+                var a = $(this);
+                var usuario = a.data('codigo');
+                var empresa = document.getElementById('combo-empresa').value;
+                $('#modal-edicion').modal('show');
+                $.ajax({
+                    url: '/intranet/info-eduser',
+                    method: 'get',
+                    data: { usuario: usuario, empresa: empresa },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        // llenar los campos
+                        document.getElementById('ed-usuario').value = usuario;
+                        document.getElementById('ed-apepat').value = result.o_apepat;
+                        document.getElementById('ed-apemat').value = result.o_apemat;
+                        document.getElementById('ed-nombres').value = result.o_nombres;
+                        document.getElementById('ed-email').value = result.o_correo;
+                        document.getElementById('ed-telefono').value = result.o_telefono;
+                        // deshabilita eventos
+                        $('#ed-area').off('change');
+                        // llena combo de areas
+                        $('#ed-area').empty();
+                        for (var area of result.o_areas) {
+                            $('#ed-area').append(
+                                $('<option>').val(area.value).text(area.text)
+                            );
+                        }
+                        $('#ed-area option[value=' + result.o_area + ']').prop('selected', true);
+                        // llena combo de puestos
+                        $('#ed-puesto').empty();
+                        for (var area of result.o_puestos) {
+                            $('#ed-puesto').append(
+                                $('<option>').val(area.value).text(area.text)
+                            );
+                        }
+                        $('#ed-puesto option[value=' + result.o_puesto + ']').prop('selected', true);
+                        // evento del combo areas
+                        $('#ed-area').on('change', recargaComboEdPuestos);
+                    },
+                    error: function (error) {
+                        alert(error);
+                    }
+                });
+            }
+            function modalEdicionOnShow () {
+                document.getElementById('ed-usuario').value = '';
+                document.getElementById('ed-apepat').value = '';
+                document.getElementById('ed-apemat').value = '';
+                document.getElementById('ed-nombres').value = '';
+                document.getElementById('ed-email').value = '';
+                document.getElementById('ed-telefono').value = '';
+                $('#ed-area').empty();
+                $('#ed-puesto').empty();
+                $('#modal-edicion .modal-footer .btn-primary').show();
+            }
+            function confirmaEdicionUsuario (event) {
+                $('#modal-edicion .modal-footer .btn-primary').hide();
+                event.preventDefault();
+                var params = {
+                    empresa: document.getElementById('combo-empresa').value,
+                    usuario: document.getElementById('ed-usuario').value,
+                    apepat: document.getElementById('ed-apepat').value,
+                    apemat: document.getElementById('ed-apemat').value,
+                    nombres: document.getElementById('ed-nombres').value,
+                    email: document.getElementById('ed-email').value,
+                    telefono: document.getElementById('ed-telefono').value,
+                    puesto: document.getElementById('ed-puesto').value
+                };
+                $.ajax({
+                    url: '/intranet/confirma-edicion-usuario',
+                    method: 'post',
+                    data: params,
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.error) {
+                            alert(result.error);
+                            $('#modal-edicion .modal-footer .btn-primary').show();
+                            return;
+                        }
+                        // actualiza los datos en la tabla
+                        var desarea = $('#ed-area option:selected').text();
+                        var despuesto = $('#ed-puesto option:selected').text();
+                        var trid = '#tr-' + params.usuario;
+                        $(trid).children('td').eq(1).text(params.apepat);
+                        $(trid).children('td').eq(2).text(params.apemat);
+                        $(trid).children('td').eq(3).text(params.nombres);
+                        $(trid).children('td').eq(4).text(params.email);
+                        $(trid).children('td').eq(5).text(params.telefono);
+                        $(trid).children('td').eq(6).text(desarea);
+                        $(trid).children('td').eq(7).text(despuesto);
+                        // listo
+                        alert('Datos del usuario confirmados');
+                        $('#modal-edicion').modal('hide');
+                    },
+                    error: function (error) {
+                        alert(error);
+                        $('#modal-edicion .modal-footer .btn-primary').show();
+                    }
+                });
+            }
             CargarPersonalEmpresa = async empresa => {
                 MuestraIndicadorCarga();
                 $('#tabla-personal tbody').empty();
@@ -253,9 +452,9 @@
                                     $('<i>').addClass('fa fa-pencil')
                                 ).append(
                                     $('<span>').html('&nbsp;Editar').addClass('d-none d-lg-inline')
-                                ).addClass('btn btn-sm btn-primary').attr('href', '#')
+                                ).addClass('btn btn-sm btn-primary').attr('href', '#').data('codigo', persona.DOCIDEN).on('click', muestraPopupEdicion)
                             )
-                        )
+                        ).attr('id', 'tr-' + persona.DOCIDEN)
                     );
                 }
                 OcultaIndicadorCarga();
@@ -358,6 +557,8 @@
                 $('#xls-plantilla').on('change', RecibirPlantilla);
                 $('#modal-carga-masiva').on('hide.bs.modal', OcultarModalCarga);
                 $('#modal-carga-plantilla').on('click', EnviarPlantilla);
+                $('#modal-edicion').on('show.bs.modal', modalEdicionOnShow);
+                $('#modal-edicion .modal-footer .btn-primary').on('click', confirmaEdicionUsuario);
             });
         </script>
     </body>

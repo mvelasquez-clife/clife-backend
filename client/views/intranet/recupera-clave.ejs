@@ -31,7 +31,7 @@
                         <p class="mb-4" id="fail-step-1">El DNI ingresado <b id="b-dni"></b> no existe. Por favor, verifica el número de DNI ingresado</p>
                     </tag>
                     <tag id="step-2">
-                        <p class="mb-0"><b class="text-primary">Paso 2:</b> Hemos enviado un pin de 6 dígitos al número <span id="sp-celular"></span>. Por favor, ingresa la clave para confirmar tu identidad.</p>
+                        <p class="mb-0"><b class="text-primary">Paso 2:</b> Hemos enviado un pin de 6 dígitos al número <span id="sp-celular"></span> y a tu correo electrónico <span id="sp-email"></span>. Por favor, ingresa la clave para confirmar tu identidad.</p>
                         <input type="text" id="pin" class="form-input text-center text-xl" placeholder="Ingresa el PIN">
                         <button id="submit-step-2" class="btn btn-main mt-4 mb-1 py-2">Verificar código</button>
                         <p class="mt-2 mb-4 font-weight-bold" id="success-step-2">
@@ -115,9 +115,11 @@
                 rucdni = dni;
                 solicitud = result.data.solicitud;
                 telefono = result.data.telefono;
+                var email = result.data.email;
                 document.getElementById('sp-nombre').innerHTML = result.data.nombre;
                 $('#success-step-1').fadeIn(200, function () {
                     document.getElementById('sp-celular').innerHTML = telefono;
+                    document.getElementById('sp-email').innerHTML = email;
                     $('#step-2').show();
                 });
             }

@@ -21,6 +21,7 @@ const extranetController = require('../controllers/extranet.controller');
     router.post('/eliminar-productos', extranetController.EliminarProducto);
     router.post('/obsequiar-productos', extranetController.ObsequiarProducto);
     router.post('/actualizar-cantidad-producto', extranetController.ActualizarCantidad);
+    router.post('/actualizar-cantidades-producto', extranetController.ActualizarCantidades);
     router.post('/carga-xlsx', extranetController.CargarXlsx);
     router.post('/cerrar-pedido', extranetController.CerrarPedido);
     router.get('/revisar-pedido/:prepedido', extranetController.CheckInPedido);
@@ -32,5 +33,6 @@ const extranetController = require('../controllers/extranet.controller');
     router.get('/pedidos-pendientes', extranetController.ListPedidosPendientes);
     router.get('/detalle-pedido', extranetController.ProductosPedido);
     router.post('/procesar-pre-pedido', extranetController.ProcesarPrePedido);
+    router.post('/abrir-pre-pedido', extranetController.AbrePrePedido);
 
 module.exports = router;

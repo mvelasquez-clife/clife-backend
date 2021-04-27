@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Web Service Corporación Life</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="/assets/intranet/css/main.css">
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            body {padding-top:60px}
+            .bg-purple {background-color:#7e57c2}
+        </style>
+    </head>
+    <body>
+        <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-main">
+            <a class="navbar-brand pb-1" href="#">
+                <img src="/assets/intranet/images/clife-banner-light.svg" alt="Corporacion Life" style="height:24px;">
+            </a>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Stock de productos</a>
+                    </li>
+                </ul>
+            </div>
+            <button id="sidebar-toggler" class="navbar-toggler" type="button" aria-expanded="false">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/ws-life" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-home mr-2"></i>Volver</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <!-- SEPARADOR DE BAJO PRESUPUESTO -->
+        <div class="container">
+            <div class="row">
+                <div class="col alert alert-light shadow-sm pt-3 pb-2 px-4">
+                    <p class="mb-3">
+                        Lista de precios: <span class="font-weight-bold text-success">Kamill Ecommerce-2021</span>
+                    </p>
+                    <!-- cuadro de busqueda -->
+                    <form id="form-busca">
+                        <div class="form-group row">
+                            <div class="col">
+                                <input id="form-filtro" type="text" class="form-control form-control-sm" placeholder="Escriba el código o nombre de producto para buscar y presione Enter">
+                            </div>
+                        </div>
+                    </form>
+                    <div id="detalle-productos" class="row justify-content-center">
+                        <p>Cargando stock de productos...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <!-- scripts -->
+    <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script src="/assets/bootstrap/js/popper.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <!-- table export -->
+    <script type="text/javascript" src="/assets/vendor/tableexport/lib/js-xlsx/xlsx.core.min.js"></script>
+    <script type="text/javascript" src="/assets/vendor/tableexport/lib/FileSaver/FileSaver.min.js"></script> 
+    <script type="text/javascript" src="/assets/vendor/tableexport/lib/html2canvas/html2canvas.min.js"></script>
+    <script type="text/javascript" src="/assets/vendor/tableexport/tableExport.js"></script>
+    <script>
+        var productos;
+        function escribeListaPrecios(filtro) {
+            var sfiltro = filtro.toUpperCase();
+            var tbody = $('<tbody>');
+            var hallados = 0;
+            for (var producto of productos) {
+                var descripcion = producto.nombre.toUpperCase();
+                if (filtro == '' || descripcion.indexOf(sfiltro) > -1 || producto.codigo.indexOf(sfiltro) > -1) {
+                    var precioIgv = producto.precVentaSinIgv * 1.18;
+                    var tr = $('<tr>').append(
+                        $('<td>').text(producto.codigo).addClass('text-right')
+                    ).append(
+                        $('<td>').text(producto.nombre)
+                    ).append(
+                        $('<td>').text(precioIgv.toFixed(2)/*.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2})*/).addClass('text-right')
+                    ).append(
+                        $('<td>').text(producto.descuento1/*.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2})*/).addClass('text-right')
+                    );
+                    if (producto.disponible == 0) tr.addClass('text-danger');
+                    else if (producto.disponible < 10) tr.addClass('text-warning');
+                    tbody.append(tr);
+                    hallados++;
+                }
+            }
+            if (hallados == 0) {
+                tbody.append(
+                    $('<tr>').append(
+                        $('<td>').html('No se encontraron coincidencias para <b>' + filtro + '</b>').attr('colspan', 4)
+                    )
+                );
+            }
+            $('#detalle-productos').empty().append(
+                $('<table>').append(
+                    $('<thead>').append(
+                        $('<tr>').append(
+                            $('<th>').text('Código')
+                        ).append(
+                            $('<th>').text('Descripción')
+                        ).append(
+                            $('<th>').text('Precio con IGV')
+                        ).append(
+                            $('<th>').text('Descuento Promocional')
+                        )
+                    )
+                ).append(tbody).addClass('table table-striped table-hover').attr('id', 'tabla')
+            )/*.append(
+                $('<a>').append(
+                    $('<i>').addClass('fa fa-file-excel-o')
+                ).attr({
+                    'href': '#'
+                }).append('Exportar a XLS').addClass('btn btn-sm btn-success').on('click', exportTableToExcel)
+            )*/;
+        }
+        function exportTableToExcel() {
+            $('#tabla').tableExport({
+                fileName: 'export',
+                type: 'xlsx'
+            });
+        }
+        function init() {
+            $.ajax({
+                url: '/ws-life/lista-precios/ver-lista-precios',
+                method: 'get',
+                dataType: 'json',
+                success: function (result) {
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    productos = result.data;
+                    escribeListaPrecios('');
+                },
+                error: function (error) {
+                    alert(error);
+                }
+            });
+            $('#form-busca').on('submit', function (event) {
+                event.preventDefault();
+                escribeListaPrecios(document.getElementById('form-filtro').value);
+            });
+        }
+        // go
+        $(init);
+    </script>
+</html>

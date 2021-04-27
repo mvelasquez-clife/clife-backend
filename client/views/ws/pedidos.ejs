@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Web Service Corporación Life</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="/assets/intranet/css/main.css">
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            body {padding-top:60px}
+            .bg-purple {background-color:#7e57c2}
+        </style>
+    </head>
+    <body>
+        <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-main">
+            <a class="navbar-brand pb-1" href="#">
+                <img src="/assets/intranet/images/clife-banner-light.svg" alt="Corporacion Life" style="height:24px;">
+            </a>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Carga de reporte de depósitos</a>
+                    </li>
+                </ul>
+            </div>
+            <button id="sidebar-toggler" class="navbar-toggler" type="button" aria-expanded="false">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/ws-life" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-home mr-2"></i>Volver</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <!-- SEPARADOR DE BAJO PRESUPUESTO -->
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-8 alert alert-light shadow-sm pt-3 pb-2 px-4">
+                    <form id="form-pedido" method="post" action="/">
+                        <div class="form-row">
+                            <div class="form-group col-md-5">
+                                <label for="form-desde">Desde</label>
+                                <input type="text" class="form-control" id="form-desde">
+                            </div>
+                            <div class="form-group col-md-5">
+                                <label for="form-hasta">Hasta</label>
+                                <input type="text" class="form-control" id="form-hasta">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col">
+                                <label for="form-cliente">Cliente</label>
+                                <input type="text" class="form-control form-control-sm" id="form-cliente" placeholder="Nombre o RUC/DNI del cliente">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-search mr-2"></i>Buscar pedidos</button>
+                                <button id="exportar-xls" class="btn btn-success btn-sm" style="display:none"><i class="fa fa-file-excel-o mr-2"></i>Exportar a XLS</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div id="detalle-pedidos" class="row justify-content-center"></div>
+        </div>
+    </body>
+    <!-- modal -->
+    <div id="modal-detalle-pedido" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-success"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col">
+                            <form>
+                                <div class="row mb-2">
+                                    <div class="col-7">
+                                        <label for="pedido-cliente">Cliente</label>
+                                        <input type="text" class="form-control-plaintext" id="pedido-cliente">
+                                    </div>
+                                    <div class="col-2">
+                                        <label for="pedido-documento">Documento</label>
+                                        <input type="text" class="form-control-plaintext" id="pedido-documento">
+                                    </div>
+                                    <div class="col-3">
+                                        <label for="pedido-importe">Importe</label>
+                                        <input type="text" class="form-control-plaintext" id="pedido-importe">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div id="detalle-pedido"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Cerrar esta ventana</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- scripts -->
+    <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script src="/assets/bootstrap/js/popper.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="/assets/vendor/tableexport/lib/js-xlsx/xlsx.core.min.js"></script>
+    <script type="text/javascript" src="/assets/vendor/tableexport/lib/FileSaver/FileSaver.min.js"></script> 
+    <script type="text/javascript" src="/assets/vendor/tableexport/lib/html2canvas/html2canvas.min.js"></script>
+    <script type="text/javascript" src="/assets/vendor/tableexport/tableExport.js"></script>
+    <script>
+        function escribirListaPedidos(pedidos) {
+            var xlstbody = $('<tbody>');
+            var tbody = $('<tbody>');
+            for (var pedido of pedidos) {
+                tbody.append(
+                    $('<tr>').append(
+                        $('<th>').text(pedido.pedido)
+                    ).append(
+                        $('<td>').text(pedido.fecha)
+                    ).append(
+                        $('<th>').text(pedido.documento)
+                    ).append(
+                        $('<td>').text(pedido.facturacion)
+                    ).append(
+                        $('<td>').text(pedido.rucdni)
+                    ).append(
+                        $('<td>').text(pedido.nombre)
+                    ).append(
+                        $('<td>').text(pedido.importe.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}))
+                    ).append(
+                        $('<td>').text(pedido.flete.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}))
+                    ).append(
+                        $('<td>').append(
+                            $('<a>').append(
+                                $('<i>').addClass('fa fa-eye')
+                            ).attr({
+                                href: '#',
+                                'data-toggle': 'modal',
+                                'data-target': '#modal-detalle-pedido',
+                                'data-pedido': pedido.pedido
+                            }).addClass('btn btn-sm btn-success')
+                        )
+                    )
+                );
+                xlstbody.append(
+                    $('<tr>').append(
+                        $('<th>').text(pedido.pedido)
+                    ).append(
+                        $('<td>').text(pedido.fecha)
+                    ).append(
+                        $('<th>').text(pedido.documento)
+                    ).append(
+                        $('<td>').text(pedido.facturacion)
+                    ).append(
+                        $('<td>').text(pedido.rucdni)
+                    ).append(
+                        $('<td>').text(pedido.nombre)
+                    ).append(
+                        $('<td>').text(pedido.importe.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}))
+                    ).append(
+                        $('<td>').text(pedido.flete.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}))
+                    )
+                );
+            }
+            var tablexls = $('<table>').append(
+                $('<thead>').append(
+                    $('<tr>').append(
+                        $('<th>').text('Pedido')
+                    ).append(
+                        $('<th>').text('Fecha pedido')
+                    ).append(
+                        $('<th>').text('Boleta')
+                    ).append(
+                        $('<th>').text('Fecha facturación')
+                    ).append(
+                        $('<th>').text('RUC/DNI')
+                    ).append(
+                        $('<th>').text('Cliente')
+                    ).append(
+                        $('<th>').text('Importe')
+                    ).append(
+                        $('<th>').text('Flete')
+                    )
+                )
+            ).append(xlstbody).attr('id', 'table-export');
+            $('#detalle-pedidos').empty().append(
+                $('<div>').append(
+                    $('<div>').append(
+                        $('<table>').append(
+                            $('<thead>').append(
+                                $('<tr>').append(
+                                    $('<th>').text('Pedido')
+                                ).append(
+                                    $('<th>').text('Fecha pedido')
+                                ).append(
+                                    $('<th>').text('Boleta')
+                                ).append(
+                                    $('<th>').text('Fecha facturación')
+                                ).append(
+                                    $('<th>').text('RUC/DNI')
+                                ).append(
+                                    $('<th>').text('Cliente')
+                                ).append(
+                                    $('<th>').text('Importe')
+                                ).append(
+                                    $('<th>').text('Flete')
+                                ).append(
+                                    $('<th>').text('')
+                                )
+                            )
+                        ).append(tbody).addClass('table table-sm table-striped table-hover')
+                    ).addClass('col alert alert-light shadow-sm pt-3 pb-2 px-4')
+                ).addClass('row')
+            ).append(
+                $('<div>').append(tablexls).css({
+                    'height': '0px',
+                    'overflow-y': 'hidden'
+                })
+            );
+        }
+        function buscarPedidos(event) {
+            event.preventDefault();
+            var data = {
+                desde: document.getElementById('form-desde').value,
+                hasta: document.getElementById('form-hasta').value,
+                cliente: document.getElementById('form-cliente').value
+            };
+            $('#detalle-pedidos').empty().append(
+                $('<p>').text('Cargando lista de pedidos...')
+            );
+            $.ajax({
+                url: '/ws-life/pedidos-realizados/lista',
+                method: 'get',
+                data: data,
+                dataType: 'json',
+                success: function(result) {
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    var pedidos = result.pedidos;
+                    escribirListaPedidos(pedidos);
+                    $('#exportar-xls').fadeIn(150);
+                },
+                error: function(error) {
+                    alert(error);
+                }
+            });
+        }
+        function formatearFecha(d) {
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+            return [day, month, year].join('/');
+        }
+        function escribirFechas() {
+            var hoy = new Date();
+            var ayer = new Date();
+            ayer.setDate(ayer.getDate() - 7);
+            document.getElementById('form-desde').value = formatearFecha(ayer);
+            document.getElementById('form-hasta').value = formatearFecha(hoy);
+        }
+        function muestraModalDetallePedido(event) {
+            var pedido = event.relatedTarget.dataset.pedido;
+            document.getElementById('pedido-cliente').value = '';
+            document.getElementById('pedido-documento').value = '';
+            document.getElementById('pedido-importe').value = '';
+            $('#modal-detalle-pedido .modal-title').text('Pedido ' + pedido);
+            $('#detalle-pedido').empty().append(
+                $('<p>').text('Cargando datos del pedido. Por favor, espere...')
+            );
+            $.ajax({
+                url: '/ws-life/datos-pedido',
+                method: 'get',
+                data: { pedido: pedido },
+                dataType: 'json',
+                success: function (result) {
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    var cabecera = result.cabecera;
+                    var detalle = result.detalle;
+                    // escribe datos de la cabecera
+                    document.getElementById('pedido-cliente').value = cabecera.rucdni + ' - ' + cabecera.nombre;
+                    document.getElementById('pedido-documento').value = cabecera.boleta;
+                    document.getElementById('pedido-importe').value = cabecera.importe.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2});
+                    // escribe datos del detalle
+                    var tbody = $('<tbody>');
+                    var total = 0;
+                    for (var item of detalle) {
+                        total += item.subtotal;
+                        var tr = $('<tr>').append(
+                            $('<td>').text(item.codigo).addClass('text-right')
+                        ).append(
+                            $('<td>').text(item.descripcion)
+                        ).append(
+                            $('<td>').text(item.prventa.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right')
+                        ).append(
+                            $('<td>').text(item.cantidad).addClass('text-right')
+                        ).append(
+                            $('<td>').text(item.dscto1).addClass('text-right')
+                        ).append(
+                            $('<td>').text(item.dscto2).addClass('text-right')
+                        ).append(
+                            $('<td>').text(item.subtotal.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right')
+                        ).append(
+                            $('<td>').text(item.tipo).addClass('text-center')
+                        );
+                        if (item.tipo == 'N') tr.addClass('text-success')
+                        if (item.tipo == 'P') tr.addClass('text-primary')
+                        tbody.append(tr);
+                    }
+                    $('#detalle-pedido').empty().append(
+                        $('<table>').append(
+                            $('<thead>').append(
+                                $('<tr>').append(
+                                    $('<th>').text('Producto').attr('colspan', 2)
+                                ).append(
+                                    $('<th>').text('Precio venta')
+                                ).append(
+                                    $('<th>').text('Cantidad')
+                                ).append(
+                                    $('<th>').text('Descuento promocional')
+                                ).append(
+                                    $('<th>').text('Descuento cupón')
+                                ).append(
+                                    $('<th>').text('Subtotal')
+                                ).append(
+                                    $('<th>').text('Tipo')
+                                )
+                            )
+                        ).append(tbody).append(
+                            $('<tfoot>').append(
+                                $('<tr>').append(
+                                    $('<th>').text('')
+                                ).append(
+                                    $('<th>').text('TOTAL').attr('colspan', 5)
+                                ).append(
+                                    $('<th>').text(total.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right')
+                                ).append(
+                                    $('<th>').text('')
+                                )
+                            )
+                        ).addClass('table table-striped table-hover table-responsive')
+                    );
+                },
+                error: function (error) {
+                    alert(error);
+                }
+            });
+        }
+        function exportarXls(event) {
+            event.preventDefault();
+            $('#table-export').tableExport({
+                fileName: 'pedidos_ecommerce.xlsx',
+                type: 'xlsx'
+            });
+        }
+        function init() {
+            $('#form-desde').datepicker({
+                // locale: 'es-es',
+                format: 'dd/mm/yyyy',
+                datepicker: { weekStartDay: 1 },
+                uiLibrary: 'bootstrap4',
+                iconsLibrary: 'fontawesome'
+            });
+            $('#form-hasta').datepicker({
+                // locale: 'es-es',
+                format: 'dd/mm/yyyy',
+                datepicker: { weekStartDay: 1 },
+                uiLibrary: 'bootstrap4',
+                iconsLibrary: 'fontawesome'
+            });
+            escribirFechas();
+            $('#form-pedido').on('submit', buscarPedidos);
+            $('#modal-detalle-pedido').on('show.bs.modal', muestraModalDetallePedido);
+            $('#exportar-xls').on('click', exportarXls);
+        }
+        // go
+        $(init);
+    </script>
+</html>
