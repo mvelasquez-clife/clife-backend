@@ -1,4 +1,4 @@
-var de_grupo,grupo_prod,ind_grupo,ind_pt,message_pt,nom_report,nva_clase,varprov,version_prov,version_esp,cod_esp,win_desc,form_tipo,form_cod,form_vers,form_vig,form_codprov,form_prov,form_desc,form_fcrea,form_crea,form_frev,form_rev,form_fapr,form_aprob,form_coesp,serie,num_fila,data_n,data,cant_filas_n,cant_filas_l,de_grupo,clase_grupo,grupo_prod,tipo_bien,myGrid_version,myGrid_prod,mainLayout_prod,myGrid_hist,mainLayout_hist,myGrid_cpto,mainLayout_cpto,myGrid_ensa,mainLayout_ensa,myGrid_caract,myFormdcaract,mainLayout_caract,myFormdformu,mainLayout,tabbar,mainLayout_group,myGrid_group,tabbar_det
+var de_grupo,grupo_prod,ind_grupo,ind_pt,accion_ptr,message_pt,nom_report,nva_clase,varprov,version_prov,version_esp,cod_esp,win_desc,form_tipo,form_cod,form_vers,form_vig,form_codprov,form_prov,form_desc,form_fcrea,form_crea,form_frev,form_rev,form_fapr,form_aprob,form_coesp,serie,num_fila,data_n,data,cant_filas_n,cant_filas_l,de_grupo,clase_grupo,grupo_prod,tipo_bien,myGrid_version,myGrid_prod,mainLayout_prod,myGrid_hist,mainLayout_hist,myGrid_cpto,mainLayout_cpto,myGrid_ensa,mainLayout_ensa,myGrid_caract,myFormdcaract,mainLayout_caract,myFormdformu,mainLayout,tabbar,mainLayout_group,myGrid_group,tabbar_det
 var st_vers,flag,permiso_cataedit = '';
 var nuev = '';
 ind_grupo ='E';
@@ -75,6 +75,7 @@ iniciotabs= () => {
     if (grupo_prod==1||grupo_prod==5){
         tabbar_det.addTab('crt', 'Características', null, null, true);
         tabbar_det.addTab('cpto', 'Complementos', null, null, false);
+        tabbar_det.addTab('ptr', 'Patrones', null, null, false);
         tabbar_det.addTab('prod', 'Productos/SubProductos asociados', null, null, false);
     }else{
         tabbar_det.addTab('presp', 'Productos Espec.', null, null, true);
@@ -282,7 +283,10 @@ detaOnSelect= async (id) => {
                 break;          
             case 'prod':    
                 cargarProducto(cod_esp,version_esp); 
-                break;        
+                break;           
+            case 'ptr':    
+                cargarPatrones(cod_esp,version_esp); 
+                break;      
             default:
                 null;
                 break;
@@ -479,6 +483,7 @@ cargarprodespecgrupo = (nombre,grupo) => {
         mainLayout_det.cells('a').setText('Descripción: '+data.desc+' ('+data.cod+')');   
         cargarespecversProducto(data.cod,grupo,'N');
         iniciotabs();
+        alertacodiseno(data.cod);
         // cargarespecProd(data.cod,data.vers,form_vig);
      });
 };
@@ -751,6 +756,32 @@ cargarHistorial = (espec,version,estado) => {
     mainLayout_hist.cells('a').progressOn();
     myGrid_hist.load( BASE_URL + 'PO010410/mostrar-historial/'+usrJson.empresa+'/'+espec+'/'+version).then(function (text) {
         mainLayout_hist.cells('a').progressOff();
+    }); 
+};
+
+
+cargarPatrones = (espec,version) => {  
+    mainLayout_pat = tabbar_det.cells('ptr').attachLayout('1C');  
+    mainLayout_pat.cells('a').hideHeader();  
+    patoolbar = mainLayout_pat.cells('a').attachToolbar(); 
+    patoolbar.setIconsPath('/assets/images/icons/');
+    patoolbar.addButton('addptr',null,'Agregar patrón',"ic-add.png","");
+    patoolbar.addButton('editar',null,'Editar',"ic-edit3.png","");
+    patoolbar.addButton('eliminar',null,'Eliminar',"ic-delete.png","");
+    patoolbar.addButton('aprobar',null,'Recibir',"ic-acept.png","");
+    patoolbar.attachEvent('onClick', toolbarOnptr);
+    patoolbar.setIconSize(18);
+    myGrid_patr = mainLayout_pat.cells('a').attachGrid();
+    myGrid_patr.setHeader('Orden,Co_Tipo,Tipo,F. Creación,Creado por:,F. Vencimiento,F. Aprobación,Aprobado por:,Estado,Observación');    
+    myGrid_patr.setInitWidths('0,0,100,100,300,100,100,300,100,250');
+    myGrid_patr.setColAlign('left,left,left,center,left,center,center,left,center,left');
+    myGrid_patr.setColTypes('ro,ro,ro,ro,ro,ro,ro,ro,ro,ro'); 
+    myGrid_patr.setColumnIds('orden,co_tipo,tipo,fcrea,crea,fvig,fapro,apro,est,obs'); 
+    myGrid_patr.init();      
+    myGrid_patr.clearAll(); 
+    mainLayout_pat.cells('a').progressOn();
+    myGrid_patr.load( BASE_URL + 'PO010410/mostrar-patrones/'+usrJson.empresa+'/'+espec+'/'+version).then(function (text) {
+        mainLayout_pat.cells('a').progressOff();
     }); 
 };
 
@@ -1454,6 +1485,37 @@ guardarhistorial = (especificacion,version,observacion) => {
     }, "json");
 };
 
+guardarpatron = (especificacion,version,patron,observacion,fecha,orden,accion) => {   
+    params = {
+        empresa: usrJson.empresa,
+        usuario: usrJson.codigo,
+        especificacion: especificacion,
+        version:version,
+        patron:patron,
+        observacion: observacion,
+        fecha:fecha,
+        orden:orden,
+        accion:accion
+    };    
+    console.log(params);
+    $.post(BASE_URL + "PO010410/guardar-patron", params, function (res) {
+        if (res.state=='success'){
+            dhtmlx.alert({
+                title: 'Correcto',
+                text: res.message
+            });   
+            cargarPatrones(especificacion,version);             
+            Wind_.window("wbuscar").close();
+        } else {
+            dhtmlx.alert({
+                title: 'Correcto',
+                type:'alert-error',
+                text: res.message
+            });     
+        }
+    }, "json");
+};
+
 cargarprodporesp = (espec,version) => {  
     myGrid_esprod.clearAll(); 
     mainLayout_esprod.cells('a').progressOn();
@@ -1958,6 +2020,45 @@ agregarhistoria = async () => {
     myFormdatos_cosm = Wind_.window("wbuscar").attachForm(f_historia);     
 };
 
+function addZero(i) {
+    if (i < 10) {
+        i = '0' + i;
+    }
+    return i;
+}
+
+agregarpatron = async (tipo,vig,obs,accion) => {
+    Wind_ = new dhtmlXWindows();
+    Winid_ = Wind_.createWindow("wbuscar", 0, 0, 600, 210);
+    Wind_.window("wbuscar").hideHeader();
+    Wind_.window("wbuscar").setModal(true);
+    Wind_.window("wbuscar").denyResize();
+    Wind_.window("wbuscar").center(); 
+    myToolbar = Wind_.window("wbuscar").attachToolbar();
+    myToolbar.setIconsPath('/assets/images/icons/');
+    myToolbar.addButton('b_guardar', null, 'Guardar', "ic-acept.png", null);
+    myToolbar.addSeparator(null, null);
+    myToolbar.addButton('b_desbloquear', null, 'Permisos', "unlock.png", null);
+    myToolbar.addSeparator(null, null);
+    myToolbar.addButton('b_close', null, 'Cerrar', "ic-cancel-cd.png", null);
+    myToolbar.addSeparator(null, null);
+    myToolbar.attachEvent('onClick',toolbarOnptr);
+    myFormdatos_pat = Wind_.window("wbuscar").attachForm(f_patrones); 
+    var hoy = new Date();
+    var dd = hoy.getDate(), mm = hoy.getMonth() + 1,yyyy = hoy.getFullYear()+1;
+    dd=addZero(dd);
+    mm=addZero(mm);
+    fecha = yyyy+'-'+mm+'-'+dd; 
+    myFormdatos_pat.setItemValue('_et_fec_vig',fecha);
+    accion_ptr = accion;
+    if(accion == 'U'){        
+        myFormdatos_pat.setItemValue('_et_fec_vig',vig);
+        myFormdatos_pat.enableItem('_et_fec_vig');
+        myFormdatos_pat.setItemValue('_et_tipo',tipo);
+        myFormdatos_pat.setItemValue('_et_obs_pat',obs);
+    }
+};
+
 especinput = async () => {
     Wind_ = new dhtmlXWindows();
     Winid_ = Wind_.createWindow("wbuscar", 0, 0, 750, 320);
@@ -2294,6 +2395,107 @@ toolbarOnhist  = async (id) => {
     }
 };
 
+toolbarOnptr  = async (id) => {
+    switch (id) {
+        case 'aprobar':            
+            ptr = myGrid_patr.getSelectedRowId();
+            if(ptr) {
+                ptr = myGrid_patr.getRowData(myGrid_patr.getSelectedRowId());
+                sel = myGrid_espvers.getRowData(myGrid_espvers.getSelectedRowId());
+                var output = await IniciarFormularioSeguridad(280, mainLayout);
+                if (output.result === 'S') {
+                    aprobarPatron(sel.cod,sel.vers,ptr.orden,'Recibido');
+                };
+            }else{
+                dhtmlx.confirm("Debe seleccionar un patrón", function (result) {
+                });
+            }      
+            break;     
+        case 'addptr':
+            agregarpatron(0,0,0,'I');
+            break;     
+        case 'b_close':
+            Wind_.window("wbuscar").close();
+            break; 
+        case 'eliminar':  
+            ptr = myGrid_patr.getSelectedRowId();
+            if(ptr) {
+                ptr = myGrid_patr.getRowData(myGrid_patr.getSelectedRowId());
+                sel = myGrid_espvers.getRowData(myGrid_espvers.getSelectedRowId());
+                aprobarPatron(sel.cod,sel.vers,ptr.orden,'Obsoleto');
+            }else{
+                dhtmlx.confirm("Debe seleccionar un patrón", function (result) {
+                });
+            }      
+            break; 
+        case 'b_guardar':
+            var obsv = myFormdatos_pat.getItemValue('_et_obs_pat');
+            var patron = myFormdatos_pat.getItemValue('_et_tipo');
+            var fecha = myFormdatos_pat.getItemValue('_et_fec_vig').toLocaleDateString().replace('/', '-');;
+            sel = myGrid_espvers.getRowData(myGrid_espvers.getSelectedRowId());
+            console.log(sel);
+            if (accion_ptr=='U'){
+                ptr = myGrid_patr.getRowData(myGrid_patr.getSelectedRowId());
+                orden = ptr.orden;
+            }else{orden=1;}
+            guardarpatron(sel.cod,sel.vers,patron,obsv,fecha,orden,accion_ptr);
+            break;  
+        case 'b_desbloquear':
+            var output = await IniciarFormularioSeguridad(281, mainLayout);
+            if (output.result === 'S') {
+                myFormdatos_pat.enableItem('_et_fec_vig');
+            };
+            break; 
+        case 'editar':
+            ptr = myGrid_patr.getSelectedRowId();
+            if(ptr) {
+                ptr = myGrid_patr.getRowData(myGrid_patr.getSelectedRowId());
+                var output = await IniciarFormularioSeguridad(281, mainLayout);
+                if (output.result === 'S') {
+                    agregarpatron(ptr.co_tipo,ptr.fvig,ptr.obs,'U');
+                };
+            }else{
+                dhtmlx.confirm("Debe seleccionar un patrón", function (result) {
+                });
+            }  
+            break; 
+        default:
+            null;
+            break;
+    }
+};
+
+aprobarPatron = (espec,version,orden,accion) => {  
+    params = {
+        empresa: usrJson.empresa,
+        usuario: usrJson.codigo,
+        especificacion: espec,
+        version: version,
+        orden:orden,
+        accion:accion
+    };    
+    dhtmlx.confirm("¿Está seguro?", function (result) {
+        if (result === Boolean(true)) {
+            $.post(BASE_URL + "PO010410/guardar-estado-patron", params, function (res) {
+                if (res.state=='success'){  
+                    dhtmlx.alert({
+                        title: 'Correcto',
+                        text: res.message
+                    });             
+                    cargarPatrones(espec,version); 
+                } else {
+                    dhtmlx.alert({
+                        title: 'No se guardo el registro',
+                        type: 'alert-error',
+                        text: res.message
+                    });
+
+                }
+            }, "json");
+        }
+    });
+};
+
 toolbarOnadj  = async (id) => {
     switch (id) {
         case 'verdcto':
@@ -2533,4 +2735,20 @@ cargarsubproductos = async (cod,desc) => {
     myGrid_trazab.load( BASE_URL + 'PO010208/mostrar-detalle-form-trazab/'+usrJson.empresa+'/'+cod).then(function (text) {
         Windt_.window('wtraz').progressOff();
     });  
+};
+
+alertacodiseno = async (producto) => {  
+    params = {
+        producto: producto,
+    };    
+    $.post(BASE_URL + "PO010410/alerta-codiseno", params, function (res) {
+        const result = res.data.esp_alert;
+
+        if (result.ALERTA!='NO'){
+            dhtmlx.alert({
+                type: 'alert-error',
+                text: result.ALERTA
+            });}
+
+    }, "json");
 };

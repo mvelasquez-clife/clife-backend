@@ -6,5 +6,5 @@ module.exports = {
     
     // user: 'desarrollo', // pruebas
     // password: 'desarrollo2131',
-    // connectString: '(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST =  ora12c.cwweyutifkcl.us-west-2.rds.amazonaws.com)(PORT = 1521)))(CONNECT_DATA = (SID = dblife) (SERVER = DEDICATED)))'
+    // connectString: '(DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST =  ora.cwweyutifkcl.us-west-2.rds.amazonaws.com)(PORT = 1521)))(CONNECT_DATA = (SID = orcl) (SERVER = DEDICATED)))'
 };

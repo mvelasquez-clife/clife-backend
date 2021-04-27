@@ -1541,7 +1541,6 @@ mostrarespecreporten2: async (request, response) => {
                 x_empresa: { val: empresa },
                 x_grupo: { val: grupo_prod }
             };
-            console.log(params);
             const result = await conn.execute(query, params, responseParams);
             const personal = result.rows;
             var Workbook = require('xlsx-workbook').Workbook;
@@ -1586,6 +1585,188 @@ mostrarespecreporten2: async (request, response) => {
             response.send(JSON.stringify(err));
         }
     }, 
+
+    alertacodiseno: (req, res) => {     
+        const {producto} = req.body; 
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err.Error
+                });
+                return;
+            }
+            
+            const query = "select f_alerta_codigo_arte(:xproducto) as alerta from dual";
+            const params = { 
+                xproducto: {val:producto},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if(error) {           
+                    conn.close();
+                    return;
+                }
+                var alert;
+                for(var i in result.rows) {
+                    alert = result.rows[i];                  
+                }
+                //comprobar si obtuve resultado
+                if(alert) {                   
+                    res.json({
+                        state: 'success',
+                        data: {
+                            esp_alert: alert
+                        }                      
+                    
+                    });
+                }
+                else {
+                    res.json({
+                        state: 'unsuccess',
+                        data: {
+                            esp_alert: alert
+                        } 
+                    });
+                }
+            });
+        });
+    }, 
+
+    mostrartipoptr: (req, res) => {
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ 'error_conexion': err.stack });
+                return;
+            }
+            const query = "select co_tipo as value,de_nombre as label from ma_tipo_patr";
+            const params = { };
+            conn.execute(query, params, responseParams, (error, result) => {
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    conn.close();
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(xmlParser.renderSelect(result.rows, '1'));
+            });
+        });
+    },    
+    guardarpatron: (req, res) => {        
+        const {empresa,usuario,especificacion,version,patron,observacion,fecha,orden,accion} = req.body; 
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err.Error
+                });
+                return;
+            }
+            const query = "call pack_new_especificacion.sp_grabar_patron(:x_result,:x_de_result,:x_empresa,:x_usuario,:x_co_especificacion,:x_version,:x_patron,:x_obser,:x_fec_vigencia,:x_orden,:x_accion)";
+            const params = { 
+                //parametros de salida
+                x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                x_de_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                //parametros de entrada
+                x_empresa: {val:empresa},
+                x_usuario: {val:usuario},
+                x_co_especificacion: {val:especificacion},
+                x_version: {val:version},
+                x_patron: {val:patron},
+                x_obser: {val:observacion},
+                x_fec_vigencia: {val:fecha},
+                x_orden: {val:orden},
+                x_accion: {val:accion},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+    
+                const { x_result, x_de_result } = result.outBinds;
+                if(x_result == 1) res.json({
+                    state: 'success',
+                    message: x_de_result,
+                });
+                else res.json({
+                    state: 'error',
+                    message: x_de_result
+                });
+            });
+        });
+    },
+       
+    guardarestadopatron: (req, res) => {        
+        const {empresa,usuario,especificacion,version,orden,accion} = req.body; 
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err.Error
+                });
+                return;
+            }
+            const query = "call pack_new_especificacion.sp_grabar_estado_patron(:x_result,:x_de_result,:x_empresa,:x_usuario,:x_co_especificacion,:x_version,:x_orden ,:x_accion_aprobar)";
+            const params = { 
+                //parametros de salida
+                x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                x_de_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                //parametros de entrada
+                x_empresa: {val:empresa},
+                x_usuario: {val:usuario},
+                x_co_especificacion: {val:especificacion},
+                x_version: {val:version},
+                x_orden: {val:orden},
+                x_accion_aprobar: {val:accion},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+    
+                const { x_result, x_de_result } = result.outBinds;
+                if(x_result == 1) res.json({
+                    state: 'success',
+                    message: x_de_result,
+                });
+                else res.json({
+                    state: 'error',
+                    message: x_de_result
+                });
+            });
+        });
+    },
+
+    mostrarpatrones: (req, res) => { 
+            
+        const {empresa,especificacion,version} = req.params;  
+        
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "select co_orden,co_tipo,de_nombre_tipo,fe_creacion,de_creador,fe_vencimiento,fe_aprueba,de_aprueba,es_vigencia,de_observ from table(pack_new_especificacion.f_list_patron(:x_empresa,:x_espec,:x_version))";
+            
+            const params = {
+                x_empresa: {val : empresa},
+                x_espec: {val : especificacion},
+                x_version: {val : version}
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(result.rows.length > 0 ? xmlParser.renderXml(result.rows) : xmlParser.renderXml([{ CO_NUMDOC: 'No se encontraron coincidencias' }]));
+            });
+        });
+    },
 }
 
 module.exports = po010410Controller;

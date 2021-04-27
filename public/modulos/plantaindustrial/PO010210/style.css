@@ -1,0 +1,8 @@
+.div-empty{
+    background-size: cover;
+    height: 100%;
+    width: 100%;
+    text-align: center;
+
+}
+.div-artes{ background-image: url('/assets/images/otros/busca_artes.jpg'); }

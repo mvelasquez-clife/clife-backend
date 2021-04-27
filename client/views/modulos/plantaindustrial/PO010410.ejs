@@ -127,7 +127,6 @@
             {type: "block",blockOffset: 10,  offsetTop: 10, position: "label-left", width: 450, list: [
                 { type: "newcolumn" },
                 { type: "input",offsetLeft: 10,labelWidth: 150, inputWidth: 400, rows:4, name: "_et_historial", label: 'Descripción de cambios:'}, { type: "newcolumn" },
-
             ],}
             ];
             var f_copiaespec = [ { type: "newcolumn" },
@@ -168,11 +167,20 @@
                 { type: "newcolumn" },
                 { type: "select",offsetLeft: 10,labelWidth: 150, inputWidth: 150, name: "_et_cod", label: 'Cod. Especificación:'}, { type: "newcolumn" },
                 { type: "newcolumn" },
-                { type: "input",offsetLeft: 10,labelWidth: 150, inputWidth: 400, rows:4, name: "_et_desc", label: 'Descripción de Especificación:'}, { type: "newcolumn" },
-
-            ],}
+                { type: "input",offsetLeft: 10,labelWidth: 150, inputWidth: 400, rows:4, name: "_et_desc", label: 'Descripción de Especificación:'}, { type: "newcolumn" },],}
             ];
-
+            var f_patrones = [
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 5, position: "label-left", width: 550, list: [
+                    { type: "select",offsetLeft: 10,labelWidth: 100,inputWidth: 150, name: "_et_tipo", label: 'Tipo:', connector: BASE_URL + 'PO010410/mostrar-tipo-patron'}, { type: "newcolumn" },
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 5, position: "label-left", width: 550, list: [
+                    { type: "input",offsetLeft: 10,labelWidth: 100, inputWidth: 400, rows:4, name: "_et_obs_pat", label: 'Observaciones:'}, { type: "newcolumn" },],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 5, position: "label-left", width: 550, list: [
+                    { type: "calendar",offsetLeft: 10,labelWidth: 100, inputWidth: 100,disabled: true, name: "_et_fec_vig", label: 'Fec. Vigencia:'}, { type: "newcolumn" },],}
+            ];
             Inicio();            
 
             
