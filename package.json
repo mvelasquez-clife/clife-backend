@@ -33,7 +33,7 @@
     "fs-extra": "^7.0.1",
     "ftp": "^0.3.10",
     "highcharts-export-server": "^2.0.28",
-    "html-pdf": "^2.2.0",
+    "html-pdf": "^3.0.1",
     "jsonwebtoken": "^8.3.0",
     "moment": "^2.24.0",
     "mongodb": "^3.5.5",
