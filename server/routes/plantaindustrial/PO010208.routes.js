@@ -40,6 +40,7 @@ router.get('/mostrar-drive-marcas/:empresa/',po010208Controller.mostrarmarcdrive
 router.post('/subir-adjunto/',po010208Controller.subirdocadjunto);
 router.post('/mostrar-producto-por-nsoc/',po010208Controller.mostrarproductopornsoc);
 router.get('/mostrar-documento-por-marca/',po010208Controller.mostrardocpormarca);
-router.post('/mostrar-documento-por-producto/',po010208Controller.mostraradjporprod)
+router.post('/mostrar-documento-por-producto/',po010208Controller.mostraradjporprod);
+router.post('/guardar-historial/',po010208Controller.guardarhistorial);
 
 module.exports = router;

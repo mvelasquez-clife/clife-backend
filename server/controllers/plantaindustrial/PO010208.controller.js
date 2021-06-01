@@ -402,7 +402,7 @@ const po010208Controller = {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select * from table(pack_new_formulacion.f_list_form_det_comp(:x_empresa,:x_formula))";
+            const query = "select co_producto, de_producto,nu_cantidad,de_abreviatura,co_integral,es_formulacion from table(pack_new_formulacion.f_list_form_det_comp(:x_empresa,:x_formula))";
             
             const params = {
                 x_empresa: {val : empresa},
@@ -550,7 +550,7 @@ const po010208Controller = {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select 'ic-dlike.png^Rechazar','ic-msj.png^Ver mensajes',de_nombre,co_especificacion,nu_version,es_vigencia,fe_creacion,fe_revisa,fe_aprueba,de_creador,de_revisado,de_aprueba,de_proveedor,co_proveedor from table (PACK_NEW_DIRECCION_TECN.f_list_especificacion_v2(:x_empresa))";
+            const query = "select 'ic-dlike.png^Rechazar',de_nombre,co_especificacion,nu_version,es_vigencia,fe_creacion,fe_revisa,fe_aprueba,de_creador,de_revisado,de_aprueba,de_proveedor,co_proveedor from table (PACK_NEW_DIRECCION_TECN.f_list_especificacion_v2(:x_empresa))";
             
             const params = {
                 x_empresa: {val : empresa}
@@ -1260,6 +1260,48 @@ const po010208Controller = {
                         message: 'Sin registro'
                     });
                 }
+            });
+        });
+    },
+
+    guardarhistorial: (req, res) => {        
+        const {empresa,usuario,especificacion,version,observacion} = req.body; 
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err.Error
+                });
+                return;
+            }
+            const query = "call pack_new_direccion_tecn.sp_grabar_historial(:x_result,:x_de_result,:x_empresa,:x_usuario,:x_co_especificacion,:x_version,:x_obser)";
+            const params = { 
+                //parametros de salida
+                x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                x_de_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                //parametros de entrada
+                x_empresa: {val:empresa},
+                x_usuario: {val:usuario},
+                x_co_especificacion: {val:especificacion},
+                x_version: {val:version},
+                x_obser: {val:observacion},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+    
+                const { x_result, x_de_result } = result.outBinds;
+                if(x_result == 1) res.json({
+                    state: 'success',
+                    message: x_de_result,
+                });
+                else res.json({
+                    state: 'error',
+                    message: x_de_result
+                });
             });
         });
     },

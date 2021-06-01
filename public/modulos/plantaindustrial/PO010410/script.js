@@ -376,11 +376,14 @@ cargarespecific = (nombre,grupo,prod,filter) => {
     myGrid_group.setInitWidths('80,400,80,150,50,80,80,80,80,200,200,200,200,0,100');
     myGrid_group.setColAlign('left,left,left,left,left,left,left,left,left,left,left,left,left,left,left,left');
     myGrid_group.setColTypes('ed,ed,ed,ed,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro'); 
-    myGrid_group.attachHeader("#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,,#text_filter,#text_filter");     
+    myGrid_group.attachHeader("#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#select_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,,#text_filter,#text_filter");     
     myGrid_group.setColumnIds('cod,desc,cgranel,coesp,vers,vig,fcrea,frev,fapr,crea,rev,aprob,prov,codprov,tip');  
     if(grupo==2||grupo==4||grupo==3){
         if(grupo==2){
             mytoolbar.addButton('asignar',null,'Asignar Especificación',"ic-register.png","");
+        }
+        if(grupo==4){
+            mytoolbar.addButton('obser',null,'Espec. Observadas',"ic-fail.png","");
         }
         mytoolbar.addButton('busprod',null,'Buscar por Producto',"ic-look.png","");
         mytoolbar.addButton('refresh',null,'Actualizar',"ic-refresh.png","");
@@ -772,7 +775,7 @@ cargarPatrones = (espec,version) => {
     patoolbar.attachEvent('onClick', toolbarOnptr);
     patoolbar.setIconSize(18);
     myGrid_patr = mainLayout_pat.cells('a').attachGrid();
-    myGrid_patr.setHeader('Orden,Co_Tipo,Tipo,F. Creación,Creado por:,F. Vencimiento,F. Aprobación,Aprobado por:,Estado,Observación');    
+    myGrid_patr.setHeader('Orden,Co_Tipo,Tipo,F. Creación,Creado por:,F. Vencimiento,F. Recepción,Recepcionado por:,Estado,Observación');    
     myGrid_patr.setInitWidths('0,0,100,100,300,100,100,300,100,250');
     myGrid_patr.setColAlign('left,left,left,center,left,center,center,left,center,left');
     myGrid_patr.setColTypes('ro,ro,ro,ro,ro,ro,ro,ro,ro,ro'); 
@@ -1068,6 +1071,9 @@ onClickaction = async (id) => {
                 });
             }
             break;
+        case 'obser':
+            especObservadas(grupo_prod);
+            break;
         case 'busprod':
             buscarespProd(grupo_prod);
             break;
@@ -1189,6 +1195,28 @@ buscarespProd = async (grupo_prod) => {
        cargarespecific(de_grupo,grupo_prod,data.cod,'N'); 
        Wind_.window("wbuscar").close();
     });  
+};
+
+especObservadas = async (grupo_prod) => {
+    nva_clase = grupo_prod;
+    Wind_ = new dhtmlXWindows();
+    Winid_ = Wind_.createWindow("wbuscar", 0, 0, 800, 500);
+    Winid_.setText("Especificaciones Observadas");
+    Wind_.window("wbuscar").setModal(true);
+    Wind_.window("wbuscar").denyResize();
+    Wind_.window("wbuscar").center(); 
+    myGrid_hist = Winid_.attachGrid();
+    myGrid_hist.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/");
+    myGrid_hist.setHeader('N°Doc,Versión,Estado,Observaciones,Fecha,Usuario');    
+    myGrid_hist.setInitWidths('80,80,100,500,80,250');
+    myGrid_hist.setColAlign('left,center,center,left,center,left');
+    myGrid_hist.setColTypes('ro,ro,ro,ro,ro,ro');          
+    myGrid_hist.init();         
+    myGrid_hist.clearAll(); 
+    Winid_.progressOn();
+    myGrid_hist.load( BASE_URL + 'PO010410/mostrar-espec-observ/'+usrJson.empresa+'/'+grupo_prod).then(function (text) {
+        Winid_.progressOff();
+    });
 };
 
 cargarversiones = (espec,flag) => { 
