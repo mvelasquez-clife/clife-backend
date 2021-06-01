@@ -3,6 +3,9 @@
     <head>
         <% include _main.head.ejs %>
         <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            #xls-export{display:none}
+        </style>
     </head>
     <body>
         <!-- pinche navbar -->
@@ -26,9 +29,8 @@
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb mb-0">
                                 <li class="breadcrumb-item" aria-current="page"><a href="/intranet" class="text-secondary">Inicio</a></li>
-                                <li class="breadcrumb-item text-secondary" aria-current="page">Mis documentos</li>
-                                <li class="breadcrumb-item text-secondary" aria-current="page">Contratos</li>
-                                <li class="breadcrumb-item active text-main" aria-current="page">Revisar contratos</li>
+                                <li class="breadcrumb-item text-secondary" aria-current="page">Reportes</li>
+                                <li class="breadcrumb-item active text-main" aria-current="page">Marcaciones</li>
                             </ol>
                         </nav>
                     </div>
@@ -48,7 +50,8 @@
                                     <label for="f-hasta" class="mr-1 ml-3">Hasta</label>
                                     <input name="hasta" id="f-hasta" class="form-control form-control-sm datepicker" style="width:120px;"></select>
                                     <!-- separador de bajo presupuesto -->
-                                    <button type="submit" class="btn btn-primary btn-sm ml-3">Cargar marcaciones</button>
+                                    <button type="submit" class="btn btn-primary btn-sm ml-3"><i class="fa fa-search mr-1"></i>Cargar marcaciones</button>
+                                    <button id="xls-export" class="btn btn-success btn-sm ml-1"><i class="fa fa-file-excel-o mr-1"></i>Generar XLS</button>
                                 </form>
                             </li>
                         </ul>
@@ -61,47 +64,100 @@
         <!-- separador de bajo presupuesto -->
         <% include _main.scripts.ejs %>
         <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+        <script type="text/javascript" src="/assets/vendor/tableexport/lib/js-xlsx/xlsx.core.min.js"></script>
+        <script type="text/javascript" src="/assets/vendor/tableexport/lib/FileSaver/FileSaver.min.js"></script> 
+        <script type="text/javascript" src="/assets/vendor/tableexport/lib/html2canvas/html2canvas.min.js"></script>
+        <script type="text/javascript" src="/assets/vendor/tableexport/tableExport.js"></script>
         <script>
             const sesion = JSON.parse('<%-sesion %>');
             // funciones
             function escribirListaMarcaciones(marcaciones) {
                 var tbody = $('<tbody>');
+                var pos = 1;
                 for (var marca of marcaciones) {
-                    var tr = $('<tr>').append(
-                        $('<td>').text(marca.FECHA)
+                    var tr = $('<tr>');
+                    // agrega primera parte de los datos
+                    tr.append(
+                        $('<td>').text(pos).addClass('text-center')
                     ).append(
                         $('<td>').text(marca.DNI).addClass('text-right')
                     ).append(
                         $('<td>').text(marca.NOMBRE)
                     ).append(
-                        $('<td>').text(marca.DETALLE)
+                        $('<td>').text(marca.DNI).addClass('text-right')
                     ).append(
-                        $('<td>').text(marca.HORAS).addClass('text-right')
+                        $('<td>').text(marca.DIASEM).addClass('text-center')
+                    ).append(
+                        $('<td>').text(marca.FECHA)
+                    ).append(
+                        $('<td>').text('-')
+                    );
+                    // recupera las marcaciones
+                    var vmarcaciones = marca.DETALLE.split('|');
+                    for (var i = 0; i < 8; i++) {
+                        var hora = vmarcaciones[i] ? vmarcaciones[i] : '';
+                        tr.append(
+                            $('<td>').text(hora).addClass('text-center')
+                        )
+                    }
+                    tr.append(
+                        $('<td>').text(marca.HORAS.toFixed(2)).addClass('text-right')
+                    ).append(
+                        $('<td>').text('-')
                     );
                     tbody.append(tr);
+                    pos++;
                 }
                 var table = $('<table>').append(
                     $('<thead>').append(
                         $('<tr>').append(
+                            $('<th>').text('Item')
+                        ).append(
+                            $('<th>').text('Codigo')
+                        ).append(
+                            $('<th>').text('Nombres')
+                        ).append(
+                            $('<th>').text('Documento')
+                        ).append(
                             $('<th>').text('Día')
                         ).append(
-                            $('<th>').text('DNI')
+                            $('<th>').text('Fecha')
                         ).append(
-                            $('<th>').text('Nombre')
+                            $('<th>').text('Horario')
                         ).append(
-                            $('<th>').text('Marcaciones')
+                            $('<th>').text('Marca 1')
+                        ).append(
+                            $('<th>').text('Marca 2')
+                        ).append(
+                            $('<th>').text('Marca 3')
+                        ).append(
+                            $('<th>').text('Marca 4')
+                        ).append(
+                            $('<th>').text('Marca 5')
+                        ).append(
+                            $('<th>').text('Marca 6')
+                        ).append(
+                            $('<th>').text('Marca 7')
+                        ).append(
+                            $('<th>').text('Marca 8')
                         ).append(
                             $('<th>').text('Total horas')
+                        ).append(
+                            $('<th>').text('No Fiscalizado')
                         )
                     )
-                ).append(tbody).addClass('table table-striped table-hover');
+                ).append(tbody).addClass('table table-striped table-hover').css('width','1600px').attr('id','table-export');
                 $('#container').append(
                     $('<li>').append(
                         $('<p>').text('Marcaciones encontradas').addClass('text-main mb-0')
                     ).addClass('list-group-item')
                 ).append(
-                    $('<li>').append(table).addClass('list-group-item')
+                    $('<li>').append(table).addClass('list-group-item').css({
+                        'overflow-x': 'auto',
+                        'width': '100%'
+                    })
                 );
+                $('#xls-export').fadeIn(150);
             }
             function cargaListaMarcaciones(event) {
                 event.preventDefault();
@@ -128,6 +184,13 @@
                     }
                 });
             }
+            function exportarXls(event) {
+                event.preventDefault();
+                $('#table-export').tableExport({
+                    fileName: 'reporte_marcaciones.xlsx',
+                    type: 'xlsx'
+                });
+            }
             // go!
             $(_ => {
                 $('#f-desde').datepicker({
@@ -147,6 +210,7 @@
                 $('#menu-reportes').collapse('show')
                 $('#reportes-marcaciones').addClass('active');
                 $('#f-form').on('submit', cargaListaMarcaciones);
+                $('#xls-export').on('click', exportarXls);
             });
         </script>
     </body>

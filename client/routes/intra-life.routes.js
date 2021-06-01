@@ -97,6 +97,10 @@ const router = express.Router();
     router.post('/lista-asistentes', LifeController.AsistentesEvento);
     router.post('/genera-qr', LifeController.CargaQrEvento);
     router.post('/send-sms', LifeController.EnviarSms);
+    // edicion de usuarios
+    router.get('/info-eduser', LifeController.InfoEdicionUsuario);
+    router.get('/combo-puestos', LifeController.ComboPuestosPorArea);
+    router.post('/confirma-edicion-usuario', LifeController.ActualizaDatosUsuario);
     //
     router.get('/prueba-email', LifeController.PruebaMail);
     router.get('/prueba-fcm', LifeController.PruebaFcm);

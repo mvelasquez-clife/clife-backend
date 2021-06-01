@@ -3,6 +3,18 @@ const router = express.Router();
 
 const WsController = require('./../controllers/ws.controller');
 
+    // vistas ws 17-02-2021
+    router.get('/', WsController.Home);
+    router.get('/carga-depositos', WsController.CargaDepositos);
+    router.post('/carga-depositos/upload', WsController.UploadArchivoDeposito);
+    router.get('/pedidos-realizados', WsController.ListaPedidosRealizados);
+    router.get('/pedidos-realizados/lista', WsController.CargaPedidosRealizados);
+    router.get('/datos-pedido', WsController.DatosPedido);
+    router.get('/stock-productos', WsController.VerStockProductos);
+    router.get('/stock-productos/carga-stocks', WsController.KardexProductos);
+    router.get('/lista-precios', WsController.VerListaPrecios);
+    router.get('/lista-precios/ver-lista-precios', WsController.CargaListaPrecios);
+    // primeros
     router.get('/rg-usr-alv', WsController.RegistraUsuario);
     router.get('/obtener-token', WsController.ObtenerToken);
     router.get('/lista-precios', WsController.ListaPrecios);
