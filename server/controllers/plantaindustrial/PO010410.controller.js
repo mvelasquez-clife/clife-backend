@@ -234,7 +234,7 @@ const po010410Controller = {
                 res.send({ state: 'error', error_conexion: err.stack });
                 return;
             }
-            const query = "select * from table (pack_new_especificacion.f_list_historial(:x_empresa,:x_espec,:x_version))";
+            const query = "select co_numdoc,nu_version_doc,fe_registro,de_observacion,nom_usuario,co_tipodoc from table (pack_new_especificacion.f_list_historial(:x_empresa,:x_espec,:x_version))";
             
             const params = {
                 x_empresa: {val : empresa},
@@ -1755,6 +1755,33 @@ mostrarespecreporten2: async (request, response) => {
                 x_empresa: {val : empresa},
                 x_espec: {val : especificacion},
                 x_version: {val : version}
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(result.rows.length > 0 ? xmlParser.renderXml(result.rows) : xmlParser.renderXml([{ CO_NUMDOC: 'No se encontraron coincidencias' }]));
+            });
+        });
+    },
+
+    mostrarespecObservadas: (req, res) => { 
+            
+        const {empresa,grupo} = req.params;  
+        
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "select co_numdoc,nu_version_doc,st_estado,de_observacion,fe_registro,nom_usuario from table (pack_new_especificacion.f_list_espec_observadas(:x_empresa,:x_grupo))";
+            
+            const params = {
+                x_empresa: {val : empresa},
+                x_grupo: {val : grupo},
             };
             conn.execute(query, params, responseParams, (error, result) => {
                 conn.close();

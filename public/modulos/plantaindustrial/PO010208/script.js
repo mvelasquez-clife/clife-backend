@@ -156,12 +156,12 @@ Inicio = () => {
     maingrid = mainLayout_register.cells('a').attachGrid();     
     maingrid.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/");
     maingrid.setIconsPath('/assets/images/icons/');
-    maingrid.setHeader(',,NOMBRE ESPECIFICACIÓN, COD.ESPECIFICACIÓN,VERSION,VIGENCIA,FEC.CREACION,FEC.REVISA,FE.APRUEBA,NOM.CREACION,NOM.REVISA,NOM.APRUEBA,NOM.PROVEEDOR');
-    maingrid.setInitWidths('40,40,600,150,100,0,150,0,0,470,0,0,0');
-    maingrid.setColAlign('center,center,left,center,center,center,center,center,center,left,left,left,left');
-    maingrid.setColumnIds(",,despec,ccespec,version"); 
-    maingrid.setColTypes('img,img,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro');    
-    maingrid.attachHeader(",,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter"); 
+    maingrid.setHeader(',NOMBRE ESPECIFICACIÓN, COD.ESPECIFICACIÓN,VERSION,VIGENCIA,FEC.CREACION,FEC.REVISA,FE.APRUEBA,NOM.CREACION,NOM.REVISA,NOM.APRUEBA,NOM.PROVEEDOR');
+    maingrid.setInitWidths('40,600,150,100,0,150,0,0,470,0,0,0');
+    maingrid.setColAlign('center,left,center,center,center,center,center,center,left,left,left,left');
+    maingrid.setColumnIds(",despec,ccespec,version"); 
+    maingrid.setColTypes('img,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro');    
+    maingrid.attachHeader(",#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter"); 
     maingrid.init();     
     mainLayout_register.cells('a').progressOn();  
     maingrid.load( BASE_URL + 'PO010208/mostrar-especificacion/'+usrJson.empresa).then(function (text) {
@@ -208,7 +208,8 @@ toolbarOnhist  = async (id) => {
     switch (id) {
         case 'b_guardar':
             var obsv = form_observ.getItemValue('_drt_observ');
-            //guardarhistorial(sel.cod,sel.vers,obsv);
+            sel = maingrid.getRowData(maingrid.getSelectedRowId());
+            guardarhistorial(sel.ccespec,sel.version,obsv);
             break;  
         case 'b_close':
             Wind_.window("wbuscar").close();
@@ -219,23 +220,25 @@ toolbarOnhist  = async (id) => {
     }
 };
 
-guardarhistorial = () => {   
+guardarhistorial = (especificacion,version,observacion) => {   
     dhtmlx.confirm("¿Está seguro?", function (result) {});
-    // params = {
-    //     empresa: usrJson.empresa,
-    //     usuario: usrJson.codigo,
-    //     especificacion: especificacion,
-    //     version:version,
-    //     observacion: observacion
-    // };    
-    // $.post(BASE_URL + "PO010410/guardar-historial", params, function (res) {
-    //     if (res.state=='success'){
-    //         Swal.fire('Bien!', res.message, 'success');
-    //         cargarHistorial(especificacion,version,'Por Aprobar'); 
-    //     } else {
-    //         Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'No se guardo el registro :' + res.message });
-    //     }
-    // }, "json");
+    params = {
+        empresa: usrJson.empresa,
+        usuario: usrJson.codigo,
+        especificacion: especificacion,
+        version:version,
+        observacion: observacion
+    };    
+    console.log(params);
+    $.post(BASE_URL + "PO010208/guardar-historial", params, function (res) {
+        if (res.state=='success'){
+            Swal.fire('Bien!', res.message, 'success');
+            Wind_.window("wbuscar").close();
+            mostrarNsoc(); 
+        } else {
+            Swal.fire({ type: 'error', title: 'Algo salió mal...', text: 'No se guardo el registro :' + res.message });
+        }
+    }, "json");
 };
 
 iniciotabs= () => {
@@ -963,7 +966,7 @@ OnClicktoolbar= async (id) => {
         var form_cosm = myform_nso.getItemValue('_drt_formacosmetica');
         var espec = myform_nso.getItemValue('_drt_esp');
         var version = myform_nso.getItemValue('_drt_vers');      
-        if (nsoc.length==0||myform_nso.getItemValue('_drt_tuv_com')==null||myform_nso.getItemValue('_drt_tuv_prod')==null||espec.length==0||myform_nso.getItemValue('_drt_fechadesde')==null||myform_nso.getItemValue('_drt_fechahasta')==null||nombre_nso.length==0||form_cosm.length==0){            
+        if (nsoc.length==0||espec.length==0||myform_nso.getItemValue('_drt_fechadesde')==null||myform_nso.getItemValue('_drt_fechahasta')==null||nombre_nso.length==0||form_cosm.length==0){            
             dhtmlx.confirm("Debe llenar el formulario", function (result) {
             });
         }else{

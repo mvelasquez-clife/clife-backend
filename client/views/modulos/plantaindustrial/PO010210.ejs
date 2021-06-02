@@ -74,11 +74,52 @@
                 { type: "input",offsetLeft: 50,labelWidth: 100, inputWidth: 200, name: "_ra_usu_reg", label: 'usuario Reg.:'}, { type: "newcolumn" },
             ],},
             ];  
+
+            var f_nuevo_proyect = [
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,offsetLeft: 470, position: "label-left", width: 200, list: [                       
+                    {type: "input",readonly: false, style:"background-color:rgb(174, 214, 241);width: 200;height:120px,font-family: Arial; font-size: 11pt;text-align:center;",position:"input-right", offsetTop: 20, offsetLeft: 1,labelWidth: 140, inputWidth: 140, name: "pry_nro"}, { type: "newcolumn" },         
+                { type: "newcolumn" },] },            
+                {type: "block", blockOffset: 0, position: "label-left", width: 700, list: [                 
+                    { type: "input",disabled: false, offsetLeft: 40,labelWidth: 70, inputWidth: 500, name: "pry_nombre", offsetTop: 20, label: 'Nombre:'}, { type: "newcolumn" },        
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0, position: "label-left", width: 700, list: [
+                    { type: "input", name: 'pry_desc', labelWidth: 70, readonly: false, rows:4 ,label: 'Descripción:', offsetLeft: 40, inputWidth: 500 }, { type: "newcolumn" },                                  
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0, position: "label-left", width: 700, list: [                       
+                    { type: "input", name: 'pry_obj', labelWidth: 70, readonly: false, rows:4 , label: 'Objetivos:', offsetLeft: 40, inputWidth: 500 }, { type: "newcolumn" },                                 
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0, position: "label-left", width: 700, list: [
+                    { type: "input",readonly: true, offsetLeft: 40,labelWidth: 70, inputWidth: 100, name: "pry_cod_usuario", label: 'Responsable: '}, { type: "newcolumn" },
+                    { type: "input",readonly: true, offsetLeft: 0,labelWidth: 70, inputWidth: 335, name: "pry_usuario"}, { type: "newcolumn" },
+                            { type: "button", name: 'pry_buscar_usuario', disabled: true, offsetLeft: 5, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },  
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40, position: "label-left", width: 700, list: [
+                    { type: "calendar", readonly: false, offsetLeft: 0,labelWidth: 70, inputWidth: 100, name: "pry_inicio", label: 'Fecha Inicio: '}, { type: "newcolumn" },   
+                    { type: "calendar", readonly: false, offsetLeft: 50,labelWidth: 70, inputWidth: 100, name: "pry_fin", label: 'Fecha Fin: '}, { type: "newcolumn" },   
+                    ],},
+                { type: "newcolumn" },
+                    {type: "fieldset", label: "Producto",offsetLeft: 40,  offsetTop: 10, inputWidth: 120, list:[
+                        {type: "block", blockOffset: 0, position: "label-left", width: 530, list: [                           
+                            { type: "checkbox",checked: false,disabled: false, offsetLeft: 0,labelWidth: 60, inputWidth: 100, name: "pry_existe", label: 'Existe?'}, { type: "newcolumn" },
+                            { type: "button", name: 'pry_buscar_prod', disabled: false, offsetLeft: 0, offsetTop: 0, value: '<i class="fas fa-search"></i>' }, { type: "newcolumn" },  
+                        ]},
+                        {type: "block", blockOffset: 0, position: "label-left", width: 530, list: [                           
+                            { type: "input",readonly: true, offsetLeft: 0,labelWidth: 70, inputWidth: 130, name: "pry_cod_prod", label: 'Desc.Producto:'}, { type: "newcolumn" }, 
+                            { type: "input",readonly: true, offsetLeft: 0,labelWidth: 60, inputWidth: 300, name: "pry_desc_prod"}, { type: "newcolumn" }   
+                        ]}
+                ]},    
+            ]; 
+
             mainLayout_inicio = new dhtmlXLayoutObject(document.body, '1C'); 
             mainLayout_inicio.cells('a').hideHeader();
             tabbarinicio = mainLayout_inicio.cells('a').attachTabbar();
-            tabbarinicio.addTab('__registrar', 'Registro de Artes', null, null, true);
-            tabbarinicio.addTab('__revisar', 'Revisión de Artes', null, null, false);
+            // tabbarinicio.addTab('__registrar', 'Registro de Proyectos', null, null, true);
+            tabbarinicio.addTab('__buscar', 'Control de artes', null, null, true);
             tabbarinicio.attachEvent ( "onSelect" , inicioOnSelect);         
             Inicio();
         </script>
