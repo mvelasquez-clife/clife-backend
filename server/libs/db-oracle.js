@@ -11,7 +11,8 @@ const types = {
     number: oracledb.NUMBER,
     string: oracledb.STRING,
     cursor: oracledb.CURSOR,
-    date : oracledb.DATE
+    date : oracledb.DATE,
+    clob: oracledb.CLOB
 };
 
 module.exports = {
@@ -33,7 +34,6 @@ module.exports = {
                         error: err.message
                     });
                 }
-console.log('db-oracle', query, parametros);
                 conn.execute(query, parametros, responseParams, (error, result) => {
                     if (error) {
                         console.error(error);
@@ -116,15 +116,21 @@ console.log('db-oracle', query, parametros);
             let outBinds = result.outBinds;
             for (let key in outBinds) {
                 let resultSet = outBinds[key];
-                if (typeof outBinds[key] == 'object') {
-                    let array = [];
-                    while (fila = await resultSet.getRow()) {
-                        array.push(fila);
-                    }
-                    output[key] = array;
-                }
-                else {
-                    output[key] = outBinds[key];
+                // if (typeof outBinds[key] == 'object') {
+                switch (parametros[key].type) {
+                    case oracledb.CURSOR:
+                        let array = [];
+                        while (fila = await resultSet.getRow()) {
+                            array.push(fila);
+                        }
+                        output[key] = array;
+                        break;
+                    case oracledb.CLOB:
+                        output[key] = await outBinds[key].getData();
+                        break;
+                    default:
+                        output[key] = outBinds[key];
+                        break;
                 }
             }
             connection.close();

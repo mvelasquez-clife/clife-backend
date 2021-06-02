@@ -13,6 +13,7 @@ const WsController = require('./../controllers/ws.controller');
     router.get('/stock-productos', WsController.VerStockProductos);
     router.get('/stock-productos/carga-stocks', WsController.KardexProductos);
     router.get('/lista-precios', WsController.VerListaPrecios);
+    router.get('/lista-precios/ls-listas', WsController.DetalleListas);
     router.get('/lista-precios/ver-lista-precios', WsController.CargaListaPrecios);
     // primeros
     router.get('/rg-usr-alv', WsController.RegistraUsuario);
@@ -37,5 +38,21 @@ const WsController = require('./../controllers/ws.controller');
     // ultra nuevos 19-06-2020
     router.get('/tipos-cobro', WsController.TiposCobro);
     router.put('/buscar-pedido', WsController.MatchPedido);
+    router.get('/planillas-cobranza', WsController.VerPlanillasCobranza);
+    router.get('/lista-planillas', WsController.ListaPlanillas);
+    router.get('/planillas-cobranza/detalle-planilla', WsController.DetallePlanilla);
+    router.get('/ingreso-pedidos', WsController.IngresoManualPedidos);
+    router.get('/ingreso-pedidos-extendido', WsController.IngresoManualPedidosExtend);
+    router.get('/verifica-orderid', WsController.VerificaOrderId);
+    router.get('/datos-lista-precios', WsController.DatosListaPrecios);
+    router.get('/carga-datos-producto', WsController.CargaDatosProducto);
+    // reporte de productos
+    router.get('/reporte-productos', WsController.ReportePedidos);
+    router.get('/carga-datos-reporte', WsController.CargaDatosProducto);
+    // reporte de ventas
+    router.get('/reporte-ventas', WsController.ReporteVentas);
+    router.get('/carga-datos-repventas', WsController.CargaDatosVentas);
+    router.get('/xls-repventas', WsController.XlsReporteVentas);
+    router.get('/exportar-lista-precios', WsController.XlsListaPrecios);
 
 module.exports = router;

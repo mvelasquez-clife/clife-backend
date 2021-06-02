@@ -1,1181 +1,1388 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Corporacion Life</title>
+        <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.css">
+        <link rel='stylesheet prefetch' href='http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'>
+        <style>
+            body {
+                padding-top: 60px;
+            }
+            .navbar-brand {
+                background-image: url('/assets/images/extranet/clife-logo-light.png');
+                background-size: auto 30px;
+                background-repeat: no-repeat;
+                padding-left: 36px;
+                font-size: 1.5rem;
+                line-height: 1.75rem;
+                height: 30px;
+                width: 224px;
+            }
+            .ip-cant {
+                width: 60px;
+            }
+            td, th {vertical-align: middle !important;}
+            .ptext{min-width: 160px;}
+            .th-hoverable{cursor:pointer}
+            .th-hoverable:hover{text-decoration:underline}
+            .trs-solicita{background-color:rgba(255,250,230,.75)}
+            .trs-despacho{background-color:rgba(230,245,230,.75)}
+            #btn-agregar, #btn-eliminar, #btn-cierre, #btn-editar {display:none}
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-cprimary">
+            <a class="navbar-brand" href="/extranet">Corporacion Life</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <h5 class="text-light font-weight-light mb-0">Pedido <span class="font-weight-normal sp-pedido">Espere...</span></h5>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="nav-dropdown" role="button" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">Opciones</a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="nav-dropdown">
+                            <a class="dropdown-item" href="#">Mis datos</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-logout">Cerrar sesión</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="/extranet">Volver</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row d-lg-none">
+                <div class="col">
+                    <h3 class="mb-3">Pedido N° <span class="font-italic text-primary sp-pedido">Espere...</span></h3>
+                </div>
+            </div>
+            <div id="dv-cabecera" class="row justify-content-center">
+                <div class="col-auto">
+                    <div id="head-container" class="alert bg-light">
+                        <h5 class="font-weight-light mb-2">Cliente: <span class="font-weight-normal" id="nombre-cliente">Cargando datos...</span></h5>
+                        <!-- -->
+                        <span id="sp-status">Recuperando datos del pedido...</span>
+                        <a href="#" class="btn btn-primary m-1 dropdown-toggle" id="btn-agregar" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-plus"></i> Agregar productos</a>
+                        <div class="dropdown-menu" aria-labelledby="btn-agregar">
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-lista"><i class="fa fa-list"></i> Desde el catálogo de productos</a>
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-plantilla"><i class="fa fa-upload"></i> Utilizando una plantilla</a>
+                        </div>
+                        <a href="#" class="btn btn-danger m-1" id="btn-eliminar"><i class="fa fa-remove"></i> Quitar productos</a>
+                        <!--a href="#" class="btn btn-info m-1" id="btn-itsfree" data-toggle="modal" data-target="#modal-permiso"><i class="fa fa-remove"></i> Título gratuito</a-->
+                        <a href="#" class="btn btn-success ml-5 mr-1" data-toggle="modal" data-target="#modal-cierre" id="btn-cierre"><i class="fa fa-check"></i> Cerrar pedido</a>
+                        <a href="#" class="btn btn-success ml-5 mr-1" id="btn-editar"><i class="fa fa-edit"></i> Abrir el pre-pedido</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col" id="container"></div>
+            </div>
+            <div style="height:0px;overflow:hidden;">
+                <table id="table-export">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Codigo EAN</th>
+                            <th>Producto</th>
+                            <th>Precio Venta</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+                            <th>Unidades/Caja</th>
+                            <th>Cajas</th>
+                            <th>Palets</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- modals -->
+        <!-- modal logout -->
+        <div id="modal-logout" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger">Cerrar sesión</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>¿Desea cerrar la sesión? Tendrá que ingresar sus credenciales nuevamente la próxima vez</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                        <a href="/extranet/logout" class="btn btn-danger">Cerrar sesión</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal lista-productos -->
+        <div id="modal-lista" class="modal fade bd-example-modal-xl" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-primary">Agregar Productos</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="form-filter">
+                            <div class="form-group">
+                                <input type="text" class="form-control text-uppercase" id="form-query" placeholder="Puede filtrar los productos por EAN o nombre">
+                            </div>
+                        </form>
+                        <div class="row">
+                            <div class="col" id="lista-container"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary"><i class="fa fa-plus"></i> Agregar los productos</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal plantilla -->
+        <div id="modal-plantilla" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-success">Carga masiva</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="form-carga-masiva" action="/extranet/carga-xlsx" method="post" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="fl-plantilla">Adjunte una plantilla en formato xls para agregar productos de manera masiva.</label>
+                                <input type="file" class="form-control-file" id="fl-plantilla" name="plantilla" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                            </div>
+                            <div class="form-group">
+                                <p class="text-dark">Puede descargar una plantilla de muestra haciendo clic en el <a href="/files/formato.xlsx" download="formato.xlsx">siguiente enlace</a>.</p>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success"><i class="fa fa-upload"></i> Enviar plantilla</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal plantilla -->
+        <div id="modal-cierre" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-success">Cierre del pedido</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-dark mb-2">A continuación, le mostramos el resumen de su pedido</p>
+                        <form>
+                            <div class="form-group row mb-0">
+                                <label for="rp-items" class="col-sm-3 col-form-label text-right pr-2">Nro. items</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control-plaintext font-weight-bold" id="rp-items">
+                                </div>
+                            </div>
+                            <div class="form-group row mb-0">
+                                <label for="rp-subtotal" class="col-sm-3 col-form-label text-right pr-2">Subtotal</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control-plaintext font-weight-bold" id="rp-subtotal">
+                                </div>
+                            </div>
+                            <div class="form-group row mb-0">
+                                <label for="rp-cajas" class="col-sm-3 col-form-label text-right pr-2">Cajas</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control-plaintext font-weight-bold" id="rp-cajas">
+                                </div>
+                            </div>
+                            <div class="form-group row mb-0">
+                                <label for="rp-pallets" class="col-sm-3 col-form-label text-right pr-2">Pallets</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control-plaintext font-weight-bold" id="rp-pallets">
+                                </div>
+                            </div>
+                        </form>
+                        <p class="text-dark mb-2">Si ya no desea agregar más items, utilice el botón de <span class="text-success font-weight-bold">Cerrar el pedido</span>, y procesaremos su solicitud lo más pronto posible.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success"><i class="fa fa-check"></i> Cerrar el pedido</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal clave titulo gratuito -->
+        <div id="modal-permiso" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-success">Se requiere una contraseña</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-3">
+                                <img src="/assets/images/icons/ic-locked.svg" class="img-fluid">
+                            </div>
+                            <div class="col-9">
+                                <form>
+                                    <div class="form-group">
+                                        <label for="mp-clave">Ingrese la clave para marcar los productos seleccionados como título gratuito.</label>
+                                        <input type="password" class="form-control form-control-sm" id="mp-clave" placeholder="Ingrese la clave aquí">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success" id="mp-submit"><i class="fa fa-upload"></i> Continuar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal solicitud de credito -->
+        <div id="modal-solcrd" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-success">Solicitar crédito</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col px-5">
+                                <form>
+                                    <div class="form-group">
+                                        <label for="tbimporte" class="col-xs-4 control-label">Importe</label>
+                                        <div class="col-xs-8">
+                                            <input type="number" class="form-control" id="solcrd-importe" placeholder="Importe solicitado" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tbPagoSem" class="col-xs-4 control-label">Pago inicial</label>
+                                        <div class="col-xs-8">
+                                            <input type="number" class="form-control" id="solcrd-inicial" placeholder="Importe inicial" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cbFzaVta" class="col-xs-4 control-label">Fuerza de venta</label>
+                                        <div class="col-xs-8">
+                                            <input type="hidden" id="solcrd-fventa"/>
+                                            <input type="text" class="form-control" id="solcrd-nfventa" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cbCondPago" class="col-xs-4 control-label">Condición Pago</label>
+                                        <div class="col-xs-8">
+                                            <select name="cbCondPago" id="solcrd-cpago" class="form-control"></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tbObs" class="col-xs-4 control-label">Observaciones</label>
+                                        <div class="col-xs-8">
+                                            <textarea class="form-control" rows="3" id="solcrd-observaciones" style="resize:none;"></textarea>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success" id="solcrd-submit"><i class="fa fa-magic"></i> Solicitar crédito</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal resultados -->
+        <div id="modal-result" class="modal fade" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modal title</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Código</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Resultado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="res-tbody"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <th></th>
+                                    <th colspan="2">Total</th>
+                                    <th id="res-total"></th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- scripts -->
+        <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+        <script src="/assets/bootstrap/js/popper.min.js"></script>
+        <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="/assets/vendor/tableexport/lib/js-xlsx/xlsx.core.min.js"></script>
+        <script type="text/javascript" src="/assets/vendor/tableexport/lib/FileSaver/FileSaver.min.js"></script> 
+        <script type="text/javascript" src="/assets/vendor/tableexport/lib/html2canvas/html2canvas.min.js"></script>
+        <script type="text/javascript" src="/assets/vendor/tableexport/tableExport.js"></script>
+        <script>
+            let sesdata = JSON.parse('<%-sesion %>');
+            let CodigoPedido = '<%=pedido %>';
+            let Pedido, Cliente, DetallePedido, Credito;
+            let catalogo = [];
+            let totales = {
+                cantidad: 0,
+                cajas: 0,
+                pallets: 0,
+                importe: 0
+            };
+            var requiereRevision;
+            var stocks = [];
+            var mensajes = JSON.parse('<%-mensajes %>');
+    var pallets;
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Corporacion Life</title>
-    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.css">
-    <link rel='stylesheet prefetch' href='http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'>
-    <style>
-        body {
-            padding-top: 60px;
-        }
-        .navbar-brand {
-            background-image: url('/assets/images/extranet/clife-logo-light.png');
-            background-size: auto 30px;
-            background-repeat: no-repeat;
-            padding-left: 36px;
-            font-size: 1.5rem;
-            line-height: 1.75rem;
-            height: 30px;
-            width: 224px;
-        }
-        .ip-cant {
-            width: 60px;
-        }
-        td, th {vertical-align: middle !important;}
-        .ptext{min-width: 160px;}
-        .th-hoverable{cursor:pointer}
-        .th-hoverable:hover{text-decoration:underline}
-        #btn-agregar, #btn-eliminar, #btn-cierre, #btn-editar {display:none}
-    </style>
-</head>
-
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-cprimary">
-        <a class="navbar-brand" href="/extranet">Corporacion Life</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <h5 class="text-light font-weight-light mb-0">Pedido <span class="font-weight-normal sp-pedido">Espere...</span></h5>
-                </li>
-            </ul>
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="nav-dropdown" role="button" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false">Opciones</a>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="nav-dropdown">
-                        <a class="dropdown-item" href="#">Mis datos</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-logout">Cerrar sesión</a>
-                    </div>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-light" href="/extranet">Volver</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-    <div class="container">
-        <div class="row d-lg-none">
-            <div class="col">
-                <h3 class="mb-3">Pedido N° <span class="font-italic text-primary sp-pedido">Espere...</span></h3>
-            </div>
-        </div>
-        <div id="dv-cabecera" class="row justify-content-center">
-            <div class="col-auto">
-                <div id="head-container" class="alert bg-light">
-                    <h5 class="font-weight-light mb-2">Cliente: <span class="font-weight-normal" id="nombre-cliente">Cargando datos...</span></h5>
-                    <!-- -->
-                    <span id="sp-status">Recuperando datos del pedido...</span>
-                    <a href="#" class="btn btn-primary m-1 dropdown-toggle" id="btn-agregar" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-plus"></i> Agregar productos</a>
-                    <div class="dropdown-menu" aria-labelledby="btn-agregar">
-                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-lista"><i class="fa fa-list"></i> Desde el catálogo de productos</a>
-                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-plantilla"><i class="fa fa-upload"></i> Utilizando una plantilla</a>
-                    </div>
-                    <a href="#" class="btn btn-danger m-1" id="btn-eliminar"><i class="fa fa-remove"></i> Quitar productos</a>
-                    <a href="#" class="btn btn-info m-1" id="btn-itsfree" data-toggle="modal" data-target="#modal-permiso"><i class="fa fa-remove"></i> Título gratuito</a>
-                    <a href="#" class="btn btn-success ml-5 mr-1" data-toggle="modal" data-target="#modal-cierre" id="btn-cierre"><i class="fa fa-check"></i> Cerrar pedido</a>
-                    <a href="#" class="btn btn-success ml-5 mr-1" id="btn-editar"><i class="fa fa-edit"></i> Abrir el pre-pedido</a>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col" id="container"></div>
-        </div>
-        <div style="height:0px;overflow:hidden;">
-            <table id="table-export">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Codigo EAN</th>
-                        <th>Producto</th>
-                        <th>Precio Venta</th>
-                        <th>Cantidad</th>
-                        <th>Subtotal</th>
-                        <th>Unidades/Caja</th>
-                        <th>Cajas</th>
-                        <th>Palets</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-    <!-- modals -->
-    <!-- modal logout -->
-    <div id="modal-logout" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-danger">Cerrar sesión</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p>¿Desea cerrar la sesión? Tendrá que ingresar sus credenciales nuevamente la próxima vez</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-                    <a href="/extranet/logout" class="btn btn-danger">Cerrar sesión</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- modal lista-productos -->
-    <div id="modal-lista" class="modal fade bd-example-modal-xl" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-primary">Agregar Productos</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="form-filter">
-                        <div class="form-group">
-                            <input type="text" class="form-control text-uppercase" id="form-query" placeholder="Puede filtrar los productos por EAN o nombre">
-                        </div>
-                    </form>
-                    <div class="row">
-                        <div class="col" id="lista-container"></div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary"><i class="fa fa-plus"></i> Agregar los productos</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- modal plantilla -->
-    <div id="modal-plantilla" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-success">Carga masiva</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="form-carga-masiva" action="/extranet/carga-xlsx" method="post" enctype="multipart/form-data">
-                        <div class="form-group">
-                            <label for="fl-plantilla">Adjunte una plantilla en formato xls para agregar productos de manera masiva.</label>
-                            <input type="file" class="form-control-file" id="fl-plantilla" name="plantilla" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
-                        </div>
-                        <div class="form-group">
-                            <p class="text-dark">Puede descargar una plantilla de muestra haciendo clic en el <a href="/files/formato.xlsx" download="formato.xlsx">siguiente enlace</a>.</p>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success"><i class="fa fa-upload"></i> Enviar plantilla</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- modal plantilla -->
-    <div id="modal-cierre" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-success">Cierre del pedido</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-dark mb-2">A continuación, le mostramos el resumen de su pedido</p>
-                    <form>
-                        <div class="form-group row mb-0">
-                            <label for="rp-items" class="col-sm-3 col-form-label text-right pr-2">Nro. items</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control-plaintext font-weight-bold" id="rp-items">
-                            </div>
-                        </div>
-                        <div class="form-group row mb-0">
-                            <label for="rp-subtotal" class="col-sm-3 col-form-label text-right pr-2">Subtotal</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control-plaintext font-weight-bold" id="rp-subtotal">
-                            </div>
-                        </div>
-                        <div class="form-group row mb-0">
-                            <label for="rp-cajas" class="col-sm-3 col-form-label text-right pr-2">Cajas</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control-plaintext font-weight-bold" id="rp-cajas">
-                            </div>
-                        </div>
-                        <div class="form-group row mb-0">
-                            <label for="rp-pallets" class="col-sm-3 col-form-label text-right pr-2">Pallets</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control-plaintext font-weight-bold" id="rp-pallets">
-                            </div>
-                        </div>
-                    </form>
-                    <p class="text-dark mb-2">Si ya no desea agregar más items, utilice el botón de <span class="text-success font-weight-bold">Cerrar el pedido</span>, y procesaremos su solicitud lo más pronto posible.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success"><i class="fa fa-check"></i> Cerrar el pedido</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- modal clave titulo gratuito -->
-    <div id="modal-permiso" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-success">Se requiere una contraseña</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-3">
-                            <img src="/assets/images/icons/ic-locked.svg" class="img-fluid">
-                        </div>
-                        <div class="col-9">
-                            <form>
-                                <div class="form-group">
-                                    <label for="mp-clave">Ingrese la clave para marcar los productos seleccionados como título gratuito.</label>
-                                    <input type="password" class="form-control form-control-sm" id="mp-clave" placeholder="Ingrese la clave aquí">
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" id="mp-submit"><i class="fa fa-upload"></i> Continuar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- modal solicitud de credito -->
-    <div id="modal-solcrd" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-success">Solicitar crédito</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col px-5">
-                            <form>
-                                <div class="form-group">
-                                    <label for="tbimporte" class="col-xs-4 control-label">Importe</label>
-                                    <div class="col-xs-8">
-                                        <input type="number" class="form-control" id="solcrd-importe" placeholder="Importe solicitado" />
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="tbPagoSem" class="col-xs-4 control-label">Pago inicial</label>
-                                    <div class="col-xs-8">
-                                        <input type="number" class="form-control" id="solcrd-inicial" placeholder="Importe inicial" />
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="cbFzaVta" class="col-xs-4 control-label">Fuerza de venta</label>
-                                    <div class="col-xs-8">
-                                        <input type="hidden" id="solcrd-fventa"/>
-                                        <input type="text" class="form-control" id="solcrd-nfventa" readonly />
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="cbCondPago" class="col-xs-4 control-label">Condición Pago</label>
-                                    <div class="col-xs-8">
-                                        <select name="cbCondPago" id="solcrd-cpago" class="form-control"></select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="tbObs" class="col-xs-4 control-label">Observaciones</label>
-                                    <div class="col-xs-8">
-                                        <textarea class="form-control" rows="3" id="solcrd-observaciones" style="resize:none;"></textarea>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" id="solcrd-submit"><i class="fa fa-magic"></i> Solicitar crédito</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- modal resultados -->
-    <div id="modal-result" class="modal fade" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Modal title</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Código</th>
-                                <th>Producto</th>
-                                <th>Cantidad</th>
-                                <th>Resultado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="res-tbody"></tbody>
-                        <tfoot>
-                            <tr>
-                                <th></th>
-                                <th colspan="2">Total</th>
-                                <th id="res-total"></th>
-                                <th></th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- scripts -->
-    <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
-    <script src="/assets/bootstrap/js/popper.min.js"></script>
-    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/assets/vendor/tableexport/lib/js-xlsx/xlsx.core.min.js"></script>
-    <script type="text/javascript" src="/assets/vendor/tableexport/lib/FileSaver/FileSaver.min.js"></script> 
-    <script type="text/javascript" src="/assets/vendor/tableexport/lib/html2canvas/html2canvas.min.js"></script>
-    <script type="text/javascript" src="/assets/vendor/tableexport/tableExport.js"></script>
-    <script>
-        let sesdata = JSON.parse('<%-sesion %>');
-        let CodigoPedido = '<%=pedido %>';
-        let Pedido, Cliente, DetallePedido, Credito;
-        let catalogo = [];
-        let totales = {
-            cantidad: 0,
-            cajas: 0,
-            pallets: 0,
-            importe: 0
-        };
-        var requiereRevision;
-        var stocks = [];
-        var mensajes = JSON.parse('<%-mensajes %>');
-var pallets;
-
-        CargarDatosPedido = async () => {
-            let result;
-            try {
-                result = await $.ajax({
-                    url: '/extranet/datos-pedido',
-                    method: 'post',
-                    data: { pedido: CodigoPedido },
-                    dataType: 'json'
-                });
-                if (result.error) {
-                    alert(result.error);
-//                    location.href = '/extranet';
-                    return;
+            CargarDatosPedido = async () => {
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/extranet/datos-pedido',
+                        method: 'post',
+                        data: { pedido: CodigoPedido },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+    //                    location.href = '/extranet';
+                        return;
+                    }
+                    Pedido = result.pedido;
+                    $('.sp-pedido').html(Pedido.codigo);
+                    Cliente = result.cliente;
+                    document.getElementById('nombre-cliente').innerHTML = Cliente.nombre;
+                    DetallePedido = Pedido.productos;
+                    if (sesdata.codigo != Pedido.cliente) {
+                        $('#btn-editar').remove();
+                    }
+                    if (Pedido.vigencia != 'Vigente' && Pedido.vigencia != 'Pendiente') {
+                        $('#btn-agregar').prop('disabled', true);
+                    }
+                    if (Pedido.vigencia == 'Cerrado') {
+                        $('#btn-agregar').remove();
+                        $('#btn-eliminar').remove();
+                        $('#btn-cierre').remove();
+                        $('#btn-editar').show();
+                        document.getElementById('sp-status').innerHTML = 'El pre-pedido está cerrado';
+                    }
+                    if (Pedido.vigencia == 'Pendiente') {
+                        $('#btn-agregar').show();
+                        $('#btn-eliminar').show();
+                        $('#btn-cierre').show();
+                        $('#btn-editar').remove();
+                        $('#sp-status').hide();
+                    }
+                    requiereRevision = result.revision;
+                    EscribirListaProductos();
+                    if (requiereRevision == 'S') {
+                        // olakease
+                        $('#btn-cierre').remove();
+                        $('#head-container').append(
+                            $('<a>').attr('href', '#').text('Generar pedido').addClass('btn btn-danger ml-5 mr-1').prepend(
+                                $('<i>').addClass('fa fa-magic mr-1')
+                            ).on('click', generaPedidoAlmacen)
+                        );
+                        cargaStockProductos();
+                    }
                 }
-                Pedido = result.pedido;
-                $('.sp-pedido').html(Pedido.codigo);
-                Cliente = result.cliente;
-                document.getElementById('nombre-cliente').innerHTML = Cliente.nombre;
-                DetallePedido = Pedido.productos;
-                if (Pedido.vigencia != 'Vigente' && Pedido.vigencia != 'Pendiente') {
-                    $('#btn-agregar').prop('disabled', true);
+                catch (err) {
+                    alert(err);
                 }
-                if (Pedido.vigencia == 'Cerrado') {
-                    $('#btn-agregar').remove();
-                    $('#btn-eliminar').remove();
-                    $('#btn-cierre').remove();
-                    $('#btn-editar').show();
-                    document.getElementById('sp-status').innerHTML = 'El pre-pedido está cerrado';
+            }
+            async function generaPedidoAlmacen() {
+                if (window.confirm('Se enviará el pedido al almacén. Ya no podrá modificar las cantidades ni los productos. ¿Desea continuar?')) {
+                    try {
+                        let result = await $.ajax({
+                            url: '/extranet/procesar-pre-pedido',
+                            method: 'post',
+                            data: {
+                                empresa: 11,
+                                prepedido: CodigoPedido
+                            },
+                            dataType: 'json'
+                        });
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        alert(result.pedido);
+                        location.href = '/extranet';
+                    }
+                    catch (err) {
+                        alert(err);
+                    }
                 }
-                if (Pedido.vigencia == 'Pendiente') {
-                    $('#btn-agregar').show();
-                    $('#btn-eliminar').show();
-                    $('#btn-cierre').show();
-                    $('#btn-editar').remove();
-                    $('#sp-status').hide();
+            }
+            async function EditarProducto(event) {
+                event.preventDefault();
+                let a = $(this);
+                let cantidad = window.prompt('¿Cuántas unidades?');
+                if (cantidad != null && cantidad != '') {
+                    // revisa si debo validar
+                    if (requiereRevision == 'S') {
+                        var istock = parseInt(a.data('stock'));
+                        if (cantidad >= istock) {
+                            alert('El stock del producto es insuficiente. Solo se dispone de ' + istock + ' unidad(es) en el almacén.');
+                            return;
+                        }
+                    }
+                    // go
+                    let params = {
+                        pedido: Pedido.codigo,
+                        codigo: a.data('codigo'),
+                        tipo: a.data('tipo'),
+                        difer: a.data('difer'),
+                        cantidad: parseInt(cantidad)
+                    }
+                    // actualizar cantidad
+                    let result;
+                    try {
+                        result = await $.ajax({
+                            url: '/extranet/actualizar-cantidad-producto',
+                            method: 'post',
+                            data: params,
+                            dataType: 'json'
+                        });
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        DetallePedido = result.detalle;
+                        EscribirListaProductos();
+                    }
+                    catch (err) {
+                        alert(err);
+                    }
                 }
-                requiereRevision = result.revision;
-                EscribirListaProductos();
-                if (requiereRevision == 'S') {
-                    // olakease
-                    $('#btn-cierre').remove();
-                    $('#head-container').append(
-                        $('<a>').attr('href', '#').text('Generar pedido').addClass('btn btn-danger ml-5 mr-1').prepend(
-                            $('<i>').addClass('fa fa-magic mr-1')
-                        ).on('click', generaPedidoAlmacen)
+            }
+            function actualizarStockProductos() {
+                var numProductos = stocks.length;
+                for (var i = 0; i < numProductos; i++) {
+                    var iproducto = stocks[i];
+                    var iean = iproducto.ean;
+                    var ipventa = iproducto.pventa;
+                    var istock = iproducto.stock;
+                    var ipromvta = iproducto.cantidad;
+                    let icjsnivel = parseInt(iproducto.cjsnivel);
+                    let iunidcaja = parseInt(iproducto.unidcaja);
+                    let imaxniveles = parseInt(iproducto.maxniveles);
+                    var icantidad = parseInt($('#comprometido-' + iean).parent().data('cantidad'));
+                    var idespachar = parseInt($('#ip-' + iean).data('despachar'));
+                    $('#ip-' + iean).attr('data-stock', istock);
+                    $('#comprometido-' + iean).empty().append(
+                        $('<input>').addClass('form-control ip-comprometido').css('width','75px').attr({
+                            'data-stock': istock,
+                            'data-promvta': ipromvta,
+                            'data-cantidad': icantidad,
+                            'data-ean': iean,
+                            'id': 'ipcomprom-' + iean
+                        }).on('keyup', function () {
+                            var input = $(this);
+                            var comprometido = input.val();
+                            var ipean = input.data('ean');
+                            var stock = input.data('stock');
+                            var promvta = input.data('promvta');
+                            var cantidad = input.data('cantidad');
+                            var ms = promvta > 0 ? ((stock - comprometido) / promvta) : 0;
+                            document.getElementById('ms-' + ipean).innerHTML = ms.toFixed(2);
+                        }).val(0).trigger('keyup')
                     );
-                    cargaStockProductos();
+                    $('#despachar-' + iean).empty().append(
+                        $('<input>').addClass('form-control ip-despachar').css('width','75px').attr({
+                            'data-stock': istock,
+                            'data-promvta': ipromvta,
+                            'data-cantidad': icantidad,
+                            'data-cjsnivel': icjsnivel,
+                            'data-unidcaja': iunidcaja,
+                            'data-niveles': imaxniveles,
+                            'data-ean': iean
+                        }).on('keyup', function () {
+                            var input = $(this);
+                            var despachar = input.val();
+                            var ipean = input.data('ean');
+                            var stock = input.data('stock');
+                            var promvta = input.data('promvta');
+                            var cantidad = input.data('cantidad');
+                            var cjsnivel = input.data('cjsnivel');
+                            var unidcaja = input.data('unidcaja');
+                            var niveles = input.data('niveles');
+                            var comprometido = parseInt(document.getElementById('ipcomprom-' + ipean).value);
+                            var nms = promvta > 0 ? ((stock - comprometido - despachar) / promvta) : 0;
+                            var pendiente = cantidad - despachar;
+                            // calcular palets despacho
+                            let inumcajas = 0, iniveles;
+                            if (unidcaja > 0) {
+                                inumcajas = Math.floor(despachar / unidcaja);
+                                if (despachar % unidcaja > 0) inumcajas++;
+                            }
+                            else inumcajas = 0;
+                            if (cjsnivel > 0) iniveles = inumcajas / cjsnivel;
+                            else iniveles = 0;
+                            if (niveles > 0) paletazos = iniveles / niveles;
+                            else paletazos = 0;
+                            $('#paletsconf-' + ipean).text(paletazos.toFixed(2)).data('paletazos', paletazos);
+                            recalculaPaletazos();
+                            // fin
+                            document.getElementById('nms-' + ipean).innerHTML = nms.toFixed(2);
+                            document.getElementById('pendiente-' + ipean).innerHTML = pendiente.toLocaleString('en-us', {minimumFractionDigits:0, maximumFractionDigits:0});
+                        }).val(idespachar > 0 ? idespachar : icantidad).trigger('keyup')
+                    );
+                    $('#stock-' + iean).text(istock.toLocaleString('en-us', {minimumFractionDigits: 0, maximumFractionDigits: 0})).addClass('font-weight-bold');
+                    $('#promvta-' + iean).text(ipromvta.toLocaleString('en-us', {minimumFractionDigits: 0, maximumFractionDigits: 0})).addClass('font-weight-bold');
                 }
             }
-            catch (err) {
-                alert(err);
+            function recalculaPaletazos() {
+                let filas = $('.td-paletazo');
+                let maximoPaletazos = 0;
+                $.each(filas, function() {
+                    let input = $(this);
+                    let ipaletazo = parseFloat(input.data('paletazos'));
+                    maximoPaletazos += ipaletazo;
+                });
+                document.getElementById('total-paletazos').innerHTML = maximoPaletazos.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2});
             }
-        }
-        async function generaPedidoAlmacen() {
-            if (window.confirm('Se enviará el pedido al almacén. Ya no podrá modificar las cantidades ni los productos. ¿Desea continuar?')) {
+            function cargaStockProductos() {
+                var data = {
+                    eans: '',
+                    prepedido: CodigoPedido,
+                    cliente: Cliente.rucdni
+                };
+                $.ajax({
+                    url: '/extranet/carga-stock-detalle-pedido',
+                    method: 'get',
+                    data: data,
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        stocks = result.data;
+                        actualizarStockProductos();
+                        // coloca el encabezado de credito
+                        var solicitud = result.solicitud;
+                        var credito = result.cliente;
+                        $('#head-container').children('h5').after(
+                            $('<p>').attr('id', 'head-credito').html('Saldo disponible: ' + credito.moneda + ' ' + credito.disponible.toLocaleString('en-us', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' - Solicitud de Crédito: ' + credito.moneda + ' ' + credito.solicitud.toLocaleString('en-us', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' - Deuda: ' + credito.moneda + ' ' + credito.deuda.toLocaleString('en-us', {minimumFractionDigits:2, maximumFractionDigits:2})).addClass('mb-3')
+                        );
+                        if (credito.disponible > 0) {
+                            $('#head-container .btn-success').removeClass('disabled');
+                            $('#head-credito').addClass('text-success')
+                        }
+                        else {
+                            $('#head-container .btn-success').addClass('disabled');
+                            if (credito.deuda > 0) {
+                                $('#head-credito').addClass('text-danger')
+                            }
+                            else {
+                                $('#head-credito').addClass('text-primary')
+                            }
+                        }
+                        Credito = credito;
+                        // .append('<br><small>Solicitud por ' + solicitud.datos.importe + ' enviada el ' + solicitud.datos.fecha + '</small>')
+                        if (solicitud.existe) {
+                            $('#head-credito').append($('<br>')).append(
+                                $('<span>').addClass('text-secondary').html('Solicitud pendiente por <span class="text-primary">' + solicitud.datos.importe.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</span> enviada el ' + solicitud.datos.fecha)
+                            );
+                        }
+                        else {
+                            if (credito.deuda > 0 && credito.disponible <= 0) {
+                                $('#head-credito').append(
+                                    $('<a>').addClass('btn btn-sm btn-primary ml-3').text('Solicitar crédito').attr('href', '#').on('click', solicitarCredito)
+                                );
+                            }
+                        }
+                    },
+                    error: function (error) {
+                        alert(error);
+                    }
+                });
+            }
+            function solicitarCredito(event) {
+                event.preventDefault();
+                $('#modal-solcrd').modal('show');
+                $('#solcrd-cpago').empty().append(
+                    $('<option>').val(-1).text('- Seleccione -')
+                );
+                $.ajax({
+                    url: '/extranet/carga-cabecera-pedido',
+                    method: 'get',
+                    data: { cliente: Cliente.rucdni },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.error) {
+                            $('#modal-solcrd').modal('hide');
+                            alert(result.error);
+                            return;
+                        }
+                        // go p
+                        document.getElementById('solcrd-fventa').value = result.fventa.codigo;
+                        document.getElementById('solcrd-nfventa').value = result.fventa.fventa;
+                        var cpagos = result.cpago;
+                        var numCpagos = cpagos.length;
+                        for (var i = 0; i < numCpagos; i++) {
+                            var icpago = cpagos[i];
+                            $('#solcrd-cpago').append(
+                                $('<option>').val(icpago.value).text(icpago.text)
+                            );
+                        }
+                    },
+                    error: function (error) {
+                        alert(error);
+                        $('#modal-solcrd').modal('hide');
+                    }
+                });
+            }
+            // funciones
+            AdjuntarPlantilla = (event) => {
+                event.preventDefault();
+                const button = $('#modal-plantilla .modal-footer .btn-success').empty().html('Procesando la plantilla...');
+                button.prop('disabled', true);
+                setTimeout(() => {
+                    button.prop('disabled', false).empty().append(
+                        $('<i>').addClass('fa fa-upload')
+                    ).append(' Enviar plantilla');
+                    $('#modal-plantilla').modal('hide');
+                    alert('Los productos fueron cargados con éxito');
+                    // agrega los productos y recarga la grilla
+                    DetallePedido.push({ codigo: '03025015400014', ean: '7756719003377', nombre: 'Silicona Plife Saloon Fco. 80ml.', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 49.0863, difer: 1, tipo: 'L' });
+                    DetallePedido.push({ codigo: '04026016000008', ean: '7756719004299', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
+                    DetallePedido.push({ codigo: '04026016000009', ean: '7756719004367', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 1L', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'L' });
+                    DetallePedido.push({ codigo: '04026016200020', ean: '7756719004282', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
+                    DetallePedido.push({ codigo: '04026016200021', ean: '7756719004350', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 1L', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'C' });
+                    DetallePedido.push({ codigo: '04026016200023', ean: '7756719004374', nombre: 'Shampoo Placenta Life Lisso Keratina Fco x 1l', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'P' });
+                    DetallePedido.push({ codigo: '04026016200024', ean: '7756719004305', nombre: 'Shampoo Placenta Life Hydra Macadamia Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
+                    EscribirListaProductos();
+                }, 3000);
+            }
+            EscribirListaProductos = () => {
+                $('#container').empty();
+                $('#table-export tbody').empty();
+                if (DetallePedido.length > 0) {
+                    let tbody = $('<tbody>');
+                    totales = {
+                        cantidad: 0,
+                        cajas: 0,
+                        pallets: 0,
+                        importe: 0,
+                        cantidadconf: 0,
+                        paletsconf: 0
+                    };
+                    for (let i in DetallePedido) {
+                        let producto = DetallePedido[i];
+                        // producto.pallets = producto.cajas / producto.pcaja;
+                        let btnTipo = $('<td>').html(producto.tipo).addClass('font-weight-bold');
+                        switch (producto.tipo) {
+                            case 'L': btnTipo.addClass('text-success').attr('title', 'Precio de lista'); break;
+                            case 'C': btnTipo.addClass('text-info').attr('title', 'Producto complementario'); break;
+                            case 'P': btnTipo.addClass('text-danger').attr('title', 'Producto promocional'); break;
+                            case 'N': btnTipo.addClass('text-warning').attr('title', 'Precio normal'); break;
+                            default: btnTipo.addClass('text-light'); break;
+                        }
+                        /*
+                        var tdCantidad = $('<td>').append(
+                            $('<p>').text(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('mb-0')
+                        ).addClass('text-right');
+                        */
+                        var cantidadFila = producto.cantidad;
+                        var importeFila = producto.importe;
+                        var tdCantidad = $('<td>').text(cantidadFila.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('mb-0').addClass('text-right');
+                        // verifica si la caja está completa
+                        var resto = producto.cantidad % producto.unidcaja;
+                        if (resto > 0) {
+                            tdCantidad.prepend(
+                                $('<i>').addClass('mr-2 fa fa-exclamation-circle')
+                            ).attr({
+                                'data-toggle': 'tooltip',
+                                'data-placement': 'top',
+                                'title': 'Falta(n) ' + (producto.unidcaja - resto) + ' unid(s). para completar ' + producto.cajas + ' caja(s)'
+                            }).addClass('text-danger');
+    //  ="tooltip" ="top" title="Tooltip on top"
+                        }
+                        var tridx = parseInt(i) + 1;
+                        tbody.append(
+                            $('<tr>').append(
+                                $('<td>').text(tridx)
+                            ).append(
+                                $('<td>').append(
+                                    $('<input>').attr({
+                                        type: 'checkbox',
+                                        name: 'productos[]',
+                                        value: producto.tipo + '@' + producto.codigo + '@' + producto.difer,
+                                        'data-key': i
+                                    }).prop('checked', false).addClass('ch-producto')
+                                )
+                            ).append(btnTipo).append(
+                                $('<td>')/*.append(
+                                    $('<a>').attr('href', 'javascript:void(0)').addClass('btn btn-primary btn-sm').html(producto.ean)
+                                )*/.text(producto.ean).addClass('font-weight-bold text-primary')
+                            ).append(
+                                $('<td>').html(producto.nombre)
+                            ).append(
+                                $('<td>').html(producto.pventa.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                            ).append(
+                                // $('<td>').html(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                                tdCantidad.addClass('trs-solicita').css('max-width', '100px')
+                            ).append(
+                                $('<td>').text(producto.promodsc.toLocaleString('en-us')).addClass('td-shown text-right text-primary trs-despacho')
+                            ).append(
+                                $('<td>').attr('id', 'comprometido-' + producto.ean).hide().addClass('td-hidden')
+                            ).append(
+                                $('<td>').attr('id', 'stock-' + producto.ean).hide().addClass('td-hidden text-right text-primary')
+                            ).append(
+                                $('<td>').attr('id', 'promvta-' + producto.ean).hide().addClass('td-hidden text-right')
+                            ).append(
+                                $('<td>').attr('id', 'ms-' + producto.ean).hide().addClass('td-hidden text-right text-success')
+                            ).append(
+                                $('<td>').attr('id', 'despachar-' + producto.ean).hide().addClass('td-hidden trs-despacho')
+                            ).append(
+                                $('<td>').attr('id', 'nms-' + producto.ean).hide().addClass('td-hidden text-right text-success')
+                            ).append(
+                                $('<td>').attr('id', 'pendiente-' + producto.ean).hide().addClass('td-hidden text-right text-danger')
+                            ).append(
+                                $('<td>').html(importeFila.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right trs-solicita')
+                            ).append(
+                                $('<td>').html(producto.unidcaja.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                            ).append(
+                                $('<td>').html(producto.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right trs-solicita' + (resto > 0 ? ' text-danger' : ''))
+                            ).append(
+                                $('<td>').html(producto.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right trs-solicita')
+                            ).append(
+                                $('<td>').attr('id','paletsconf-' + producto.ean).attr('data-paletazos',producto.paletsconf).html(producto.paletsconf.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right text-primary trs-despacho td-paletazo')
+                            ).append(
+                                $('<td>').append(
+                                    $('<a>').append(
+                                        $('<i>').addClass('fa fa-edit')
+                                    ).attr({
+                                        'href': '#',
+                                        'data-tipo': producto.tipo,
+                                        'data-codigo': producto.codigo,
+                                        'data-difer': producto.difer,
+                                        'data-despachar': producto.promodsc,
+                                        'id': 'ip-' + producto.ean,
+                                        'data-stock': 0
+                                    }).on('click', EditarProducto).addClass('btn btn-sm btn-warning')
+                                ).addClass('td-shown')
+                            ).attr({
+                                'data-cantidad': producto.cantidad,
+                                'data-tipo': producto.tipo,
+                                'data-difer': producto.difer,
+                                'data-codigo': producto.codigo
+                            })
+                        );
+                        // tabla xls
+                        $('#table-export tbody').append(
+                            $('<tr>').append(
+                                $('<td>').text(tridx.toString())
+                            ).append(
+                                $('<td>').text(producto.ean)
+                            ).append(
+                                $('<td>').text(producto.nombre)
+                            ).append(
+                                $('<td>').text(producto.pventa)
+                            ).append(
+                                $('<td>').text(cantidadFila)
+                            ).append(
+                                $('<td>').text(importeFila)
+                            ).append(
+                                $('<td>').text(producto.unidcaja)
+                            ).append(
+                                $('<td>').text(producto.cajas)
+                            ).append(
+                                $('<td>').text(producto.pallets)
+                            )
+                        );
+                        //
+                        totales.cantidad += cantidadFila;
+                        totales.cajas += producto.cajas;
+                        totales.pallets += producto.pallets;
+                        totales.importe += importeFila;
+                        totales.cantidadconf += producto.promodsc;
+                        totales.paletsconf += producto.paletsconf;
+                    }
+                    $('#container').empty().append(
+                        $('<table>').append(
+                            $('<thead>').append(
+                                $('<tr>').append(
+                                    $('<th>').text('#')
+                                ).append(
+                                    $('<th>').append(
+                                        $('<input>').attr({
+                                            type: 'checkbox',
+                                            id: 'ch-all'
+                                        }).on('click', checkAll)
+                                    )
+                                ).append(
+                                    $('<th>').html('Tipo').addClass('th-hoverable').data('crt', 'tipo').data('asc', '1').on('click', sortData).attr('id', 'th-tipo')
+                                ).append(
+                                    $('<th>').html('Cod. EAN').addClass('th-hoverable').data('crt', 'ean').data('asc', '1').on('click', sortData).attr('id', 'th-ean')
+                                ).append(
+                                    $('<th>').html('Producto').addClass('th-hoverable').data('crt', 'nombre').data('asc', '1').on('click', sortData).attr('id', 'th-nombre')
+                                ).append(
+                                    $('<th>').html('Pr.Venta')
+                                ).append(
+                                    $('<th>').html('Cantidad').css('max-width', '100px').addClass('trs-solicita')
+                                ).append(
+                                    $('<th>').html('Cantidad despacho').css('max-width', '100px').addClass('td-shown trs-despacho')
+                                ).append(
+                                    $('<th>').html('Comprometido').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html('Stock').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html('Promedio venta').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html('Meses de inventario').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html('Despachar').hide().addClass('td-hidden trs-despacho')
+                                ).append(
+                                    $('<th>').html('Nuevo meses de inventario').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html('Pendiente').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html('Subtotal').addClass('trs-solicita')
+                                ).append(
+                                    $('<th>').html('Unid./Caja')
+                                ).append(
+                                    $('<th>').html('Cajas').addClass('trs-solicita')
+                                ).append(
+                                    $('<th>').html('Palets').addClass('trs-solicita')
+                                ).append(
+                                    $('<th>').html('Palets desp.').addClass('trs-despacho')
+                                ).append(
+                                    $('<th>').html('').addClass('td-shown')
+                                )
+                            )
+                        ).append(tbody).append(
+                            $('<tfoot>').append(
+                                $('<tr>').append(
+                                    $('<th>').html('')
+                                ).append(
+                                    $('<th>').html('')
+                                ).append(
+                                    $('<th>').html('')
+                                ).append(
+                                    $('<th>').html('TOTALES').attr('colspan', '2')
+                                ).append(
+                                    $('<th>').html('')
+                                ).append(
+                                    $('<th>').html(totales.cantidad.toLocaleString('en-us')).addClass('text-right trs-solicita')
+                                ).append(
+                                    $('<th>').html(totales.cantidadconf.toLocaleString('en-us')).addClass('text-right td-shown text-primary trs-despacho')
+                                ).append(
+                                    $('<th>').html('').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html('').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html('').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html('').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html('').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html('').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html('').hide().addClass('td-hidden')
+                                ).append(
+                                    $('<th>').html(Pedido.moneda + '' + totales.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right trs-solicita')
+                                ).append(
+                                    $('<th>').html('')
+                                ).append(
+                                    $('<th>').html(totales.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right trs-solicita')
+                                ).append(
+                                    $('<th>').html(totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right trs-solicita')
+                                ).append(
+                                    $('<th>').attr('id','total-paletazos').html(totales.paletsconf.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right text-primary trs-despacho')
+                                ).append(
+                                    $('<th>').html('').addClass('td-shown')
+                                )
+                            )
+                        ).addClass('table table-hover table-striped table-responsive')
+                    ).append(
+                        $('<a>').text('Confirmar cantidades de productos').prepend(
+                            $('<i>').addClass('fa fa-check mr-1')
+                        ).addClass('btn btn-success my-2 td-hidden').attr({
+                            href:'#',
+                            id: 'btn-actualiza-stock'
+                        }).on('click', actualizarCantidadesProductos)
+                    );
+                    $('#container').append(
+                        $('<a>').text('Solicitar traslado de productos').prepend(
+                            $('<i>').addClass('fa fa-share-square-o mr-1')
+                        ).addClass('btn btn-primary my-2 td-hidden ml-2').attr('href','#').attr('id','btn-solicita-traslado').on('click', solicitaLiberacionStock)
+                    );
+                    $('#container').append(
+                        $('<a>').text('Exportar a XLS').prepend(
+                            $('<i>').addClass('fa fa-download mr-1')
+                        ).addClass('btn btn-success my-2 td-shown ml-2').attr('href','#').on('click', exportarXls)
+                    );
+                    if (requiereRevision == 'S') {
+                        $('.td-hidden').show();
+                        $('.td-shown').hide();
+                        actualizarStockProductos();
+                    }
+                    else {
+                        $('.td-hidden').hide();
+                        $('.td-shown').show();
+                    }
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+                else {
+                    $('#container').empty().append(
+                        $('<p>').addClass('mb-0').html('Aún no ha agregado productos para su pedido')
+                    );
+                }
+            }
+            function sortData(event) {
+                var criterio = $(this).data('crt');
+                var asc = $(this).data('asc') != '1';
+                var numFilas = DetallePedido.length;
+                for (var i = 0; i < numFilas - 1; i++) {
+                    for (var j = i + 1; j < numFilas; j++) {
+                        let iItem = DetallePedido[i];
+                        let jItem = DetallePedido[j];
+                        if (asc) {
+                            if (iItem[criterio] > jItem[criterio]) {
+                                var aux = DetallePedido[i];
+                                DetallePedido[i] = DetallePedido[j];
+                                DetallePedido[j] = aux;
+                            }
+                        }
+                        else {
+                            if (iItem[criterio] < jItem[criterio]) {
+                                var aux = DetallePedido[i];
+                                DetallePedido[i] = DetallePedido[j];
+                                DetallePedido[j] = aux;
+                            }
+                        }
+                    }
+                }
+                EscribirListaProductos();
+                $('#th-' + criterio).data('asc', asc ? '1' : '0');
+            }
+            function exportarXls(event) {
+                event.preventDefault();
+                $('#table-export').tableExport({
+                    fileName: 'pedido_' + CodigoPedido + '.xlsx',
+                    type: 'xlsx'
+                });
+            }
+            function solicitaLiberacionStock(event) {
+                event.preventDefault();
+                if (window.confirm('A continuación, se enviará una notificación al almacén para trasladar los productos del pedido al rack de exportaciones. Confirme esta acción para proceder.')) {
+                    $.post({
+                        url: '/extranet/solicita-liberacion-productos',
+                        method: 'post',
+                        data: { pedido: CodigoPedido },
+                        dataType: 'json',
+                        success: function (result) {
+                            if (result.error) {
+                                alert (result.error);
+                                return;
+                            }
+                            $('#btn-solicita-traslado').remove();
+                            alert('Solicitud de traslado enviada');
+                        },
+                        error: function (error) {
+                            alert(error);
+                        }
+                    });
+                }
+            }
+            function actualizarCantidadesProductos(event) {
+                event.preventDefault();
+                $('#btn-actualiza-stock').hide();
+                var productos = [];
+                var trs = $('#container .table tbody tr');
+                $.each(trs, function() {
+                    var itr = $(this);
+                    var itipo = itr.data('tipo');
+                    var idifer = itr.data('difer');
+                    var icodigo = itr.data('codigo');
+                    var icantidad = itr.children('td').eq(12).children('input').val();
+                    productos.push([icodigo, icantidad, itipo, idifer].join('|'));
+                });
+                var params = {
+                    pedido: CodigoPedido,
+                    productos: productos.join('@')
+                };
+                $.post({
+                    url: '/extranet/actualizar-cantidades-producto',
+                    method: 'post',
+                    data: params,
+                    dataType: 'json',
+                    success: function(result) {
+                        $('#btn-actualiza-stock').show();
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        alert('Cantidades confirmadas');
+                        location.reload();
+                    },
+                    error: function(err) {
+                        $('#btn-actualiza-stock').show();
+                        alert(err);
+                    }
+                });
+            }
+            function checkAll() {
+                var checked = document.getElementById('ch-all').checked;
+                $('.ch-producto').prop('checked', checked);
+            }
+            function IngresarCantidad(event) {
+                let scantidad = $(this).val();
+                if (scantidad != '') {
+                    let ds = event.target.dataset;
+                    let idx = parseInt(ds.idx);
+                    let pventa = parseFloat(ds.pventa);
+                    let caja = parseInt(ds.caja);
+                    let pcaja = parseFloat(ds.pcaja);
+                    let stock = parseInt(ds.stock);
+                    let cantidad = parseInt(scantidad);
+                    let cajasnivel = parseInt(ds.cajasnivel);
+                    // validaciones
+                    let resto = cantidad % caja;
+                    let cajas = Math.floor(cantidad / caja);
+                    /*if (cantidad > stock) {
+                        cantidad = stock;
+                        $(this).val(stock);
+                        document.getElementById('alert-' + idx).innerHTML = 'Stock superado';
+                    }
+                    else {*/
+                        if (resto > 0) {
+                            cajas += 1;
+                            let faltante = cajas * caja;
+                            document.getElementById('alert-' + idx).innerHTML = faltante + ' para completar una caja';
+                        }
+                        else {
+                            document.getElementById('alert-' + idx).innerHTML = '';
+                        }
+                    //}
+                    document.getElementById('tcajas-' + idx).innerHTML = cajas;
+                    let totalniveles = cajas / cajasnivel;
+                    document.getElementById('tniveles-' + idx).innerHTML = cajas;
+                    document.getElementById('tniveles-' + idx).innerHTML = cajas;
+                    // tcajas, tniveles, tpallet -> cjnivel
+                    let subtotal = cantidad * pventa;
+                    let pallets = cajas / pcaja;
+                    // actualiza array
+                    catalogo[idx].cantidad = cantidad;
+                    catalogo[idx].subtotal = subtotal;
+                    catalogo[idx].cajas = cajas;
+                    catalogo[idx].pallets = pallets;
+                    //
+                    document.getElementById('subtotal-' + idx).innerHTML = subtotal.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    document.getElementById('tpallets-' + idx).innerHTML = pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });;
+                }
+            }
+            EscribirCatalogoProductos = query => {
+                let tbody = $('<tbody>');
+                for (let j in catalogo) {
+                    let item = catalogo[j];
+                    if (query == '' || item.ean.indexOf(query) > -1 || item.nombre.toUpperCase().indexOf(query) > -1) {
+                        tbody.append(
+                            $('<tr>').append(
+                                $('<td>').html(item.ean)
+                            ).append(
+                                $('<td>').append(
+                                    $('<p>').html(item.nombre).addClass('m-0 p-0 ptext')
+                                )
+                            ).append(
+                                $('<td>').html(item.pventa.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                            )/*.append(
+                                $('<td>').html(item.stock).addClass('text-right')
+                            )*/.append(
+                                $('<td>').append(
+                                    $('<input>').attr({
+                                        type: 'text',
+                                        id: 'cnt-' + j,
+                                        'data-idx': j,
+                                        'data-codigo': item.codigo,
+                                        'data-pventa': item.pventa,
+                                        'data-caja': item.caja,
+                                        'data-pcaja': item.pcaja,
+                                        'data-cajasnivel': item.cjnivel,
+                                        'data-stock': item.stock,
+                                        'data-grupo': item.cogrupo
+                                    }).addClass('form-control form-control-sm ip-cant').on('keyup', IngresarCantidad).prop('disabled', item.stock == 0)
+                                ).append(
+                                    $('<small>').attr('id', 'alert-' + j).addClass('text-danger')
+                                )
+                            ).append(
+                                $('<td>').append(
+                                    $('<span>').attr('id', 'subtotal-' + j).html('0') // subtotal
+                                ).addClass('text-right')
+                            ).append(
+                                $('<td>').html(item.caja).addClass('text-right') // unidades x caja
+                            ).append(
+                                $('<td>').append(
+                                    $('<span>').attr('id', 'tcajas-' + j).html('0')
+                                ).addClass('text-right') // total cajas
+                            ).append(
+                                $('<td>').html(item.cjnivel).addClass('text-right') // cajas x nivel
+                            ).append(
+                                $('<td>').html(parseInt(item.pcaja) > 0 ? (parseInt(item.pcaja) / parseInt(item.cjnivel)).toFixed(2) : item.pcaja).addClass('text-right') // nivel x palet
+                            ).append(
+                                $('<td>').html(item.pcaja).addClass('text-right') // cajas x palet
+                            ).append(
+                                $('<td>').html(item.pesopt.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right font-weight-bold')
+                            ).append(
+                                $('<td>').html(item.largo.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right font-weight-bold')
+                            ).append(
+                                $('<td>').html(item.ancho.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right font-weight-bold')
+                            ).append(
+                                $('<td>').html(item.alto.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right font-weight-bold')
+                            ).append(
+                                $('<td>').append(
+                                    $('<span>').attr('id', 'tniveles-' + j).html('0')
+                                ).addClass('text-right') // total niveles
+                            ).append(
+                                $('<td>').append(
+                                    $('<span>').attr('id', 'tpallets-' + j).html('0') // total palets
+                                ).addClass('text-right')
+                            )
+                        );
+                    }
+                }
+                $('#lista-container').empty().append(
+                    $('<table>').append(
+                        $('<thead>').append(
+                            $('<tr>').append(
+                                $('<th>').html('EAN')
+                            ).append(
+                                $('<th>').html('Producto')
+                            ).append(
+                                $('<th>').html('P.Venta')
+                            )/*.append(
+                                $('<th>').html('Stock')
+                            )*/.append(
+                                $('<th>').html('Cantidad')
+                            ).append(
+                                $('<th>').html('Subtotal')
+                            ).append(
+                                $('<th>').html('Unids/ Caja')
+                            ).append(
+                                $('<th>').html('Tot.Cajas')
+                            ).append(
+                                $('<th>').html('Cajas por nivel')
+                            ).append(
+                                $('<th>').html('Niveles por palet')
+                            ).append(
+                                $('<th>').html('Cajas por palet')
+                            ).append(
+                                $('<th>').html('Peso PT')
+                            ).append(
+                                $('<th>').html('Largo (cm)')
+                            ).append(
+                                $('<th>').html('Ancho (cm)')
+                            ).append(
+                                $('<th>').html('Alto (cm)')
+                            ).append(
+                                $('<th>').html('Tot.Niveles')
+                            ).append(
+                                $('<th>').html('Tot.Palets')
+                            )
+                        )
+                    ).append(tbody).addClass('table table-hover table-striped table-responsive')
+                );
+            }
+            CargarCatalogoProductos = async (event) => {
+                $('#lista-container').empty();
                 try {
                     let result = await $.ajax({
-                        url: '/extranet/procesar-pre-pedido',
+                        url: '/extranet/catalogo-productos',
                         method: 'post',
-                        data: {
-                            empresa: 11,
-                            prepedido: CodigoPedido
-                        },
+                        data: { pedido: Pedido.codigo },
                         dataType: 'json'
                     });
                     if (result.error) {
                         alert(result.error);
                         return;
                     }
-                    alert(result.pedido);
+                    catalogo = result.productos;
+                }
+                catch (err) {
+                    alert(err);
+                }
+                //
+                EscribirCatalogoProductos('');
+            }
+            EliminarProductos = async (event) => {
+                event.preventDefault();
+                let eliminar = [];
+                if (window.confirm('¿Eliminar los productos seleccionados?')) {
+                    let productos = $('.ch-producto:checked');
+                    $.each(productos, function () {
+                        let chbox = $(this).val().split('@');
+                        eliminar.push({
+                            tipo: chbox[0],
+                            codigo: chbox[1],
+                            difer: parseInt(chbox[2])
+                        });
+                    });
+                    let result;
+                    try {
+                        result = await $.ajax({
+                            url: '/extranet/eliminar-productos',
+                            method: 'post',
+                            data: { pedido: Pedido.codigo, productos: eliminar },
+                            dataType: 'json'
+                        });
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        let mensajes = result.mensajes;
+                        for (let mensaje of mensajes) {
+                            if (mensaje.error) alert(mensaje.error);
+                        }
+                        DetallePedido = result.detalle;
+                        $('#modal-lista').modal('hide');
+                        EscribirListaProductos();
+                    }
+                    catch (err) {
+                        alert(err);
+                    }
+                }
+            }
+            AgregarProductos = async (event) => {
+                event.preventDefault();
+                const boton = $('#modal-lista .modal-footer .btn-primary');
+                boton.prop('disabled', true).empty().html('Procesando su pedido...');
+                let cantidades = $('.ip-cant');
+                let productos = [];
+                $.each(cantidades, function() {
+                    let input = $(this);
+                    if (input.val() != '' && input.val() != '0') {
+                        productos.push({
+                            grupo: input.data('grupo'),
+                            codigo: input.data('codigo'),
+                            pventa: input.data('pventa'),
+                            cantidad: parseInt(input.val()),
+                            tpventa: 'L'
+                        });
+                    }
+                });
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/extranet/agregar-productos-expo',
+                        method: 'post',
+                        data: { productos: productos, pedido: Pedido.codigo },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(JSON.stringify(result.error));
+                        return;
+                    }
+                    let mensajes = result.data.mensajes;
+                    for (let mensaje of mensajes) {
+                        if (mensaje.error) alert(mensaje.error);
+                    }
+                    DetallePedido = result.data.detalle;
+                    $('#modal-lista').modal('hide');
+                    EscribirListaProductos();
+                    alert('Se agregaron los productos');
+                    boton.prop('disabled', false).empty().append(
+                        $('<i>').addClass('fa fa-plus')
+                    ).append(' Agregar los productos');
+                }
+                catch (err) {
+                    alert(err);
+                    result;
+                }
+            }
+            ResumenPedido = (event) => {
+                document.getElementById('rp-items').value = totales.cantidad.toLocaleString('en-us', { minimumFractionDigits:0, maximumFractionDigits: 0 });
+                document.getElementById('rp-subtotal').value = Pedido.moneda + ' ' + totales.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                document.getElementById('rp-cajas').value = totales.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                document.getElementById('rp-pallets').value = totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+            CerrarPedido = async (event) => {
+                event.preventDefault();
+                const boton = $('#modal-cierre .modal-footer .btn-success');
+                boton.prop('disabled', true);
+                boton.empty().html('Procesando. Por favor, espere...');
+                try {
+                    let result = await $.ajax({
+                        url: '/extranet/cerrar-pedido',
+                        method: 'post',
+                        data: { pedido: CodigoPedido, cliente: Cliente.rucdni },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    alert(result.mensaje);
                     location.href = '/extranet';
                 }
                 catch (err) {
                     alert(err);
                 }
             }
-        }
-        async function EditarProducto(event) {
-            event.preventDefault();
-            let a = $(this);
-            let cantidad = window.prompt('¿Cuántas unidades?');
-            if (cantidad != null && cantidad != '') {
-                // revisa si debo validar
-                if (requiereRevision == 'S') {
-                    var istock = parseInt(a.data('stock'));
-                    if (cantidad >= istock) {
-                        alert('El stock del producto es insuficiente. Solo se dispone de ' + istock + ' unidad(es) en el almacén.');
-                        return;
-                    }
-                }
-                // go
-                let params = {
-                    pedido: Pedido.codigo,
-                    codigo: a.data('codigo'),
-                    tipo: a.data('tipo'),
-                    difer: a.data('difer'),
-                    cantidad: parseInt(cantidad)
-                }
-                // actualizar cantidad
-                let result;
-                try {
-                    result = await $.ajax({
-                        url: '/extranet/actualizar-cantidad-producto',
-                        method: 'post',
-                        data: params,
-                        dataType: 'json'
-                    });
-                    if (result.error) {
-                        alert(result.error);
-                        return;
-                    }
-                    DetallePedido = result.detalle;
-                    EscribirListaProductos();
-                }
-                catch (err) {
-                    alert(err);
-                }
-            }
-        }
-        function actualizarStockProductos() {
-            var numProductos = stocks.length;
-            for (var i = 0; i < numProductos; i++) {
-                var iproducto = stocks[i];
-                var iean = iproducto.ean;
-                var ipventa = iproducto.pventa;
-                var istock = iproducto.stock;
-                var ipromvta = iproducto.cantidad;
-                var icantidad = parseInt($('#comprometido-' + iean).parent().data('cantidad'));
-                var idespachar = parseInt($('#ip-' + iean).data('despachar'));
-                $('#ip-' + iean).attr('data-stock', istock);
-                $('#comprometido-' + iean).empty().append(
-                    $('<input>').addClass('form-control ip-comprometido').css('width','75px').attr({
-                        'data-stock': istock,
-                        'data-promvta': ipromvta,
-                        'data-cantidad': icantidad,
-                        'data-ean': iean,
-                        'id': 'ipcomprom-' + iean
-                    }).on('keyup', function () {
-                        var input = $(this);
-                        var comprometido = input.val();
-                        var ipean = input.data('ean');
-                        var stock = input.data('stock');
-                        var promvta = input.data('promvta');
-                        var cantidad = input.data('cantidad');
-                        var ms = promvta > 0 ? ((stock - comprometido) / promvta) : 0;
-                        document.getElementById('ms-' + ipean).innerHTML = ms.toFixed(2);
-                    }).val(0).trigger('keyup')
-                );
-                $('#despachar-' + iean).empty().append(
-                    $('<input>').addClass('form-control ip-despachar').css('width','75px').attr({
-                        'data-stock': istock,
-                        'data-promvta': ipromvta,
-                        'data-cantidad': icantidad,
-                        'data-ean': iean
-                    }).on('keyup', function () {
-                        var input = $(this);
-                        var despachar = input.val();
-                        var ipean = input.data('ean');
-                        var stock = input.data('stock');
-                        var promvta = input.data('promvta');
-                        var cantidad = input.data('cantidad');
-                        var comprometido = parseInt(document.getElementById('ipcomprom-' + ipean).value);
-                        var nms = promvta > 0 ? ((stock - comprometido - despachar) / promvta) : 0;
-                        var pendiente = cantidad - despachar;
-                        document.getElementById('nms-' + ipean).innerHTML = nms.toFixed(2);
-                        document.getElementById('pendiente-' + ipean).innerHTML = pendiente.toLocaleString('en-us', {minimumFractionDigits:0, maximumFractionDigits:0});
-                    }).val(idespachar).trigger('keyup')
-                );
-                $('#stock-' + iean).text(istock.toLocaleString('en-us', {minimumFractionDigits: 0, maximumFractionDigits: 0})).addClass('font-weight-bold');
-                $('#promvta-' + iean).text(ipromvta.toLocaleString('en-us', {minimumFractionDigits: 0, maximumFractionDigits: 0})).addClass('font-weight-bold');
-            }
-        }
-        function cargaStockProductos() {
-            var data = {
-                eans: '',
-                prepedido: CodigoPedido,
-                cliente: Cliente.rucdni
-            };
-            $.ajax({
-                url: '/extranet/carga-stock-detalle-pedido',
-                method: 'get',
-                data: data,
-                dataType: 'json',
-                success: function (result) {
-                    if (result.error) {
-                        alert(result.error);
-                        return;
-                    }
-                    stocks = result.data;
-                    actualizarStockProductos();
-                    // coloca el encabezado de credito
-                    var solicitud = result.solicitud;
-                    var credito = result.cliente;
-                    $('#head-container').children('h5').after(
-                        $('<p>').attr('id', 'head-credito').html('Saldo disponible: ' + credito.moneda + ' ' + credito.disponible.toLocaleString('en-us', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' - Solicitud de Crédito: ' + credito.moneda + ' ' + credito.solicitud.toLocaleString('en-us', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' - Deuda: ' + credito.moneda + ' ' + credito.deuda.toLocaleString('en-us', {minimumFractionDigits:2, maximumFractionDigits:2})).addClass('mb-3')
-                    );
-                    if (credito.disponible > 0) {
-                        $('#head-container .btn-success').removeClass('disabled');
-                        $('#head-credito').addClass('text-success')
-                    }
-                    else {
-                        $('#head-container .btn-success').addClass('disabled');
-                        if (credito.deuda > 0) {
-                            $('#head-credito').addClass('text-danger')
-                        }
-                        else {
-                            $('#head-credito').addClass('text-primary')
-                        }
-                    }
-                    Credito = credito;
-                    // .append('<br><small>Solicitud por ' + solicitud.datos.importe + ' enviada el ' + solicitud.datos.fecha + '</small>')
-console.log('solicitud', solicitud);
-                    if (solicitud.existe) {
-                        $('#head-credito').append($('<br>')).append(
-                            $('<span>').addClass('text-secondary').html('Solicitud pendiente por <span class="text-primary">' + solicitud.datos.importe.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</span> enviada el ' + solicitud.datos.fecha)
-                        );
-                    }
-                    else {
-                        if (credito.deuda > 0 && credito.disponible <= 0) {
-                            $('#head-credito').append(
-                                $('<a>').addClass('btn btn-sm btn-primary ml-3').text('Solicitar crédito').attr('href', '#').on('click', solicitarCredito)
-                            );
-                        }
-                    }
-                },
-                error: function (error) {
-                    alert(error);
-                }
-            });
-        }
-        function solicitarCredito(event) {
-            event.preventDefault();
-            $('#modal-solcrd').modal('show');
-            $('#solcrd-cpago').empty().append(
-                $('<option>').val(-1).text('- Seleccione -')
-            );
-            $.ajax({
-                url: '/extranet/carga-cabecera-pedido',
-                method: 'get',
-                data: { cliente: Cliente.rucdni },
-                dataType: 'json',
-                success: function (result) {
-                    if (result.error) {
-                        $('#modal-solcrd').modal('hide');
-                        alert(result.error);
-                        return;
-                    }
-                    // go p
-                    document.getElementById('solcrd-fventa').value = result.fventa.codigo;
-                    document.getElementById('solcrd-nfventa').value = result.fventa.fventa;
-                    var cpagos = result.cpago;
-                    var numCpagos = cpagos.length;
-                    for (var i = 0; i < numCpagos; i++) {
-                        var icpago = cpagos[i];
-                        $('#solcrd-cpago').append(
-                            $('<option>').val(icpago.value).text(icpago.text)
-                        );
-                    }
-                },
-                error: function (error) {
-                    alert(error);
-                    $('#modal-solcrd').modal('hide');
-                }
-            });
-        }
-        // funciones
-        AdjuntarPlantilla = (event) => {
-            event.preventDefault();
-            const button = $('#modal-plantilla .modal-footer .btn-success').empty().html('Procesando la plantilla...');
-            button.prop('disabled', true);
-            setTimeout(() => {
-                button.prop('disabled', false).empty().append(
-                    $('<i>').addClass('fa fa-upload')
-                ).append(' Enviar plantilla');
-                $('#modal-plantilla').modal('hide');
-                alert('Los productos fueron cargados con éxito');
-                // agrega los productos y recarga la grilla
-                DetallePedido.push({ codigo: '03025015400014', ean: '7756719003377', nombre: 'Silicona Plife Saloon Fco. 80ml.', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 49.0863, difer: 1, tipo: 'L' });
-                DetallePedido.push({ codigo: '04026016000008', ean: '7756719004299', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
-                DetallePedido.push({ codigo: '04026016000009', ean: '7756719004367', nombre: 'Shampoo Pl Life Be Natural Nutri Quinua Fco x 1L', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'L' });
-                DetallePedido.push({ codigo: '04026016200020', ean: '7756719004282', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
-                DetallePedido.push({ codigo: '04026016200021', ean: '7756719004350', nombre: 'Shampoo Pl Life Be Natural Repair Argan Fco x 1L', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'C' });
-                DetallePedido.push({ codigo: '04026016200023', ean: '7756719004374', nombre: 'Shampoo Placenta Life Lisso Keratina Fco x 1l', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 103.3489, difer: 1, tipo: 'P' });
-                DetallePedido.push({ codigo: '04026016200024', ean: '7756719004305', nombre: 'Shampoo Placenta Life Hydra Macadamia Fco x 350ml', cantidad: 3, capacidad: 12, cajas: 1, pallets: 0.12, importe: 45.2419, difer: 1, tipo: 'L' });
-                EscribirListaProductos();
-            }, 3000);
-        }
-        EscribirListaProductos = () => {
-            $('#container').empty();
-            $('#table-export tbody').empty();
-            if (DetallePedido.length > 0) {
-                let tbody = $('<tbody>');
-                totales = {
-                    cantidad: 0,
-                    cajas: 0,
-                    pallets: 0,
-                    importe: 0
-                };
-                for (let i in DetallePedido) {
-                    let producto = DetallePedido[i];
-                    // producto.pallets = producto.cajas / producto.pcaja;
-                    let btnTipo = $('<td>').html(producto.tipo).addClass('font-weight-bold');
-                    switch (producto.tipo) {
-                        case 'L': btnTipo.addClass('text-success').attr('title', 'Precio de lista'); break;
-                        case 'C': btnTipo.addClass('text-info').attr('title', 'Producto complementario'); break;
-                        case 'P': btnTipo.addClass('text-danger').attr('title', 'Producto promocional'); break;
-                        case 'N': btnTipo.addClass('text-warning').attr('title', 'Precio normal'); break;
-                        default: btnTipo.addClass('text-light'); break;
-                    }
-                    /*
-                    var tdCantidad = $('<td>').append(
-                        $('<p>').text(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('mb-0')
-                    ).addClass('text-right');
-                    */
-                    var tdCantidad = $('<td>').text(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('mb-0').addClass('text-right');
-                    // verifica si la caja está completa
-                    var resto = producto.cantidad % producto.unidcaja;
-                    if (resto > 0) {
-                        tdCantidad.prepend(
-                            $('<i>').addClass('mr-2 fa fa-exclamation-circle')
-                        ).attr({
-                            'data-toggle': 'tooltip',
-                            'data-placement': 'top',
-                            'title': 'Falta(n) ' + (producto.unidcaja - resto) + ' unid(s). para completar ' + producto.cajas + ' caja(s)'
-                        }).addClass('text-danger');
-//  ="tooltip" ="top" title="Tooltip on top"
-                    }
-                    var tridx = parseInt(i) + 1;
-                    tbody.append(
-                        $('<tr>').append(
-                            $('<td>').text(tridx)
-                        ).append(
-                            $('<td>').append(
-                                $('<input>').attr({
-                                    type: 'checkbox',
-                                    name: 'productos[]',
-                                    value: producto.tipo + '@' + producto.codigo + '@' + producto.difer,
-                                    'data-key': i
-                                }).prop('checked', false).addClass('ch-producto')
-                            )
-                        ).append(btnTipo).append(
-                            $('<td>')/*.append(
-                                $('<a>').attr('href', 'javascript:void(0)').addClass('btn btn-primary btn-sm').html(producto.ean)
-                            )*/.text(producto.ean).addClass('font-weight-bold text-primary')
-                        ).append(
-                            $('<td>').html(producto.nombre)
-                        ).append(
-                            $('<td>').html(producto.pventa.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
-                        ).append(
-                            // $('<td>').html(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
-                            tdCantidad.css('max-width', '100px')
-                        ).append(
-                            $('<td>').attr('id', 'comprometido-' + producto.ean).hide().addClass('td-hidden')
-                        ).append(
-                            $('<td>').attr('id', 'stock-' + producto.ean).hide().addClass('td-hidden text-right text-primary')
-                        ).append(
-                            $('<td>').attr('id', 'promvta-' + producto.ean).hide().addClass('td-hidden text-right')
-                        ).append(
-                            $('<td>').attr('id', 'ms-' + producto.ean).hide().addClass('td-hidden text-right text-success')
-                        ).append(
-                            $('<td>').attr('id', 'despachar-' + producto.ean).hide().addClass('td-hidden')
-                        ).append(
-                            $('<td>').attr('id', 'nms-' + producto.ean).hide().addClass('td-hidden text-right text-success')
-                        ).append(
-                            $('<td>').attr('id', 'pendiente-' + producto.ean).hide().addClass('td-hidden text-right text-danger')
-                        ).append(
-                            $('<td>').html(producto.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
-                        ).append(
-                            $('<td>').html(producto.unidcaja.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
-                        ).append(
-                            $('<td>').html(producto.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right' + (resto > 0 ? ' text-danger' : ''))
-                        ).append(
-                            $('<td>').html(producto.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
-                        ).append(
-                            $('<td>').append(
-                                $('<a>').append(
-                                    $('<i>').addClass('fa fa-edit')
-                                ).attr({
-                                    'href': '#',
-                                    'data-tipo': producto.tipo,
-                                    'data-codigo': producto.codigo,
-                                    'data-difer': producto.difer,
-                                    'data-despachar': producto.promodsc,
-                                    'id': 'ip-' + producto.ean,
-                                    'data-stock': 0
-                                }).on('click', EditarProducto).addClass('btn btn-sm btn-warning')
-                            ).addClass('td-shown')
-                        ).attr({
-                            'data-cantidad': producto.cantidad,
-                            'data-tipo': producto.tipo,
-                            'data-difer': producto.difer,
-                            'data-codigo': producto.codigo
-                        })
-                    );
-                    // tabla xls
-                    $('#table-export tbody').append(
-                        $('<tr>').append(
-                            $('<td>').text(tridx.toString())
-                        ).append(
-                            $('<td>').text(producto.ean)
-                        ).append(
-                            $('<td>').text(producto.nombre)
-                        ).append(
-                            $('<td>').text(producto.pventa)
-                        ).append(
-                            $('<td>').text(producto.cantidad)
-                        ).append(
-                            $('<td>').text(producto.importe)
-                        ).append(
-                            $('<td>').text(producto.unidcaja)
-                        ).append(
-                            $('<td>').text(producto.cajas)
-                        ).append(
-                            $('<td>').text(producto.pallets)
-                        )
-                    );
-                    //
-                    totales.cantidad += producto.cantidad;
-                    totales.cajas += producto.cajas;
-                    totales.pallets += producto.pallets;
-                    totales.importe += producto.importe;
-                }
-                $('#container').empty().append(
-                    $('<table>').append(
-                        $('<thead>').append(
-                            $('<tr>').append(
-                                $('<th>').text('#')
-                            ).append(
-                                $('<th>').append(
-                                    $('<input>').attr({
-                                        type: 'checkbox',
-                                        id: 'ch-all'
-                                    }).on('click', checkAll)
-                                )
-                            ).append(
-                                $('<th>').html('Tipo').addClass('th-hoverable').data('crt', 'tipo').data('asc', '1').on('click', sortData).attr('id', 'th-tipo')
-                            ).append(
-                                $('<th>').html('Cod. EAN').addClass('th-hoverable').data('crt', 'ean').data('asc', '1').on('click', sortData).attr('id', 'th-ean')
-                            ).append(
-                                $('<th>').html('Producto').addClass('th-hoverable').data('crt', 'nombre').data('asc', '1').on('click', sortData).attr('id', 'th-nombre')
-                            ).append(
-                                $('<th>').html('Pr.Venta')
-                            ).append(
-                                $('<th>').html('Cantidad').css('max-width', '100px')
-                            ).append(
-                                $('<th>').html('Comprometido').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('Stock').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('Promedio venta').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('Meses de inventario').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('Despachar').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('Nuevo meses de inventario').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('Pendiente').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('Subtotal')
-                            ).append(
-                                $('<th>').html('Unid./Caja')
-                            ).append(
-                                $('<th>').html('Cajas')
-                            ).append(
-                                $('<th>').html('Palets')
-                            ).append(
-                                $('<th>').html('').addClass('td-shown')
-                            )
-                        )
-                    ).append(tbody).append(
-                        $('<tfoot>').append(
-                            $('<tr>').append(
-                                $('<th>').html('')
-                            ).append(
-                                $('<th>').html('')
-                            ).append(
-                                $('<th>').html('')
-                            ).append(
-                                $('<th>').html('TOTALES').attr('colspan', '2')
-                            ).append(
-                                $('<th>').html('')
-                            ).append(
-                                $('<th>').html(totales.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
-                            ).append(
-                                $('<th>').html('').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html('').hide().addClass('td-hidden')
-                            ).append(
-                                $('<th>').html(Pedido.moneda + '' + totales.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
-                            ).append(
-                                $('<th>').html('')
-                            ).append(
-                                $('<th>').html(totales.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
-                            ).append(
-                                $('<th>').html(totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
-                            ).append(
-                                $('<th>').html('').addClass('td-shown')
-                            )
-                        )
-                    ).addClass('table table-hover table-striped table-responsive')
-                ).append(
-                    $('<a>').text('Confirmar cantidades de productos').prepend(
-                        $('<i>').addClass('fa fa-check mr-2')
-                    ).addClass('btn btn-success my-2 td-hidden').attr('href','#').on('click', actualizarCantidadesProductos)
-                ).append(
-                    $('<a>').text('Exportar a XLS').prepend(
-                        $('<i>').addClass('fa fa-download mr-2')
-                    ).addClass('btn btn-success my-2 td-shown').attr('href','#').on('click', exportarXls)
-                );
-                if (requiereRevision == 'S') {
-                    $('.td-hidden').show();
-                    $('.td-shown').hide();
-                    actualizarStockProductos();
-                }
-                else {
-                    $('.td-hidden').hide();
-                    $('.td-shown').show();
-                }
-                $('[data-toggle="tooltip"]').tooltip();
-            }
-            else {
-                $('#container').empty().append(
-                    $('<p>').addClass('mb-0').html('Aún no ha agregado productos para su pedido')
-                );
-            }
-        }
-        function sortData(event) {
-            var criterio = $(this).data('crt');
-            var asc = $(this).data('asc') != '1';
-            var numFilas = DetallePedido.length;
-            for (var i = 0; i < numFilas - 1; i++) {
-                for (var j = i + 1; j < numFilas; j++) {
-                    let iItem = DetallePedido[i];
-                    let jItem = DetallePedido[j];
-                    if (asc) {
-                        if (iItem[criterio] > jItem[criterio]) {
-                            var aux = DetallePedido[i];
-                            DetallePedido[i] = DetallePedido[j];
-                            DetallePedido[j] = aux;
-                        }
-                    }
-                    else {
-                        if (iItem[criterio] < jItem[criterio]) {
-                            var aux = DetallePedido[i];
-                            DetallePedido[i] = DetallePedido[j];
-                            DetallePedido[j] = aux;
-                        }
-                    }
-                }
-            }
-            EscribirListaProductos();
-            $('#th-' + criterio).data('asc', asc ? '1' : '0');
-        }
-        function exportarXls(event) {
-            event.preventDefault();
-            $('#table-export').tableExport({
-                fileName: 'pedido_' + CodigoPedido + '.xlsx',
-                type: 'xlsx'
-            });
-        }
-        function actualizarCantidadesProductos(event) {
-            event.preventDefault();
-            var productos = [];
-            var trs = $('#container .table tbody tr');
-            $.each(trs, function() {
-                var itr = $(this);
-                var itipo = itr.data('tipo');
-                var idifer = itr.data('difer');
-                var icodigo = itr.data('codigo');
-                var icantidad = itr.children('td').eq(11).children('input').val();
-                productos.push([icodigo, icantidad, itipo, idifer].join('|'));
-            });
-            var params = {
-                pedido: CodigoPedido,
-                productos: productos.join('@')
-            };
-            $.post({
-                url: '/extranet/actualizar-cantidades-producto',
-                method: 'post',
-                data: params,
-                dataType: 'json',
-                success: function(result) {
-                    if (result.error) {
-                        alert(result.error);
-                        return;
-                    }
-                    alert('Cantidades confirmadas');
-                    location.reload();
-                },
-                error: function(err) {
-                    alert(err);
-                }
-            });
-        }
-        function checkAll() {
-            var checked = document.getElementById('ch-all').checked;
-            $('.ch-producto').prop('checked', checked);
-        }
-        function IngresarCantidad(event) {
-            let scantidad = $(this).val();
-            if (scantidad != '') {
-                let ds = event.target.dataset;
-                let idx = parseInt(ds.idx);
-                let pventa = parseFloat(ds.pventa);
-                let caja = parseInt(ds.caja);
-                let pcaja = parseFloat(ds.pcaja);
-                let stock = parseInt(ds.stock);
-                let cantidad = parseInt(scantidad);
-                let cajasnivel = parseInt(ds.cajasnivel);
-                // validaciones
-                let resto = cantidad % caja;
-                let cajas = Math.floor(cantidad / caja);
-                /*if (cantidad > stock) {
-                    cantidad = stock;
-                    $(this).val(stock);
-                    document.getElementById('alert-' + idx).innerHTML = 'Stock superado';
-                }
-                else {*/
-                    if (resto > 0) {
-                        cajas += 1;
-                        let faltante = cajas * caja;
-                        document.getElementById('alert-' + idx).innerHTML = faltante + ' para completar una caja';
-                    }
-                    else {
-                        document.getElementById('alert-' + idx).innerHTML = '';
-                    }
-                //}
-                document.getElementById('tcajas-' + idx).innerHTML = cajas;
-                let totalniveles = cajas / cajasnivel;
-                document.getElementById('tniveles-' + idx).innerHTML = cajas;
-                document.getElementById('tniveles-' + idx).innerHTML = cajas;
-                // tcajas, tniveles, tpallet -> cjnivel
-                let subtotal = cantidad * pventa;
-                let pallets = cajas / pcaja;
-                // actualiza array
-                catalogo[idx].cantidad = cantidad;
-                catalogo[idx].subtotal = subtotal;
-                catalogo[idx].cajas = cajas;
-                catalogo[idx].pallets = pallets;
-                //
-                document.getElementById('subtotal-' + idx).innerHTML = subtotal.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                document.getElementById('tpallets-' + idx).innerHTML = pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });;
-            }
-        }
-        EscribirCatalogoProductos = query => {
-            let tbody = $('<tbody>');
-            for (let j in catalogo) {
-                let item = catalogo[j];
-                if (query == '' || item.ean.indexOf(query) > -1 || item.nombre.toUpperCase().indexOf(query) > -1) {
-                    tbody.append(
-                        $('<tr>').append(
-                            $('<td>').html(item.ean)
-                        ).append(
-                            $('<td>').append(
-                                $('<p>').html(item.nombre).addClass('m-0 p-0 ptext')
-                            )
-                        ).append(
-                            $('<td>').html(item.pventa.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
-                        )/*.append(
-                            $('<td>').html(item.stock).addClass('text-right')
-                        )*/.append(
-                            $('<td>').append(
-                                $('<input>').attr({
-                                    type: 'text',
-                                    id: 'cnt-' + j,
-                                    'data-idx': j,
-                                    'data-codigo': item.codigo,
-                                    'data-pventa': item.pventa,
-                                    'data-caja': item.caja,
-                                    'data-pcaja': item.pcaja,
-                                    'data-cajasnivel': item.cjnivel,
-                                    'data-stock': item.stock,
-                                    'data-grupo': item.cogrupo
-                                }).addClass('form-control form-control-sm ip-cant').on('keyup', IngresarCantidad).prop('disabled', item.stock == 0)
-                            ).append(
-                                $('<small>').attr('id', 'alert-' + j).addClass('text-danger')
-                            )
-                        ).append(
-                            $('<td>').append(
-                                $('<span>').attr('id', 'subtotal-' + j).html('0') // subtotal
-                            ).addClass('text-right')
-                        ).append(
-                            $('<td>').html(item.caja).addClass('text-right') // unidades x caja
-                        ).append(
-                            $('<td>').append(
-                                $('<span>').attr('id', 'tcajas-' + j).html('0')
-                            ).addClass('text-right') // total cajas
-                        ).append(
-                            $('<td>').html(item.cjnivel).addClass('text-right') // cajas x nivel
-                        ).append(
-                            $('<td>').html(parseInt(item.pcaja) > 0 ? (parseInt(item.pcaja) / parseInt(item.cjnivel)).toFixed(2) : item.pcaja).addClass('text-right') // nivel x palet
-                        ).append(
-                            $('<td>').html(item.pcaja).addClass('text-right') // cajas x palet
-                        ).append(
-                            $('<td>').html(item.pesopt.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right font-weight-bold')
-                        ).append(
-                            $('<td>').html(item.largo.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right font-weight-bold')
-                        ).append(
-                            $('<td>').html(item.ancho.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right font-weight-bold')
-                        ).append(
-                            $('<td>').html(item.alto.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right font-weight-bold')
-                        ).append(
-                            $('<td>').append(
-                                $('<span>').attr('id', 'tniveles-' + j).html('0')
-                            ).addClass('text-right') // total niveles
-                        ).append(
-                            $('<td>').append(
-                                $('<span>').attr('id', 'tpallets-' + j).html('0') // total palets
-                            ).addClass('text-right')
-                        )
-                    );
-                }
-            }
-            $('#lista-container').empty().append(
-                $('<table>').append(
-                    $('<thead>').append(
-                        $('<tr>').append(
-                            $('<th>').html('EAN')
-                        ).append(
-                            $('<th>').html('Producto')
-                        ).append(
-                            $('<th>').html('P.Venta')
-                        )/*.append(
-                            $('<th>').html('Stock')
-                        )*/.append(
-                            $('<th>').html('Cantidad')
-                        ).append(
-                            $('<th>').html('Subtotal')
-                        ).append(
-                            $('<th>').html('Unids/ Caja')
-                        ).append(
-                            $('<th>').html('Tot.Cajas')
-                        ).append(
-                            $('<th>').html('Cajas por nivel')
-                        ).append(
-                            $('<th>').html('Niveles por palet')
-                        ).append(
-                            $('<th>').html('Cajas por palet')
-                        ).append(
-                            $('<th>').html('Peso PT')
-                        ).append(
-                            $('<th>').html('Largo (cm)')
-                        ).append(
-                            $('<th>').html('Ancho (cm)')
-                        ).append(
-                            $('<th>').html('Alto (cm)')
-                        ).append(
-                            $('<th>').html('Tot.Niveles')
-                        ).append(
-                            $('<th>').html('Tot.Palets')
-                        )
-                    )
-                ).append(tbody).addClass('table table-hover table-striped table-responsive')
-            );
-        }
-        CargarCatalogoProductos = async (event) => {
-            $('#lista-container').empty();
-            try {
-                let result = await $.ajax({
-                    url: '/extranet/catalogo-productos',
-                    method: 'post',
-                    data: { pedido: Pedido.codigo },
-                    dataType: 'json'
-                });
-                if (result.error) {
-                    alert(result.error);
+            ObsequiarProductos = async (event) => {
+                event.preventDefault();
+                let clave = document.getElementById('mp-clave').value;
+                if (clave == '') {
+                    alert('Ingrese la clave para marcar los productos como ttítulo gratuito');
                     return;
                 }
-                catalogo = result.productos;
-            }
-            catch (err) {
-                alert(err);
-            }
-            //
-            EscribirCatalogoProductos('');
-        }
-        EliminarProductos = async (event) => {
-            event.preventDefault();
-            let eliminar = [];
-            if (window.confirm('¿Eliminar los productos seleccionados?')) {
+                let gratis = [];
                 let productos = $('.ch-producto:checked');
                 $.each(productos, function () {
                     let chbox = $(this).val().split('@');
-                    eliminar.push({
+                    gratis.push({
                         tipo: chbox[0],
                         codigo: chbox[1],
                         difer: parseInt(chbox[2])
@@ -1184,9 +1391,9 @@ console.log('solicitud', solicitud);
                 let result;
                 try {
                     result = await $.ajax({
-                        url: '/extranet/eliminar-productos',
+                        url: '/extranet/obsequiar-productos',
                         method: 'post',
-                        data: { pedido: Pedido.codigo, productos: eliminar },
+                        data: { pedido: Pedido.codigo, productos: gratis, clave: clave },
                         dataType: 'json'
                     });
                     if (result.error) {
@@ -1198,257 +1405,138 @@ console.log('solicitud', solicitud);
                         if (mensaje.error) alert(mensaje.error);
                     }
                     DetallePedido = result.detalle;
-                    $('#modal-lista').modal('hide');
+                    $('#modal-permiso').modal('hide');
                     EscribirListaProductos();
                 }
                 catch (err) {
                     alert(err);
                 }
             }
-        }
-        AgregarProductos = async (event) => {
-            event.preventDefault();
-            const boton = $('#modal-lista .modal-footer .btn-primary');
-            boton.prop('disabled', true).empty().html('Procesando su pedido...');
-            let cantidades = $('.ip-cant');
-            let productos = [];
-            $.each(cantidades, function() {
-                let input = $(this);
-                if (input.val() != '' && input.val() != '0') {
-                    productos.push({
-                        grupo: input.data('grupo'),
-                        codigo: input.data('codigo'),
-                        pventa: input.data('pventa'),
-                        cantidad: parseInt(input.val()),
-                        tpventa: 'L'
-                    });
-                }
-            });
-            let result;
-            try {
-                result = await $.ajax({
-                    url: '/extranet/agregar-productos-expo',
-                    method: 'post',
-                    data: { productos: productos, pedido: Pedido.codigo },
-                    dataType: 'json'
-                });
-                if (result.error) {
-                    alert(JSON.stringify(result.error));
+            FormCargaMasivaSubmit = (event) => {
+                event.preventDefault();
+                if (document.getElementById('fl-plantilla').files.length == 0) {
+                    alert('No ha cargado una plantilla');
                     return;
                 }
-                let mensajes = result.data.mensajes;
-                for (let mensaje of mensajes) {
-                    if (mensaje.error) alert(mensaje.error);
+                $('#form-carga-masiva').append(
+                    $('<input>').attr({
+                        name: 'pedido',
+                        type: 'hidden'
+                    }).val(CodigoPedido)
+                );
+                document.getElementById('form-carga-masiva').submit();
+            }
+            ModalPermisosOnShow = (args) => {
+                document.getElementById('mp-clave').value = '';
+            }
+            ModalPermisosOnShown = (args) => {
+                if ($('.ch-producto:checked').length == 0) {
+                    alert('No ha seleccionado productos para marcar como título gratuito');
+                    $('#modal-permiso').modal('hide');
                 }
-                DetallePedido = result.data.detalle;
-                $('#modal-lista').modal('hide');
-                EscribirListaProductos();
-                alert('Se agregaron los productos');
-                boton.prop('disabled', false).empty().append(
-                    $('<i>').addClass('fa fa-plus')
-                ).append(' Agregar los productos');
-            }
-            catch (err) {
-                alert(err);
-                result;
-            }
-        }
-        ResumenPedido = (event) => {
-            document.getElementById('rp-items').value = totales.cantidad.toLocaleString('en-us', { minimumFractionDigits:0, maximumFractionDigits: 0 });
-            document.getElementById('rp-subtotal').value = Pedido.moneda + ' ' + totales.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            document.getElementById('rp-cajas').value = totales.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-            document.getElementById('rp-pallets').value = totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-        CerrarPedido = async (event) => {
-            event.preventDefault();
-            const boton = $('#modal-cierre .modal-footer .btn-success');
-            boton.prop('disabled', true);
-            boton.empty().html('Procesando. Por favor, espere...');
-            try {
-                let result = await $.ajax({
-                    url: '/extranet/cerrar-pedido',
-                    method: 'post',
-                    data: { pedido: CodigoPedido, cliente: Cliente.rucdni },
-                    dataType: 'json'
-                });
-                if (result.error) {
-                    alert(result.error);
-                    return;
+                else {
+                    $('#mp-clave').focus();
                 }
-                alert(result.mensaje);
-                location.href = '/extranet';
             }
-            catch (err) {
-                alert(err);
-            }
-        }
-        ObsequiarProductos = async (event) => {
-            event.preventDefault();
-            let clave = document.getElementById('mp-clave').value;
-            if (clave == '') {
-                alert('Ingrese la clave para marcar los productos como ttítulo gratuito');
-                return;
-            }
-            let gratis = [];
-            let productos = $('.ch-producto:checked');
-            $.each(productos, function () {
-                let chbox = $(this).val().split('@');
-                gratis.push({
-                    tipo: chbox[0],
-                    codigo: chbox[1],
-                    difer: parseInt(chbox[2])
-                });
-            });
-            let result;
-            try {
-                result = await $.ajax({
-                    url: '/extranet/obsequiar-productos',
-                    method: 'post',
-                    data: { pedido: Pedido.codigo, productos: gratis, clave: clave },
-                    dataType: 'json'
-                });
-                if (result.error) {
-                    alert(result.error);
-                    return;
-                }
-                let mensajes = result.mensajes;
-                for (let mensaje of mensajes) {
-                    if (mensaje.error) alert(mensaje.error);
-                }
-                DetallePedido = result.detalle;
-                $('#modal-permiso').modal('hide');
-                EscribirListaProductos();
-            }
-            catch (err) {
-                alert(err);
-            }
-        }
-        FormCargaMasivaSubmit = (event) => {
-            event.preventDefault();
-            if (document.getElementById('fl-plantilla').files.length == 0) {
-                alert('No ha cargado una plantilla');
-                return;
-            }
-            $('#form-carga-masiva').append(
-                $('<input>').attr({
-                    name: 'pedido',
-                    type: 'hidden'
-                }).val(CodigoPedido)
-            );
-            document.getElementById('form-carga-masiva').submit();
-        }
-        ModalPermisosOnShow = (args) => {
-            document.getElementById('mp-clave').value = '';
-        }
-        ModalPermisosOnShown = (args) => {
-            if ($('.ch-producto:checked').length == 0) {
-                alert('No ha seleccionado productos para marcar como título gratuito');
-                $('#modal-permiso').modal('hide');
-            }
-            else {
-                $('#mp-clave').focus();
-            }
-        }
-        function validarPopupResult() {
-            if (mensajes.length > 0) {
-                var numMensajes = mensajes.length;
-                for (var i = 0; i < numMensajes; i++) {
-                    var imensaje = mensajes[i];
-                    $('#res-tbody').append(
-                        $('<tr>').append(
-                            $('<td>').text(i + 1)
-                        ).append(
-                            $('<td>').text(imensaje.codigo)
-                        ).append(
-                            $('<td>').text(imensaje.nombre)
-                        ).append(
-                            $('<td>').text(imensaje.cantidad)
-                        ).append(
-                            $('<td>').text(imensaje.tipo)
-                        )
-                    );
-                }
-                $('#modal-result').modal('show');
-            }
-        }
-        function enviarSolicitudCredito (event) {
-            event.preventDefault();
-            var data = {
-                cliente: Cliente.rucdni,
-                importe: document.getElementById('solcrd-importe').value,
-                inicial: document.getElementById('solcrd-inicial').value,
-                fventa: document.getElementById('solcrd-fventa').value,
-                cpago: document.getElementById('solcrd-cpago').value,
-                observaciones: document.getElementById('solcrd-observaciones').value
-            };
-            $.ajax({
-                url: '/extranet/enviar-solicitud-credito',
-                method: 'post',
-                data: data,
-                dataType: 'json',
-                success: function (result) {
-                    if (result.error) {
-                        $('#modal-solcrd').modal('hide');
-                        alert(result.error);
-                        return;
+            function validarPopupResult() {
+                if (mensajes.length > 0) {
+                    var numMensajes = mensajes.length;
+                    for (var i = 0; i < numMensajes; i++) {
+                        var imensaje = mensajes[i];
+                        $('#res-tbody').append(
+                            $('<tr>').append(
+                                $('<td>').text(i + 1)
+                            ).append(
+                                $('<td>').text(imensaje.codigo)
+                            ).append(
+                                $('<td>').text(imensaje.nombre)
+                            ).append(
+                                $('<td>').text(imensaje.cantidad)
+                            ).append(
+                                $('<td>').text(imensaje.tipo)
+                            )
+                        );
                     }
-                    $('#modal-solcrd').modal('hide');
-                    alert('Solicitud de crédito enviada');
-                    location.reload();
-                },
-                error: function (error) {
-                    alert(error);
-                    $('#modal-solcrd').modal('hide');
+                    $('#modal-result').modal('show');
                 }
-            });
-        }
-        function formFilterOnSubmit (event) {
-            event.preventDefault();
-            var query = document.getElementById('form-query').value;
-            EscribirCatalogoProductos(query.toUpperCase());
-        }
-        function AperturaPrePedido (event) {
-            event.preventDefault();
-            if (window.confirm('Está a punto de abrir el pedido. Podrá agregar/quitar productos y/o modificar las cantidades de los productos añadidos. Tome en cuenta que puede haber cambios en las cantidades originales ingresadas debido a la disponibilidad de stocks. ¿Desea continuar?')) {
+            }
+            function enviarSolicitudCredito (event) {
+                event.preventDefault();
+                var data = {
+                    cliente: Cliente.rucdni,
+                    importe: document.getElementById('solcrd-importe').value,
+                    inicial: document.getElementById('solcrd-inicial').value,
+                    fventa: document.getElementById('solcrd-fventa').value,
+                    cpago: document.getElementById('solcrd-cpago').value,
+                    observaciones: document.getElementById('solcrd-observaciones').value
+                };
                 $.ajax({
-                    url: '/extranet/abrir-pre-pedido',
+                    url: '/extranet/enviar-solicitud-credito',
                     method: 'post',
-                    data: { pedido: CodigoPedido, usuario: sesdata.codigo },
+                    data: data,
                     dataType: 'json',
                     success: function (result) {
                         if (result.error) {
+                            $('#modal-solcrd').modal('hide');
                             alert(result.error);
                             return;
                         }
-                        alert('El pedido ha sido abierto');
+                        $('#modal-solcrd').modal('hide');
+                        alert('Solicitud de crédito enviada');
                         location.reload();
                     },
-                    error: function(error) {
-                        alert(error.getMessage());
+                    error: function (error) {
+                        alert(error);
+                        $('#modal-solcrd').modal('hide');
                     }
                 });
             }
-        }
-        // iniciar la interfaz
-        if (sesdata.admin != 'S') {
-            $('#btn-itsfree').remove();
-        }
-        $('#btn-eliminar').on('click', EliminarProductos);
-        $('#btn-editar').on('click', AperturaPrePedido);
-        // $('#modal-plantilla .modal-footer .btn-success').on('click', AdjuntarPlantilla);
-        $('#modal-plantilla .modal-footer .btn-success').on('click', FormCargaMasivaSubmit);
-        $('#modal-lista').on('show.bs.modal', CargarCatalogoProductos);
-        $('#modal-lista .modal-footer .btn-primary').on('click', AgregarProductos);
-        $('#modal-cierre').on('show.bs.modal', ResumenPedido);
-        $('#modal-cierre .modal-footer .btn-success').on('click', CerrarPedido);
-        $('#modal-permiso').on('show.bs.modal', ModalPermisosOnShow);
-        $('#modal-permiso').on('shown.bs.modal', ModalPermisosOnShown);
-        $('#mp-submit').on('click', ObsequiarProductos);
-        $('#solcrd-submit').on('click', enviarSolicitudCredito);
-        $('#form-filter').on('submit', formFilterOnSubmit);
-        CargarDatosPedido();
-//        validarPopupResult();
-    </script>
-</body>
-
+            function formFilterOnSubmit (event) {
+                event.preventDefault();
+                var query = document.getElementById('form-query').value;
+                EscribirCatalogoProductos(query.toUpperCase());
+            }
+            function AperturaPrePedido (event) {
+                event.preventDefault();
+                if (window.confirm('Está a punto de abrir el pedido. Podrá agregar/quitar productos y/o modificar las cantidades de los productos añadidos. Tome en cuenta que puede haber cambios en las cantidades originales ingresadas debido a la disponibilidad de stocks. ¿Desea continuar?')) {
+                    $.ajax({
+                        url: '/extranet/abrir-pre-pedido',
+                        method: 'post',
+                        data: { pedido: CodigoPedido, usuario: sesdata.codigo },
+                        dataType: 'json',
+                        success: function (result) {
+                            if (result.error) {
+                                alert(result.error);
+                                return;
+                            }
+                            alert('El pedido ha sido abierto');
+                            location.reload();
+                        },
+                        error: function(error) {
+                            alert(error.getMessage());
+                        }
+                    });
+                }
+            }
+            // iniciar la interfaz
+            if (sesdata.admin != 'S') {
+                $('#btn-itsfree').remove();
+            }
+            $('#btn-eliminar').on('click', EliminarProductos);
+            $('#btn-editar').on('click', AperturaPrePedido);
+            // $('#modal-plantilla .modal-footer .btn-success').on('click', AdjuntarPlantilla);
+            $('#modal-plantilla .modal-footer .btn-success').on('click', FormCargaMasivaSubmit);
+            $('#modal-lista').on('show.bs.modal', CargarCatalogoProductos);
+            $('#modal-lista .modal-footer .btn-primary').on('click', AgregarProductos);
+            $('#modal-cierre').on('show.bs.modal', ResumenPedido);
+            $('#modal-cierre .modal-footer .btn-success').on('click', CerrarPedido);
+            $('#modal-permiso').on('show.bs.modal', ModalPermisosOnShow);
+            $('#modal-permiso').on('shown.bs.modal', ModalPermisosOnShown);
+            $('#mp-submit').on('click', ObsequiarProductos);
+            $('#solcrd-submit').on('click', enviarSolicitudCredito);
+            $('#form-filter').on('submit', formFilterOnSubmit);
+            CargarDatosPedido();
+    //        validarPopupResult();
+        </script>
+    </body>
 </html>

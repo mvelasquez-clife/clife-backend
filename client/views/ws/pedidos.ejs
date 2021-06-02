@@ -21,7 +21,7 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item active">
-                        <a class="nav-link" href="#">Carga de reporte de depósitos</a>
+                        <a class="nav-link" href="#">Pedidos E-commerce</a>
                     </li>
                 </ul>
             </div>
@@ -69,16 +69,24 @@
                     </form>
                 </div>
             </div>
-            <div id="detalle-pedidos" class="row justify-content-center"></div>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <div id="detalle-pedidos" class="row justify-content-center mx-3"></div>
+                </div>
+            </div>
         </div>
     </body>
     <!-- modal -->
-    <div id="modal-detalle-pedido" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+    <div id="modal-detalle-pedido" class="modal fade" tabindex="-1" data-backdrop="static">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title text-success"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <div class="modal-body">
                     <div class="row mb-4">
@@ -108,7 +116,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Cerrar esta ventana</button>
+                    <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Cerrar esta ventana</button>
                 </div>
             </div>
         </div>
@@ -141,6 +149,20 @@
                     ).append(
                         $('<td>').text(pedido.nombre)
                     ).append(
+                        $('<td>').append(
+                            $('<p>').text(pedido.direccion).addClass('mb-0')
+                        ).append(
+                            $('<small>').html('<b>Ref.:</b> ' + pedido.referencias)
+                        )
+                    ).append(
+                        $('<td>').text(pedido.departamento)
+                    ).append(
+                        $('<td>').text(pedido.provincia)
+                    ).append(
+                        $('<td>').text(pedido.distrito)
+                    ).append(
+                        $('<td>').text(pedido.telefonos)
+                    ).append(
                         $('<td>').text(pedido.importe.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}))
                     ).append(
                         $('<td>').text(pedido.flete.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}))
@@ -171,6 +193,18 @@
                     ).append(
                         $('<td>').text(pedido.nombre)
                     ).append(
+                        $('<td>').text(pedido.direccion)
+                    ).append(
+                        $('<td>').text(pedido.referencias)
+                    ).append(
+                        $('<td>').text(pedido.departamento)
+                    ).append(
+                        $('<td>').text(pedido.provincia)
+                    ).append(
+                        $('<td>').text(pedido.distrito)
+                    ).append(
+                        $('<td>').text(pedido.telefonos)
+                    ).append(
                         $('<td>').text(pedido.importe.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}))
                     ).append(
                         $('<td>').text(pedido.flete.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2}))
@@ -191,6 +225,18 @@
                         $('<th>').text('RUC/DNI')
                     ).append(
                         $('<th>').text('Cliente')
+                    ).append(
+                        $('<th>').text('Dirección')
+                    ).append(
+                        $('<th>').text('Referencias')
+                    ).append(
+                        $('<th>').text('Departamento')
+                    ).append(
+                        $('<th>').text('Provincia')
+                    ).append(
+                        $('<th>').text('Distrito')
+                    ).append(
+                        $('<th>').text('Teléfono')
                     ).append(
                         $('<th>').text('Importe')
                     ).append(
@@ -216,6 +262,16 @@
                                 ).append(
                                     $('<th>').text('Cliente')
                                 ).append(
+                                    $('<th>').text('Dirección')
+                                ).append(
+                                    $('<th>').text('Departamento')
+                                ).append(
+                                    $('<th>').text('Provincia')
+                                ).append(
+                                    $('<th>').text('Distrito')
+                                ).append(
+                                    $('<th>').text('Teléfono')
+                                ).append(
                                     $('<th>').text('Importe')
                                 ).append(
                                     $('<th>').text('Flete')
@@ -223,7 +279,7 @@
                                     $('<th>').text('')
                                 )
                             )
-                        ).append(tbody).addClass('table table-sm table-striped table-hover')
+                        ).append(tbody).addClass('table table-sm table-striped table-hover table-responsive')
                     ).addClass('col alert alert-light shadow-sm pt-3 pb-2 px-4')
                 ).addClass('row')
             ).append(
@@ -312,6 +368,10 @@
                         ).append(
                             $('<td>').text(item.descripcion)
                         ).append(
+                            $('<td>').text(item.marca)
+                        ).append(
+                            $('<td>').text(item.submarca)
+                        ).append(
                             $('<td>').text(item.prventa.toLocaleString('en-us', {minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right')
                         ).append(
                             $('<td>').text(item.cantidad).addClass('text-right')
@@ -333,6 +393,10 @@
                             $('<thead>').append(
                                 $('<tr>').append(
                                     $('<th>').text('Producto').attr('colspan', 2)
+                                ).append(
+                                    $('<th>').text('Marca')
+                                ).append(
+                                    $('<th>').text('Submarca')
                                 ).append(
                                     $('<th>').text('Precio venta')
                                 ).append(

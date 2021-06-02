@@ -2,7 +2,11 @@ const { resultSet } = require('./../../server/libs/db-oracle');
 const db = require('./../../server/libs/db-oracle');
 const pwmanager = require('./../../server/libs/password-manager');
 const tknmanager = require('./../../server/libs/token-manager');
+const xlsx = require('xlsx');
 const DEFAULT_EMPRESA = 11;
+const DEFAULT_VENDEDOR = 199;
+const DEFAULT_TIPOLISTA = 5;
+const DEFAULT_COLISTA = 32;
 
 const WsController = {
     // vistas
@@ -26,6 +30,26 @@ const WsController = {
         const path = require('path');
         response.render(path.resolve('client/views/ws/lisprecios.ejs'));
     },
+    VerPlanillasCobranza: async (request, response) => {
+        const path = require('path');
+        response.render(path.resolve('client/views/ws/planillas.ejs'));
+    },
+    IngresoManualPedidos: async (request, response) => {
+        const path = require('path');
+        response.render(path.resolve('client/views/ws/rgpedido.ejs'));
+    },
+    IngresoManualPedidosExtend: async (request, response) => {
+        const path = require('path');
+        response.render(path.resolve('client/views/ws/rgpedido-extend.ejs'));
+    },
+    ReportePedidos: async (request, response) => {
+        const path = require('path');
+        response.render(path.resolve('client/views/ws/reporte-pedidos.ejs'));
+    },
+    ReporteVentas: async (request, response) => {
+        const path = require('path');
+        response.render(path.resolve('client/views/ws/reporte-ventas.ejs'));
+    },
     UploadArchivoDeposito: async (request, response) => {
         const formidable = require('formidable');
         const mv = require('mv');
@@ -44,6 +68,7 @@ const WsController = {
             const newpath = fupload.tmppath + files.archivo.name;
             const alias = 'CCARRITOVTEX11';
             mv(oldpath, newpath, async function (mverr) {
+                let arr_documentos = [];
                 if (mverr) {
                     response.json({
                         error: mverr.getMessage()
@@ -80,10 +105,10 @@ const WsController = {
                             let valor_proceso = row[keys[10]];
                             let moneda_proceso = row[keys[11]];
                             let medio_pago = row[keys[13]];
-                            let tipo_tarjeta = row[keys[15]];
-                            let banco_emisor = row[keys[17]];
+                            let tipo_tarjeta = row[keys[14]];
+                            let banco_emisor = row[keys[16]];
                             let trazabilidad = row['C?digo de trazabilidad'];
-                            let aliado = row['id aliado'];
+                            let aliado = row['id aliado'] ? row['id aliado'] : '';
                             // formatea las fechas
                             let referencia = vreferencia.split('-')[1];
                             let creacion = fcreacion.getDate().toString().padStart(2,'0') + "-" + (fcreacion.getMonth() + 1).toString().padStart(2,'0') + "-" + fcreacion.getFullYear() + " " + fcreacion.getHours().toString().padStart(2,'0') + ":" + fcreacion.getMinutes().toString().padStart(2,'0');
@@ -112,37 +137,54 @@ const WsController = {
                             ];
                             let result = await db.resultSet(query, params);
                             if (result.o_codigo == 1) vDetalle.push([monto, referencia, transaccion].join('|'));
+                            arr_documentos.push(referencia);
                         }
                     }
-                    if (vDetalle.length == 0) {
-                        response.json({
-                            error: 'Todos los pagos del archivo ya han sido registrados anteriormente'
-                        });
-                        return;
+                    let coplanilla = 'X';
+                    if (vDetalle.length > 0) {
+                        let detalle = vDetalle.join('@');
+                        // llama al pinche sp xd
+                        let params = [
+                            { name: 'o_codigo', io: 'out', type: 'number' },
+                            { name: 'o_mensaje', io: 'out', type: 'string' },
+                            { name: 'o_planilla', io: 'out', type: 'cursor' },
+                            { name: 'p_alias', io: 'in', value: alias },
+                            { name: 'p_detalle', io: 'in', value: detalle },
+                            { name: 'p_pasarela', io: 'in', value: pasarela }
+                        ];
+                        let query = 'call pack_sistmovil.sp_registra_pago_planilla (:o_codigo, :o_mensaje, :o_planilla, :p_alias, to_clob(:p_detalle), :p_pasarela)';
+                        let result = await db.resultSet(query, params);
+                        if (result.error) {
+                            response.json({
+                                error: result.error
+                            });
+                            return;
+                        }
+                        if (result.o_codigo == -1) {
+                            response.json({
+                                error: result.o_mensaje
+                            });
+                            return;
+                        }
+                        if (result.o_codigo == 0) {
+                            response.json({
+                                error: 'Ocurrió un error al registrar los pagos'
+                            });
+                            return;
+                        }
+                        coplanilla = result.o_mensaje;
                     }
-                    let detalle = vDetalle.join('@');
-                    // llama al pinche sp xd
+                    // carga planillas de los documentos
                     let params = [
-                        { name: 'o_codigo', io: 'out', type: 'number' },
-                        { name: 'o_mensaje', io: 'out', type: 'string' },
-                        { name: 'o_planilla', io: 'out', type: 'cursor' },
-                        { name: 'p_alias', io: 'in', value: alias },
-                        { name: 'p_detalle', io: 'in', value: detalle },
-                        { name: 'p_pasarela', io: 'in', value: pasarela }
+                        { name: 'p_detalle', io: 'in', value: arr_documentos.join('@') },
+                        { name: 'o_datos', io: 'out', type: 'cursor' }
                     ];
-                    let query = 'call pack_sistmovil.sp_registra_pago_planilla (:o_codigo, :o_mensaje, :o_planilla, :p_alias, to_clob(:p_detalle), :p_pasarela)';
+                    let query = 'call pack_web_service.sp_reporte_transacciones (:p_detalle, :o_datos)';
                     let result = await db.resultSet(query, params);
-console.log(params, result);
-                    if (result.o_codigo == -1) {
-                        response.json({
-                            error: 'err: ' + result.o_mensaje
-                        });
-                        return;
-                    }
                     // devuelve los datos plox
                     response.json({
-                        planilla: result.o_mensaje,
-                        detalle: result.o_planilla
+                        planilla: coplanilla,
+                        detalle: result.o_datos
                     });
                     return;
                 }
@@ -152,7 +194,6 @@ console.log(params, result);
                     });
                     let sheet_name_list = workbook.SheetNames;
                     let xlData = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
-console.log(xlData);
                     // lee los datos útiles
                     let vDetalle = [];
                     for (var row of xlData) {
@@ -160,13 +201,12 @@ console.log(xlData);
                         if (orden_comercio && orden_comercio.indexOf('-') > -1) {
                             // captura las demas variables
                             let cip = row['__EMPTY'];
-console.log(row, cip);
                             let moneda = row['__EMPTY_6'];
                             let monto = row['__EMPTY_7'];
                             let femision = row['__EMPTY_9'];
                             let fcancelacion = row['__EMPTY_11'];
                             let origen_cancela = row['__EMPTY_12'];
-                            let agencia = row['__EMPTY_13'];
+                            let agencia = row['__EMPTY_13'] || '';
                             let nom_cliente = row['__EMPTY_14'];
                             let ape_cliente = row['__EMPTY_15'];
                             let desc_cliente = row['__EMPTY_16'];
@@ -191,7 +231,7 @@ console.log(row, cip);
                                 { name: 'p_emision', io: 'in', value: emision },
                                 { name: 'p_cancelacion', io: 'in', value: cancelacion },
                                 { name: 'p_origen_cancela', io: 'in', value: origen_cancela },
-                                { name: 'p_agencia', io: 'in', value: agencia },
+                                { name: 'p_agencia', io: 'in', value: agencia ? agencia : '' },
                                 { name: 'p_nom_cliente', io: 'in', value: nom_cliente },
                                 { name: 'p_ape_cliente', io: 'in', value: ape_cliente },
                                 { name: 'p_desc_cliente', io: 'in', value: desc_cliente },
@@ -204,38 +244,55 @@ console.log(row, cip);
                                 { name: 'p_email', io: 'in', value: email }
                             ];
                             let result = await db.resultSet(query, params);
-console.log(query, params, result);
                             if (result.o_codigo == 1) vDetalle.push([monto, orderid, cip].join('|'));
+                            arr_documentos.push(orderid);
                         }
                     }
-                    if (vDetalle.length == 0) {
-                        response.json({
-                            error: 'Todos los pagos del archivo ya han sido registrados anteriormente'
-                        });
-                        return;
+                    let coplanilla = 'X';
+                    if (vDetalle.length > 0) {
+                        let detalle = vDetalle.join('@');
+                        // llama al pinche sp xd
+                        let params = [
+                            { name: 'o_codigo', io: 'out', type: 'number' },
+                            { name: 'o_mensaje', io: 'out', type: 'string' },
+                            { name: 'o_planilla', io: 'out', type: 'cursor' },
+                            { name: 'p_alias', io: 'in', value: alias },
+                            { name: 'p_detalle', io: 'in', value: detalle },
+                            { name: 'p_pasarela', io: 'in', value: pasarela }
+                        ];
+                        let query = 'call pack_sistmovil.sp_registra_pago_planilla (:o_codigo, :o_mensaje, :o_planilla, :p_alias, :p_detalle, :p_pasarela)';
+                        let result = await db.resultSet(query, params);
+                        if (result.error) {
+                            response.json({
+                                error: result.error
+                            });
+                            return;
+                        }
+                        if (result.o_codigo == -1) {
+                            response.json({
+                                error: result.o_mensaje
+                            });
+                            return;
+                        }
+                        if (result.o_codigo == 0) {
+                            response.json({
+                                error: 'Ocurrió un error al registrar los pagos'
+                            });
+                            return;
+                        }
+                        coplanilla = result.o_mensaje;
                     }
-                    let detalle = vDetalle.join('@');
-                    // llama al pinche sp xd
+                    // carga planillas de los documentos
                     let params = [
-                        { name: 'o_codigo', io: 'out', type: 'number' },
-                        { name: 'o_mensaje', io: 'out', type: 'string' },
-                        { name: 'o_planilla', io: 'out', type: 'cursor' },
-                        { name: 'p_alias', io: 'in', value: alias },
-                        { name: 'p_detalle', io: 'in', value: detalle },
-                        { name: 'p_pasarela', io: 'in', value: pasarela }
+                        { name: 'p_detalle', io: 'in', value: arr_documentos.join('@') },
+                        { name: 'o_datos', io: 'out', type: 'cursor' }
                     ];
-                    let query = 'call pack_sistmovil.sp_registra_pago_planilla (:o_codigo, :o_mensaje, :o_planilla, :p_alias, :p_detalle, :p_pasarela)';
+                    let query = 'call pack_web_service.sp_reporte_transacciones (:p_detalle, :o_datos)';
                     let result = await db.resultSet(query, params);
-                    if (result.o_codigo == -1) {
-                        response.json({
-                            error: result.o_mensaje
-                        });
-                        return;
-                    }
                     // devuelve los datos plox
                     response.json({
-                        planilla: result.o_mensaje,
-                        detalle: result.o_planilla
+                        planilla: coplanilla,
+                        detalle: result.o_datos
                     });
                     return;
                 }
@@ -339,17 +396,45 @@ console.log(query, params, result);
             data: result.rs
         });
     },
-    CargaListaPrecios: async (request, response) => {
-        let empresa = 11;
-        let tipo = 5;
-        let lista = 32;
+    DetalleListas: async (request, response) => {
+        let empresa = DEFAULT_EMPRESA;
+        let tipo = DEFAULT_TIPOLISTA;
+        let lista = DEFAULT_COLISTA;
         let params = [
             { name: 'empresa', io: 'in', value: empresa },
             { name: 'tipo', io: 'in', value: tipo },
             { name: 'lista', io: 'in', value: lista },
             { name: 'rs', io: 'out', type: 'cursor' }
         ];
-        let result = await db.resultSet('call pack_web_service.sp_lista_precios (:empresa, :tipo, :lista, :rs)', params);
+        let result = await db.resultSet('call pack_web_service.sp_detalle_listas (:empresa, :tipo, :lista, :rs)', params);
+        if (result.error) {
+            response.status(401).json({
+                error: result.error
+            });
+            return;
+        }
+        response.json({
+            listas: result.rs
+        });
+    },
+    CargaListaPrecios: async (request, response) => {
+        const { lista } = request.query;
+        let empresa = DEFAULT_EMPRESA;
+        let tipo = DEFAULT_TIPOLISTA;
+        let colista = DEFAULT_COLISTA;
+        let query = "call pack_web_service.sp_lista_precios (:empresa, :tipo, :lista, :rs, :o_nombre, :o_serie, :o_desde, :o_hasta, :serie)";
+        let params = [
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'tipo', io: 'in', value: tipo },
+            { name: 'lista', io: 'in', value: colista },
+            { name: 'rs', io: 'out', type: 'cursor' },
+            { name: 'o_nombre', io: 'out', type: 'string' },
+            { name: 'o_serie', io: 'out', type: 'number' },
+            { name: 'o_desde', io: 'out', type: 'string' },
+            { name: 'o_hasta', io: 'out', type: 'string' },
+            { name: 'serie', io: 'in', value: lista }
+        ];
+        let result = await db.resultSet(query, params);
         if (result.error) {
             response.status(401).json({
                 error: result.error
@@ -364,7 +449,11 @@ console.log(query, params, result);
         }
         // fin
         response.json({
-            data: rsOut
+            data: rsOut,
+            lista: result.o_nombre,
+            serie: result.o_serie,
+            desde: result.o_desde,
+            hasta: result.o_hasta
         });
     },
     // apis
@@ -477,9 +566,13 @@ console.log(query, params, result);
             { name: 'empresa', io: 'in', value: empresa },
             { name: 'tipo', io: 'in', value: tipo },
             { name: 'lista', io: 'in', value: lista },
-            { name: 'rs', io: 'out', type: 'cursor' }
+            { name: 'rs', io: 'out', type: 'cursor' },
+            { name: 'o_nombre', io: 'out', type: 'string' },
+            { name: 'o_serie', io: 'out', type: 'number' },
+            { name: 'o_desde', io: 'out', type: 'string' },
+            { name: 'o_hasta', io: 'out', type: 'string' }
         ];
-        let result = await db.resultSet('call pack_web_service.sp_lista_precios (:empresa, :tipo, :lista, :rs)', params);
+        let result = await db.resultSet('call pack_web_service.sp_lista_precios (:empresa, :tipo, :lista, :rs, :o_nombre, :o_serie, :o_desde, :o_hasta)', params);
         if (result.error) {
             response.status(401).json({
                 error: result.error
@@ -494,7 +587,11 @@ console.log(query, params, result);
         }
         // fin
         response.json({
-            data: rsOut
+            data: rsOut,
+            lista: result.o_nombre,
+            serie: result.o_serie,
+            desde: result.o_desde,
+            hasta: result.o_hasta
         });
     },
     ListaAlmacenes: async (request, response) => {
@@ -994,7 +1091,6 @@ console.log(query, params, result);
             });
             return;
         }
-console.log('tokenData', tokenData);
         let jsparams = JSON.stringify(request.body);
         const { cliente, direccion, fecha, factura, flete, orderid, sispago, observaciones, detalle, pagoid, fepago, deposito, comision, igv, pventa } = request.body;
         if (typeof cliente == 'undefined' || typeof direccion == 'undefined' || typeof fecha == 'undefined' || typeof factura == 'undefined' ||
@@ -1019,7 +1115,6 @@ console.log('tokenData', tokenData);
             { name: 'codigo', io: 'out', type: 'number' },
             { name: 'mensaje', io: 'out', type: 'string' }
         ];
-console.log('sp_log_request', query, params);
         await db.statement(query, params);
         // genera el pedido
         params = [
@@ -1043,7 +1138,6 @@ console.log('sp_log_request', query, params);
         ];
         query = 'call pack_web_service.sp_registra_pedido (:codigo, :mensaje, :cliente, :direccion, :fecha, :factura, :flete, :orderid, :sispago, :observaciones, ' +
             ':detalle, :pagoid, :fepago, :deposito, :comision, :igv, :pventa)';
-console.log('sp_registra_pedido', query, params);
         let result = await db.statement(query, params);
         // listo
         if (result.error) {
@@ -1142,6 +1236,303 @@ console.log('sp_registra_pedido', query, params);
         response.json({
             pedido: result.out.pedido
         });
+    },
+    ListaPlanillas: async (request, response) => {
+        const { desde, hasta } = request.query;
+        let query = "call pack_web_service.sp_planillas_cobranza (:empresa, :recaudador, :desde, :hasta, :rs)";
+        let params = [
+            { name: 'empresa', io: 'in', value: DEFAULT_EMPRESA },
+            { name: 'recaudador', io: 'in', value: DEFAULT_VENDEDOR },
+            { name: 'desde', io: 'in', value: desde },
+            { name: 'hasta', io: 'in', value: hasta },
+            { name: 'rs', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        response.json({
+            planillas: result.rs
+        });
+    },
+    DetallePlanilla: async (request, response) => {
+        const { planilla } = request.query;
+        let query = "call pack_web_service.sp_detalle_panilla (:empresa, :planilla, :rs)";
+        let params = [
+            { name: 'empresa', io: 'in', value: DEFAULT_EMPRESA },
+            { name: 'planilla', io: 'in', value: planilla },
+            { name: 'rs', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        response.json({
+            detalle: result.rs
+        });
+    },
+    DatosListaPrecios: async (request, response) => {
+        const { fecha } = request.query;
+        let query = "call pack_web_service.sp_datos_lista (:lista, :empresa, :fecha, :olista, :oserie, :onombre, :oinicio, :ofin)";
+        let params = [
+            { name: 'lista', io: 'in', value: DEFAULT_COLISTA },
+            { name: 'empresa', io: 'in', value: DEFAULT_EMPRESA },
+            { name: 'fecha', io: 'in', value: fecha },
+            { name: 'olista', io: 'out', type: 'number' },
+            { name: 'oserie', io: 'out', type: 'number' },
+            { name: 'onombre', io: 'out', type: 'string' },
+            { name: 'oinicio', io: 'out', type: 'string' },
+            { name: 'ofin', io: 'out', type: 'string' }
+        ];
+        let result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        response.json({
+            datos: result
+        });
+    },
+    VerificaOrderId: async (request, response) => {
+        let token = request.headers['authorization'];
+        if (!token) {
+            response.status(401).send({
+                error: 'Es necesario el token de autenticación'
+            });
+            return;
+        }
+        let tokenData = tknmanager.ObtenerDatos(token);
+        if (tokenData.error) {
+            response.status(401).send({
+                error: tokenData.error
+            });
+            return;
+        }
+        const { orderid } = request.query;
+        let query = "call pack_web_service.sp_verifica_orderid (:orderid, :codigo, :resultado, :json)";
+        let params = [
+            { name: 'orderid', io: 'in', value: orderid },
+            { name: 'codigo', io: 'out', type: 'number' },
+            { name: 'resultado', io: 'out', type: 'string' },
+            { name: 'json', io: 'out', type: 'clob' }
+        ];
+        let result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.codigo == -1) {
+            response.json({
+                error: result.resultado
+            });
+            return;
+        }
+        response.json({
+            data: result.json
+        });
+    },
+    CargaDatosProducto: async (request, response) => {
+        let token = request.headers['authorization'];
+        if (!token) {
+            response.status(401).send({
+                error: 'Es necesario el token de autenticación'
+            });
+            return;
+        }
+        let tokenData = tknmanager.ObtenerDatos(token);
+        if (tokenData.error) {
+            response.status(401).send({
+                error: tokenData.error
+            });
+            return;
+        }
+        const { producto, colista, serielista } = request.query;
+        let query = "call pack_web_service.sp_datos_producto (:producto,:colista,:serielista,:ocodigo,:odescripcion,:opventa,:odescuento)";
+        let params = [
+            { name: 'producto', io: 'in', value: producto },
+            { name: 'colista', io: 'in', value: colista },
+            { name: 'serielista', io: 'in', value: serielista },
+            { name: 'ocodigo', io: 'out', type: 'string' },
+            { name: 'odescripcion', io: 'out', type: 'string' },
+            { name: 'opventa', io: 'out', type: 'number' },
+            { name: 'odescuento', io: 'out', type: 'number' }
+        ];
+        let result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.codigo == -1) {
+            response.json({
+                error: result.odescripcion
+            });
+            return;
+        }
+        response.json({
+            codigo: result.ocodigo,
+            descripcion: result.odescripcion,
+            pventa: result.opventa,
+            descuento: result.odescuento
+        });
+    },
+    CargaDatosProducto: async (request, response) => {
+        const { desde, hasta, marca, submarca } = request.query;
+        let query = "call pack_web_service.sp_reporte_productos (:desde,:hasta,:marcas,:submacas,:oreporte)";
+        let params = [
+            { name: 'desde', io: 'in', value: desde },
+            { name: 'hasta', io: 'in', value: hasta },
+            { name: 'marcas', io: 'in', value: marca },
+            { name: 'submacas', io: 'in', value: submarca },
+            { name: 'oreporte', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        response.json({
+            datos: result.oreporte
+        });
+    },
+    CargaDatosVentas: async (request, response) => {
+        const { desde, hasta } = request.query;
+        let query = "call pack_web_service.sp_reporte_ventas (:desde,:hasta,:oreporte)";
+        let params = [
+            { name: 'desde', io: 'in', value: desde },
+            { name: 'hasta', io: 'in', value: hasta },
+            { name: 'oreporte', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        response.json({
+            datos: result.oreporte
+        });
+    },
+    XlsReporteVentas: async (request, response) => {
+        const { desde, hasta } = request.query;
+        let query = "call pack_web_service.sp_reporte_ventas (:desde,:hasta,:oreporte)";
+        let params = [
+            { name: 'desde', io: 'in', value: desde },
+            { name: 'hasta', io: 'in', value: hasta },
+            { name: 'oreporte', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        // escribe archivo excel
+        const wb = xlsx.utils.book_new();
+        wb.SheetNames.push("reporte-ventas");
+        //
+        let ws = xlsx.utils.json_to_sheet(result.oreporte);
+        wb.Sheets["reporte-ventas"] = ws;
+        let wbbuf = xlsx.write(wb, {
+            bookType: 'xlsx',
+            bookSST: false,
+            type: 'buffer'
+        });
+        response.writeHead(200, {
+            'Content-Disposition': 'attachment;filename=reporte_ventas.xlsx',
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        response.end(wbbuf);
+    },
+    XlsListaPrecios: async (request, response) => {
+        const { desde, hasta } = request.query;
+        /*
+        const { lista } = request.query;
+        let empresa = DEFAULT_EMPRESA;
+        let tipo = DEFAULT_TIPOLISTA;
+        let colista = DEFAULT_COLISTA;
+        let query = "call pack_web_service.sp_lista_precios (:empresa, :tipo, :lista, :rs, :o_nombre, :o_serie, :o_desde, :o_hasta, :serie)";
+        let params = [
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'tipo', io: 'in', value: tipo },
+            { name: 'lista', io: 'in', value: colista },
+            { name: 'rs', io: 'out', type: 'cursor' },
+            { name: 'o_nombre', io: 'out', type: 'string' },
+            { name: 'o_serie', io: 'out', type: 'number' },
+            { name: 'o_desde', io: 'out', type: 'string' },
+            { name: 'o_hasta', io: 'out', type: 'string' },
+            { name: 'serie', io: 'in', value: lista }
+        ];
+        let result = await db.resultSet(query, params);
+        if (result.error) {
+            response.status(401).json({
+                error: result.error
+            });
+            return;
+        }
+        // corrige la ptmr
+        let rsOut = [];
+        for (let row of result.rs) {
+            row.precVentaSinIgv = row.precVentaSinIgv.toFixed(2);
+            rsOut.push(row);
+        }
+        // fin
+        response.json({
+            data: rsOut,
+            lista: result.o_nombre,
+            serie: result.o_serie,
+            desde: result.o_desde,
+            hasta: result.o_hasta
+        });
+        */
+        const { lista } = request.query;
+        let empresa = DEFAULT_EMPRESA;
+        let tipo = DEFAULT_TIPOLISTA;
+        let colista = DEFAULT_COLISTA;
+        let query = "call pack_web_service.sp_lista_precios (:empresa, :tipo, :lista, :rs, :o_nombre, :o_serie, :o_desde, :o_hasta, :serie)";
+        let params = [
+            { name: 'empresa', io: 'in', value: empresa },
+            { name: 'tipo', io: 'in', value: tipo },
+            { name: 'lista', io: 'in', value: colista },
+            { name: 'rs', io: 'out', type: 'cursor' },
+            { name: 'o_nombre', io: 'out', type: 'string' },
+            { name: 'o_serie', io: 'out', type: 'number' },
+            { name: 'o_desde', io: 'out', type: 'string' },
+            { name: 'o_hasta', io: 'out', type: 'string' },
+            { name: 'serie', io: 'in', value: lista }
+        ];
+        let result = await db.resultSet(query, params);
+        // escribe archivo excel
+        const wb = xlsx.utils.book_new();
+        wb.SheetNames.push("lista-precios");
+        //
+        let ws = xlsx.utils.json_to_sheet(result.rs);
+        wb.Sheets["lista-precios"] = ws;
+        let wbbuf = xlsx.write(wb, {
+            bookType: 'xlsx',
+            bookSST: false,
+            type: 'buffer'
+        });
+        response.writeHead(200, {
+            'Content-Disposition': 'attachment;filename=lista_precios.xlsx',
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        response.end(wbbuf);
     }
 };
 

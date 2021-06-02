@@ -158,6 +158,7 @@
                     </div>
                     <div class="modal-body">
                         <input type="hidden" id="t-codigo">
+                        <input type="hidden" id="t-tipo">
                         <table class="table table-striped table-hover">
                             <thead>
                                 <tr>
@@ -182,8 +183,11 @@
                         </table>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary" id="btn-genera">Generar el pedido</button>
+                        <div class="d-flex w-100">
+                            <a href="#" class="btn btn-success my-auto mr-auto" id="btn-excel-alv"><i class="fa fa-file-excel-o"></i> Exportar a XLS</a>
+                            <button type="button" class="btn btn-light my-auto ml-2" data-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary my-auto ml-2" id="btn-genera">Generar el pedido</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -254,6 +258,16 @@
                 event.preventDefault();
                 $('#modal-busqueda').modal('hide');
                 CargarDatosCliente(event.delegateTarget.dataset.codigo);
+            }
+
+            ValidarAdmin = _ => {
+                var adminCodes = [46455181, 41719338, 42046525, 45091008];
+                return adminCodes.indexOf(sesdata.codigo) > -1;
+            }
+
+            ValidarCxt = _ => {
+                var cxtCodes = [46455181, 41719338, 42046525, 46584267, 44342864, 45091008];
+                return cxtCodes.indexOf(sesdata.codigo) > -1;
             }
 
             CargarDatosCliente = async (codigo) => {
@@ -340,6 +354,17 @@
                                 ).append(' Nuevo pedido').addClass('btn btn-sm btn-success ml-2')
                             ).addClass('mb-0')
                         );
+                        if (!ValidarAdmin()) {
+                            $('#pedido').append(
+                                $('<h3>').text('Documentación adicional').addClass('font-weight-light mt-5 mb-1')
+                            ).append(
+                                $('<p>').text('Desde aquí podrá ver los documentos anexos a sus pedidos').addClass('text-dark mb-3')
+                            ).append(
+                                $('<div>').addClass('list-group').attr('id','listado-pedidos')
+                            );
+                            // carga lista de pedidos
+                            carga_pedidos_validos();
+                        }
                     }
                     // agrega el pedido pendiente
                     if (result.data.pendientes.length > 0) {
@@ -468,6 +493,45 @@
                 }
             }
 
+            function carga_pedidos_validos() {
+                $.ajax({
+                    url: '/extranet/lista-pedidos-validos',
+                    method: 'get',
+                    dataType: 'json',
+                    success: function(result) {
+                        for (let pedido of result.pedidos) {
+                            $('#listado-pedidos').append(
+                                $('<div>').append(
+                                    $('<div>').append(
+                                        $('<h4>').text(pedido.prepedido).addClass('text-primary my-auto mr-4')
+                                    ).append(
+                                        $('<div>').append(
+                                            $('<p>').html('<b>Cliente:</b> ' + pedido.cocliente + ' - ' + pedido.nomcliente).addClass('mb-1')
+                                        ).append(
+                                            $('<p>').html('<b>Código ERP:</b> ' + pedido.copedido + ' - <b>Fecha registro</b> ' + pedido.fecha).addClass('mb-1')
+                                        ).addClass('my-auto mr-auto')
+                                    ).append(
+                                        $('<a>').append(
+                                            $('<i>').addClass('fa fa-paperclip mr-2')
+                                        ).append('Ver adjuntos').attr('href','/extranet/archivos-adjuntos?pedido=' + pedido.prepedido).addClass('btn btn-success my-auto')
+                                    ).addClass('d-flex')
+                                ).addClass('list-group-item')
+                            );
+                        }
+                    },
+                    error: function(error) {
+                        alert(error);
+                    }
+                });
+            }
+
+            function exportarPedidoXls (event) {
+                event.preventDefault();
+                let pedido = document.getElementById('t-codigo').value;
+                let tipo = document.getElementById('t-tipo').value;
+                window.open('/extranet/xls-productos-pedido?codigo=' + pedido + '&tipo=' + tipo + '&empresa=11', '_blank');
+            }
+
             MuestraPedidosPendientes = async _ => {
                 $('#aprobacion').empty();
                 // aprobacion
@@ -515,6 +579,39 @@
                             $('<hr>')
                         ).append(ul);
                     }
+                    if (ValidarAdmin()) {
+                        $('#aprobacion').append(
+                            $('<h3>').text('Pedidos cerrados').addClass('font-weight-light mt-5 mb-1')
+                        ).append(
+                            $('<p>').text('Utilice esta opción para ver pedidos de exportación anteriores').addClass('text-dark mb-2')
+                        ).append(
+                            $('<a>').attr('href','/extranet/pedidos-cerrados').append(
+                                $('<i>').addClass('fa fa-history mr-2')
+                            ).append('Ver lista de pedidos').addClass('btn btn-primary')
+                        );
+                        // liberacion de productos
+                        $('#aprobacion').append(
+                            $('<h3>').text('Liberación de productos para exportación').addClass('font-weight-light mt-5 mb-1')
+                        ).append(
+                            $('<p>').text('Utilice esta opción para trasladar productos a los racks de exportaciones').addClass('text-dark mb-2')
+                        ).append(
+                            $('<a>').attr('href','/extranet/liberacion-productos').append(
+                                $('<i>').addClass('fa fa-list-ul mr-2')
+                            ).append('Liberación de productos').addClass('btn btn-success')
+                        );
+                    }
+                    if (ValidarCxt()) {
+                        // documentos adjuntos
+                        $('#aprobacion').append(
+                            $('<h3>').text('Documentación adicional').addClass('font-weight-light mt-5 mb-1')
+                        ).append(
+                            $('<p>').text('Desde aquí podrá anexar documentos a los pedidos de exportaciones').addClass('text-dark mb-1')
+                        ).append(
+                            $('<div>').addClass('list-group').attr('id','listado-pedidos')
+                        );
+                        // carga lista de pedidos
+                        carga_pedidos_validos();
+                    }
                 }
                 catch (err) {
                     alert(err);
@@ -530,6 +627,8 @@
                     $('#btn-genera').hide();
                 }
                 document.getElementById('t-codigo').value = a.dataset.codigo;
+                document.getElementById('t-tipo').value = a.dataset.tipo;
+                $('#modal-detalle .modal-title').text('Detalle del pedido ' + a.dataset.codigo);
                 try {
                     let result = await $.ajax({
                         url: '/extranet/detalle-pedido',
@@ -629,6 +728,7 @@
                 if (tmpCliente != '-') CargarDatosCliente(tmpCliente);
                 MuestraPedidosPendientes();
             }
+            $('#btn-excel-alv').on('click', exportarPedidoXls);
         </script>
     </body>
 </html>

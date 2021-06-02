@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Liberación de productos</title>
+        <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.css">
+        <link rel='stylesheet prefetch' href='http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'>
+        <style>
+            body {
+                padding-top: 60px;
+            }
+            .navbar-brand {
+                background-image: url('/assets/images/extranet/clife-logo-light.png');
+                background-size: auto 30px;
+                background-repeat: no-repeat;
+                padding-left: 36px;
+                font-size: 1.5rem;
+                line-height: 1.75rem;
+                height: 30px;
+                width: 224px;
+            }
+            .bg-gray{background-color:#f0f0f0}
+            .table th, .table td {vertical-align: middle !important}
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-cprimary">
+            <a class="navbar-brand" href="/extranet">Corporacion Life</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <h5 class="text-light font-weight-light mb-0">Productos para liberación</h5>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="nav-dropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Opciones</a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="nav-dropdown">
+                            <a class="dropdown-item" href="#">Mis datos</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-logout">Cerrar sesión</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="/extranet">Volver</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-4">
+                    <div class="alert m-0 bg-gray">
+                        <p class="mb-2 font-weight-bold">Últimos 7 días</p>
+                        <div id="dv-recientes" class="list-group mb-4"></div>
+                        <p class="mb-2 font-weight-bold">Más pedidos</p>
+                        <div id="dv-otros" class="list-group mb-4"></div>
+                    </div>
+                </div>
+                <div id="dv-pedido" class="col-8">
+                    <p class="text-secondary">Seleccione un pedido para ver su detalle</p>
+                </div>
+            </div>
+        </div>
+        <!-- modal clave titulo gratuito -->
+        <div id="modal-permiso" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-success">Se requiere una contraseña</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-3">
+                                <img src="/assets/images/icons/ic-locked.svg" class="img-fluid">
+                            </div>
+                            <div class="col-9">
+                                <input type="hidden" id="mp-pedido">
+                                <form>
+                                    <div class="form-group">
+                                        <label for="mp-clave">Ingrese la clave para marcar los productos seleccionados como título gratuito.</label>
+                                        <input type="password" class="form-control form-control-sm" id="mp-clave" placeholder="Ingrese la clave aquí">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success" id="mp-submit"><i class="fa fa-upload"></i> Continuar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <!-- scripts -->
+    <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script src="/assets/bootstrap/js/popper.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+        let sesdata = JSON.parse('<%-sesion %>');
+        let pedidos = JSON.parse('<%-pedidos %>');
+        
+        function ver_reporte_traslado(pedido) {
+            window.open('/extranet/reporte-traslado-productos?pedido=' + pedido, '_blank', 'resizable=no,height:600,width=1080,menubar=no,toolbar=no,left=160,top=40');
+        }
+        function titulo_gratuito(pedido) {
+            document.getElementById('mp-pedido').value = pedido;
+            $('#modal-permiso').modal('show');
+        }
+        function escribir_detalle_pedido(codpedido, productos, moneda, pedidoerp) {
+            let tbody = $('<tbody>');
+            let tridx = 1;
+            let totales = {
+                cantidad: 0,
+                cajas: 0,
+                pallets: 0,
+                importe: 0
+            };
+            for (let producto of productos) {
+                tbody.append(
+                    $('<tr>').append(
+                        $('<td>').text(tridx)
+                    ).append(
+                        $('<td>').text(producto.ean).addClass('font-weight-bold text-primary')
+                    ).append(
+                        $('<td>').html(producto.nombre)
+                    ).append(
+                        $('<td>').text(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('mb-0').addClass('text-right')
+                    ).append(
+                        $('<td>').html(producto.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                    ).append(
+                        $('<td>').html(producto.unidcaja.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                    ).append(
+                        $('<td>').html(producto.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                    ).append(
+                        $('<td>').html(producto.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                    )
+                );
+                totales.cantidad += producto.cantidad;
+                totales.cajas += producto.cajas;
+                totales.pallets += producto.pallets;
+                totales.importe += producto.importe;
+            }
+            $('#dv-pedido').empty().append(
+                $('<div>').append(
+                    $('<h4>').html('Pedido <span class="text-success">' + codpedido + '</span>').addClass('my-auto mr-auto')
+                ).append(
+                    $('<a>').attr({
+                        'href': 'javascript:titulo_gratuito("' + pedidoerp + '")'
+                    }).append(
+                        $('<i>').addClass('fa exchange mr-1')
+                    ).append('Título gratuito').addClass('my-auto ml-2 btn btn-sm btn-danger')
+                ).append(
+                    $('<a>').attr({
+                        'href': 'javascript:ver_reporte_traslado("' + codpedido + '")'
+                    }).append(
+                        $('<i>').addClass('fa exchange mr-1')
+                    ).append('Reporte de traslado').addClass('my-auto ml-2 btn btn-sm btn-primary')
+                ).addClass('d-flex mb-3')
+            ).append(
+                $('<table>').append(
+                    $('<thead>').append(
+                        $('<tr>').append(
+                            $('<th>').text('#')
+                        ).append(
+                            $('<th>').html('Cod. EAN')
+                        ).append(
+                            $('<th>').html('Producto')
+                        ).append(
+                            $('<th>').html('Cantidad').css('max-width', '100px')
+                        ).append(
+                            $('<th>').html('Subtotal')
+                        ).append(
+                            $('<th>').html('Unid./Caja')
+                        ).append(
+                            $('<th>').html('Cajas')
+                        ).append(
+                            $('<th>').html('Palets')
+                        )
+                    )
+                ).append(tbody).append(
+                    $('<tfoot>').append(
+                        $('<tr>').append(
+                            $('<th>').html('')
+                        ).append(
+                            $('<th>').html('TOTALES').attr('colspan', '2')
+                        ).append(
+                            $('<th>').html(totales.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                        ).append(
+                            $('<th>').html(moneda + '' + totales.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                        ).append(
+                            $('<th>').html('')
+                        ).append(
+                            $('<th>').html(totales.cajas.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('text-right')
+                        ).append(
+                            $('<th>').html(totales.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
+                        )
+                    )
+                ).addClass('table table-hover table-striped table-responsive')
+            )
+        }
+        function ver_pedido(event) {
+            event.preventDefault();
+            let a = $(this);
+            let copedido = a.data('pedido');
+            let pedidoerp = a.data('pedido-erp');
+            $('#dv-pedido').empty().append(
+                $('<p>').text('Cargando datos de su pedido. Por favor, espere...').addClass('text-danger')
+            );
+            $.ajax({
+                url: '/extranet/datos-pedido',
+                method: 'post',
+                data: { pedido: copedido },
+                dataType: 'json',
+                success: function(result) {
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    $('#dv-pedido').empty();
+                    escribir_detalle_pedido(copedido, result.pedido.productos, result.pedido.moneda, pedidoerp);
+                },
+                error: function(error) {
+                    alert(error);
+                }
+            });
+        }
+        function escribir_lista_pedidos() {
+            for (let pedido of pedidos) {
+                if (pedido.dias <= 7) {
+                    $('#dv-recientes').append(
+                        $('<div>').append(
+                            $('<div>').append(
+                                $('<div>').append(
+                                    $('<p>').html('<b class="text-primary">' + pedido.prepedido + '</b> - Código pedido <b>' + pedido.pedido + '</b> <span class="text-danger">' + (pedido.tipoigv == '-' ? '' : pedido.tipoigv) + '</span>').addClass('mb-0')
+                                ).append(
+                                    $('<p>').html('<b class="text-uppercase">' + pedido.pais + '</b>, registrado el <i>' + pedido.fpedido + '</i>').addClass('mb-0')
+                                ).addClass('my-auto mr-auto')
+                            ).append(
+                                $('<a>').append(
+                                    $('<i>').addClass('fa fa-search')
+                                ).attr({
+                                    'href': '#',
+                                    'data-pedido': pedido.prepedido,
+                                    'data-pedido-erp': pedido.pedido
+                                }).addClass('btn btn-sm btn-outline-success my-auto ml-3').on('click', ver_pedido)
+                            ).addClass('d-flex')
+                        ).addClass('list-group-item')
+                    );
+                }
+                else {
+                    $('#dv-otros').append(
+                        $('<div>').append(
+                            $('<div>').append(
+                                $('<div>').append(
+                                    $('<p>').html('<b class="text-primary">' + pedido.prepedido + '</b> - Código pedido <b>' + pedido.pedido + '</b>').addClass('mb-0')
+                                ).append(
+                                    $('<p>').html('<b class="text-uppercase">' + pedido.pais + '</b>, registrado el <i>' + pedido.fpedido + '</i>').addClass('mb-0')
+                                ).addClass('my-auto mr-auto')
+                            ).append(
+                                $('<a>').append(
+                                    $('<i>').addClass('fa fa-search')
+                                ).attr({
+                                    'href': '#',
+                                    'data-pedido': pedido.prepedido,
+                                    'data-pedido-erp': pedido.pedido
+                                }).addClass('btn btn-sm btn-outline-success my-auto ml-3').on('click', ver_pedido)
+                            ).addClass('d-flex')
+                        ).addClass('list-group-item')
+                    );
+                }
+            }
+        }
+            ObsequiarProductos = async (event) => {
+                event.preventDefault();
+                let clave = document.getElementById('mp-clave').value;
+                let pedido = document.getElementById('mp-pedido').value;
+                if (clave == '') {
+                    alert('Ingrese la clave para marcar los productos como título gratuito');
+                    return;
+                }
+                let result;
+                try {
+                    result = await $.ajax({
+                        url: '/extranet/obsequiar-productos',
+                        method: 'post',
+                        data: { pedido: pedido, clave: clave },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    alert('El pedido fue cambiado a Título Gratuito');
+                    location.reload();
+                }
+                catch (err) {
+                    alert(err);
+                }
+            }
+        function init() {
+            escribir_lista_pedidos();
+            $('#mp-submit').on('click', ObsequiarProductos);
+        }
+        $(init);
+    </script>
+</html>

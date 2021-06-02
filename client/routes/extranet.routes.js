@@ -34,5 +34,22 @@ const extranetController = require('../controllers/extranet.controller');
     router.get('/detalle-pedido', extranetController.ProductosPedido);
     router.post('/procesar-pre-pedido', extranetController.ProcesarPrePedido);
     router.post('/abrir-pre-pedido', extranetController.AbrePrePedido);
+    router.post('/solicita-liberacion-productos', extranetController.SolicitaLiberacionProductos);
+    // modulo para liberación de productos
+    router.get('/liberacion-productos', extranetController.TrasladoProductos);
+    router.get('/lista-productos-liberar', extranetController.ListaProductosLiberacion);
+    router.get('/lista-ubicaciones', extranetController.ListaUbicacionesTraslado);
+    router.post('/trasladar-productos', extranetController.TrasladarProductos);
+    router.get('/lista-pedidos-traslado', extranetController.ListaPedidosTraslado);
+    router.get('/reporte-traslado-productos', extranetController.ReporteTraslado);
+    // adjuntos a pedidos
+    router.get('/lista-pedidos-validos', extranetController.ListaPedidosValidos);
+    router.get('/archivos-adjuntos', extranetController.ArchivosAdjuntos);
+    router.post('/upload-adjuntos', extranetController.UploadAdjuntos);
+    router.post('/retira-adjunto', extranetController.RetirarAdjunto);
+    router.get('/descarga-adjunto', extranetController.DescargaAdjunto);
+    router.get('/pedidos-cerrados', extranetController.HistorialPedidos);
+    router.get('/xls-reporte-traslado', extranetController.XlsReporteTraslado);
+    router.get('/xls-productos-pedido', extranetController.XlsProductosPedido);
 
 module.exports = router;

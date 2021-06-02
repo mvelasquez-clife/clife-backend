@@ -83,7 +83,7 @@ const LifeController = {
                         delete sesion.hash;
                         delete sesion.stact;
                         delete sesion.stmail;
-                        response.cookie(confParams.cookieAdmin, sesion.admin, { httpOnly: true });
+                        response.cookie(confParams.cookieAdmin, sesion.admrrhh, { httpOnly: true });
                         response.cookie(confParams.cookieIntranet, JSON.stringify(sesion), { httpOnly: true });
                         response.redirect('/intranet');
                         return;
@@ -214,16 +214,22 @@ const LifeController = {
         else response.redirect('/intranet/login');
     },
     SubirDocumentos: (request, response) => {
+console.log('SIUUUUU', 'cookieIntranet:', request.cookies[confParams.cookieIntranet], 'cookieAdmin:', request.cookies[confParams.cookieAdmin]);
         if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {
+console.log('SIUUUUU');
             let sess = request.cookies[confParams.cookieIntranet];
             let jsSess = JSON.parse(sess);
+console.log(jsSess);
             let admrrhh = jsSess.admrrhh;
             let admdocs = jsSess.admdoc;
             let admin = admrrhh + admdocs;
             let data = { sesion: sess, admin: admin, id: 'sidenav-subirdocs' };
             response.render(path.resolve('client/views/intranet/subirdocs.ejs'), data);
         }
-        else response.redirect('/intranet/login');
+        else {
+console.log('nel pastel');
+            response.redirect('/intranet/login');
+        }
     },
     EnvioMensajes: (request, response) => {
         if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {

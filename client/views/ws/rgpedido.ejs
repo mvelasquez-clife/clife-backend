@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Web Service Corporación Life</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="/assets/intranet/css/main.css">
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            body {padding-top:60px}
+            #dv-result{display:none}
+        </style>
+    </head>
+    <body>
+        <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-main">
+            <a class="navbar-brand pb-1" href="#">
+                <img src="/assets/intranet/images/clife-banner-light.svg" alt="Corporacion Life" style="height:24px;">
+            </a>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Ingreso manual de pedidos</a>
+                    </li>
+                </ul>
+            </div>
+            <button id="sidebar-toggler" class="navbar-toggler" type="button" aria-expanded="false">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/ws-life" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-home mr-2"></i>Volver</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <!-- SEPARADOR DE BAJO PRESUPUESTO -->
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div id="dv-result" class="alert alert-light shadow-sm px-4 pt-2 pb-3 mb-2">
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="text-success text-uppercase font-weight-bold mb-2">Datos encontrados</h5>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="mb-2 text-dark">
+                                    <b class="text-primary">Cliente:</b> <span id="cliente-dni"></span> <span id="cliente-nombre"></span>
+                                </p>
+                                <p class="mb-2 text-dark">
+                                    <b class="text-primary">Dirección:</b> <span id="cliente-direccion"></span> <b class="text-primary ml-3">Flete:</b> <span id="pedido-flete"></span>
+                                </p>
+                                <p class="mb-2 text-dark">
+                                    <b class="text-primary">Fecha:</b> <span id="pedido-fecha"></span> <b class="text-primary ml-3">Factura:</b> <span id="pedido-factura"></span>
+                                </p>
+                                <p class="mb-2 text-dark">
+                                    <b class="text-primary">Medio de pago:</b> <span id="pedido-formpago"></span> <b class="text-primary ml-3">ID Pago:</b> <span id="pedido-pagoid"></span>
+                                </p>
+                                <p class="mb-2 text-dark font-weight-bold">Detalle del pedido</p>
+                                <table class="table table-striped table-hover mb-2">
+                                    <thead>
+                                        <tr>
+                                            <th>Codigo</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio Venta</th>
+                                            <th>Descuento Lista</th>
+                                            <th>Descuento Cupón</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pedido-tbody"></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th></th>
+                                            <th colspan="4">TOTAL</th>
+                                            <th id="pedido-total" class="text-right"></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                                <a id="btn-confirma-pedido" href="#" class="btn btn-success btn-sm"><i class="fa fa-check mr-2"></i>Confirmar pedido</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <!-- modals -->
+    <div id="modal-orderid" class="modal fade" tabindex="-1" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Token de Autenticación</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-1">
+                        <div class="col">
+                            <form>
+                                <p class="text-dark mb-2">Ingrese el Order ID para buscar una solicitud de pedido en el sistema</p>
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <label for="f-orderid" class="mb-1">Order ID de VTEX</label>
+                                        <input type="text" class="form-control form-control-sm" id="f-orderid" placeholder="Coloque aquí el Order ID">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <label for="f-token" class="mb-1">Token de validación</label>
+                                        <input type="text" class="form-control form-control-sm" id="f-token" placeholder="Coloque aquí el token de autenticación del web service">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cerrar esta ventana</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="verifica-orderid"><i class="fa fa-check mr-1"></i>Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- scripts -->
+    <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script src="/assets/bootstrap/js/popper.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+        let JsonData, ApiToken, OrderId;
+        function escribeDatosEncontrados() {
+            //
+            var total = parseFloat(JsonData.flete);
+            // ingresa datos generaler
+            document.getElementById('cliente-dni').innerHTML = JsonData.cliente;
+            document.getElementById('pedido-flete').innerHTML = 'S/ ' + total.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2});
+            document.getElementById('pedido-fecha').innerHTML = JsonData.fecha;
+            document.getElementById('pedido-factura').innerHTML = JsonData.factura == 'S' ? 'SI' : 'NO';
+            document.getElementById('pedido-formpago').innerHTML = JsonData.sispago == '18' ? 'PagoEfectivo' : 'Tarjeta de crédito/débito';
+            document.getElementById('pedido-pagoid').innerHTML = JsonData.pagoid;
+            // ingresa detalle del pedido
+            $('#pedido-tbody').empty();
+            var arr_detalle = JsonData.detalle.split('@');
+            for (let item of arr_detalle) {
+                var datos = item.split('|');
+                var iprventa = parseFloat(datos[2]);
+                var isubtotal = parseFloat(datos[5]);
+                $('#pedido-tbody').append(
+                    $('<tr>').append(
+                        $('<td>').text(datos[0])
+                    ).append(
+                        $('<td>').text(datos[1]).addClass('text-right')
+                    ).append(
+                        $('<td>').text(iprventa.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right')
+                    ).append(
+                        $('<td>').text(datos[4]).addClass('text-right')
+                    ).append(
+                        $('<td>').text(datos[5]).addClass('text-right')
+                    ).append(
+                        $('<td>').text(isubtotal.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right')
+                    )
+                );
+                total += isubtotal;
+            }
+            document.getElementById('pedido-total').innerHTML = total.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2});
+        }
+        // llamadas ajax
+        function ajax_verifica_orderid(event) {
+            event.preventDefault();
+            ApiToken = document.getElementById('f-token').value;
+            OrderId = document.getElementById('f-orderid').value;
+            $.ajax({
+                url: '/ws-life/verifica-orderid',
+                method: 'get',
+                data: { orderid: OrderId },
+                dataType: 'json',
+                headers: { authorization: ApiToken },
+                success: function (response) {
+                    if (response.error) {
+                        if (window.confirm('No se encontró el Order ID solicitado. ¿Desea ingresar manualmente el pedido?')) {
+                            location.href = '/ws-life/ingreso-pedidos-extendido';
+                        }
+                        return;
+                    }
+                    JsonData = JSON.parse(response.data);
+                    escribeDatosEncontrados();
+                    $('#dv-result').fadeIn(250);
+                    $('#modal-orderid').modal('hide');
+                },
+                error: function (error) {
+                    alert(error);
+                }
+            });
+        }
+        function ajax_procesa_pedido(event) {
+            event.preventDefault();
+            $('#btn-confirma-pedido').hide();
+            $.ajax({
+                url: '/ws-life/registra-pedido',
+                method: 'post',
+                data: JsonData,
+                dataType: 'json',
+                headers: { authorization: ApiToken },
+                success: function (response) {
+                    $('#btn-confirma-pedido').fadeIn(250);
+                    if (response.error) {
+                        alert(response.error);
+                        return;
+                    }
+                    alert('Pedido registrado con código ' + response.pedido);
+                    location.href = '/ws-life/pedidos-realizados';
+                },
+                error: function (error) {
+                    alert(error);
+                }
+            });
+        }
+        function modalTokenOnShow() {
+            document.getElementById('f-orderid').value = '';
+            document.getElementById('f-token').value = '';
+        }
+        function init() {
+            $('#modal-orderid').on('show.bs.modal', modalTokenOnShow);
+            $('#modal-orderid').modal('show');
+            $('#verifica-orderid').on('click', ajax_verifica_orderid);
+            $('#btn-confirma-pedido').on('click', ajax_procesa_pedido);
+        }
+        // go
+        $(init);
+    </script>
+</html>
