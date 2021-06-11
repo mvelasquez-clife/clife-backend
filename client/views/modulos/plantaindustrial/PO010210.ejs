@@ -39,6 +39,12 @@
         <script type="text/javascript" src="/assets/ancestros/seguridad.js"></script>
         <!-- scripts de la carga de la vista -->
         <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script type="text/javascript" src="/assets/js/sweetalert.js"></script>
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/highcharts-more.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
+        <script src="https://code.highcharts.com/modules/export-data.js"></script>
+        <script src="https://code.highcharts.com/modules/accessibility.js"></script>
         <script>
               
             var f_registracambio = [ { type: "newcolumn" },
@@ -115,11 +121,41 @@
                 ]},    
             ]; 
 
+            var f_nuevo_registro = [
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,offsetLeft: 470, position: "label-left", width: 200, list: [                       
+                    {type: "input",readonly: false, style:"background-color:rgb(174, 214, 241);width: 200;height:120px,font-family: Arial; font-size: 11pt;text-align:center;",position:"input-right", offsetTop: 20, offsetLeft: 1,labelWidth: 140, inputWidth: 140, name: "act_nro"}, { type: "newcolumn" },         
+                { type: "newcolumn" },] },              
+                {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 700, list: [                 
+                    { type: "input",disabled: false, offsetLeft: 40,labelWidth: 70, inputWidth: 500, name: "act_nombre", offsetTop: 20, label: 'Nombre:'}, { type: "newcolumn" },        
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 700, list: [
+                    { type: "input", name: 'act_desc', labelWidth: 70, readonly: false, rows:4 ,label: 'Descripción:', offsetLeft: 40, inputWidth: 500 }, { type: "newcolumn" },                                  
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 700, list: [                       
+                    { type: "select", name: 'act_asig', labelWidth: 70, readonly: false, label: 'Asignado a:', offsetLeft: 40, inputWidth: 500 }, { type: "newcolumn" },                                 
+                    ],},
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 700, list: [
+                    { type: "input", readonly:true, offsetLeft: 0,labelWidth: 70, inputWidth: 120, name: "act_estado", label: 'Estado: '}, { type: "newcolumn" },   
+                    { type: "calendar", readonly:true, offsetLeft: 163,labelWidth: 90, inputWidth: 120, name: "act_fecha", label: 'Fecha Registro: '}, { type: "newcolumn" },   
+                    ],},
+            ];
+            var f_aprobacion = [
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 5, position: "label-left", width: 550, list: [
+                    { type: "input",offsetLeft: 10,labelWidth: 100, inputWidth: 400, rows:4, name: "_et_obs_pat", label: 'Observaciones:'}, { type: "newcolumn" },],},
+   
+            ];
+
             mainLayout_inicio = new dhtmlXLayoutObject(document.body, '1C'); 
             mainLayout_inicio.cells('a').hideHeader();
             tabbarinicio = mainLayout_inicio.cells('a').attachTabbar();
             // tabbarinicio.addTab('__registrar', 'Registro de Proyectos', null, null, true);
             tabbarinicio.addTab('__buscar', 'Control de artes', null, null, true);
+            tabbarinicio.addTab('__gant', 'Actividades', null, null, false);
             tabbarinicio.attachEvent ( "onSelect" , inicioOnSelect);         
             Inicio();
         </script>

@@ -472,7 +472,10 @@ cargarprodespecgrupo = (nombre,grupo) => {
     myGrid_group.attachHeader("#text_filter,#text_filter,#select_filter,#select_filter,#text_filter,#text_filter,#text_filter,#select_filter");     
     myGrid_group.setColumnIds('cod,desc,c_esp,tprd,tmat,inci,cant,vig');  
     myGrid_group.init(); 
-    if(grupo==1){
+    if(grupo==5){
+        mytoolbar.addButton('patr',null,'Patrones sin recepción',"ic-register.png","ic-register.png");
+        
+    }else{
         myGrid_group.setColumnHidden(4,true);
     }     
     mainLayout.cells('b').collapse();
@@ -1090,7 +1093,10 @@ onClickaction = async (id) => {
         case 'export':    
             cargaReportexls(grupo_prod);
             WinDocumentoViewer.hide();
-            break;          
+            break;                  
+        case 'patr':    
+            patrPendientes(grupo_prod);
+            break;      
         default:
             null;
             break;
@@ -1157,6 +1163,28 @@ prodgrupoToolbar = async (id) => {
         null;
         break;
     }
+};
+
+patrPendientes = async (grupo_prod) => {
+    nva_clase = grupo_prod;
+    Wind_ = new dhtmlXWindows();
+    Winid_ = Wind_.createWindow("wbuscar", 0, 0, 800, 500);
+    Winid_.setText("Patrones no recepcionados");
+    Wind_.window("wbuscar").setModal(true);
+    Wind_.window("wbuscar").denyResize();
+    Wind_.window("wbuscar").center();       
+    myGrid_patr = Wind_.window("wbuscar").attachGrid();
+    myGrid_patr.setHeader('Cod.Producto,Especificación,Versión,Orden,Co_Tipo,Tipo,F. Creación,Creado por:,F. Vencimiento,Estado,Observación');    
+    myGrid_patr.setInitWidths('150,100,80,0,0,120,100,300,100,100,250');
+    myGrid_patr.setColAlign('left,left,center,left,left,left,center,left,center,center,left');
+    myGrid_patr.setColTypes('ed,ed,ro,ro,ro,ro,ro,ro,ro,ro,ro'); 
+    myGrid_patr.setColumnIds('prod,espec,vers,orden,co_tipo,tipo,fcrea,crea,fvig,est,obs'); 
+    myGrid_patr.init();      
+    myGrid_patr.clearAll(); 
+    Wind_.window("wbuscar").progressOn();
+    myGrid_patr.load( BASE_URL + 'PO010410/mostrar-patrones-pendiente/'+usrJson.empresa).then(function (text) {
+        Wind_.window("wbuscar").progressOff();
+    }); 
 };
 
 buscarespProd = async (grupo_prod) => {

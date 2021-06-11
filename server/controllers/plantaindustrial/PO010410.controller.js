@@ -1768,6 +1768,32 @@ mostrarespecreporten2: async (request, response) => {
         });
     },
 
+    mostrarpatronespend: (req, res) => { 
+            
+        const {empresa} = req.params;  
+        
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if (err) {
+                res.send({ state: 'error', error_conexion: err.stack });
+                return;
+            }
+            const query = "select co_catalogo_producto,co_espec_anal,nu_version,co_orden,co_tipo,de_nombre_tipo,fe_creacion,de_creador,fe_vencimiento,es_vigencia,de_observ from table(pack_new_especificacion.f_list_patron_pendiente(:x_empresa))";
+            
+            const params = {
+                x_empresa: {val : empresa},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                res.set('Content-Type', 'text/xml');
+                res.send(result.rows.length > 0 ? xmlParser.renderXml(result.rows) : xmlParser.renderXml([{ CO_NUMDOC: 'No se encontraron coincidencias' }]));
+            });
+        });
+    },
+
     mostrarespecObservadas: (req, res) => { 
             
         const {empresa,grupo} = req.params;  
