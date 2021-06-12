@@ -7,6 +7,7 @@ const formidable = require('formidable');
 const fupload = require('../../server/fupload');
 const xlsx = require('xlsx');
 const db = require('../../server/libs/db-oracle');
+const devmode = 'P'; // 'P' para produccion
 
 const responseParams = {
     outFormat: oracledb.OBJECT
@@ -67,7 +68,6 @@ const extranetController = {
             const { pedido } = request.params;
             // verifica si hay results
             var mensajes = JSON.stringify([]);
-console.log('results', request.cookies['results']);
             if (request.cookies['results']) {
                 mensajes = request.cookies['results'];
                 // response.clearCookie('results');
@@ -80,7 +80,6 @@ console.log('results', request.cookies['results']);
     //
     AuthLogin: async (request, response) => {
         const { email, pswd } = request.body;
-console.log('comienzo el try-catch');
         let empresa = 11;
         let result;
         try {
@@ -90,7 +89,6 @@ console.log('comienzo el try-catch');
                 p_alias: { val: email },
                 p_empresa: { val: empresa }
             };
-console.log(query, params);
             result = await conn.execute(query, params, responseParams);
             result = result.rows[0];
             conn.close();
@@ -435,7 +433,7 @@ console.log(query, params);
                 // carga detalle del pedido
                 query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
                     "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", " + 
-                    "cjsnivel \"cjsnivel\", maxniveles \"maxniveles\" from table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
+                    "cjsnivel \"cjsnivel\", maxniveles \"maxniveles\", paletsconf \"paletsconf\" from table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
                 params = {
                     p_tipo: { val: sesion.tipo },
                     p_empresa: { val: cEmpresa },
@@ -573,9 +571,14 @@ console.log(query, params);
                     }
                 }
                 // carga detalle del pedido
+                /*
                 query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
                     "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", 100 \"pcaja\" from " +
                     "table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
+                */
+                query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
+                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", " + 
+                    "cjsnivel \"cjsnivel\", maxniveles \"maxniveles\", paletsconf \"paletsconf\", 100 \"pcaja\" from table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
                 params = {
                     p_tipo: { val: sesion.tipo },
                     p_empresa: { val: cEmpresa },
@@ -627,9 +630,14 @@ console.log(query, params);
                     if (o_codigo == 1) mensajes.push({ mensaje: o_mensaje });
                     else mensajes.push({ error: o_mensaje });
                 }
+                /*
                 let query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
                     "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", 100 \"pcaja\" from " +
                     "table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
+                */
+                query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
+                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", " + 
+                    "cjsnivel \"cjsnivel\", maxniveles \"maxniveles\", paletsconf \"paletsconf\", 100 \"pcaja\" from table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
                 let params = {
                     p_tipo: { val: sesion.tipo },
                     p_empresa: { val: cEmpresa },
@@ -657,51 +665,39 @@ console.log(query, params);
     ObsequiarProducto: async (request, response) => {
         if (request.cookies[CookieId]) {
             const sesion = JSON.parse(request.cookies[CookieId]);
-            const { pedido, productos, clave } = request.body;
+            const { pedido, clave } = request.body;
             const cEmpresa = sesion.tipo == 'E' ? UserExpo.empresa : UserNac.empresa;
-            try {
-                const conn = await oracledb.getConnection(dbParams);
-                let mensajes = [];
-                for (let producto of productos) {
-                    //
-                    let query = "call pack_new_web_expo.sp_titulo_gratuito_expo(:p_pedido, :p_empresa, :p_producto, :p_tipo, :p_difer, :p_clave, :o_codigo, :o_mensaje)";
-                    let params = {
-                        p_pedido: { val: pedido },
-                        p_empresa: { val: cEmpresa },
-                        p_producto: { val: producto.codigo },
-                        p_tipo: { val: producto.tipo },
-                        p_difer: { val: producto.difer },
-                        p_clave: { val: clave },
-                        o_codigo: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-                        o_mensaje: { dir: oracledb.BIND_OUT, type: oracledb.STRING }
-                    };
-                    let result = await conn.execute(query, params, responseParams);
-                    const { o_codigo, o_mensaje } = result.outBinds;
-                    if (o_codigo == 1) mensajes.push({ mensaje: o_mensaje });
-                    else mensajes.push({ error: o_mensaje });
-                }
-                let query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
-                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", 100 \"pcaja\" from " +
-                    "table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
-                let params = {
-                    p_tipo: { val: sesion.tipo },
-                    p_empresa: { val: cEmpresa },
-                    p_pedido: { val: pedido }
-                };
-                let result = await conn.execute(query, params, responseParams);
-                let detalle = result.rows;
-                conn.close();
+            // go
+            let query = "call pack_new_web_expo.sp_titulo_gratuito_expo(:p_pedido, :p_empresa, :p_clave, :o_codigo, :o_mensaje)";
+            let params = [
+                { name: 'p_pedido', io: 'in', value: pedido },
+                { name: 'p_empresa', io: 'in', value: cEmpresa },
+                { name: 'p_clave', io: 'in', value: clave },
+                { name: 'o_codigo', io: 'out', value: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                { name: 'o_mensaje', io: 'out', value: oracledb.BIND_OUT, type: oracledb.STRING }
+            ];
+            let result = db.statement(query, params);
+            /*
+            const query = "call pack_new_web_expo.sp_registra_pedido(:x_result,:x_de_result,:x_pedido,:x_empresa,:x_pre_pedido,:p_alias)";
+            const params = [
+                { name: 'x_result', io: 'out', type: 'number' },
+                { name: 'x_de_result', io: 'out', type: 'string' },
+                { name: 'x_pedido', io: 'out', type: 'string' },
+                { name: 'x_empresa', io: 'in', value: empresa },
+                { name: 'x_pre_pedido', io: 'in', value: prepedido },
+                { name: 'p_alias', io: 'in', value: UserExpo.alias }
+            ];
+            const result = await db.statement(query, params);
+            */
+            if (result.o_codigo == 0) {
                 response.json({
-                    mensajes: mensajes,
-                    detalle: detalle
+                    error: result.o_mensaje
                 });
+                return;
             }
-            catch (err) {
-                console.error(err);
-                response.json({
-                    error: err
-                });
-            }
+            response.json({
+                success: true
+            });
         }
         else response.json({
             error: 'Su sesión expiró'
@@ -736,9 +732,14 @@ console.log(query, params);
                     return;
                 }
                 // detalle del pedido
+                /*
                 query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
-                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", 100 \"pcaja\" from " +
+                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", 100 \"pcaja\", paletsconf \"paletsconf\" from " +
                     "table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
+                */
+                query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
+                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", " + 
+                    "cjsnivel \"cjsnivel\", maxniveles \"maxniveles\", paletsconf \"paletsconf\", 100 \"pcaja\" from table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
                 params = {
                     p_tipo: { val: sesion.tipo },
                     p_empresa: { val: cEmpresa },
@@ -780,14 +781,19 @@ console.log(query, params);
                 let result = await db.resultSet(query, params);
                 if (result.o_codigo == 0) {
                     response.json({
-                        error: result.o_mensaje
+                        error: 'pack_new_web_expo.sp_actualiza_cantidades_expo: ' + result.o_mensaje
                     });
                     return;
                 }
                 // detalle del pedido
+                /*
                 query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
                     "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", 100 \"pcaja\" from " +
                     "table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
+                */
+                query = "select codigo \"codigo\",ean \"ean\",initcap(nombre) \"nombre\",cantidad \"cantidad\",cajas \"cajas\",pallets \"pallets\",importe \"importe\", " +
+                    "difer \"difer\",tipo \"tipo\", familia \"familia\",pventa \"pventa\",promodsc \"promodsc\",clase \"clase\", unidcaja \"unidcaja\", " + 
+                    "cjsnivel \"cjsnivel\", maxniveles \"maxniveles\", paletsconf \"paletsconf\", 100 \"pcaja\" from table(pack_new_web_expo.f_detalle_pedido(:p_tipo, :p_empresa, :p_pedido))";
                 params = [
                     { name: 'p_tipo', io: 'in', value: sesion.tipo },
                     { name: 'p_empresa', io: 'in', value: cEmpresa },
@@ -795,9 +801,23 @@ console.log(query, params);
                 ];
                 result = await db.select(query, params, responseParams);
                 let detalle = result.rows;
-                response.json({
-                    detalle: detalle
-                });
+                let command = 'php /var/www/laravel/reporter/artisan exportacion:faltantes ' + pedido;
+                // aqui enviar el correo
+                if (devmode == 'L') {
+console.log(command);
+                    response.json({
+                        detalle: detalle
+                    });
+                }
+                else { // o sea, si está en 'P'
+                    var exec = require('child_process').exec, child;
+                    child = exec(command, async function (error, stdout, stderr) {
+                        response.cookie('cliente', cliente);
+                        response.json({
+                            detalle: detalle
+                        });
+                    });
+                }
             }
             catch (err) {
                 console.error(err);
@@ -878,7 +898,6 @@ console.log(query, params);
                         let contadorrr = 0;
                         for (let row of xlData) {
 contadorrr++;
-console.log(contadorrr, row.CODE);
                             let tpingreso = row['PRICE FOB US$'] == 0 ? 'P' : 'L';
                             let query = "call pack_new_web_expo.sp_agrega_producto_expo(:p_pedido, :p_empresa, :p_producto, :p_cantidad, :p_tpventa, :p_serielista, :p_fventa, :p_listaprec, :p_pventa, :o_codigo, :o_mensaje)";
                             if (productos.has(row.CODE + '')) {
@@ -913,7 +932,6 @@ console.log(contadorrr, row.CODE);
                             }
                             else {
                                 let msgError = 'No se encontró el producto ' + row.CODE;
-console.log('error:', msgError);
                                 mensajes.push({ error: msgError, codigo: row.CODE, nombre: row.DESCRIPTION, cantidad: row.QTY, tipo: tpingreso });
                             }
                         }
@@ -980,16 +998,22 @@ console.log('error:', msgError);
                 const { o_codigo, o_mensaje } = result.outBinds;
                 conn.close();
                 if (o_codigo == 1) {
-                    // aqui enviar el correo
                     let command = 'php /var/www/laravel/reporter/artisan extralife:sendmail ' + pedido;
-                    var exec = require('child_process').exec, child;
-                    child = exec(command, async function (error, stdout, stderr) {
-                        console.log('child exec', stdout);
-                        response.cookie('cliente', cliente);
+                    // aqui enviar el correo
+                    if (devmode == 'L') {
                         response.json({
                             mensaje: o_mensaje
                         });
-                    });
+                    }
+                    else { // o sea, si está en 'P'
+                        var exec = require('child_process').exec, child;
+                        child = exec(command, async function (error, stdout, stderr) {
+                            response.cookie('cliente', cliente);
+                            response.json({
+                                mensaje: o_mensaje
+                            });
+                        });
+                    }
                 }
                 else {
                     response.json({
@@ -1079,6 +1103,7 @@ console.log('error:', msgError);
         if (result.error) {
             response.json({
                 error: result.error
+                // error: 'Algunos productos no tienen stock'
             });
             return;
         }
@@ -1088,9 +1113,22 @@ console.log('error:', msgError);
             });
             return;
         }
-        response.json({
-            pedido: result.out.x_pedido
-        });
+        // aqui enviar el correo
+        let command = 'php /var/www/laravel/reporter/artisan exportacion:confirma_pedido ' + prepedido;
+        if (devmode == 'L') {
+console.log(command);
+            response.json({
+                pedido: result.out.x_pedido
+            });
+        }
+        else {
+            var exec = require('child_process').exec, child;
+            child = exec(command, async function (error, stdout, stderr) {
+                response.json({
+                    pedido: result.out.x_pedido
+                });
+            });
+        }
     },
     CheckInPedido: async (request, response) => {
         if (request.cookies[CookieId]) {
@@ -1105,7 +1143,7 @@ console.log('error:', msgError);
         if (request.cookies[CookieId]) {
             const { eans, prepedido, cliente } = request.query;
             const sesion = JSON.parse(request.cookies[CookieId]);
-            let query = "select codigo \"codigo\", ean \"ean\", pvta \"pventa\", stock \"stock\", cantidad \"cantidad\" from table(pack_new_web_expo.f_productos_stock(:p_empresa, :p_pedido, :p_eans))";
+            let query = "select codigo \"codigo\", ean \"ean\", pvta \"pventa\", stock \"stock\", cantidad \"cantidad\", cjsnivel \"cjsnivel\", unidcaja \"unidcaja\", maxniveles \"maxniveles\" from table(pack_new_web_expo.f_productos_stock(:p_empresa, :p_pedido, :p_eans))";
             let params = [
                 { name: 'p_empresa', io: 'in', value: UserExpo.empresa },
                 { name: 'p_pedido', io: 'in', value: prepedido },
@@ -1297,6 +1335,469 @@ console.log('error:', msgError);
         else response.json({
             error: 'No tiene permisos para acceder aquí'
         });
+    },
+    SolicitaLiberacionProductos: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            const { pedido } = request.body;
+            const query = "call pack_new_web_expo.sp_solicita_traslado (:o_result, :o_mensaje, :p_pedido, :p_empresa)";
+            const params = [
+                { name: 'o_result', io: 'out', type: 'number' },
+                { name: 'o_mensaje', io: 'out', type: 'string' },
+                { name: 'p_pedido', io: 'in', value: pedido },
+                { name: 'p_empresa', io: 'in', value: UserExpo.empresa }
+            ];
+            const result = await db.resultSet(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            if (result.o_codigo == -1) {
+                response.json({
+                    error: result.o_estado
+                });
+                return;
+            }
+            // aqui enviar el correo
+            let command = 'php /var/www/laravel/reporter/artisan exportacion:transferencia ' + pedido;
+            if (devmode == 'L') {
+console.log(command);
+                response.json({
+                    success: true
+                });
+            }
+            else {
+                var exec = require('child_process').exec, child;
+                child = exec(command, async function (error, stdout, stderr) {
+                    response.json({
+                        success: true
+                    });
+                });
+            }
+        }
+        else response.json({
+            error: 'No tiene permisos para acceder aquí'
+        });
+    },
+    TrasladoProductos: (request, response) => {
+        if (request.cookies[CookieId]) {
+            let sesion = request.cookies[CookieId];
+            let cliente = request.cookies['cliente'] ? request.cookies['cliente'] : '-';
+            response.render(path.resolve('client/views/extranet/traslado.ejs'), { sesion: JSON.stringify(JSON.parse(sesion)), cliente: cliente });
+        }
+        else response.redirect('/extranet/login');
+    },
+    ListaProductosLiberacion: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            const { pedido, ubicacion } = request.query;
+            const query = "select * from table (pack_new_web_expo.f_productos_liberacion (:empresa, :almacen, :pedido, :ubicacion))";
+            const params = [
+                { name: 'empresa', io: 'in', value: UserExpo.empresa },
+                { name: 'almacen', io: 'in', value: 'F' },
+                { name: 'pedido', io: 'in', value: pedido },
+                { name: 'ubicacion', io: 'in', value: ubicacion }
+            ];
+            const result = await db.select(query, params);
+            response.json({
+                productos: result.rows
+            });
+        }
+        else response.json({
+            error: 'No tiene permisos para acceder aquí'
+        });
+    },
+    ListaUbicacionesTraslado: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            const { producto } = request.query;
+            const alias = 'VConde';
+            const query = "call pack_new_web_expo.sp_ubicaciones_traslado(:alias,:producto,:origen,:destino)";
+            const params = [
+                { name: 'alias', io: 'in', value: alias },
+                { name: 'producto', io: 'in', value: producto },
+                { name: 'origen', io: 'out', type: 'cursor' },
+                { name: 'destino', io: 'out', type: 'cursor' }
+            ];
+            const result = await db.resultSet(query, params);
+            response.json({
+                ubicaciones: result
+            });
+        }
+        else response.json({
+            error: 'No tiene permisos para acceder aquí'
+        });
+    },
+    TrasladarProductos: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            const sesion = request.cookies[CookieId];
+            const { producto, lote, origen, cantidad, destino, prepedido } = request.body;
+            //
+            const rsalias = await db.resultSet('call pack_new_web_expo.sp_alias(:usuario,:empresa,:alias)', [
+                { name: 'usuario,', io: 'in', value: sesion.codigo },
+                { name: 'empresa', io: 'in', value: UserExpo.empresa },
+                { name: 'alias', io: 'out', type: 'string' }
+            ]);
+            if (rsalias.alias == 'x') {
+                response.json({
+                    error: 'Usuario incorrexto'
+                });
+                return;
+            }
+            //
+            // const alias = rsalias.alias;
+            const alias = 'VConde';
+            const almacen = 'VILLA';
+            const query = "call trans_almacenes_00.sp_traslado_ubicacion_exp(:ocodigo,:omensaje,:alias,:almacen,:producto,:lote,:origen,:cantidad,:destino,:prepedido)";
+            const params = [
+                { name: 'ocodigo', io: 'out', type: 'number' },
+                { name: 'omensaje', io: 'out', type: 'string' },
+                { name: 'alias', io: 'in', value: alias },
+                { name: 'almacen', io: 'in', value: almacen },
+                { name: 'producto', io: 'in', value: producto },
+                { name: 'lote', io: 'in', value: lote },
+                { name: 'origen', io: 'in', value: origen },
+                { name: 'cantidad', io: 'in', value: cantidad },
+                { name: 'destino', io: 'in', value: destino },
+                { name: 'prepedido', io: 'in', value: prepedido }
+            ];
+            const result = await db.resultSet(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            if (result.ocodigo == 0) {
+                response.json({
+                    error: result.omensaje
+                });
+                return;
+            }
+            response.json({
+                success: true
+            });
+        }
+        else response.json({
+            error: 'No tiene permisos para acceder aquí'
+        });
+    },
+    ListaPedidosTraslado: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            const query = "call pack_new_web_expo.sp_prepedidos_traslado(:ocodigo,:omensaje,:opedidos)";
+            const params = [
+                { name: 'ocodigo', io: 'out', type: 'number' },
+                { name: 'omensaje', io: 'out', type: 'string' },
+                { name: 'opedidos', io: 'out', type: 'cursor' }
+            ];
+            const result = await db.resultSet(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            if (result.ocodigo == 0) {
+                response.json({
+                    error: result.omensaje
+                });
+                return;
+            }
+            response.json({
+                pedidos: result.opedidos
+            });
+        }
+        else response.json({
+            error: 'No tiene permisos para acceder aquí'
+        });
+    },
+    ReporteTraslado: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            let sesion = request.cookies[CookieId];
+            const { pedido } = request.query;
+            const query = "call pack_new_web_expo.sp_reporte_traslado(:pedido,:ocodigo,:omensaje,:oreporte)";
+            const params = [
+                { name: 'pedido', io: 'in', value: pedido },
+                { name: 'ocodigo', io: 'out', type: 'number' },
+                { name: 'omensaje', io: 'out', type: 'string' },
+                { name: 'oreporte', io: 'out', type: 'cursor' }
+            ];
+            const result = await db.resultSet(query, params);
+            if (result.ocodigo == -1) {
+                response.send(result.omensaje);
+                return;
+            }
+            response.render(path.resolve('client/views/extranet/reporte-traslado.ejs'), { sesion: JSON.stringify(JSON.parse(sesion)), reporte: JSON.stringify(result.oreporte), pedido: pedido });
+        }
+        else response.redirect('/extranet/login');
+    },
+    ListaPedidosValidos: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            const sesion = JSON.parse(request.cookies[CookieId]);
+            let cliente = sesion.admin == 'S' ? -1 : sesion.codigo;
+            const query = "call pack_new_web_expo.sp_pedidos_listado(:cliente,:opedidos)";
+            const params = [
+                { name: 'cliente', io: 'in', value: cliente },
+                { name: 'opedidos', io: 'out', type: 'cursor' }
+            ];
+            const result = await db.resultSet(query, params);
+            if (result.error) {
+                response.json({
+                    error: result.error
+                });
+                return;
+            }
+            response.json({
+                pedidos: result.opedidos
+            });
+        }
+        else response.json({
+            error: 'No tiene permisos para acceder aquí'
+        });
+    },
+    ArchivosAdjuntos: (request, response) => {
+        if (request.cookies[CookieId]) {
+            const { pedido } = request.query;
+            const sesion = JSON.parse(request.cookies[CookieId]);
+            const fs = require('fs');
+            const basepath = fupload.diskpath + pedido;
+            if (!fs.existsSync(basepath)) {
+                fs.mkdirSync(basepath, 0775);
+            }
+            fs.readdir(basepath, async function(err, files) {
+                if (err) {
+                    response.send(err.getMessage());
+                    return;
+                }
+                let archivos = JSON.stringify(files);
+                // carga el legajo de productos
+                const query = "call pack_new_web_expo.sp_lista_archivos(:pedido,:empresa,:archivos)";
+                const params = [
+                    { name: 'pedido', io: 'in', value: pedido },
+                    { name: 'empresa', io: 'in', value: UserExpo.empresa },
+                    { name: 'archivos', io: 'out', type: 'cursor' }
+                ];
+                const result = await db.resultSet(query, params);
+                const legajo = result.archivos;
+                // fin
+                response.render(path.resolve('client/views/extranet/archivos-adjuntos.ejs'), { archivos: archivos, pedido: pedido, sesion: JSON.stringify(sesion), legajo: JSON.stringify(legajo) });
+            });
+        }
+        else response.json({
+            error: 'No tiene permisos para acceder aquí'
+        });
+    },
+    UploadAdjuntos: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            var form = new formidable({multiples:true});
+            form.parse(request, async function (err, fields, files) {
+                if (err) {
+                    response.json(err);
+                    return;
+                }
+                // prepara las variables
+                const pedido = fields.pedido;
+                const basepath = fupload.diskpath + pedido + '/';
+                const numArchivos = files.archivos.length;
+                let contArchivos = 0;
+                // recorre los archivos
+                if (numArchivos > 0) {
+                    for (let archivo of files.archivos) {
+                        // genera la ruta destino
+                        let filename = archivo.name;
+                        // mover el archivo
+                        var oldpath = archivo.path;
+                        var newpath = basepath + filename;
+                        mv(oldpath, newpath, async function (err) {
+                            if (err) {
+                                response.json({
+                                    error: err
+                                });
+                                return;
+                            }
+                            // registra en la bd
+                            const sesion = JSON.parse(request.cookies[CookieId]);
+                            const query = "call pack_new_web_expo.sp_registra_archivo(:pedido,:empresa,:archivo,:usuario)";
+                            const params = [
+                                { name: 'pedido', io: 'in', value: pedido },
+                                { name: 'empresa', io: 'in', value: UserExpo.empresa },
+                                { name: 'archivo', io: 'in', value: filename },
+                                { name: 'usuario', io: 'in', value: sesion.codigo }
+                            ];
+                            await db.resultSet(query, params);
+                            // producto fue movido corretamente
+                            contArchivos++;
+                            if (contArchivos == numArchivos) {
+                                response.redirect('/extranet/archivos-adjuntos?pedido=' + pedido);
+                            }
+                        });
+                    }
+                }
+                else {
+                    let archivo = files.archivos;
+                    // genera la ruta destino
+                    let filename = archivo.name;
+                    // mover el archivo
+                    var oldpath = archivo.path;
+                    var newpath = basepath + filename;
+                    mv(oldpath, newpath, async function (err) {
+                        if (err) {
+                            response.json({
+                                error: err
+                            });
+                            return;
+                        }
+                        // registra en la bd
+                        const sesion = JSON.parse(request.cookies[CookieId]);
+                        const query = "call pack_new_web_expo.sp_registra_archivo(:pedido,:empresa,:archivo,:usuario)";
+                        const params = [
+                            { name: 'pedido', io: 'in', value: pedido },
+                            { name: 'empresa', io: 'in', value: UserExpo.empresa },
+                            { name: 'archivo', io: 'in', value: filename },
+                            { name: 'usuario', io: 'in', value: sesion.codigo }
+                        ];
+                        await db.resultSet(query, params);
+                        // producto fue movido corretamente
+                        response.redirect('/extranet/archivos-adjuntos?pedido=' + pedido);
+                    });
+                }
+            });
+        }
+        else response.json({
+            error: 'Su sesión expiró'
+        });
+    },
+    RetirarAdjunto: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            const sesion = JSON.parse(request.cookies[CookieId]);
+            const { pedido, archivo, id } = request.body;
+            const fs = require('fs');
+            const basepath = fupload.diskpath + pedido + '/' + archivo;
+            if (!fs.existsSync(basepath)) {
+                response.json({
+                    error: 'El archivo especificado no existe'
+                });
+                return;
+            }
+            fs.unlinkSync(basepath);
+            // registra en la bd
+            const query = "call pack_new_web_expo.sp_elimina_archivo(:usuario,:archivo)";
+            const params = [
+                { name: 'usuario', io: 'in', value: sesion.codigo },
+                { name: 'archivo', io: 'in', value: id }
+            ];
+            await db.resultSet(query, params);
+            //
+            response.json({
+                success: true
+            });
+        }
+        else response.json({
+            error: 'No tiene permisos para acceder aquí'
+        });
+    },
+    DescargaAdjunto: (request, response) => {
+        if (request.cookies[CookieId]) {
+            const { pedido, archivo } = request.query;
+            const fs = require('fs');
+            const basepath = fupload.diskpath + pedido + '/' + archivo;
+            if (!fs.existsSync(basepath)) {
+                response.send('El archivo especificado no existe');
+                return;
+            }
+            response.download(basepath);
+        }
+        else response.send('No tiene permisos para acceder aquí');
+    },
+    HistorialPedidos: async (request, response) => {
+        if (request.cookies[CookieId]) {
+            const sesion = JSON.parse(request.cookies[CookieId]);
+            if (sesion.admin == 'N') {
+                response.json({
+                    error: 'No tiene privilegios para acceder aquí'
+                });
+                return;
+            }
+            const query = "call pack_new_web_expo.sp_historial_pedidos(:opedidos)";
+            const params = [
+                { name: 'opedidos', io: 'out', type: 'cursor' }
+            ];
+            const result = await db.resultSet(query, params);
+            const pedidos = result.opedidos;
+            // 
+            response.render(path.resolve('client/views/extranet/pedidos-historial.ejs'), { sesion: JSON.stringify(sesion), pedidos: JSON.stringify(pedidos) });
+        }
+        else response.json({
+            error: 'No tiene permisos para acceder aquí'
+        });
+    },
+    XlsReporteTraslado: async (request, response) => {
+        let sesion = request.cookies[CookieId];
+        const { pedido } = request.query;
+        const query = "call pack_new_web_expo.sp_reporte_traslado(:pedido,:ocodigo,:omensaje,:oreporte)";
+        const params = [
+            { name: 'pedido', io: 'in', value: pedido },
+            { name: 'ocodigo', io: 'out', type: 'number' },
+            { name: 'omensaje', io: 'out', type: 'string' },
+            { name: 'oreporte', io: 'out', type: 'cursor' }
+        ];
+        const result = await db.resultSet(query, params);
+        if (result.ocodigo == -1) {
+            response.send(result.omensaje);
+            return;
+        }
+        // escribe archivo excel
+        const wb = xlsx.utils.book_new();
+        wb.SheetNames.push("reporte-traslado");
+        //
+        let ws = xlsx.utils.json_to_sheet(result.oreporte);
+        wb.Sheets["reporte-traslado"] = ws;
+        let wbbuf = xlsx.write(wb, {
+            bookType: 'xlsx',
+            bookSST: false,
+            type: 'buffer'
+        });
+        response.writeHead(200, {
+            'Content-Disposition': 'attachment;filename=traslado_' + pedido + '.xlsx',
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        response.end(wbbuf);
+    },
+    XlsProductosPedido: async (request, response) => {
+        const { tipo, empresa, codigo } = request.query;
+        const query = "call pack_new_web_expo.sp_productos_pedido(:x_result, :x_mensaje, :x_detalle, :x_tipo, :x_empresa, :x_codigo)";
+        const params = [
+            { name: 'x_result', io: 'out', type: 'number' },
+            { name: 'x_mensaje', io: 'out', type: 'string' },
+            { name: 'x_detalle', io: 'out', type: 'cursor' },
+            { name: 'x_tipo', io: 'in', value: tipo },
+            { name: 'x_empresa', io: 'in', value: empresa },
+            { name: 'x_codigo', io: 'in', value: codigo }
+        ];
+        const result = await db.resultSet(query, params);
+        if (result.error) {
+            response.send(result.error);
+            return;
+        }
+        if (result.x_result == 0) {
+            response.send(result.x_mensaje);
+            return;
+        }
+        // escribe archivo excel
+        const wb = xlsx.utils.book_new();
+        wb.SheetNames.push("detalle-pedido");
+        //
+        let ws = xlsx.utils.json_to_sheet(result.x_detalle);
+        wb.Sheets["detalle-pedido"] = ws;
+        let wbbuf = xlsx.write(wb, {
+            bookType: 'xlsx',
+            bookSST: false,
+            type: 'buffer'
+        });
+        response.writeHead(200, {
+            'Content-Disposition': 'attachment;filename=detalle_pedido.xlsx',
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        response.end(wbbuf);
     }
 };
 

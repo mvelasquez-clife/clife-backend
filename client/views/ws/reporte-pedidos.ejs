@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Web Service Corporación Life</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/assets/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="/assets/intranet/css/main.css">
+        <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+        <style>
+            body {padding-top:60px}
+            .bg-purple {background-color:#7e57c2}
+            .gj-datepicker-bootstrap [role="right-icon"] button {padding:.25rem .75rem !important}
+        </style>
+    </head>
+    <body>
+        <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-main">
+            <a class="navbar-brand pb-1" href="#">
+                <img src="/assets/intranet/images/clife-banner-light.svg" alt="Corporacion Life" style="height:24px;">
+            </a>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Reporte de marcas/productos</a>
+                    </li>
+                </ul>
+            </div>
+            <button id="sidebar-toggler" class="navbar-toggler" type="button" aria-expanded="false">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/ws-life" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-home mr-2"></i>Volver</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <!-- SEPARADOR DE BAJO PRESUPUESTO -->
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col alert alert-light shadow-sm pt-3 pb-2 px-4">
+                    <form id="form-pedido" class="form-inline mb-1" method="post" action="/">
+                        <!-- fecha inicio -->
+                        <label for="form-desde" class="mr-1">Desde</label>
+                        <input type="text" class="form-control form-control-sm" id="form-desde" style="width:108px">
+                        <!-- fecha fin -->
+                        <label for="form-hasta" class="ml-3 mr-1">Hasta</label>
+                        <input type="text" class="form-control form-control-sm" id="form-hasta" style="width:108px">
+                        <!-- agrupar -->
+                        <label for="form-agrupar" class="ml-3 mr-1">Agrupar por</label>
+                        <select class="form-control form-control-sm" id="form-agrupar">
+                            <option value="1">Marcas</option>
+                            <option value="2">Submarca</option>
+                            <option value="3">Producto</option>
+                        </select>
+                        <!-- marca -->
+                        <label for="form-marca" class="ml-3 mr-1">Marca</label>
+                        <select class="form-control form-control-sm" id="form-marca" disabled>
+                            <option value="-1">- Seleccione -</option>
+                        </select>
+                        <!-- submarca -->
+                        <label for="form-submarca" class="ml-3 mr-1">Submarca</label>
+                        <select class="form-control form-control-sm" id="form-submarca" disabled>
+                            <option value="-1">- Seleccione -</option>
+                        </select>
+                        <!-- ordenamiento -->
+                        <label for="form-ordenar" class="ml-3 mr-1">Ordenar por</label>
+                        <select class="form-control form-control-sm" id="form-ordenar">
+                            <option value="total">Importe</option>
+                            <option value="cantidad">Cantidad</option>
+                        </select>
+                        <!-- botón de envío -->
+                        <button type="submit" class="btn btn-primary btn-sm ml-2"><i class="fa fa-search mr-2"></i>Cargar</button>
+                        <!-- botón de exportación -->
+                        <a href="#" class="btn btn-success btn-sm ml-2" id="exportar-xls"><i class="fa fa-file-excel-o mr-2"></i>Exportar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <div class="col alert alert-light shadow-sm py-4 px-2">
+                        <div class="row">
+                            <div class="col">
+                                <div id="detalle-pedidos" class="row justify-content-center mx-3"></div>
+                            </div>
+                            <div class="col">
+                                <div id="ch-grafico"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <!-- modal -->
+    <div id="modal-detalle-pedido" class="modal fade" tabindex="-1" data-backdrop="static">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-success"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col">
+                            <form>
+                                <div class="row mb-2">
+                                    <div class="col-7">
+                                        <label for="pedido-cliente">Cliente</label>
+                                        <input type="text" class="form-control-plaintext" id="pedido-cliente">
+                                    </div>
+                                    <div class="col-2">
+                                        <label for="pedido-documento">Documento</label>
+                                        <input type="text" class="form-control-plaintext" id="pedido-documento">
+                                    </div>
+                                    <div class="col-3">
+                                        <label for="pedido-importe">Importe</label>
+                                        <input type="text" class="form-control-plaintext" id="pedido-importe">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div id="detalle-pedido"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-primary" data-dismiss="modal">Cerrar esta ventana</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- scripts -->
+    <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script src="/assets/bootstrap/js/popper.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+    <!-- exportar -->
+    <script type="text/javascript" src="/assets/vendor/tableexport/lib/js-xlsx/xlsx.core.min.js"></script>
+    <script type="text/javascript" src="/assets/vendor/tableexport/lib/FileSaver/FileSaver.min.js"></script> 
+    <script type="text/javascript" src="/assets/vendor/tableexport/lib/html2canvas/html2canvas.min.js"></script>
+    <script type="text/javascript" src="/assets/vendor/tableexport/tableExport.js"></script>
+    <!-- highcharts -->
+    <script src="https://code.highcharts.com/highcharts.src.js"></script>
+    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script>
+        let datos = [];
+        // 
+        function exportarXls(event) {
+            event.preventDefault();
+            $('#table-export').tableExport({
+                fileName: 'reporte_ecomm',
+                type: 'xlsx'
+            });
+        }
+        // graficos
+        function dibujarGrafico(data) {
+            $('#ch-grafico').empty();
+            let sortCantidad = document.getElementById('form-ordenar').value == 'cantidad';
+            Highcharts.chart('ch-grafico', {
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'pie'
+                },
+                title: {
+                    text: 'Productos más vendidos ' + (sortCantidad ? 'por cantidad' : 'por importe')
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                accessibility: {
+                    point: {
+                        valueSuffix: '%'
+                    }
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: sortCantidad ? '<b>{point.name}</b>: {point.y:,.0f} unids. ({point.percentage:.1f} %)' : '<b>{point.name}</b>: S/ {point.y:,.2f} ({point.percentage:.1f} %)'
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Cartera',
+                    colorByPoint: true,
+                    data: data
+                }]
+            });
+        }
+        // factory del reporte
+        function combo_marcas() {
+            let combo = $('#form-marca');
+            let prevValue = -1;
+            let prevText = '';
+            combo.empty().append(
+                $('<option>').val(-1).text('TODO').prop('selected',true)
+            );
+            for (let fila of datos) {
+                if (fila.comarca != prevValue) {
+                    prevValue = fila.comarca;
+                    prevText = fila.marca;
+                    combo.append(
+                        $('<option>').val(prevValue).text(prevText)
+                    );
+                }
+            }
+        }
+        function combo_submarcas() {
+            let combo = $('#form-submarca');
+            let prevValue = -1;
+            let prevText = '';
+            let comarca = parseInt(document.getElementById('form-marca').value);
+            combo.empty().append(
+                $('<option>').val(-1).text('TODO').prop('selected',true)
+            );
+            for (let fila of datos) {
+                if (fila.comarca == comarca && fila.cosubmarca != prevValue) {
+                    prevValue = fila.cosubmarca;
+                    prevText = fila.submarca;
+                    combo.append(
+                        $('<option>').val(prevValue).text(prevText)
+                    );
+                }
+            }
+        }
+        function seleccionar_marca() {
+            let marca = document.getElementById('form-marca').value;
+            if (marca != '-1') combo_submarcas();
+            else {
+                $('#form-submarca').empty().append(
+                    $('<option>').val(-1).text('TODO').prop('selected',true)
+                );
+            }
+        }
+        function ordenar(dataset, key) {
+            let arrdataset = dataset;
+            let numFilas = dataset.length;
+            for (let i = 0; i < numFilas - 1; i++) {
+                for (let j = i + 1; j < numFilas; j++) {
+                    if (arrdataset[i][key] < arrdataset[j][key]) {
+                        let aux = arrdataset[i];
+                        arrdataset[i] = arrdataset[j];
+                        arrdataset[j] = aux;
+                    }
+                }
+            }
+            return arrdataset;
+        }
+        let reportesFactory = {
+            marcas: function() {
+                let prevValue = -1;
+                let prevText = '';
+                let prevCantidad = 0;
+                let prevTotal = 0;
+                let dataset = [];
+                for (let fila of datos) {
+                    if (prevValue != fila.comarca) {
+                        if (prevValue != -1) {
+                            // agregar
+                            dataset.push({
+                                marca: prevText,
+                                cantidad: prevCantidad,
+                                total: prevTotal
+                            });
+                        }
+                        prevValue = fila.comarca;
+                        prevText = fila.marca;
+                        prevCantidad = 0;
+                        prevTotal = 0;
+                    }
+                    prevCantidad += fila.cantidad;
+                    prevTotal += fila.subtotal;
+
+                }
+                dataset.push({
+                    marca: prevText,
+                    cantidad: prevCantidad,
+                    total: prevTotal
+                });
+                // ordenar
+                dataset = ordenar(dataset, document.getElementById('form-ordenar').value);
+                // escribe la tabla
+                let tbody = $('<tbody>');
+                let count = 0;
+                let chartData = [];
+                let otros = 0;
+                for (let fila of dataset) {
+                    let tr = $('<tr>').append(
+                        $('<td>').text(fila.marca)
+                    ).append(
+                        $('<td>').text(fila.cantidad.toLocaleString('en-us')).addClass('text-right')
+                    ).append(
+                        $('<td>').text(fila.total.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right')
+                    );
+                    if (count < 3) tr.addClass('text-primary');
+                    tbody.append(tr);
+                    // datos para el grafico
+                    if (count < 9) {
+                        chartData.push({ name: fila.marca, y: fila[document.getElementById('form-ordenar').value] });
+                    }
+                    else {
+                        otros += fila[document.getElementById('form-ordenar').value];
+                    }
+                    // fin
+                    count++;
+                }
+                if (otros > 0) chartData.push({ name: 'Otros', y: otros });
+                chartData[0].sliced = true;
+                chartData[0].selected = true;
+                dibujarGrafico(chartData);
+                $('#detalle-pedidos').empty().append(
+                    $('<table>').append(
+                        $('<thead>').append(
+                            $('<tr>').append(
+                                $('<th>').text('Marca')
+                            ).append(
+                                $('<th>').text('Unidades')
+                            ).append(
+                                $('<th>').text('Importe')
+                            )
+                        )
+                    ).append(tbody).addClass('table table-striped table-hover').attr('id','table-export')
+                );
+            },
+            submarcas: function() {
+                let marca = parseInt(document.getElementById('form-marca').value);
+                let prevValue = -1;
+                let prevText = '';
+                let prevMarca = '';
+                let prevCantidad = 0;
+                let prevTotal = 0;
+                let dataset = [];
+                for (let fila of datos) {
+                    if (marca == -1 || marca == fila.comarca) {
+                        if (prevValue != fila.cosubmarca) {
+                            if (prevValue != -1) {
+                                // agregar
+                                dataset.push({
+                                    marca: prevMarca,
+                                    submarca: prevText,
+                                    cantidad: prevCantidad,
+                                    total: prevTotal
+                                });
+                            }
+                            prevMarca = fila.marca;
+                            prevValue = fila.cosubmarca;
+                            prevText = fila.submarca;
+                            prevCantidad = 0;
+                            prevTotal = 0;
+                        }
+                        prevCantidad += fila.cantidad;
+                        prevTotal += fila.subtotal;
+                    }
+                }
+                dataset.push({
+                    marca: prevMarca,
+                    submarca: prevText,
+                    cantidad: prevCantidad,
+                    total: prevTotal
+                });
+                dataset = ordenar(dataset, document.getElementById('form-ordenar').value);
+                // escribe la tabla
+                let tbody = $('<tbody>');
+                let count = 0;
+                let chartData = [];
+                let otros = 0;
+                for (let fila of dataset) {
+                    let tr = $('<tr>').append(
+                        $('<td>').text(fila.marca)
+                    ).append(
+                        $('<td>').text(fila.submarca)
+                    ).append(
+                        $('<td>').text(fila.cantidad.toLocaleString('en-us')).addClass('text-right')
+                    ).append(
+                        $('<td>').text(fila.total.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right')
+                    );
+                    if (count < 3) tr.addClass('text-primary');
+                    tbody.append(tr);
+                    // datos para el grafico
+                    if (count < 9) {
+                        chartData.push({ name: fila.submarca, y: fila[document.getElementById('form-ordenar').value] });
+                    }
+                    else {
+                        otros += fila[document.getElementById('form-ordenar').value];
+                    }
+                    // fin
+                    count++;
+                }
+                if (otros > 0) chartData.push({ name: 'Otros', y: otros });
+                chartData[0].sliced = true;
+                chartData[0].selected = true;
+                dibujarGrafico(chartData);
+                $('#detalle-pedidos').empty().append(
+                    $('<table>').append(
+                        $('<thead>').append(
+                            $('<tr>').append(
+                                $('<th>').text('Marca')
+                            ).append(
+                                $('<th>').text('Submarca')
+                            ).append(
+                                $('<th>').text('Unidades')
+                            ).append(
+                                $('<th>').text('Importe')
+                            )
+                        )
+                    ).append(tbody).addClass('table table-striped table-hover').attr('id','table-export')
+                );
+            },
+            productos: function() {
+                let marca = parseInt(document.getElementById('form-marca').value);
+                let submarca = parseInt(document.getElementById('form-submarca').value);
+                let prevMarca = '';
+                let prevSubmarca = '';
+                let prevValue = -1;
+                let prevText = '';
+                let prevCantidad = 0;
+                let prevTotal = 0;
+                let dataset = [];
+                for (let fila of datos) {
+                    if ((marca == -1 || marca == fila.comarca) && (submarca == -1 || submarca == fila.cosubmarca)) {
+                        if (prevValue != fila.coproducto) {
+                            if (prevValue != -1) {
+                                // agregar
+                                dataset.push({
+                                    marca: prevMarca,
+                                    submarca: prevSubmarca,
+                                    producto: prevText,
+                                    cantidad: prevCantidad,
+                                    total: prevTotal
+                                });
+                            }
+                            prevMarca = fila.marca;
+                            prevSubmarca = fila.submarca;
+                            prevValue = fila.coproducto;
+                            prevText = fila.producto;
+                            prevCantidad = 0;
+                            prevTotal = 0;
+                        }
+                        prevCantidad += fila.cantidad;
+                        prevTotal += fila.subtotal;
+                    }
+                }
+                dataset.push({
+                    marca: prevMarca,
+                    submarca: prevSubmarca,
+                    producto: prevText,
+                    cantidad: prevCantidad,
+                    total: prevTotal
+                });
+                dataset = ordenar(dataset, document.getElementById('form-ordenar').value);
+                // escribe la tabla
+                let tbody = $('<tbody>');
+                let count = 0;
+                let chartData = [];
+                let otros = 0;
+                for (let fila of dataset) {
+                    let tr = $('<tr>').append(
+                        $('<td>').text(fila.marca)
+                    ).append(
+                        $('<td>').text(fila.submarca)
+                    ).append(
+                        $('<td>').text(fila.producto)
+                    ).append(
+                        $('<td>').text(fila.cantidad.toLocaleString('en-us')).addClass('text-right')
+                    ).append(
+                        $('<td>').text(fila.total.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right')
+                    );
+                    if (count < 3) tr.addClass('text-primary');
+                    tbody.append(tr);
+                    // datos para el grafico
+                    if (count < 9) {
+                        chartData.push({ name: fila.producto, y: fila[document.getElementById('form-ordenar').value] });
+                    }
+                    else {
+                        otros += fila[document.getElementById('form-ordenar').value];
+                    }
+                    // fin
+                    count++;
+                }
+                if (otros > 0) chartData.push({ name: 'Otros', y: otros });
+                chartData[0].sliced = true;
+                chartData[0].selected = true;
+                dibujarGrafico(chartData);
+                $('#detalle-pedidos').empty().append(
+                    $('<table>').append(
+                        $('<thead>').append(
+                            $('<tr>').append(
+                                $('<th>').text('Marca')
+                            ).append(
+                                $('<th>').text('Submarca')
+                            ).append(
+                                $('<th>').text('Producto')
+                            ).append(
+                                $('<th>').text('Unidades')
+                            ).append(
+                                $('<th>').text('Importe')
+                            )
+                        )
+                    ).append(tbody).addClass('table table-striped table-hover').attr('id','table-export')
+                );
+            }
+        };
+        // fin
+        function formatearFecha(d) {
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+            return [day, month, year].join('/');
+        }
+        function escribirFechas() {
+            var hoy = new Date();
+            var ayer = new Date();
+            ayer.setDate(ayer.getDate() - 7);
+            document.getElementById('form-desde').value = formatearFecha(ayer);
+            document.getElementById('form-hasta').value = formatearFecha(hoy);
+        }
+        function exportarXls(event) {
+            event.preventDefault();
+            $('#table-export').tableExport({
+                fileName: 'pedidos_ecommerce',
+                type: 'xlsx'
+            });
+        }
+        function carga_datos() {
+            $.ajax({
+                url: '/ws-life/carga-datos-reporte',
+                method: 'get',
+                data: {
+                    desde: document.getElementById('form-desde').value,
+                    hasta: document.getElementById('form-hasta').value,
+                    marca: document.getElementById('form-marca').value,
+                    submarca: document.getElementById('form-submarca').value
+                },
+                dataType: 'json',
+                success: function(result) {
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    datos = result.datos;
+                },
+                error: function(error) {
+                    alert(error);
+                }
+            });
+        }
+        function cambiar_tipo_reporte() {
+            let tipo = parseInt(document.getElementById('form-agrupar').value);
+            switch (tipo) {
+                case 1:
+                    $('#form-marca').prop('disabled', true).children('option').eq(0).prop('selected', true).prop('disabled', true);
+                    $('#form-submarca').prop('disabled', true).empty().append(
+                        $('<option>').val('-1').text('- Seleccione -')
+                    );
+                    break;
+                case 2:
+                    $('#form-marca').removeAttr('disabled').children('option').eq(0).prop('selected', true);
+                    combo_marcas();
+                    $('#form-submarca').empty().append(
+                        $('<option>').val('-1').text('- Seleccione -')
+                    ).prop('disabled', true);
+                    break;
+                case 3:
+                    $('#form-marca').removeAttr('disabled').children('option').eq(0).prop('selected', true);
+                    combo_marcas();
+                    $('#form-submarca').empty().append(
+                        $('<option>').val('-1').text('TODO')
+                    ).removeAttr('disabled');
+                    break;
+            }
+        }
+        function preparar_grafico(event) {
+            event.preventDefault();
+            let tipo = parseInt(document.getElementById('form-agrupar').value);
+            switch (tipo) {
+                case 1:
+                    reportesFactory.marcas();
+                    break;
+                case 2:
+                    reportesFactory.submarcas();
+                    break;
+                case 3:
+                    reportesFactory.productos();
+                    break;
+            }
+        }
+        //
+        function init() {
+            $('#form-desde').datepicker({
+                // locale: 'es-es',
+                format: 'dd/mm/yyyy',
+                datepicker: { weekStartDay: 1 },
+                uiLibrary: 'bootstrap4',
+                iconsLibrary: 'fontawesome',
+                change: carga_datos
+            });
+            $('#form-hasta').datepicker({
+                // locale: 'es-es',
+                format: 'dd/mm/yyyy',
+                datepicker: { weekStartDay: 1 },
+                uiLibrary: 'bootstrap4',
+                iconsLibrary: 'fontawesome',
+                change: carga_datos
+            });
+            escribirFechas();
+            $('#form-pedido').on('submit', preparar_grafico);
+            $('#form-agrupar').on('change', cambiar_tipo_reporte).children('option').eq(0).prop('selected',true);
+            $('#form-marca').prop('disabled',true).on('change', seleccionar_marca);
+            $('#form-submarca').prop('disabled',true);
+            $('#exportar-xls').on('click', exportarXls);
+            carga_datos();
+        }
+        // go
+        $(init);
+    </script>
+</html>

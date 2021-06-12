@@ -55,10 +55,12 @@
                             <label for="form-file">Archivo</label>
                             <input type="file" class="form-control-file" id="form-file">
                         </div>
-                        <button type="submit" class="btn btn-primary btn-sm"><i class="fa fa-upload mr-2"></i>Cargar XLS/CSV</button>
+                        <button id="form-submit" type="submit" class="btn btn-primary btn-sm"><i class="fa fa-upload mr-2"></i>Cargar XLS/CSV</button>
                     </form>
                 </div>
             </div>
+        </div>
+        <div class="container-fluid px-3">
             <div id="detalle-planilla" class="row justify-content-center"></div>
         </div>
     </body>
@@ -68,6 +70,7 @@
     <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
     <script>
         function muestraIconoCarga () {
+            $('#form-submit').prop('disabled', true).hide();
             $('#detalle-planilla').empty().append(
                 $('<div>').append(
                     $('<img>').attr('src', '/assets/images/icons/ic-uploading.svg').width('48')
@@ -77,6 +80,7 @@
             );
         }
         function ocultaIconoCarga () {
+            $('#form-submit').removeAttr('disabled', true).show();
             $('#detalle-planilla').children().fadeOut(150);
         }
         function escribirDetallePlanilla (detalle, codigo) {
@@ -85,6 +89,17 @@
                 var total = 0;
                 var tbody = $('<tbody>');
                 for (var pago of detalle) {
+                    let iResultado = $('<td>');
+                    if (pago.planilla == codigo) {
+                        iResultado.append(
+                            $('<i>').addClass('fa fa-check mr-1')
+                        ).append('Correcto').addClass('text-success');
+                    }
+                    else {
+                        iResultado.append(
+                            $('<i>').addClass('fa fa-times mr-1')
+                        ).append('Ya registrado en planilla ' + pago.planilla).addClass('text-danger');
+                    }
                     tbody.append(
                         $('<tr>').append(
                             $('<td>').text(pago.factura)
@@ -100,7 +115,7 @@
                             $('<td>').text(pago.medpago)
                         ).append(
                             $('<td>').text(pago.orderid)
-                        )
+                        ).append(iResultado)
                     );
                     total += pago.importe;
                 }
@@ -126,6 +141,8 @@
                                     $('<th>').text('Medio pago')
                                 ).append(
                                     $('<th>').text('OrderID VTEX')
+                                ).append(
+                                    $('<th>').text('Resultado')
                                 )
                             )
                         ).append(tbody).append(
@@ -137,16 +154,24 @@
                                 ).append(
                                     $('<th>').text(total.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                                 ).append(
-                                    $('<th>').text('').attr('colspan', 2)
+                                    $('<th>').text('').attr('colspan', 3)
                                 )
                             )
                         ).addClass('table table-striped table-hover mb-0')
-                    ).addClass('col alert alert-light shadow-sm py-3 px-4')
+                    ).addClass('col alert alert-light shadow-sm py-3 px-4 mx-3')
                 );
             });
         }
+        function reiniciaFormularioArchivo() {
+            $('#form-pasarela option[value=-1]').prop('selected', true);
+            document.getElementById('form-file').value = null;
+        }
         function enviarAdjunto(event) {
             event.preventDefault();
+            if (document.getElementById('form-file').files.length == 0) {
+                alert('Debe cargar un archivo XLS para continuar');
+                return;
+            }
             muestraIconoCarga();
             var data = new FormData();
             data.append('pasarela', document.getElementById('form-pasarela').value);
@@ -160,14 +185,14 @@
                 contentType: false,
                 processData: false,
                 success: function (result) {
+                    ocultaIconoCarga();
                     if(result.error) {
-                        ocultaIconoCarga();
                         alert(result.error);
                         return;
-                    }/*
-                    $('#form-pasarela option').eq(0).prop('selected', true);
-                    document.getElementById('form-file').value = null;*/
+                    }
+                    $('#form-submit').removeAttr('disabled', true).show();
                     escribirDetallePlanilla(result.detalle, result.planilla);
+                    reiniciaFormularioArchivo();
                 },
                 error: function (error) {
                     ocultaIconoCarga();

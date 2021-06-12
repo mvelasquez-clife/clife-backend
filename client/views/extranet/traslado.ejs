@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Liberación de productos</title>
+        <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.css">
+        <link rel='stylesheet prefetch' href='http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css'>
+        <style>
+            body {
+                padding-top: 60px;
+            }
+            .navbar-brand {
+                background-image: url('/assets/images/extranet/clife-logo-light.png');
+                background-size: auto 30px;
+                background-repeat: no-repeat;
+                padding-left: 36px;
+                font-size: 1.5rem;
+                line-height: 1.75rem;
+                height: 30px;
+                width: 224px;
+            }
+            .table th, .table td {vertical-align: middle !important}
+            .active * {color:#ffffff !important;}
+            #row-options, #tabla-productos{
+                display: none;
+            }
+            #dv-genera-pedido{display:none}
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-cprimary">
+            <a class="navbar-brand" href="/extranet">Corporacion Life</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <h5 class="text-light font-weight-light mb-0">Productos para liberación</h5>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="nav-dropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Opciones</a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="nav-dropdown">
+                            <a class="dropdown-item" href="#">Mis datos</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal-logout">Cerrar sesión</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light" href="/extranet">Volver</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h5 class="mb-2 text-primary">Productos para liberación</h5>
+                    <div class="d-flex mb-3">
+                        <p class="my-auto mr-auto">A continuación seleccione</p>
+                        <label for="select-ubicacion" class="text-dark my-auto">Ubicación</label>
+                        <select class="my-auto ml-2 form-control form-control-sm" id="select-ubicacion" style="width:120px"></select>
+                        <label for="select-pedido" class="text-dark my-auto ml-3">Pedido</label>
+                        <select class="my-auto ml-2 form-control form-control-sm" id="select-pedido" style="width:320px" disabled="true"></select>
+                    </div>
+                    <table id="tabla-productos" class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th width="15%">Código</th>
+                                <th width="48%">Descripción</th>
+                                <th width="8%">Paletas</th>
+                                <th width="8%">Total disponible</th>
+                                <th width="8%">Cantidad solicitada</th>
+                                <th width="8%">Disponible para exportaciones</th>
+                                <th width="5%"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="productos-lista">
+                            <tr>
+                                <td colspan="7">Cargando productos para traslado. Por favor, espere...</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th>TOTALES</th>
+                                <th id="productos-paletas" class="text-right"></th>
+                                <th></th>
+                                <th id="productos-cantidad" class="text-right"></th>
+                                <th id="expo-cantidad" class="text-right"></th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div id="row-options" class="row">
+                <div class="col">
+                    <div class="list-group mb-4">
+                        <div class="list-group-item">
+                            <div class="d-flex">
+                                <p class="my-auto text-dark mr-auto">Utilice esta opción para generar el reporte de productos trasladados</p>
+                                <a href="javascript:ver_reporte_traslado()" class="btn btn-sm btn-primary"><i class="fa fa-list-ul mr-2"></i>Ver reporte de traslado</a>
+                            </div>
+                        </div>
+                        <div id="dv-genera-pedido" class="list-group-item">
+                            <div class="d-flex">
+                                <p class="my-auto text-dark mr-auto">Si todos los productos ya fueron habilitados, utilice esta opción para generar el pedido</p>
+                                <a href="#" id="pedido-submit" class="btn btn-sm btn-danger"><i class="fa fa-magic mr-2"></i>Generar el pedido</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- modal traslado -->
+        <div id="modal-traslado" class="modal fade" tabindex="-1" data-backdrop="static">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Traslado de productos</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-2">Seleccione las ubicaciones de origen y destino y la cantidad a trasladar.</p>
+                        <p class="mb-1"><b>Producto:</b> <span id="traslado-dproducto"></span></p>
+                        <p class="mb-3"><b>Cantidad:</b> <span id="traslado-dcantidad" class="font-weight-bold text-danger"></span></p>
+                        <input type="hidden" id="traslado-maximo">
+                        <div class="row mb-0">
+                            <div class="col">
+                                <p class="mb-2 text-primary">Ubicación de origen</p>
+                                <div class="w-100" style="height:480px;overflow-y:auto">
+                                    <div id="ubicaciones-origen" class="list-group"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mb-3">Trasladar <span id="traslado-subtotal" class="text-success font-weight-bold">0</span> de <span id="traslado-requerido" class="text-primary font-weight-bold"></span> unidad(es) a <span id="traslado-ubidestino" class="font-weight-bold text-primary"></span> - <span id="traslado-faltantes" class="text-danger font-weight-bold"></span> unidad(es) restante(s)</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success" id="traslado-submit"><i class="fa fa-exchange"></i> Trasladar productos</button>
+                        <span id="traslado-lbl" class="my-auto">Espere...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <!-- scripts -->
+    <script src="/assets/vendor/jquery/jquery-3.2.1.min.js"></script>
+    <script src="/assets/bootstrap/js/popper.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script>
+        let sesdata = JSON.parse('<%-sesion %>');
+        let ProductosTraslado;
+
+        async function generaPedidoAlmacen(event) {
+            event.preventDefault();
+            if (window.confirm('Se enviará el pedido al almacén. Ya no podrá modificar las cantidades ni los productos. ¿Desea continuar?')) {
+                try {
+                    let result = await $.ajax({
+                        url: '/extranet/procesar-pre-pedido',
+                        method: 'post',
+                        data: {
+                            empresa: 11,
+                            prepedido: document.getElementById('select-pedido').value
+                        },
+                        dataType: 'json'
+                    });
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    alert('Se generó el pedido ' + result.pedido);
+                    location.href = '/extranet';
+                }
+                catch (err) {
+                    alert(err);
+                }
+            }
+        }
+        function ver_reporte_traslado() {
+            let pedido = document.getElementById('select-pedido').value;
+            window.open('/extranet/reporte-traslado-productos?pedido=' + pedido, '_blank', 'resizable=no,height:600,width=1080,menubar=no,toolbar=no,left=160,top=40');
+        }
+        function validar_envio_traslado() {
+            /*
+            let vdestino = $('#ubicaciones-destino .active').length;
+            if (vdestino == 1) {
+                $('#traslado-submit').removeAttr('disabled');
+            }
+            else {
+                $('#traslado-submit').prop('disabled', true);
+            }
+            */
+            return true;
+        }
+        function validar_numeros (evt) {
+            var theEvent = evt || window.event;
+            // Handle paste
+            if (theEvent.type === 'paste') {
+                key = event.clipboardData.getData('text/plain');
+            }
+            else {
+                // Handle key press
+                var key = theEvent.keyCode || theEvent.which;
+                key = String.fromCharCode(key);
+            }
+            var regex = /[0-9]/;
+            if (!regex.test(key)) {
+                theEvent.returnValue = false;
+                if(theEvent.preventDefault) theEvent.preventDefault();
+            }
+            validar_envio_traslado();
+        }
+        function totalizar_cantidades_traslado(evt) {
+            // totalizar
+            let cantidades = $('.trs-cantidad');
+            let cantidad = 0;
+            $.each(cantidades, function() {
+                let input = $(this);
+                let icantidad = input.val();
+                if (icantidad != '') {
+                    icantidad = parseInt(icantidad);
+                    cantidad += icantidad;
+                }
+            });
+            let requerido = parseInt(document.getElementById('traslado-requerido').innerHTML);
+            document.getElementById('traslado-subtotal').innerHTML = cantidad.toLocaleString('en-us');
+            document.getElementById('traslado-faltantes').innerHTML = (requerido - cantidad).toLocaleString('en-us');
+            // olakease
+            if (cantidad > 0) {
+                $('#traslado-submit').removeAttr('disabled');
+            }
+            else {
+                $('#traslado-submit').prop('disabled', true);
+            }
+        }
+        function selecciona_ubicacion_origen(event) {
+            event.preventDefault();
+            var a = $(this);
+            let maximo = parseInt(document.getElementById('traslado-maximo').value);
+            let saldo = parseInt(a.data('saldo'));
+            validar_envio_traslado();
+        }
+        function selecciona_ubicacion_destino(event) {
+            event.preventDefault();
+            var a = $(this);
+            a.parent().children('.active').removeClass('active');
+            a.addClass('active');
+            validar_envio_traslado();
+        }
+        function preparar_traslado_producto(event) {
+            event.preventDefault();
+            let codigo_producto = $(this).data('codigo');
+            let cantidad_despachar = parseInt($(this).data('cantidad'));
+            let nombre_producto = $(this).data('descripcion');
+            $('#modal-traslado').modal('show');
+            $('#ubicaciones-origen').empty();
+            // $('#ubicaciones-destino').empty();
+            document.getElementById('traslado-maximo').value = cantidad_despachar;
+            // ubicaciones-origen
+            $.ajax({
+                url: '/extranet/lista-ubicaciones',
+                method: 'get',
+                data: { producto: codigo_producto },
+                dataType: 'json',
+                success: function (response) {
+                    document.getElementById('traslado-dproducto').innerHTML = codigo_producto + ' - ' + nombre_producto;
+                    document.getElementById('traslado-dcantidad').innerHTML = cantidad_despachar.toLocaleString('en-us') + ' unidad(es)';
+                    document.getElementById('traslado-requerido').innerHTML = cantidad_despachar.toLocaleString('en-us');
+                    document.getElementById('traslado-faltantes').innerHTML = cantidad_despachar.toLocaleString('en-us');
+                    if (response.error) {
+                        $('#modal-traslado').modal('hide');
+                        alert(response.error);
+                        return;
+                    }
+                    // escribe ubicaciones origen
+                    let uborigen = response.ubicaciones.origen;
+                    for (let ubicacion of uborigen) {
+                        $('#ubicaciones-origen').append(
+                            $('<a>').append(
+                                $('<div>').append(
+                                    $('<div>').append(
+                                        $('<h4>').text(ubicacion.ubicacion).addClass('mb-1"')
+                                    ).append(
+                                        $('<small>').html('<b>Lote:</b> ' + ubicacion.lote + ' - <b>Vence:</b> ' + ubicacion.fvence).addClass('mb-1 d-block')
+                                    ).addClass('my-auto mr-auto')
+                                ).append(
+                                    $('<div>').append(
+                                        $('<small>').text('Saldo').addClass('d-block')
+                                    ).append(
+                                        $('<h3>').text(ubicacion.saldo.toLocaleString('en-us')).addClass('d-block font-weight-bold mb-0 text-success')
+                                    ).append(
+                                        $('<small>').text('unids.').addClass('d-block')
+                                    ).addClass('my-auto text-center')
+                                ).append(
+                                    $('<div>').append(
+                                        $('<small>').text('Trasladar:').addClass('d-block')
+                                    ).append(
+                                        $('<input>').attr({
+                                            'type': 'text',
+                                            'data-producto': ubicacion.producto,
+                                            'data-lote': ubicacion.lote,
+                                            'data-ubicacion': ubicacion.ubicacion,
+                                            'data-saldo': ubicacion.saldo,
+                                            'placeholder': 'Cantidad',
+                                            'onkeypress': 'validar_numeros(event)',
+                                            'onkeyup': 'totalizar_cantidades_traslado(event)'
+                                        }).addClass('form-control form-control-sm text-dark trs-cantidad').css('width','120px')
+                                    ).addClass('my-auto ml-auto')
+                                ).addClass('d-flex')
+                            ).addClass('list-group-item list-group-item-action').attr('href','#').on('click', selecciona_ubicacion_origen)
+                        );
+                    }
+                    // escribe ubicaciones destino
+                    /*
+                    // nel prrito xd
+                    let ubdestino = response.ubicaciones.destino;
+                    for (let ubicacion of ubdestino) {
+                        $('#ubicaciones-destino').append(
+                            $('<a>').text(ubicacion.ubicacion).attr({
+                                'href': '#',
+                                'data-ubicacion': ubicacion.ubicacion
+                            }).addClass('list-group-item list-group-item-action').on('click', selecciona_ubicacion_destino)
+                        );
+                    }
+                    */
+                },
+                error: function (error) {
+                    alert(error);
+                }
+            });
+        }
+        function escribir_lista_productos() {
+            let total_solic = 0;
+            let total_expo = 0;
+            let total_paletas = 0;
+            let pedidoOk = true;
+            if (ProductosTraslado.length > 0) {
+                var tbody = $('<tbody>');
+                for (let producto of ProductosTraslado) {
+                    let istocktotal = $('<td>').text(producto.STOCK_TOTAL).addClass('text-right')
+                        total_solic += producto.DESPACHAR;
+                        total_expo += producto.STOCK_EXPO;
+                        total_paletas += producto.PALETAS;
+                    if (producto.STOCK_TOTAL < producto.DESPACHAR) {
+                        istocktotal.addClass('text-danger').append(
+                            $('<i>').addClass('fa fa-exclamation-circle ml-2').attr('title','No hay stock suficiente para despachar')
+                        );
+                    }
+                    let istockexpo = $('<td>').text(producto.STOCK_EXPO).addClass('text-right');
+                    if (producto.STOCK_EXPO < producto.DESPACHAR) {
+                        istockexpo.addClass('text-danger').append(
+                            $('<i>').addClass('fa fa-exclamation-circle ml-2').attr('title','Traslado de productos requerido')
+                        );
+                    }
+                    else {
+                        istockexpo.addClass('text-success').append(
+                            $('<i>').addClass('fa fa-check ml-2').attr('title','Producto listo para despachar')
+                        );
+                    }
+                    let itrasladar = $('<a>');
+                    if (producto.STOCK_EXPO < producto.DESPACHAR) {
+                        itrasladar.attr({
+                            'href': '#',
+                            'data-codigo': producto.CODIGO,
+                            'data-cantidad': (producto.DESPACHAR - producto.STOCK_EXPO),
+                            'data-descripcion': producto.NOMBRE
+                        }).append(
+                            $('<i>').addClass('fa fa-exchange')
+                        ).addClass('btn btn-sm btn-primary').on('click', preparar_traslado_producto);
+                        pedidoOk = false;
+                    }
+                    else {
+                        itrasladar.append(
+                            $('<i>').addClass('fa fa-smile-o')
+                        ).attr('href','javascript:void(0)').addClass('btn text-info').css('cursor','default');
+                    }
+                    tbody.append(
+                        $('<tr>').append(
+                            $('<td>').text(producto.CODIGO).addClass('text-right font-weight-bold')
+                        ).append(
+                            $('<td>').text(producto.NOMBRE)
+                        ).append(
+                            $('<td>').text(producto.PALETAS.toLocaleString('en-us',{minimumFractionDigits:3,maximumFractionDigits:3})).addClass('text-right')
+                        ).append(istocktotal).append(
+                            $('<td>').text(producto.DESPACHAR).addClass('text-right')
+                        ).append(istockexpo).append(
+                            $('<td>').append(itrasladar).addClass('text-center')
+                        )
+                    );
+                }
+                $('#productos-lista').empty().append(tbody.children());
+                document.getElementById('productos-paletas').innerHTML = total_paletas.toLocaleString('en-us');
+                document.getElementById('productos-cantidad').innerHTML = total_solic.toLocaleString('en-us');
+                document.getElementById('expo-cantidad').innerHTML = total_expo.toLocaleString('en-us');
+                boton_pedido_erp(pedidoOk);
+            }
+            else {
+                $('#productos-lista').empty().append(
+                    $('<td>').text('No hay productos pendientes para traslado').attr('colspan',6)
+                );
+                boton_pedido_erp(false);
+            }
+        }
+        function boton_pedido_erp(state) {
+            if (state) {
+                $('#dv-genera-pedido').show();
+            }
+            else {
+                $('#dv-genera-pedido').hide();
+            }
+        }
+        function carga_productos_liberacion() {
+            let pedido = document.getElementById('select-pedido').value;
+            let ubicacion = document.getElementById('select-ubicacion').value;
+            if (pedido != '-1') {
+                $('#tabla-productos').fadeIn(250);
+                $('#row-options').fadeIn(250);
+                $.ajax({
+                    url: '/extranet/lista-productos-liberar',
+                    method: 'get',
+                    data: { pedido: pedido, ubicacion: ubicacion },
+                    dataType: 'json',
+                    success: function(response) {
+                        ProductosTraslado = response.productos;
+                        document.getElementById('traslado-ubidestino').innerHTML = ubicacion;
+                        escribir_lista_productos();
+                    },
+                    error: function(error) {
+                        alert(error);
+                        return;
+                    }
+                });
+            }
+            else {
+                console.log('no hay pedido we, q wa cargar xd');
+            }
+        }
+        function modal_traslado_onshow() {
+            document.getElementById('traslado-dproducto').innerHTML = '';
+            document.getElementById('traslado-dcantidad').innerHTML = '';
+            $('#traslado-submit').show().prop('disabled', true);
+            $('#traslado-lbl').hide();
+        }
+        async function trasladar_productos(event) {
+            event.preventDefault();
+            $('#traslado-submit').hide();
+            $('#traslado-lbl').show();
+            // let destino = $('#ubicaciones-destino .active');
+            let destino = document.getElementById('select-ubicacion').value;
+            let saldo = 0;
+            //
+            let vdatos = [];
+            let cantidades = $('.trs-cantidad');
+            let cantidad = 0;
+            let trasladar = true;
+            $.each(cantidades, function() {
+                let input = $(this);
+                let icantidad = input.val();
+                if (icantidad != '') {
+                    vdatos.push({
+                        producto: input.data('producto'),
+                        lote: input.data('lote'),
+                        origen: input.data('ubicacion'),
+                        cantidad: icantidad
+                    });
+                    icantidad = parseInt(icantidad);
+                    isaldo = parseInt(input.data('saldo'));
+                    if (icantidad > isaldo) {
+                        trasladar = false;
+                        alert('La cantidad a trasladar (' + icantidad.toLocaleString('en-us') + ') supera al saldo disponible (' + isaldo.toLocaleString('en-us') + ') de la ubicación ' + input.data('ubicacion'));
+                        return;
+                    }
+                    cantidad += icantidad;
+                }
+            });
+            if (vdatos.length == 0) {
+                alert('Ingrese la cantidad a trasladar');
+                return;
+            }
+            if (trasladar) {
+                if (cantidad == 0) {
+                    alert('La cantidad a trasladar debe ser mayor a 0 (cero)');
+                    return;
+                }
+                let ubdestino = document.getElementById('select-ubicacion').value;
+                let ok = true;
+                for (let dato of vdatos) {
+                    if (ok) {
+                        dato.destino = ubdestino;
+                        dato.prepedido = document.getElementById('select-pedido').value;
+                        try {
+                            let result = await $.post({
+                                url: '/extranet/trasladar-productos',
+                                method: 'post',
+                                data: dato,
+                                dataType: 'json'
+                            });
+                            if (result.error) {
+                                ok = false;
+                                $('#modal-traslado').modal('hide');
+                                carga_productos_liberacion();
+                                alert(result.error);
+                                return;
+                            }
+                            console.log('Traslado de ', dato.cantidad + ' unid(s) desde ' + dato.origen + ' hacia ' + ubdestino + ' completado con éxito');
+                        }
+                        catch (error) {
+                            ok = false;
+                            $('#modal-traslado').modal('hide');
+                            carga_productos_liberacion();
+                            alert(error.getMessage());
+                            return;
+                        }
+                    }
+                    /*
+                    success: function(result) {
+                        $('#traslado-submit').show();
+                        $('#traslado-lbl').hide();
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        alert('Los productos han sido trasladados');
+                        carga_productos_liberacion();
+                        $('#modal-traslado').modal('hide');
+                    },
+                    error: function(error) {
+                        alert(error);
+                    }
+                    */
+                }
+                alert('Los productos han sido trasladados');
+                carga_productos_liberacion();
+                $('#modal-traslado').modal('hide');
+            }
+            else {
+                $('#traslado-submit').show();
+                $('#traslado-lbl').hide();
+            }
+        }
+        function carga_pedidos_liberacion() {
+            $.ajax({
+                url: '/extranet/lista-pedidos-traslado',
+                method: 'get',
+                dataType: 'json',
+                success: function (result) {
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    $('#select-pedido').append(
+                        $('<option>').val(-1).text('- Seleccione -').prop('selected', true).prop('disabled', true)
+                    );
+                    for (let prepedido of result.pedidos) {
+                        $('#select-pedido').append(
+                            $('<option>').val(prepedido.codigo).text(prepedido.codigo + ' - ' + prepedido.cliente)
+                        );
+                    }
+                    $('#select-pedido').on('change', carga_productos_liberacion);
+                    $('#select-ubicacion').on('change', carga_productos_liberacion);
+                },
+                error: function (error) {
+                    alert(error);
+                }
+            });
+        }
+        function carga_ubicaciones_destino() {
+            $.ajax({
+                url: '/extranet/lista-ubicaciones',
+                method: 'get',
+                data: { producto: 'x' },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.error) {
+                        alert(response.error);
+                        return;
+                    }
+                    // escribe ubicaciones destino
+                    $('#select-ubicacion').empty();
+                    let ubdestino = response.ubicaciones.destino;
+                    for (let ubicacion of ubdestino) {
+                        $('#select-ubicacion').append(
+                            $('<option>').val(ubicacion.ubicacion).text(ubicacion.ubicacion)
+                        );
+                    }
+                    $('#select-ubicacion option:first-child').prop('selected',true);
+                    $('#select-pedido').removeAttr('disabled');
+                },
+                error: function (error) {
+                    alert(error);
+                }
+            });
+        }
+        function init() {
+            ProductosTraslado = [];
+            carga_pedidos_liberacion();
+            $('#modal-traslado').on('show.bs.modal', modal_traslado_onshow);
+            $('#traslado-submit').on('click', trasladar_productos);
+            $('#pedido-submit').on('click', generaPedidoAlmacen);
+            carga_ubicaciones_destino();
+        }
+        $(init);
+    </script>
+</html>

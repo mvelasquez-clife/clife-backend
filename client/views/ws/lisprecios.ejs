@@ -11,6 +11,8 @@
         <style>
             body {padding-top:60px}
             .bg-purple {background-color:#7e57c2}
+            .table th {vertical-align:middle !important}
+            #detalle-lista {display:none}
         </style>
     </head>
     <body>
@@ -21,7 +23,7 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item active">
-                        <a class="nav-link" href="#">Stock de productos</a>
+                        <a class="nav-link" href="#">Listas de precios</a>
                     </li>
                 </ul>
             </div>
@@ -43,9 +45,21 @@
         <div class="container">
             <div class="row">
                 <div class="col alert alert-light shadow-sm pt-3 pb-2 px-4">
-                    <p class="mb-3">
-                        Lista de precios: <span class="font-weight-bold text-success">Kamill Ecommerce-2021</span>
-                    </p>
+                    <div class="d-flex flex-row bd-highlight mb-3">
+                        <span class="my-auto mr-2 align-middle">Lista de precios</span>
+                        <select class="form-control form-control-sm my-auto" id="lista-precios" style="width:240px">
+                            <option value="-1" selected disabled>- Seleccione -</option>
+                        </select>
+                        <div id="detalle-lista" class="my-auto ml-3">
+                            <p class="my-auto">
+                                Serie Listado: <span id="lista-serie" class="font-weight-bold text-primary"></span> - Vigencia: <span id="lista-vigencia"></span> - Del <span id="lista-desde" class="font-weight-bold text-primary"></span> al <span id="lista-hasta" class="font-weight-bold text-primary"></span>
+                            </p>
+                        </div>
+                        <a id="btn-exportar" href="#" class="btn btn-sm btn-success my-auto ml-auto"><i class="fa fa-file-excel-o mr-1"></i>Exportar</a>
+                    </div>
+                    <!--p class="mb-3">
+                        Lista de precios: <span id="lista-nombre" class="font-weight-bold text-success"></span> - Serie Listado: <span id="lista-serie" class="font-weight-bold text-success"></span> - Vigencia: Del <span id="lista-desde" class="font-weight-bold text-success"></span> al <span id="lista-hasta" class="font-weight-bold text-success"></span>
+                    </p-->
                     <!-- cuadro de busqueda -->
                     <form id="form-busca">
                         <div class="form-group row">
@@ -55,7 +69,7 @@
                         </div>
                     </form>
                     <div id="detalle-productos" class="row justify-content-center">
-                        <p>Cargando stock de productos...</p>
+                        <p>Seleccione una lista de precios</p>
                     </div>
                 </div>
             </div>
@@ -72,7 +86,7 @@
     <script type="text/javascript" src="/assets/vendor/tableexport/tableExport.js"></script>
     <script>
         var productos;
-        function escribeListaPrecios(filtro) {
+        function escribeProductosLista(filtro) {
             var sfiltro = filtro.toUpperCase();
             var tbody = $('<tbody>');
             var hallados = 0;
@@ -123,6 +137,7 @@
                     'href': '#'
                 }).append('Exportar a XLS').addClass('btn btn-sm btn-success').on('click', exportTableToExcel)
             )*/;
+            $('#btn-exportar').show();
         }
         function exportTableToExcel() {
             $('#tabla').tableExport({
@@ -130,9 +145,22 @@
                 type: 'xlsx'
             });
         }
-        function init() {
+        function escribeListasPrecios(listas) {
+            for (let lista of listas) {
+                var option = $('<option>').val(lista.value).text(lista.text).attr('data-vigencia', lista.vigencia);
+                if (lista.vigencia == 1) {
+                    option.addClass('text-success');
+                }
+                $('#lista-precios').append(option);
+            }
+            $('#lista-precios').on('change', cargaDetalleLista);
+        }
+        function cargaListasPrecios() {
+            $('#lista-precios').empty().append(
+                $('<option>').val('-1').text('- Seleccione -').prop('selected',true).prop('disabled',true)
+            ).off('change');
             $.ajax({
-                url: '/ws-life/lista-precios/ver-lista-precios',
+                url: '/ws-life/lista-precios/ls-listas',
                 method: 'get',
                 dataType: 'json',
                 success: function (result) {
@@ -140,16 +168,60 @@
                         alert(result.error);
                         return;
                     }
-                    productos = result.data;
-                    escribeListaPrecios('');
+                    escribeListasPrecios(result.listas);
                 },
                 error: function (error) {
                     alert(error);
                 }
             });
+        }
+        function cargaDetalleLista() {
+            $('#detalle-productos').empty().append(
+                $('<tr>').append(
+                    $('<td>').text('Cargando los productos de la lista de precios').attr('colspan',4)
+                )
+            );
+            var colista = document.getElementById('lista-precios').value;
+            if (colista != '-1') {
+                $.ajax({
+                    url: '/ws-life/lista-precios/ver-lista-precios',
+                    method: 'get',
+                    data: { lista: colista },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.error) {
+                            alert(result.error);
+                            return;
+                        }
+                        $('#detalle-lista').fadeIn(150);
+                        productos = result.data;
+                        escribeProductosLista('');
+                        if (result.lista == 'Vigente') {
+                            $('#lista-vigencia').removeAttr('class').addClass('text-success font-weight-bold').text(result.lista);
+                        }
+                        else {
+                            $('#lista-vigencia').removeAttr('class').addClass('text-danger font-weight-bold').text(result.lista);
+                        }
+                        document.getElementById('lista-serie').innerHTML = result.serie;
+                        document.getElementById('lista-desde').innerHTML = result.desde;
+                        document.getElementById('lista-hasta').innerHTML = result.hasta;
+                    },
+                    error: function (error) {
+                        alert(error);
+                    }
+                });
+            }
+        }
+        function exportar (event) {
+            event.preventDefault();
+            window.open('/ws-life/exportar-lista-precios?lista=' + document.getElementById('lista-precios').value, '_blank');
+        }
+        function init() {
+            $('#btn-exportar').on('click', exportar).hide();
+            cargaListasPrecios();
             $('#form-busca').on('submit', function (event) {
                 event.preventDefault();
-                escribeListaPrecios(document.getElementById('form-filtro').value);
+                escribeProductosLista(document.getElementById('form-filtro').value);
             });
         }
         // go
