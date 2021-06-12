@@ -9,7 +9,6 @@ const responseParams = {
     outFormat: oracledb.OBJECT
 };
 const db = require('./../../server/libs/db-oracle');
-const { response, request } = require('express');
 const encargadosContratos = [7020557, 46455181, 44273152, 41544424];
 
 const LifeController = {
@@ -214,22 +213,16 @@ const LifeController = {
         else response.redirect('/intranet/login');
     },
     SubirDocumentos: (request, response) => {
-console.log('SIUUUUU', 'cookieIntranet:', request.cookies[confParams.cookieIntranet], 'cookieAdmin:', request.cookies[confParams.cookieAdmin]);
         if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {
-console.log('SIUUUUU');
             let sess = request.cookies[confParams.cookieIntranet];
             let jsSess = JSON.parse(sess);
-console.log(jsSess);
             let admrrhh = jsSess.admrrhh;
             let admdocs = jsSess.admdoc;
             let admin = admrrhh + admdocs;
             let data = { sesion: sess, admin: admin, id: 'sidenav-subirdocs' };
             response.render(path.resolve('client/views/intranet/subirdocs.ejs'), data);
         }
-        else {
-console.log('nel pastel');
-            response.redirect('/intranet/login');
-        }
+        else response.redirect('/intranet/login');
     },
     EnvioMensajes: (request, response) => {
         if (request.cookies[confParams.cookieIntranet] && request.cookies[confParams.cookieAdmin] == 'S') {
@@ -634,6 +627,7 @@ console.log('nel pastel');
                 }
                 const codusr = fields.codigo.split('_')[0];
                 const sFilename = 'DIGI_' + fields.cenvio + '_' + codusr + '.pdf';
+                const stipodoc = fields.tipodoc;
                 var oldpath = files.pdf.path;
                 var newpath = fupload.tmppath + 'unsigned_' + sFilename;
                 mv(oldpath, newpath, async function (err) {
@@ -647,7 +641,15 @@ console.log('nel pastel');
                     // firma el mugre pdf
                     const newpathsigned = fupload.tmppath + sFilename;
                     var exec = require('child_process').exec, child;
-                    child = exec('java -jar ' + java.stamper + ' "' + newpath + '" "' + newpathsigned + '"', async function (error, stdout, stderr) {
+                    let command;
+                    if (stipodoc == '801') {
+                        command = 'java -jar ' + java.stamperNuevo + ' "' + newpath + '" "' + newpathsigned + '" BP';
+                    }
+                    else {
+                        command = 'java -jar ' + java.stamper + ' "' + newpath + '" "' + newpathsigned + '"';
+                    }
+                    // stipodoc
+                    child = exec(command, async function (error, stdout, stderr) {
                         if(stdout.indexOf('OK') == -1){
                             let serror = (error || stderr);
                             console.log('exec error: ' + serror);
@@ -2440,6 +2442,7 @@ console.log(query, params);
             { name: 'rs', io: 'out', type: 'cursor' },
             { name: 'ordarea', io: 'in', value: ordarea }
         ];
+console.log('call pack_digitalizacion.sp_lista_documentos (:resguardo, :area, :empresa, :rs, :ordarea)', params);
         let result = await db.resultSet('call pack_digitalizacion.sp_lista_documentos (:resguardo, :area, :empresa, :rs, :ordarea)', params);
         response.json({
             data: {
@@ -2690,6 +2693,7 @@ console.log(query, params);
             return;
         }
         const path = [confParams.base_dir, empresa, result.oresguardo, result.oarea, result.oarhcivo].join(confParams.dir_separator);
+console.log('path', path);
         // descargar el archivo
         const fs = require('fs');
         if (fs.existsSync(path)) {
@@ -3131,15 +3135,15 @@ console.log(query, params);
                 // recupera los parametros
                 let vparams = decrypted.split('|');
                 let envio = vparams[0];
-                let dni = vparams[1];
-                let empresa = vparams[2];
+                let dni = vparams[2];
+                let empresa = vparams[1];
                 // recupera ruta del archivo
                 let pdfPath = fupload.tmppath + ['unsigned', 'DIGI', envio, dni].join('_') + '.pdf';
                 const sFilename = ['DIGI', envio, dni].join('_') + '.pdf';
                 // firma el mugre pdf
                 let newpathsigned = fupload.tmppath + sFilename;
                 var exec = require('child_process').exec, child;
-                child = exec('java -jar ' + java.stamper + ' "' + pdfPath + '" "' + newpathsigned + '"', async function (error, stdout, stderr) {
+                child = exec('java -jar ' + java.stamperNuevo + ' "' + pdfPath + '" "' + newpathsigned + '" CT', async function (error, stdout, stderr) {
                     completados++;
                     if(stdout.indexOf('OK') == -1){
                         let serror = (error || stderr);
@@ -3188,7 +3192,7 @@ console.log(query, params);
     ListaPermisosDocumento: async (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             const { documento, empresa, area } = request.query;
-            let query = 'select id "id", tipo "tipo", codigo "codigo", nombre "nombre", lectura "lectura", creacion "creacion", edicion "edicion", aprobacion "aprobacion", revision "revision", cautoriza "cautoriza", usautoriza "usautoriza", fecha "fecha" from table (pack_digitalizacion.f_lista_permisos_documento (:p_documento, :p_empresa, :p_area))';
+            let query = 'select "id", "tipo", "codigo", "nombre", "lectura", "creacion", "edicion", "aprobacion", "revision", "cautoriza", "usautoriza", "fecha" from table (pack_digitalizacion.f_lista_permisos_documento (:p_documento, :p_empresa, :p_area))';
             let params = [
                 { name: 'p_documento', value: documento },
                 { name: 'p_empresa', value: empresa },

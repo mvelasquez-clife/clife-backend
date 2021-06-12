@@ -7,7 +7,7 @@ const formidable = require('formidable');
 const fupload = require('../../server/fupload');
 const xlsx = require('xlsx');
 const db = require('../../server/libs/db-oracle');
-const devmode = 'P'; // 'P' para produccion
+const devmode = 'L'; // 'P' para produccion
 
 const responseParams = {
     outFormat: oracledb.OBJECT
@@ -1429,23 +1429,31 @@ console.log(command);
     },
     TrasladarProductos: async (request, response) => {
         if (request.cookies[CookieId]) {
-            const sesion = request.cookies[CookieId];
+            const sesion = JSON.parse(request.cookies[CookieId]);
             const { producto, lote, origen, cantidad, destino, prepedido } = request.body;
             //
-            const rsalias = await db.resultSet('call pack_new_web_expo.sp_alias(:usuario,:empresa,:alias)', [
-                { name: 'usuario,', io: 'in', value: sesion.codigo },
-                { name: 'empresa', io: 'in', value: UserExpo.empresa },
-                { name: 'alias', io: 'out', type: 'string' }
-            ]);
-            if (rsalias.alias == 'x') {
+            const qryalias = "call pack_new_web_expo.sp_alias_usr(:p_usuario,:p_empresa,:o_alias)";
+            const prmalias = [
+                { name: 'p_usuario', io: 'in', value: sesion.codigo },
+                { name: 'p_empresa', io: 'in', value: UserExpo.empresa },
+                { name: 'o_alias', io: 'out', type: 'string' }
+            ];
+            const rsalias = await db.resultSet(qryalias, prmalias);
+            if (rsalias.error) {
+                response.json({
+                    error: rsalias.error
+                });
+                return;
+            }
+            if (rsalias.o_alias == 'x') {
                 response.json({
                     error: 'Usuario incorrexto'
                 });
                 return;
             }
             //
-            // const alias = rsalias.alias;
-            const alias = 'VConde';
+            const alias = rsalias.o_alias;
+            // const alias = 'VConde';
             const almacen = 'VILLA';
             const query = "call trans_almacenes_00.sp_traslado_ubicacion_exp(:ocodigo,:omensaje,:alias,:almacen,:producto,:lote,:origen,:cantidad,:destino,:prepedido)";
             const params = [

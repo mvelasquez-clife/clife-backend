@@ -135,7 +135,7 @@
                     ).append(
                         $('<td>').html(producto.nombre)
                     ).append(
-                        $('<td>').text(producto.cantidad.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('mb-0').addClass('text-right')
+                        $('<td>').text(producto.promodsc.toLocaleString('en-us', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).addClass('mb-0').addClass('text-right')
                     ).append(
                         $('<td>').html(producto.importe.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                     ).append(
@@ -146,7 +146,7 @@
                         $('<td>').html(producto.pallets.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right')
                     )
                 );
-                totales.cantidad += producto.cantidad;
+                totales.cantidad += producto.promodsc;
                 totales.cajas += producto.cajas;
                 totales.pallets += producto.pallets;
                 totales.importe += producto.importe;

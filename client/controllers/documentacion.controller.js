@@ -18,11 +18,12 @@ const DocumentacionController = {
     ListaDocumentosUsuario: async (request, response) => {
         if (request.cookies[confParams.cookieIntranet]) {
             const sesion = JSON.parse(request.cookies[confParams.cookieIntranet]);
-            const query = "select documento \"documento\", nomdocumento \"nomdocumento\", area \"area\", coarea \"coarea\", lectura \"lectura\", edicion \"edicion\", aprobacion \"aprobacion\", revision \"revision\", version \"version\", vigencia \"vigencia\" from table (pack_digitalizacion.f_documentos_permitidos(:p_usuario, :p_empresa))";
+            const query = 'select "documento", "nomdocumento", "area", "coarea", "lectura", "edicion", "aprobacion", "revision", "version", "vigencia" from table (pack_digitalizacion.f_documentos_permitidos(:p_usuario, :p_empresa))';
             const params = [
                 { name: 'p_usuario', io: 'in', value: sesion.codigo },
                 { name: 'p_empresa', io: 'in', value: sesion.empresa }
             ];
+console.log(query, params);
             let result = await db.select(query, params);
             response.json({
                 data: {
