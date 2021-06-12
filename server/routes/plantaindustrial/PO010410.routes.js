@@ -47,5 +47,6 @@ router.get('/mostrar-tipo-patron/', po010410Controller.mostrartipoptr);
 router.post('/guardar-patron/',po010410Controller.guardarpatron);
 router.post('/guardar-estado-patron/',po010410Controller.guardarestadopatron);
 router.get('/mostrar-patrones/:empresa/:especificacion/:version/',po010410Controller.mostrarpatrones);
+router.get('/mostrar-patrones-pendiente/:empresa/',po010410Controller.mostrarpatronespend);
 router.get('/mostrar-espec-observ/:empresa/:grupo/',po010410Controller.mostrarespecObservadas);
 module.exports = router;
