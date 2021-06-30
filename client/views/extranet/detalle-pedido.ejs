@@ -104,6 +104,8 @@
                             <th>Unidades/Caja</th>
                             <th>Cajas</th>
                             <th>Palets</th>
+                            <th>Cant.Confirmada</th>
+                            <th>Palets Confirmados</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -402,7 +404,7 @@
                     Cliente = result.cliente;
                     document.getElementById('nombre-cliente').innerHTML = Cliente.nombre;
                     DetallePedido = Pedido.productos;
-                    if (sesdata.codigo != Pedido.cliente) {
+                    if (Pedido.pedidogen != 'x' || sesdata.codigo != Pedido.cliente) {
                         $('#btn-editar').remove();
                     }
                     if (Pedido.vigencia != 'Vigente' && Pedido.vigencia != 'Pendiente') {
@@ -755,12 +757,14 @@
                                 $('<td>').text(tridx)
                             ).append(
                                 $('<td>').append(
+                                    (Pedido.vigencia == 'Pendiente' && Pedido.cliente == sesdata.codigo) ? 
                                     $('<input>').attr({
                                         type: 'checkbox',
                                         name: 'productos[]',
                                         value: producto.tipo + '@' + producto.codigo + '@' + producto.difer,
                                         'data-key': i
-                                    }).prop('checked', false).addClass('ch-producto')
+                                    }).prop('checked', false).addClass('ch-producto') :
+                                    $('<span>').text('-').addClass('m-0 p-0')
                                 )
                             ).append(btnTipo).append(
                                 $('<td>')/*.append(
@@ -801,6 +805,7 @@
                                 $('<td>').attr('id','paletsconf-' + producto.ean).attr('data-paletazos',producto.paletsconf).html(producto.paletsconf.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).addClass('text-right text-primary trs-despacho td-paletazo')
                             ).append(
                                 $('<td>').append(
+                                    (Pedido.vigencia == 'Pendiente' && Pedido.cliente == sesdata.codigo) ? 
                                     $('<a>').append(
                                         $('<i>').addClass('fa fa-edit')
                                     ).attr({
@@ -811,7 +816,8 @@
                                         'data-despachar': producto.promodsc,
                                         'id': 'ip-' + producto.ean,
                                         'data-stock': 0
-                                    }).on('click', EditarProducto).addClass('btn btn-sm btn-warning')
+                                    }).on('click', EditarProducto).addClass('btn btn-sm btn-warning') :
+                                    $('<span>').text('-').addClass('m-0 p-0')
                                 ).addClass('td-shown')
                             ).attr({
                                 'data-cantidad': producto.cantidad,
@@ -840,6 +846,10 @@
                                 $('<td>').text(producto.cajas)
                             ).append(
                                 $('<td>').text(producto.pallets)
+                            ).append(
+                                $('<td>').text(producto.promodsc)
+                            ).append(
+                                $('<td>').text(producto.paletsconf)
                             )
                         );
                         //
@@ -1012,7 +1022,7 @@
             function exportarXls(event) {
                 event.preventDefault();
                 $('#table-export').tableExport({
-                    fileName: 'pedido_' + CodigoPedido + '.xlsx',
+                    fileName: 'pedido_' + CodigoPedido,
                     type: 'xlsx'
                 });
             }

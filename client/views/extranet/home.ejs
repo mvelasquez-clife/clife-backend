@@ -509,6 +509,10 @@
                                             $('<p>').html('<b>Cliente:</b> ' + pedido.cocliente + ' - ' + pedido.nomcliente).addClass('mb-1')
                                         ).append(
                                             $('<p>').html('<b>Código ERP:</b> ' + pedido.copedido + ' - <b>Fecha registro</b> ' + pedido.fecha).addClass('mb-1')
+                                        ).append(
+                                            $('<p>').append(
+                                                $('<a>').attr('href','/extranet/detalle-pedido/' + pedido.prepedido).text('Ver detalle del pedido')
+                                            ).addClass('mb-1')
                                         ).addClass('my-auto mr-auto')
                                     ).append(
                                         $('<a>').append(

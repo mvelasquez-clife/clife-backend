@@ -147,5 +147,8 @@ const router = express.Router();
     router.get('/asistencia-hoy', LifeController.VerificaAsistencia);
     router.post('/registra-marcacion', LifeController.RegistraMarcacion);
     router.get('/lista-marcaciones', LifeController.ListaMarcaciones);
+    // apis asistencia
+    router.get('/ws/asistencia-hoy', LifeController.WsVerificaAsistencia);
+    router.post('/ws/registra-marcacion', LifeController.WsRegistraMarcacion);
 
 module.exports = router;

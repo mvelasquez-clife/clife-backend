@@ -49,7 +49,7 @@ const LifeController = {
             let conn = await oracledb.getConnection(dbParams);
             let query = "select node_password \"hash\", st_intranet_activada \"stact\", st_verifica_mail \"stmail\", co_cliente \"codigo\", initcap(de_nombre_comercial) \"ncomercial\", " +
                 "initcap(de_razon_social) \"rsocial\", fe_suscripcion \"fsuscripcion\", de_email \"email\", de_telefono \"telefono\", st_admin \"admin\", st_tipo_usuario \"tipo\", " +
-                "co_empresa as \"empresa\", st_admin_rrhh \"admrrhh\", st_admin_documentac \"admdoc\" from cl_usuarios where co_cliente = :p_rucdni and co_empresa = :p_empresa";
+                "co_empresa as \"empresa\", st_admin_rrhh \"admrrhh\", st_admin_documentac \"admdoc\" from cl_usuarios where co_cliente = :p_rucdni and co_empresa = :p_empresa and es_vigencia = 'Vigente'";
             let params = {
                 p_rucdni: { val: codigo },
                 p_empresa: { val: empresa }
@@ -3527,6 +3527,63 @@ console.log(query, params);
                 error: 'No tienes permisos para acceder a esta sección'
             });
         }
+    },
+    WsVerificaAsistencia: async (request, response) => {
+        const { codigo, empresa } = request.query;
+        let query = 'call pack_digitalizacion.sp_info_asistencia (:p_usuario, :p_empresa, :o_codigo, :o_mensaje, :o_lista)';
+        let params = [
+            { name: 'p_usuario', io: 'in', value: codigo },
+            { name: 'p_empresa', io: 'in', value: empresa },
+            { name: 'o_codigo', io: 'out', type: 'number' },
+            { name: 'o_mensaje', io: 'out', type: 'string' },
+            { name: 'o_lista', io: 'out', type: 'cursor' }
+        ];
+        let result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.o_codigo == -1) {
+            response.json({
+                error: result.o_mensaje
+            });
+            return;
+        }
+        response.json({
+            codigo: result.o_codigo,
+            marcas: result.o_lista,
+            hora: result.o_mensaje
+        });
+    },
+    WsRegistraMarcacion: async (request, response) => {
+        const { codigo, empresa } = request.body;
+        const infoEquipo = 'IP: ' + request.ip + ' | Browser: ' + request.headers['user-agent'];
+        let query = 'call pack_digitalizacion.sp_registra_marcacion (:p_usuario, :p_empresa, :p_detalle, :o_codigo, :o_mensaje)';
+        let params = [
+            { name: 'p_usuario', io: 'in', value: codigo },
+            { name: 'p_empresa', io: 'in', value: empresa },
+            { name: 'p_detalle', io: 'in', value: infoEquipo },
+            { name: 'o_codigo', io: 'out', type: 'number' },
+            { name: 'o_mensaje', io: 'out', type: 'string' }
+        ];
+        let result = await db.resultSet(query, params);
+        if (result.error) {
+            response.json({
+                error: result.error
+            });
+            return;
+        }
+        if (result.o_codigo == -1) {
+            response.json({
+                error: result.o_mensaje
+            });
+            return;
+        }
+        response.json({
+            secuencia: result.o_codigo
+        });
     }
 };
 

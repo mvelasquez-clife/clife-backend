@@ -403,7 +403,7 @@ const extranetController = {
             try {
                 const conn = await oracledb.getConnection(dbParams);
                 // carga datos del pedido
-                query = "select codigo, cmoneda, moneda, importe, to_char(fecha,'dd/mm/yyyy') fecha, items, vendedor, vigencia, cliente from table(pack_new_web_expo.f_datos_pedido(:p_tipo, :p_pedido, :p_empresa))";
+                query = "select codigo, cmoneda, moneda, importe, to_char(fecha,'dd/mm/yyyy') fecha, items, vendedor, vigencia, cliente, pedidogen, stliberac from table(pack_new_web_expo.f_datos_pedido(:p_tipo, :p_pedido, :p_empresa))";
                 params = {
                     p_tipo: { val: sesion.tipo },
                     p_pedido: { val: pedido },
@@ -428,6 +428,7 @@ const extranetController = {
                     vendedor: result.VENDEDOR,
                     vigencia: result.VIGENCIA,
                     cliente: result.CLIENTE,
+                    pedidogen: result.PEDIDOGEN ? result.PEDIDOGEN : 'x',
                     productos: []
                 };
                 // carga detalle del pedido
