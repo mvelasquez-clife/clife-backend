@@ -126,12 +126,12 @@
                 {type: "block", blockOffset: 0,offsetLeft: 470, position: "label-left", width: 200, list: [                       
                     {type: "input",readonly: false, style:"background-color:rgb(174, 214, 241);width: 200;height:120px,font-family: Arial; font-size: 11pt;text-align:center;",position:"input-right", offsetTop: 20, offsetLeft: 1,labelWidth: 140, inputWidth: 140, name: "act_nro"}, { type: "newcolumn" },         
                 { type: "newcolumn" },] },              
-                {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 700, list: [                 
-                    { type: "input",disabled: false, offsetLeft: 40,labelWidth: 70, inputWidth: 500, name: "act_nombre", offsetTop: 20, label: 'Nombre:'}, { type: "newcolumn" },        
+                {type: "block", blockOffset: 0,  offsetTop: 10, position: "label-left", width: 700, list: [                 
+                    { type: "input",disabled: false, offsetLeft: 40,labelWidth: 70, inputWidth: 500, name: "act_nombre", offsetTop: 20, label: 'Asunto:'}, { type: "newcolumn" },        
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 700, list: [
-                    { type: "input", name: 'act_desc', labelWidth: 70, readonly: false, rows:4 ,label: 'Descripción:', offsetLeft: 40, inputWidth: 500 }, { type: "newcolumn" },                                  
+                    { type: "input", name: 'act_desc', labelWidth: 70, readonly: false, rows:4 ,label: 'Mensaje:', offsetLeft: 40, inputWidth: 500 }, { type: "newcolumn" },                                  
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 700, list: [                       
@@ -139,10 +139,14 @@
                     ],},
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 40,  offsetTop: 20, position: "label-left", width: 700, list: [
-                    { type: "input", readonly:true, offsetLeft: 0,labelWidth: 70, inputWidth: 120, name: "act_estado", label: 'Estado: '}, { type: "newcolumn" },   
-                    { type: "calendar", readonly:true, offsetLeft: 163,labelWidth: 90, inputWidth: 120, name: "act_fecha", label: 'Fecha Registro: '}, { type: "newcolumn" },   
+                    { type: "select", offsetLeft: 0,labelWidth: 70, inputWidth: 120, name: "act_estado", label: 'Estado: ' ,connector: BASE_URL + 'PO010210/combo-estado'}, { type: "newcolumn" },   
+                    { type: "calendar", disabled:true, offsetLeft: 163,labelWidth: 90, inputWidth: 120, name: "act_fecha", label: 'Fecha Registro: '}, { type: "newcolumn" },   
                     ],},
-            ];
+                { type: "newcolumn" },
+                {type: "block", blockOffset: 0,  offsetTop: 20, position: "label-left", width: 700, list: [                       
+                    { type: "input", hidden: true,name: 'act_actividad', labelWidth: 70, readonly: false, label: 'Actividad:', offsetLeft: 40, inputWidth: 500 }, { type: "newcolumn" },                                 
+                    ],},
+            ];      
             var f_aprobacion = [
                 { type: "newcolumn" },
                 {type: "block", blockOffset: 0,  offsetTop: 5, position: "label-left", width: 550, list: [
@@ -154,7 +158,8 @@
             mainLayout_inicio.cells('a').hideHeader();
             tabbarinicio = mainLayout_inicio.cells('a').attachTabbar();
             // tabbarinicio.addTab('__registrar', 'Registro de Proyectos', null, null, true);
-            tabbarinicio.addTab('__buscar', 'Control de artes', null, null, true);
+            tabbarinicio.addTab('__buscar', 'Proyectos Pendientes', null, null, true);
+            tabbarinicio.addTab('__proyfin', 'Proyectos Terminados', null, null, false);
             tabbarinicio.addTab('__gant', 'Actividades', null, null, false);
             tabbarinicio.attachEvent ( "onSelect" , inicioOnSelect);         
             Inicio();

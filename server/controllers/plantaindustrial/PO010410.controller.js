@@ -1820,6 +1820,35 @@ mostrarespecreporten2: async (request, response) => {
             });
         });
     },
+    
+    enviardt: (req, res) => {        
+        const {codigo,version} = req.body;
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: err.Error
+                });
+                return;
+            }
+            const query = "update po_espec_anal_cab set st_enviardt = 'S' where co_espec_anal = :x_codigo and nu_version = :x_version and co_grupo_produccion = 4";
+            const params = { 
+                x_codigo: {val:codigo},
+                x_version: {val:version}
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+                else res.json({
+                    state: 'success'
+                });
+    
+            });
+        });
+    },   
 }
 
 module.exports = po010410Controller;

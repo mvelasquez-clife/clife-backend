@@ -42,5 +42,6 @@ router.post('/mostrar-producto-por-nsoc/',po010208Controller.mostrarproductoporn
 router.get('/mostrar-documento-por-marca/',po010208Controller.mostrardocpormarca);
 router.post('/mostrar-documento-por-producto/',po010208Controller.mostraradjporprod);
 router.post('/guardar-historial/',po010208Controller.guardarhistorial);
+router.post('/aprobar-espec/',po010208Controller.aprobarEspec);
 
 module.exports = router;

@@ -1306,6 +1306,46 @@ const po010208Controller = {
         });
     },
 
+    aprobarEspec: (req, res) => {        
+        const {empresa,usuario,espec,version} = req.body;  
+        oracledb.getConnection(dbParams, (err, conn) => {
+            if(err) {
+                res.json({
+                    state: 'error',
+                    message: error.Error
+                });
+                return;
+            }
+            const query = "call PACK_NEW_DIRECCION_TECN.SP_APROBAR_ESPEC(:x_result,:x_de_result,:x_empresa,:x_usuario,:x_co_espec,:x_version)";
+            const params = { 
+                //parametros de salida
+                x_result: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                x_de_result: {dir: oracledb.BIND_OUT, type: oracledb.STRING },
+                //parametros de entrada
+                x_empresa: {val:empresa},
+                x_usuario: {val:usuario},
+                x_co_espec: {val:espec},
+                x_version: {val:version},
+            };
+            conn.execute(query, params, responseParams, (error, result) => {
+                conn.close();
+                if (error) {
+                    res.send({ 'error_query': error.stack });
+                    return;
+                }
+    
+                const { x_result, x_de_result } = result.outBinds;
+                if(x_result == 1) res.json({
+                    state: 'success',
+                    message: x_de_result,
+                });
+                else res.json({
+                    state: 'error',
+                    message: x_de_result
+                });
+            });
+        });
+    },
 }
 
 module.exports = po010208Controller;

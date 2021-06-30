@@ -20,12 +20,19 @@ router.post('/guardar-usuarios/', po010210Controller.Guardarusuarios);
 router.get('/listar-usuarios-asignado/:proyecto/', po010210Controller.ListarUsuariosAsignado);
 router.get('/mostrar-detalle-proyecto/:proyecto/', po010210Controller.MostrardetalleProyecto);
 router.post('/combo-usuarios/', po010210Controller.ComboUsuarios);
+router.get('/combo-estado/', po010210Controller.ComboEstado);
 router.post('/guardar-documento/', po010210Controller.Guardardocumento);
 router.post('/guardar-actividad/', po010210Controller.Guardactividad);
 router.get('/mostrar-actividades/:proyecto/', po010210Controller.ListarActividades);
 router.get('/mostrar-actividad-documento/:proyecto/:actividad/', po010210Controller.ListarActdocumento);
 router.post('/aviso-revisar/', po010210Controller.AvisopendRevisar);
+router.post('/aviso-sin-usuarios/', po010210Controller.AvisonoUsuario);
 router.get('/listar-formula/:empresa/:producto/', po010210Controller.ListarFormula);
+router.post('/prueba-email/', po010210Controller.PruebaMail);
+router.post('/set-actividad/', po010210Controller.SetActividad);
+router.post('/cerrar-proyecto/', po010210Controller.CerrarProyecto);
+router.get('/listar-proyectos-terminado/', po010210Controller.ListarProyectoterminado);
+router.get('/mostrar-actividades-fin/:proyecto/', po010210Controller.ListarActividadesfin);
 
 
 
