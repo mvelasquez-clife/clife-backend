@@ -384,6 +384,7 @@ cargarespecific = (nombre,grupo,prod,filter) => {
         }
         if(grupo==4){
             mytoolbar.addButton('obser',null,'Espec. Observadas',"ic-fail.png","");
+            mytoolbar.addButton('send',null,'Enviar a DT',"ic-send.png","");
         }
         mytoolbar.addButton('busprod',null,'Buscar por Producto',"ic-look.png","");
         mytoolbar.addButton('refresh',null,'Actualizar',"ic-refresh.png","");
@@ -1096,7 +1097,17 @@ onClickaction = async (id) => {
             break;                  
         case 'patr':    
             patrPendientes(grupo_prod);
-            break;      
+            break;     
+        case 'send':
+            col  = myGrid_group.getSelectedRowId();
+            if(col) {
+                sel  = myGrid_group.getRowData(col);
+                enviarDT(sel.cod,sel.vers);
+            }else{
+                dhtmlx.confirm("Debe seleccionar una especificación", function (result) {
+                });
+            }
+            break;    
         default:
             null;
             break;
@@ -1434,6 +1445,32 @@ copiarespecificacion = (accion,espec_orig,grupo_prod,version_orig,co_espec_nue,p
     }, "json");
 };
 
+enviarDT = (codigo,version) => {   
+    params = {
+        codigo: codigo,
+        version: version
+    };    
+    console.log(params);
+    dhtmlx.confirm("¿Está seguro?", function (result) {
+        if (result === Boolean(true)) {
+            $.post(BASE_URL + "PO010410/enviar-dt", params, function (res) {   
+                if (res.state=='success'){  
+                    dhtmlx.alert({
+                        title: 'Se guardo correctamente',
+                        text: 'Se envio a DT para su revisión'
+                    });   
+                } else {
+                    dhtmlx.alert({
+                        title: 'No se guardo el registro',
+                        type: 'alert-error',
+                        text: res.error
+                    });   
+                }
+            }, "json");
+        }
+    });
+};
+
 guardarprod = (especificacion,version,cadena,cantfilas) => {   
     params = {
         empresa: usrJson.empresa,
@@ -1553,7 +1590,6 @@ guardarpatron = (especificacion,version,patron,observacion,fecha,orden,accion) =
         orden:orden,
         accion:accion
     };    
-    console.log(params);
     $.post(BASE_URL + "PO010410/guardar-patron", params, function (res) {
         if (res.state=='success'){
             dhtmlx.alert({
@@ -2489,7 +2525,6 @@ toolbarOnptr  = async (id) => {
             var patron = myFormdatos_pat.getItemValue('_et_tipo');
             var fecha = myFormdatos_pat.getItemValue('_et_fec_vig').toLocaleDateString().replace('/', '-');;
             sel = myGrid_espvers.getRowData(myGrid_espvers.getSelectedRowId());
-            console.log(sel);
             if (accion_ptr=='U'){
                 ptr = myGrid_patr.getRowData(myGrid_patr.getSelectedRowId());
                 orden = ptr.orden;

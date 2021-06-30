@@ -145,6 +145,7 @@ Inicio = () => {
     myToolbardatos_register.addButton('__mostnso',null,'Mostrar NSOC',"ic-doc.png","ic-doc.png");
     myToolbardatos_register.addButton('__mostesp',null,'Mostrar Especificaciones',"ic-register.png","ic-register.png");
     myToolbardatos_register.addButton('__nuevo',null,'Nuevo',"ic-add2.png","ic-add2.png");
+    myToolbardatos_register.addButton('__aprobar',null,'Aprobar',"ic-like.png","ic-like.png");
     myToolbardatos_register.addButton('__nsoc',null,'Editar',"ic-edit2.png","ic-edit2.png");
     myToolbardatos_register.addButton('__cosm',null,'Forma Cosmética',"ic-form.png","ic-form.png");
     myToolbardatos_register.addButton('__notif',null,'Notificaciones',"ic-calendar.png","ic-calendar.png");
@@ -157,15 +158,26 @@ Inicio = () => {
     maingrid.setImagePath("/assets/vendor/dhtmlx/skins/skyblue/imgs/dhxgrid_skyblue/");
     maingrid.setIconsPath('/assets/images/icons/');
     maingrid.setHeader(',NOMBRE ESPECIFICACIÓN, COD.ESPECIFICACIÓN,VERSION,VIGENCIA,FEC.CREACION,FEC.REVISA,FE.APRUEBA,NOM.CREACION,NOM.REVISA,NOM.APRUEBA,NOM.PROVEEDOR');
-    maingrid.setInitWidths('40,600,150,100,0,150,0,0,470,0,0,0');
+    maingrid.setInitWidths('40,600,150,100,100,150,0,0,470,0,0,0');
     maingrid.setColAlign('center,left,center,center,center,center,center,center,left,left,left,left');
-    maingrid.setColumnIds(",despec,ccespec,version"); 
+    maingrid.setColumnIds(",despec,ccespec,version,estado"); 
     maingrid.setColTypes('img,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro,ro');    
     maingrid.attachHeader(",#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter,#text_filter"); 
     maingrid.init();     
     mainLayout_register.cells('a').progressOn();  
     maingrid.load( BASE_URL + 'PO010208/mostrar-especificacion/'+usrJson.empresa).then(function (text) {
         mainLayout_register.cells('a').progressOff();
+        num_fila = maingrid.getRowsNum();
+        let iRowId;
+        for(let i=0;i<num_fila;i++){
+            iRowId = maingrid.getRowId(i);
+            data = maingrid.getRowData(iRowId);
+            if(data.estado=='Revisada'){
+                maingrid.setRowColor(iRowId,"#90EE90");
+            }else{
+                    maingrid.setRowColor(iRowId,"#F7D358");
+            }
+        }
     });    
     mainLayout_register.cells('c').setHeight(280);     
     iniciotabs();  
@@ -1027,7 +1039,28 @@ OnClicktoolbar= async (id) => {
         break;    
         case '__mostesp':
             Inicio();
-        break;        
+        break;       
+        case '__aprobar':  
+            col = maingrid.getSelectedRowId(); 
+            if(col) {                
+                data = maingrid.getRowData(col)
+                if (data.estado = 'Revisada'){
+                    var output = await IniciarFormularioSeguridad(12, mainLayout);
+                    if (output.result === 'S') {
+                        aprobarEspec(data.ccespec,data.version);
+                    }
+                }else{
+                    dhtmlx.alert({
+                        title: 'Error',
+                        type: 'La especificación no se encuentra revisada',
+                        text: res.message
+                    });
+                }
+            }else{
+                dhtmlx.confirm("Debe seleccionar una especificación", function (result) {
+                });
+            }         
+        break;   
         default:
             null;
             break;
@@ -1059,6 +1092,30 @@ guardarnsoc = (nsoc,fecha_ini,fecha_fin,nombre_nso,form_cosm,espec,tvu_com,tvu_p
             if (permiso_cataedit='N'){
                 Wind_.window("wbusq").close();
             }
+            Inicio();
+        } else {
+            dhtmlx.alert({
+                title: 'No se guardo el registro',
+                type: 'alert-error',
+                text: res.message
+            });
+        }
+    }, "json");
+}
+
+aprobarEspec = (espec,version) => {
+    params = {
+        empresa: usrJson.empresa,
+        usuario: usrJson.codigo,
+        espec: espec,
+        version:version,
+    };
+    $.post(BASE_URL + "PO010208/aprobar-espec", params, function (res) {
+        if (res.state=='success'){
+            dhtmlx.alert({
+                title: 'Correcto',
+                text: res.message
+            });
             Inicio();
         } else {
             dhtmlx.alert({
