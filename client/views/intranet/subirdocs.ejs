@@ -435,6 +435,7 @@
                             formData.append('codigo', div.data('personal'));
                             formData.append('empresa', document.getElementById('form-empresa').value);
                             formData.append('pdf', document.getElementById('form-archivos').files[div.data('idx')]);
+                            formData.append('tipodoc', document.getElementById('form-tipodoc').value);
                         let result;
                         try {
                             result = await $.ajax({

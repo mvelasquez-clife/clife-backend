@@ -89,3 +89,16 @@ public/assets/vendor
 nbproject
 package-lock.json
 .vscode
+client/views/intranet/.DS_Store
+public/.DS_Store
+public/assets/.DS_Store
+server/.DS_Store
+public/files/.DS_Store
+public/assets/.DS_Store
+public/.DS_Store
+server/routes/.DS_Store
+server/controllers/.DS_Store
+public/files/.DS_Store
+public/assets/.DS_Store
+public/.DS_Store
+public/files/.DS_Store

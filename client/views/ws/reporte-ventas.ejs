@@ -68,7 +68,7 @@
                                             <th>Fecha</th>
                                             <th>Pedido</th>
                                             <th>OrderId VTEX</th>
-                                            <th>Código producto</th>
+                                            <th colspan="2">Producto</th>
                                             <th>Precio lista</th>
                                             <th>Descuento lista</th>
                                             <th>Descuento cupón</th>
@@ -128,7 +128,11 @@
                     ).append(
                         $('<td>').text(fila.orderid)
                     ).append(
-                        $('<td>').text(fila.sku)
+                        $('<td>').text(fila.sku).addClass('text-right')
+                    ).append(
+                        $('<td>').append(
+                            $('<p>').text(fila.descripcion).addClass('mb-0').css('width','480px')
+                        )
                     ).append(
                         $('<td>').text(fila.prlista.toLocaleString('en-us',{minimumFractionDigits:2,maximumFractionDigits:2})).addClass('text-right')
                     ).append(

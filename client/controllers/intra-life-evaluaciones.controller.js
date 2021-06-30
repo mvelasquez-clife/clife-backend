@@ -604,6 +604,7 @@ const EvaluacionesController = {
                 { name: 'p_usuario', io: 'in', value: usuario },
                 { name: 'p_calificaciones', io: 'in', value: calificaciones }
             ];
+console.log(query, params);
             let result = await db.resultSet(query, params);
             if (result.error) {
                 response.json({

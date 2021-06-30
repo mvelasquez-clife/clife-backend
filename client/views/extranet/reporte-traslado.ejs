@@ -30,6 +30,7 @@
                                 <th colspan="3" class="text-primary text-center">Origen</th>
                                 <th colspan="2" class="text-success text-center">Destino</th>
                                 <th rowspan="2" class="text-danger text-center">Saldo final</th>
+                                <th rowspan="2" class="text-dark text-center">Observaciones</th>
                             </tr>
                             <tr>
                                 <th class="text-center">Código</th>
@@ -45,8 +46,9 @@
                         <tfoot>
                             <tr>
                                 <th></th>
-                                <th colspan="6">TOTAL</th>
-                                <th id="reporte-total" class="text-right"></th>
+                                <th colspan="5">TOTAL</th>
+                                <th id="reporte-total" class="text-success text-right"></th>
+                                <th></th>
                                 <th></th>
                             </tr>
                         </tfoot>
@@ -89,6 +91,8 @@
                     $('<td>').text(producto.ctdtraslado.toLocaleString('en-us')).addClass('text-right').addClass('text-success')
                 ).append(
                     $('<td>').text((producto.ctdinicial - producto.ctdtraslado).toLocaleString('en-us')).addClass('text-right text-danger')
+                ).append(
+                    $('<td>').text(producto.observaciones)
                 )
             );
             cantidad += producto.ctdtraslado;
